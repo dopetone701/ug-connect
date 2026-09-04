@@ -7,7 +7,7 @@
 .film-giant{
   position:relative;
   width:100%;
-  height:calc(100dvh - 64px); /* search bar + shell padding */
+  height:calc(100dvh - 64px);
   min-height:560px;
   max-height:900px;
   display:flex;
@@ -27,7 +27,7 @@
   position:relative;
   width:100%;
   max-width:100%;
-  height:64px; /* smaller to fit both */
+  height:64px;
   flex-shrink:0;
   overflow:hidden;
   background:hsl(var(--surface) /.82);
@@ -46,7 +46,6 @@
 @keyframes scrollLtr{0%{transform:translateX(0)}100%{transform:translateX(-33.333%)}}
 @keyframes scrollRtl{0%{transform:translateX(-33.333%)}100%{transform:translateX(0)}}
 
-/* BIG CARD - now flex:1 and keeps radius full width */
 .film-center{
   width:100%;
   flex:1 1 auto;
@@ -75,7 +74,6 @@
 .c-meta{font-size:10px;color:hsl(var(--text-muted));margin-top:3px}
 .c-text{font-size:10px;color:hsl(var(--text-muted));margin-top:4px;line-height:1.3}
 
-/* ELITE APPLE GLASS PLAY - NO BG, WHITE TRI SVG, COLOR SMOKE */
 .play-3d.glass{
   position:absolute;left:50%;top:50%;
   transform:translate(-50%,-50%);
@@ -113,7 +111,6 @@
   transform:translateX(1px);
 }
 
-/* smoke circular form from center */
 .play-smoke{
   position:absolute;inset:-2px;
   border-radius:50%;
@@ -142,7 +139,6 @@
   100%{transform:scale(2.9); opacity:0}
 }
 
-
 .controls-row{display:flex;align-items:center;justify-content:center;gap:14px;flex-shrink:0;z-index:7;padding:2px 0 0 0}
 .dots-wrap{display:flex;gap:6px}
 .dot{width:7px;height:7px;border-radius:999px;border:none;background:hsl(var(--border));cursor:pointer;transition:.3s}
@@ -152,7 +148,7 @@
 .a-btn.full.on{background:hsl(var(--primary));color:hsl(var(--primary-text))}
 .a-btn.prev.on{background:hsl(var(--surface-hover));color:hsl(var(--text))}
 
-/* DESKTOP FIT GUARANTEE */
+/* DESKTOP - NOT TOUCHED */
 @media(min-width:769px){
   .film-giant{height:calc(100dvh - 78px);gap:6px}
   .strip-wrap{height:62px;border-radius:10px}
@@ -160,14 +156,29 @@
   .center-cover{border-radius:16px}
 }
 
-/* MOBILE - still TikTok but both reels visible */
+/* MOBILE ONLY - 3px trim + toggle lifted 2px above bottom nav */
 @media(max-width:768px){
- .film-giant{height:calc(100dvh - 58px);min-height:0;max-height:none;gap:4px}
+ .film-giant{
+   height:calc(100dvh - 58px - 72px - 3px);
+   min-height:0;
+   max-height:none;
+   gap:4px;
+   padding-bottom:48px;
+   position:relative;
+ }
  .strip-wrap{height:52px;border-radius:0}
  .strip-card{width:88px;height:38px}
  .film-center{padding:0;width:100%;aspect-ratio:auto;flex:1}
  .center-cover{border-radius:12px}
  .center-desc{right:10px;left:10px;bottom:10px;max-width:none;text-align:left}
  .c-title{font-size:18px}
- .controls-row{flex-direction:column;gap:6px}
+ .controls-row{
+   flex-direction:column;
+   gap:6px;
+   position:absolute;
+   left:0;
+   right:0;
+   bottom:8px;
+   z-index:20;
+ }
 }

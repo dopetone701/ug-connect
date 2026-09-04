@@ -1,14 +1,18 @@
 "use client";
 import { useState, useEffect } from "react";
+import { usePathname } from "next/navigation";
 import "./top-bar.css";
 
 const PLACES = ["Dubai", "Kampala", "London", "New York", "Nairobi", "Toronto", "Doha", "Johannesburg"];
 
 export default function TopBar() {
+  const pathname = usePathname();
   const [loc, setLoc] = useState("Dubai");
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [collapsed, setCollapsed] = useState(false);
+
+  const isAllMoviesPage = pathname?.startsWith("/movies") || pathname?.startsWith("/all-movies");
 
   useEffect(() => {
     setLoc(localStorage.getItem("ug-loc") || "Dubai");
@@ -26,13 +30,12 @@ export default function TopBar() {
   };
 
   return (
-    <header className="top-bar">
+    <header className={`top-bar ${isAllMoviesPage ? 'all-movies-page' : ''}`}>
       <div className="logo">
         <img src="/logo.png" alt="UG Connect" className="logo-img" />
       </div>
 
       <div className="location-wrap" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-        {/* BIG V ARROW - CLOSE TO LOCATION */}
         <button className="sidebar-v-toggle big" onClick={toggleSidebar} aria-label="Toggle sidebar">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ transform: collapsed ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}>
             <path d="M15 18l-6-6 6-6" />
@@ -56,12 +59,20 @@ export default function TopBar() {
         )}
       </div>
 
-      <div className="search-wrap">
+      <div className="search-wrap desktop-search">
         <svg className="svg-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="6"/><path d="M21 21l-4.3-4.3"/></svg>
         <input className="search" placeholder="Search" />
       </div>
 
       <div className="right-actions">
+        {isAllMoviesPage && (
+          <button className="mobile-search-icon" aria-label="Search">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="11" cy="11" r="6"/>
+              <path d="M21 21l-4.3-4.3"/>
+            </svg>
+          </button>
+        )}
         <button className="grid-btn">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="3" width="4" height="4" rx="1"/><rect x="10" y="3" width="4" height="4" rx="1"/><rect x="17" y="3" width="4" height="4" rx="1"/><rect x="3" y="10" width="4" height="4" rx="1"/><rect x="10" y="10" width="4" height="4" rx="1"/><rect x="17" y="10" width="4" height="4" rx="1"/><rect x="3" y="17" width="4" height="4" rx="1"/><rect x="10" y="17" width="4" height="4" rx="1"/><rect x="17" y="17" width="4" height="4" rx="1"/></svg>
         </button>
