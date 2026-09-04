@@ -215,3 +215,49 @@
     border-right: none !important;
   }
 }
+
+
+/* AUTO CAP FIRST LETTER */
+.l-card-title,
+.c-title,
+.latest-title{
+  text-transform: capitalize !important;
+}
+
+
+/* MOBILE LOCK - body should never drag */
+@media (max-width: 768px) {
+  html, body {
+    overflow-x: hidden !important;
+    width: 100% !important;
+    max-width: 100vw !important;
+    overscroll-behavior-x: none !important;
+    touch-action: pan-y !important;
+    position: relative !important;
+  }
+
+  .film-root {
+    overflow-x: hidden !important;
+    max-width: 100vw !important;
+    overscroll-behavior-x: none !important;
+    touch-action: pan-y !important;
+  }
+
+  .strip-wrap {
+    overflow: hidden !important;
+    max-width: 100vw !important;
+    touch-action: pan-y !important;
+  }
+
+  .strip-track {
+    user-select: none !important;
+    -webkit-user-drag: none !important;
+    -webkit-touch-callout: none !important;
+  }
+
+  .strip-card img,
+  .center-cover img {
+    -webkit-user-drag: none !important;
+    -webkit-touch-callout: none !important;
+  }
+}

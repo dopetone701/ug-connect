@@ -120,3 +120,5 @@ html, body { overflow-x: hidden; }
   .content-panel::-webkit-scrollbar { width: 0; }
   .content-panel { scrollbar-width: none; -ms-overflow-style: none; }
 }
+
+
