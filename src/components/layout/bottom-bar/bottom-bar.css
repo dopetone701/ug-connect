@@ -1,0 +1,146 @@
+/* ============================================================
+   BOTTOM GLASS NAV
+============================================================ */
+
+.bottom-bar-glass {
+  display: none;
+}
+
+@media (max-width: 768px) {
+
+  .bottom-bar-glass {
+    display: block;
+    position: fixed;
+    bottom: 16px;
+    left: 12px;
+    right: 12px;
+    z-index: 100;
+  }
+
+  /* ==========================================================
+     GLASS CONTAINER
+  ========================================================== */
+
+  .bottom-inner {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    background: hsl(var(--surface) / 0.78);
+
+    backdrop-filter: blur(24px) saturate(180%);
+    -webkit-backdrop-filter: blur(24px) saturate(180%);
+
+    border: 1px solid hsl(var(--border) / 0.6);
+    border-radius: 28px;
+
+    padding: 4px 18px;
+
+    box-shadow:
+      0 8px 32px rgba(0, 0, 0, 0.18),
+      inset 0 1px 0 rgba(255, 255, 255, 0.12);
+
+    height: 64px;
+    box-sizing: border-box;
+  }
+
+  /* ==========================================================
+     NAV ITEMS
+  ========================================================== */
+
+  .bottom-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    gap: 3px;
+
+    color: hsl(var(--text-muted));
+
+    text-decoration: none;
+
+    width: 48px;
+
+    flex-shrink: 0;
+  }
+
+  /* ==========================================================
+     CENTER PLAY ITEM
+  ========================================================== */
+
+  .bottom-item.center {
+    width: 64px;
+
+    position: relative;
+
+    top: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    flex-shrink: 0;
+  }
+
+  /* ==========================================================
+     ACTIVE ITEM
+  ========================================================== */
+
+  .bottom-item.active {
+    color: hsl(var(--text));
+  }
+
+  /* ==========================================================
+     NORMAL ICON
+  ========================================================== */
+
+  .bottom-icon {
+    display: grid;
+    place-items: center;
+
+    width: 26px;
+    height: 26px;
+  }
+
+  /* ==========================================================
+     CENTER PLAY BUTTON
+  ========================================================== */
+
+  .bottom-icon.center-icon {
+    width: 52px;
+    height: 52px;
+
+    background: hsl(var(--text));
+    color: hsl(var(--bg));
+
+    border-radius: 50%;
+
+    display: grid;
+    place-items: center;
+
+    box-shadow:
+      0 6px 20px rgba(0, 0, 0, 0.3);
+
+    flex-shrink: 0;
+  }
+
+  /* Optical correction for play triangle */
+
+  .bottom-icon.center-icon svg {
+    margin-left: 3px;
+  }
+
+  /* ==========================================================
+     LABELS
+  ========================================================== */
+
+  .bottom-label {
+    font-size: 10px;
+    font-weight: 500;
+
+    letter-spacing: 0.2px;
+
+    line-height: 1;
+  }
+}

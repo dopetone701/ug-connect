@@ -1,0 +1,44 @@
+/* Light - CLEAN like your photo but inverted */
+[data-theme="light"]{
+  --bg: 0 0% 94%;
+  --surface: 0 0% 100%;
+  --surface-hover: 0 0% 96%;
+  --text: 0 0% 8%;
+  --text-muted: 0 0% 42%;
+  --border: 0 0% 82%; /* was 90% - invisible, now visible */
+  --primary: 0 0% 10%;
+  --primary-text: 0 0% 100%;
+}
+
+[data-theme="dark-green"]{
+  --bg: var(--dna-black-hsl);
+  --surface: 160 22% 9%;
+  --surface-hover: 160 18% 13%;
+  --text: var(--dna-white-hsl);
+  --text-muted: 155 8% 55%;
+  --border: 160 14% 17%;
+  --primary: var(--dna-green-hsl);
+  --primary-text: var(--dna-white-hsl);
+}
+
+[data-theme="light-green"]{
+  --bg: 140 40% 92%;
+  --surface: 0 0% 100%;
+  --surface-hover: 140 20% 94%;
+  --text: 160 20% 8%;
+  --text-muted: 0 0% 42%;
+  --border: 140 15% 80%;
+  --primary: var(--dna-green-hsl);
+  --primary-text: var(--dna-white-hsl);
+}
+
+[data-theme="dark-red"]{
+  --bg: var(--dna-black-hsl);
+  --surface: 0 20% 9%; /* FIXED was 160 22% 9% - green surface on red theme */
+  --surface-hover: 0 18% 13%;
+  --text: var(--dna-white-hsl);
+  --text-muted: 0 8% 55%;
+  --border: 0 14% 17%;
+  --primary: var(--dna-red-hsl);
+  --primary-text: var(--dna-white-hsl);
+}

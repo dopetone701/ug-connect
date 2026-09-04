@@ -1,0 +1,28 @@
+/**
+ * ⚠️ WARNING: THIS IS THE ONLY FILE WITH RAW HSL
+ * ALL OTHER FILES MUST USE hsl(var(--...))
+ * Yellow = interaction / Green = growth / Red = importance
+ * 90% neutral / 10% brand
+ */
+:root {
+  /* DNA - EXACTLY LIKE THE PHOTO */
+  --dna-yellow-hsl: 45 100% 50%;
+  --dna-red-hsl: 357 84% 50%;
+  --dna-green-hsl: 147 100% 26%;
+
+  --dna-black-hsl: 160 28% 5%; /* photo bg black */
+  --dna-white-hsl: 150 12% 96%;
+
+  /* DEFAULT = dark photo look */
+  --bg: 160 28% 5%;
+  --surface: 160 22% 9%;
+  --surface-hover: 160 18% 13%;
+  --text: 150 12% 96%;
+  --text-muted: 155 8% 55%;
+  --border: 160 14% 17%;
+
+  --primary: var(--dna-green-hsl);
+  --primary-text: var(--dna-white-hsl);
+ 
+  --card-glow: 0 0 20px hsla(147, 100%, 26%, 0.3);
+}
