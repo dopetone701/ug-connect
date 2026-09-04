@@ -1,82 +1,95 @@
 "use client";
-import { useRef } from "react";
+import { useRef, useEffect } from "react";
 import "./latest-movies.css";
 
-type Movie = {
-  id: number;
-  title: string;
-  genre: string;
-  vj: string;
-  cover: string;
-  desc: string;
-  video: string;
-  preview: string[];
-};
+type Movie = { id:number; title:string; genre:string; vj:string; cover:string; desc:string; video:string; preview:string[] };
 
 export default function LatestMovies({ movies = [] }: { movies?: Movie[] }) {
-  const trackRef = useRef<HTMLDivElement>(null);
-  const isDown = useRef(false);
-  const startX = useRef(0);
-  const scrollLeft = useRef(0);
+  const mountRef = useRef<HTMLDivElement>(null);
+  let isDragging = false;
 
-  const onPointerDown = (e: React.PointerEvent) => {
-    isDown.current = true;
-    const track = trackRef.current!;
-    track.setPointerCapture(e.pointerId);
-    startX.current = e.clientX;
-    scrollLeft.current = track.scrollLeft;
-    track.style.cursor = "grabbing";
-    track.style.userSelect = "none";
-  };
+  useEffect(()=>{
+    const mount = mountRef.current;
+    if(!mount) return;
+    let isDown=false, startX=0, left=0;
+    const getScroll = ()=> mount.scrollLeft;
 
-  const onPointerMove = (e: React.PointerEvent) => {
-    if (!isDown.current) return;
-    const track = trackRef.current!;
-    const x = e.clientX;
-    const walk = x - startX.current;
-    track.scrollLeft = scrollLeft.current - walk;
-  };
+    const onDown = (e: MouseEvent | TouchEvent)=>{
+      const target = e.target as HTMLElement;
+      if(target.closest('button')) return;
+      isDown=true; isDragging=false;
+      startX = 'touches' in e? e.touches[0].pageX : (e as MouseEvent).pageX;
+      left=getScroll();
+      mount.classList.add('is-dragging');
+    };
+    const onUp = ()=>{
+      if(!isDown) return;
+      isDown=false; mount.classList.remove('is-dragging');
+      setTimeout(()=>{ isDragging=false; },80);
+    };
+    const onMove = (e: MouseEvent | TouchEvent)=>{
+      if(!isDown) return;
+      const pageX = 'touches' in e? e.touches[0].pageX : (e as MouseEvent).pageX;
+      const walk = pageX - startX;
+      if(Math.abs(walk)>5) isDragging=true;
+      if(isDragging) mount.scrollLeft = left - walk;
+    };
 
-  const onPointerUp = (e: React.PointerEvent) => {
-    isDown.current = false;
-    const track = trackRef.current!;
-    track.releasePointerCapture(e.pointerId);
-    track.style.cursor = "grab";
-    track.style.userSelect = "";
-  };
+    mount.addEventListener('mousedown', onDown);
+    mount.addEventListener('touchstart', onDown, {passive:true});
+    window.addEventListener('mouseup', onUp);
+    window.addEventListener('touchend', onUp);
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('touchmove', onMove, {passive:false});
+
+    return ()=>{
+      mount.removeEventListener('mousedown', onDown);
+      mount.removeEventListener('touchstart', onDown);
+      window.removeEventListener('mouseup', onUp);
+      window.removeEventListener('touchend', onUp);
+      window.removeEventListener('mousemove', onMove);
+      window.removeEventListener('touchmove', onMove);
+    }
+  },[]);
 
   if (!movies.length) return null;
 
   return (
-    <div className="latest-root">
-      <div className="latest-head">
-        <h3 className="latest-title">latest movies</h3>
-        <button className="latest-see">SEE ALL</button>
+    <div className="latest-root rp-wrap rp-active">
+      <div className="latest-head rp-head">
+        <h3 className="latest-title rp-heading">latest movies</h3>
+        <button className="latest-see" onClick={()=>{
+          if(isDragging) return;
+          location.hash="#/movies"
+        }}>SEE ALL</button>
       </div>
 
-      <div className="latest-track-wrap">
-        <div
-          ref={trackRef}
-          className="latest-track"
-          onPointerDown={onPointerDown}
-          onPointerMove={onPointerMove}
-          onPointerUp={onPointerUp}
-          onPointerLeave={onPointerUp}
-        >
+      <div ref={mountRef} id="latestMount" className="rp-mount">
+        <div className="rp-scroll">
           {movies.map((m) => (
-            <div key={m.id} className="latest-card">
-              <div className="l-card-cover">
+            <div key={m.id} className="latest-card rp-card">
+              <div className="l-card-cover rp-cover">
                 <img src={m.cover} alt={m.title} loading="lazy" draggable={false} />
                 <div className="l-card-fade" />
                 <div className="l-card-vj-on">{m.vj}</div>
                 <div className="l-card-actions">
-                  <button className="l-a-btn play on" onClick={() => m.video && window.open(m.video, "_blank")}>PLAY</button>
-                  <button className="l-a-btn prev on" onClick={() => m.preview[0] && window.open(m.preview[0], "_blank")}>PRE</button>
+                  <button className="l-a-btn play on" onClick={(e)=>{
+                    e.stopPropagation(); if(isDragging) return;
+                    if(m.video) window.open(m.video, "_blank")
+                  }}>PLAY</button>
+                  <button className="l-a-btn prev on" onClick={(e)=>{
+                    e.stopPropagation(); if(isDragging) return;
+                    if(m.preview?.[0]) window.open(m.preview[0], "_blank")
+                  }}>PRE</button>
                 </div>
               </div>
-              <div className="l-card-title centered">{m.title}</div>
+              <div className="l-card-title centered rp-title">{m.title}</div>
             </div>
           ))}
+          <div className="rp-card more-card" onClick={()=>{ if(isDragging) return; location.hash="#/movies"; }}>
+            <div className="rp-cover more-cover"><div className="more-grid"><div className="more-dot"></div><div className="more-dot"></div><div className="more-dot"></div><div className="more-dot"></div><div className="more-dot"></div><div className="more-dot"></div></div></div>
+            <div className="rp-title">View All</div>
+          </div>
         </div>
       </div>
     </div>
