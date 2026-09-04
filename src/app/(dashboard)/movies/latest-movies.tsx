@@ -15,25 +15,34 @@ type Movie = {
 
 export default function LatestMovies({ movies = [] }: { movies?: Movie[] }) {
   const trackRef = useRef<HTMLDivElement>(null);
-  let isDown = false;
-  let startX = 0;
-  let scrollLeft = 0;
+  const isDown = useRef(false);
+  const startX = useRef(0);
+  const scrollLeft = useRef(0);
 
-  const onMouseDown = (e: React.MouseEvent) => {
-    isDown = true;
+  const onPointerDown = (e: React.PointerEvent) => {
+    isDown.current = true;
     const track = trackRef.current!;
-    startX = e.pageX - track.offsetLeft;
-    scrollLeft = track.scrollLeft;
+    track.setPointerCapture(e.pointerId);
+    startX.current = e.clientX;
+    scrollLeft.current = track.scrollLeft;
+    track.style.cursor = "grabbing";
+    track.style.userSelect = "none";
   };
-  const onMouseLeave = () => { isDown = false; };
-  const onMouseUp = () => { isDown = false; };
-  const onMouseMove = (e: React.MouseEvent) => {
-    if (!isDown) return;
-    e.preventDefault();
+
+  const onPointerMove = (e: React.PointerEvent) => {
+    if (!isDown.current) return;
     const track = trackRef.current!;
-    const x = e.pageX - track.offsetLeft;
-    const walk = (x - startX) * 1.5;
-    track.scrollLeft = scrollLeft - walk;
+    const x = e.clientX;
+    const walk = x - startX.current;
+    track.scrollLeft = scrollLeft.current - walk;
+  };
+
+  const onPointerUp = (e: React.PointerEvent) => {
+    isDown.current = false;
+    const track = trackRef.current!;
+    track.releasePointerCapture(e.pointerId);
+    track.style.cursor = "grab";
+    track.style.userSelect = "";
   };
 
   if (!movies.length) return null;
@@ -49,25 +58,22 @@ export default function LatestMovies({ movies = [] }: { movies?: Movie[] }) {
         <div
           ref={trackRef}
           className="latest-track"
-          onMouseDown={onMouseDown}
-          onMouseLeave={onMouseLeave}
-          onMouseUp={onMouseUp}
-          onMouseMove={onMouseMove}
+          onPointerDown={onPointerDown}
+          onPointerMove={onPointerMove}
+          onPointerUp={onPointerUp}
+          onPointerLeave={onPointerUp}
         >
           {movies.map((m) => (
             <div key={m.id} className="latest-card">
               <div className="l-card-cover">
-                <img src={m.cover} alt={m.title} loading="lazy" />
+                <img src={m.cover} alt={m.title} loading="lazy" draggable={false} />
                 <div className="l-card-fade" />
                 <div className="l-card-vj-on">{m.vj}</div>
-
-                {/* BASE DOUBLE PILL - PART OF CARD */}
                 <div className="l-card-actions">
                   <button className="l-a-btn play on" onClick={() => m.video && window.open(m.video, "_blank")}>PLAY</button>
                   <button className="l-a-btn prev on" onClick={() => m.preview[0] && window.open(m.preview[0], "_blank")}>PRE</button>
                 </div>
               </div>
-
               <div className="l-card-title centered">{m.title}</div>
             </div>
           ))}
