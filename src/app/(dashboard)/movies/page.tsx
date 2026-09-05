@@ -7,6 +7,8 @@ import UserListsRow from "./_components/user-lists-row";
 import { getSections } from "./_lib/sections.config";
 import { useMovieStore } from "./_lib/use-movie-store";
 import { Movie as LibMovie } from "./_lib/types";
+import ExploreMore from "./_lib/explore-more";
+
 
 type ApiMovie = {
   id: number;
@@ -139,6 +141,8 @@ export default function MoviesPage(){
       })}
 
       <UserListsRow />
+      <ExploreMore movies={allMovies} />
+
     </div>
   )
 }

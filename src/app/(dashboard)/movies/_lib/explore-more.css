@@ -1,0 +1,46 @@
+.em-root{width:100%;margin-top:24px;padding-bottom:20px}
+.em-main-title{font-size:18px;font-weight:900;color:hsl(var(--text));padding:0 12px;margin-bottom:14px;letter-spacing:-.02em}
+.em-section{margin-bottom:22px}
+.em-head{display:flex;align-items:center;justify-content:space-between;padding:0 12px;margin-bottom:10px}
+.em-title{font-size:13px;font-weight:900;color:hsl(var(--text));text-transform:uppercase;letter-spacing:.04em}
+.em-see{font-size:10px;font-weight:800;letter-spacing:.08em;color:hsl(var(--text-muted));background:transparent;border:none;cursor:pointer}
+
+.em-track{
+  display:flex;
+  gap:12px;
+  overflow-x:auto;
+  overflow-y:hidden;
+  padding:4px 12px 12px 12px;
+  scrollbar-width:none;
+  -ms-overflow-style:none;
+  cursor:grab;
+  -webkit-overflow-scrolling:touch;
+  scroll-behavior:smooth;
+}
+.em-track::-webkit-scrollbar{display:none}
+.em-track.dragging{cursor:grabbing;user-select:none}
+
+.em-card{
+  flex:0 0 280px;
+  width:280px;
+  height:168px;
+  position:relative;
+  border-radius:12px;
+  overflow:hidden;
+  background:hsl(var(--surface));
+  border:1px solid hsl(var(--border));
+  cursor:pointer;
+}
+.em-card img{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none;user-select:none;-webkit-user-drag:none;transition:transform.4s ease}
+.em-card:hover img{transform:scale(1.06)}
+.em-overlay{position:absolute;inset:0;background:linear-gradient(0deg, rgba(0,0,0,.65) 0%, rgba(0,0,0,.25) 60%, rgba(0,0,0,.05) 100%);pointer-events:none}
+.em-label{position:absolute;left:12px;right:12px;top:50%;transform:translateY(-50%);font-size:26px;font-weight:900;color:#fff;letter-spacing:-.02em;line-height:.95;text-transform:uppercase;text-shadow:0 2px 12px rgba(0,0,0,.8);pointer-events:none}
+.em-small{position:absolute;left:12px;bottom:10px;right:12px;font-size:11px;font-weight:700;color:rgba(255,255,255,.85);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-shadow:0 1px 6px rgba(0,0,0,.8)}
+
+@media(max-width:768px){
+ .em-root{width:100vw;margin-left:calc(-50vw + 50%)}
+ .em-head{padding:0 14px}
+ .em-track{padding:4px 12px 12px 12px}
+ .em-card{flex:0 0 72vw;width:72vw;height:42vw}
+ .em-label{font-size:22px}
+}
