@@ -26,8 +26,8 @@ export default function LatestMovies({ movies = [] }: { movies?: Movie[] }) {
     const momentum = () => {
       cancelAnimationFrame(rafId);
       const step = () => {
-        velocity *= 0.94; // same friction as for-you
-        if (Math.abs(velocity) < 0.3) return;
+        velocity *= 0.92; // NOON - changed from 0.94
+        if (Math.abs(velocity) < 0.5) return; // NOON - changed from 0.3
         container.scrollLeft += velocity;
         rafId = requestAnimationFrame(step);
       };
@@ -69,7 +69,7 @@ export default function LatestMovies({ movies = [] }: { movies?: Movie[] }) {
       if (!isDown) return;
       isDown = false;
       container.classList.remove('is-dragging');
-      if (Math.abs(velocity) > 1.5) {
+      if (Math.abs(velocity) > 2) { // NOON - changed from 1.5
         velocity = -velocity;
         momentum();
       }

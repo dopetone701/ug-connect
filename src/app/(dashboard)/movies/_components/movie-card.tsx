@@ -30,7 +30,7 @@ export default function MovieCard({ m }: { m: Movie }) {
       <div className="l-card-title centered">{m.title}</div>
 
       <style>{`
-       .dna-fav-btn{
+      .dna-fav-btn{
           position:absolute; top:6px; right:6px; z-index:5;
           width:28px; height:28px; border-radius:50%;
           border:1px solid rgba(255,255,255,.25);
@@ -39,22 +39,22 @@ export default function MovieCard({ m }: { m: Movie }) {
           display:flex; align-items:center; justify-content:center;
           cursor:pointer; transition: all.2s ease;
         }
-       .dna-fav-btn svg path{
+      .dna-fav-btn svg path{
           fill: none;
           stroke: #ffffff;
           stroke-width: 1.8;
           transition: all.2s ease;
         }
-       .dna-fav-btn.active{
+      .dna-fav-btn.active{
           background: rgba(255,0,0,.15);
           border-color: #ff0000;
           box-shadow: 0 0 12px rgba(255,0,0,.6);
         }
-       .dna-fav-btn.active svg path{
+      .dna-fav-btn.active svg path{
           fill: #ff0000;
           stroke: #ff0000;
         }
-       .dna-fav-btn:active{ transform: scale(.88); }
+      .dna-fav-btn:active{ transform: scale(.88); }
       `}</style>
     </div>
   )
