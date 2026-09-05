@@ -5,63 +5,108 @@ import "./latest-movies.css";
 type Movie = { id:number; title:string; genre:string; vj:string; cover:string; desc:string; video:string; preview:string[] };
 
 export default function LatestMovies({ movies = [] }: { movies?: Movie[] }) {
-  const mountRef = useRef<HTMLDivElement>(null);
+  const trackRef = useRef<HTMLDivElement>(null);
   const isDraggingRef = useRef(false);
 
-  useEffect(()=>{
-    const mount = mountRef.current;
-    if(!mount) return;
-    let isDown=false, isHorizontal=false, startX=0, startY=0, left=0;
+  useEffect(() => {
+    const container = trackRef.current;
+    if (!container) return;
 
-    const onDown = (e: MouseEvent | TouchEvent)=>{
-      if((e.target as HTMLElement).closest('button')) return;
-      isDown=true; isDraggingRef.current=false; isHorizontal=false;
-      const p = 'touches' in e? e.touches[0] : e as MouseEvent;
-      startX=p.pageX; startY=p.pageY;
-      left=mount.scrollLeft;
-      mount.classList.add('is-dragging');
-    };
-    const onUp = ()=>{
-      if(!isDown) return;
-      isDown=false; isHorizontal=false;
-      mount.classList.remove('is-dragging');
-      setTimeout(()=>{ isDraggingRef.current=false; },100);
-    };
-    const onMove = (e: MouseEvent | TouchEvent)=>{
-      if(!isDown) return;
-      const p = 'touches' in e? e.touches[0] : e as MouseEvent;
-      const dx = p.pageX - startX;
-      const dy = p.pageY - startY;
+    let isDown = false;
+    let startX = 0;
+    let scrollStart = 0;
+    let velocity = 0;
+    let lastX = 0;
+    let lastTime = 0;
+    let rafId = 0;
 
-      // IF VERTICAL > HORIZONTAL — ABORT, LET PAGE SCROLL
-      if(!isHorizontal && Math.abs(dy) > Math.abs(dx)){
-        isDown=false;
-        mount.classList.remove('is-dragging');
-        return;
+    const getScroll = () => container.scrollLeft;
+    const killMomentum = () => cancelAnimationFrame(rafId);
+
+    const momentum = () => {
+      cancelAnimationFrame(rafId);
+      const step = () => {
+        velocity *= 0.94; // same friction as for-you
+        if (Math.abs(velocity) < 0.3) return;
+        container.scrollLeft += velocity;
+        rafId = requestAnimationFrame(step);
+      };
+      rafId = requestAnimationFrame(step);
+    };
+
+    const onDown = (x: number) => {
+      killMomentum();
+      isDown = true;
+      isDraggingRef.current = false;
+      startX = x;
+      lastX = x;
+      scrollStart = getScroll();
+      lastTime = performance.now();
+      velocity = 0;
+      container.classList.add('is-dragging');
+    };
+
+    const onMove = (x: number, e?: Event) => {
+      if (!isDown) return;
+      const now = performance.now();
+      const dx = x - startX;
+      const dist = x - lastX;
+      const dt = now - lastTime || 16;
+
+      if (Math.abs(dx) > 3 &&!isDraggingRef.current) {
+        isDraggingRef.current = true;
       }
-      if(Math.abs(dx) > 5){
-        isHorizontal=true;
-        isDraggingRef.current=true;
-        mount.scrollLeft = left - dx;
+      if (isDraggingRef.current) {
+        if (e) e.preventDefault();
+        velocity = (dist / dt) * 16;
+        container.scrollLeft = scrollStart - dx;
       }
+      lastX = x;
+      lastTime = now;
     };
 
-    mount.addEventListener('mousedown', onDown);
-    mount.addEventListener('touchstart', onDown, {passive:true});
-    window.addEventListener('mouseup', onUp);
-    window.addEventListener('touchend', onUp);
-    window.addEventListener('mousemove', onMove);
-    window.addEventListener('touchmove', onMove, {passive:true});
+    const onUp = () => {
+      if (!isDown) return;
+      isDown = false;
+      container.classList.remove('is-dragging');
+      if (Math.abs(velocity) > 1.5) {
+        velocity = -velocity;
+        momentum();
+      }
+      setTimeout(() => { isDraggingRef.current = false; }, 60);
+    };
 
-    return ()=>{
-      mount.removeEventListener('mousedown', onDown);
-      mount.removeEventListener('touchstart', onDown);
-      window.removeEventListener('mouseup', onUp);
-      window.removeEventListener('touchend', onUp);
-      window.removeEventListener('mousemove', onMove);
-      window.removeEventListener('touchmove', onMove);
-    }
-  },[]);
+    const md = (e: MouseEvent) => {
+      if ((e.target as HTMLElement).closest('.l-a-btn')) return;
+      onDown(e.pageX);
+    };
+    const mm = (e: MouseEvent) => onMove(e.pageX, e);
+    const mu = () => onUp();
+
+    const td = (e: TouchEvent) => {
+      if ((e.target as HTMLElement).closest('.l-a-btn')) return;
+      onDown(e.touches[0].pageX);
+    };
+    const tm = (e: TouchEvent) => onMove(e.touches[0].pageX, e);
+    const tu = () => onUp();
+
+    container.addEventListener('mousedown', md);
+    window.addEventListener('mousemove', mm, { passive: false } as any);
+    window.addEventListener('mouseup', mu);
+    container.addEventListener('touchstart', td, { passive: true } as any);
+    container.addEventListener('touchmove', tm, { passive: false } as any);
+    container.addEventListener('touchend', tu, { passive: true } as any);
+
+    return () => {
+      cancelAnimationFrame(rafId);
+      container.removeEventListener('mousedown', md);
+      window.removeEventListener('mousemove', mm);
+      window.removeEventListener('mouseup', mu);
+      container.removeEventListener('touchstart', td as any);
+      container.removeEventListener('touchmove', tm as any);
+      container.removeEventListener('touchend', tu as any);
+    };
+  }, [movies]);
 
   if (!movies.length) return null;
 
@@ -69,32 +114,32 @@ export default function LatestMovies({ movies = [] }: { movies?: Movie[] }) {
     <div className="latest-root">
       <div className="latest-head">
         <h3 className="latest-title">latest movies</h3>
-        <button className="latest-see" onClick={()=>{ if(isDraggingRef.current) return; location.hash="#/movies" }}>SEE ALL</button>
+        <button className="latest-see" onClick={()=>{ location.hash="#/movies" }}>SEE ALL</button>
       </div>
 
-      <div ref={mountRef} id="latestMount" className="latest-track">
-        <div className="rp-scroll">
-          {movies.map((m) => (
-            <div key={m.id} className="latest-card">
-              <div className="l-card-cover">
-                <img src={m.cover} alt={m.title} loading="lazy" draggable={false} />
-                <div className="l-card-fade" />
-                <div className="l-card-vj-on">{m.vj}</div>
-                <div className="l-card-actions">
-                  <button className="l-a-btn play on" onClick={(e)=>{
-                    e.stopPropagation(); if(isDraggingRef.current) return;
-                    if(m.video) window.open(m.video, "_blank")
-                  }}>PLAY</button>
-                  <button className="l-a-btn prev on" onClick={(e)=>{
-                    e.stopPropagation(); if(isDraggingRef.current) return;
-                    if(m.preview?.[0]) window.open(m.preview[0], "_blank")
-                  }}>PRE</button>
-                </div>
+      <div className="latest-track" ref={trackRef}>
+        {movies.map((m) => (
+          <div key={m.id} className="latest-card">
+            <div className="l-card-cover">
+              <img src={m.cover} alt={m.title} loading="lazy" draggable={false} />
+              <div className="l-card-fade" />
+              <div className="l-card-vj-on">{m.vj}</div>
+              <div className="l-card-actions">
+                <button className="l-a-btn play on" onClick={(e)=>{
+                  e.stopPropagation();
+                  if(isDraggingRef.current) return;
+                  if(m.video) window.open(m.video, "_blank")
+                }}>PLAY</button>
+                <button className="l-a-btn prev on" onClick={(e)=>{
+                  e.stopPropagation();
+                  if(isDraggingRef.current) return;
+                  if(m.preview?.[0]) window.open(m.preview[0], "_blank")
+                }}>PRE</button>
               </div>
-              <div className="l-card-title centered">{m.title}</div>
             </div>
-          ))}
-        </div>
+            <div className="l-card-title centered">{m.title}</div>
+          </div>
+        ))}
       </div>
     </div>
   );
