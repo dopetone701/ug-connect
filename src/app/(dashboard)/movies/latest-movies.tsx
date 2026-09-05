@@ -17,18 +17,12 @@ export default function LatestMovies({ movies = [] }: { movies?: Movie[] }) {
         {movies.map((m) => (
           <div key={m.id} className="latest-card">
             <div className="l-card-cover">
-              <img src={m.cover} alt={m.title} loading="lazy" draggable={false} />
+              <img src={m.cover} alt={m.title} loading="lazy" />
               <div className="l-card-fade" />
               <div className="l-card-vj-on">{m.vj}</div>
               <div className="l-card-actions">
-                <button className="l-a-btn play on" onClick={(e)=>{
-                  e.stopPropagation();
-                  if(m.video) window.open(m.video, "_blank")
-                }}>PLAY</button>
-                <button className="l-a-btn prev on" onClick={(e)=>{
-                  e.stopPropagation();
-                  if(m.preview?.[0]) window.open(m.preview[0], "_blank")
-                }}>PRE</button>
+                <button className="l-a-btn play on" onClick={()=>{ if(m.video) window.open(m.video, "_blank") }}>PLAY</button>
+                <button className="l-a-btn prev on" onClick={()=>{ if(m.preview?.[0]) window.open(m.preview[0], "_blank") }}>PRE</button>
               </div>
             </div>
             <div className="l-card-title centered">{m.title}</div>
