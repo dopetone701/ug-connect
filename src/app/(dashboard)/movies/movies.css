@@ -216,14 +216,12 @@
   }
 }
 
-
 /* AUTO CAP FIRST LETTER */
 .l-card-title,
 .c-title,
 .latest-title{
   text-transform: capitalize !important;
 }
-
 
 /* MOBILE LOCK - body should never drag */
 @media (max-width: 768px) {
@@ -260,4 +258,37 @@
     -webkit-user-drag: none !important;
     -webkit-touch-callout: none !important;
   }
+}
+
+/* ===== NEW BTNS - KHALAS BABA - PILL NOT TOUCHED ===== */
+.hero-corner-actions.pc-only{
+  position:absolute;left:14px;bottom:14px;z-index:8;display:flex;gap:8px;
+}
+.hca-btn{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:8px 12px;border-radius:6px;
+  background:rgba(0,0,0,.55);backdrop-filter:blur(10px);
+  border:1px solid rgba(255,255,255,.18);
+  color:#fff;font-size:10px;font-weight:900;letter-spacing:.06em;cursor:pointer;
+}
+.m-icon-btn{
+  width:38px;height:33px;display:flex;align-items:center;justify-content:center;
+  border-radius:999px;background:hsl(var(--surface));border:1px solid hsl(var(--border));
+  color:hsl(var(--text));cursor:pointer;flex-shrink:0;
+}
+
+@media(min-width:769px){
+  .mobile-only,.mobile-same-line{display:none!important}
+  .pc-only{display:flex!important}
+}
+@media(max-width:768px){
+  .pc-only{display:none!important}
+  .mobile-only{display:flex!important}
+  .mobile-same-line{
+    width:100%;display:flex!important;align-items:center;justify-content:space-between;gap:10px;
+    padding:0 12px;
+  }
+  .mobile-same-line .anchor-btns{flex:0 0 auto}
+  /* make pill height match icon btns - apple size 18px */
+  .mobile-same-line .a-btn{padding:8px 16px;display:flex;align-items:center;height:33px}
 }

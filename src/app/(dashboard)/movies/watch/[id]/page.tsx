@@ -1,8 +1,12 @@
 "use client"
+
+export const runtime = 'edge'
+
 import { useEffect, useState, useRef } from "react"
 import { useParams, useSearchParams, useRouter, usePathname } from "next/navigation"
 import "../../movies.css"
 import "./connect-player.css"
+
 
 const API_URL = "https://movie-server-api.connectu89.workers.dev/api/movies"
 
