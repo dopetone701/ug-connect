@@ -1,9 +1,11 @@
 "use client"
 import { Movie } from "../_lib/types"
 import { useMovieStore } from "../_lib/use-movie-store"
+import { useRouter } from "next/navigation"
 
 export default function MovieCard({ m }: { m: Movie }) {
   const { addRecent, toggleFav, favIds } = useMovieStore()
+  const router = useRouter()
   const isFav = favIds.includes(m.id)
 
   return (
@@ -13,8 +15,8 @@ export default function MovieCard({ m }: { m: Movie }) {
         <div className="l-card-fade" />
         <div className="l-card-vj-on">{m.vj}</div>
         <div className="l-card-actions">
-          <button className="l-a-btn play on" onClick={() => { addRecent(m.id); if(m.video) window.open(m.video, "_blank") }}>PLAY</button>
-          <button className="l-a-btn prev on" onClick={() => { addRecent(m.id); if(m.preview?.[0]) window.open(m.preview[0], "_blank") }}>PRE</button>
+          <button className="l-a-btn play on" onClick={() => { addRecent(m.id); router.push(`/movies/watch/${m.id}?t=full`) }}>PLAY</button>
+          <button className="l-a-btn prev on" onClick={() => { addRecent(m.id); router.push(`/movies/watch/${m.id}?t=preview`) }}>PRE</button>
         </div>
 
         <button
