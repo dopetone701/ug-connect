@@ -8,6 +8,8 @@ import { getSections } from "./_lib/sections.config";
 import { useMovieStore } from "./_lib/use-movie-store";
 import { Movie as LibMovie } from "./_lib/types";
 import ExploreMore from "./_lib/explore-more";
+import GenreFilter from "./_lib/genre-filter";
+
 
 type ApiMovie = {
   id: number;
@@ -201,11 +203,16 @@ export default function MoviesPage(){
         </div>
       </div>
 
+        <GenreFilter onSelect={(g) => console.log("filter:", g)} />
+
+
       {sections.map(s => {
         if((s as any).hidden) return null;
         if(!s.data?.length) return null;
         return <MovieRow key={s.id} title={s.title} movies={s.data} />
       })}
+
+      
 
       <UserListsRow movies={allMovies} />
       <ExploreMore movies={allMovies} />

@@ -4,13 +4,12 @@ import { useMovieStore } from "../_lib/use-movie-store"
 import "../latest-movies.css"
 
 type Props = {
-  movies?: any[] // allMovies from API
+  movies?: any[]
 }
 
 export default function UserListsRow({ movies = [] }: Props) {
   const { lists, createList } = useMovieStore() as any
 
-  // Ensure ONE default list always exists
   useEffect(() => {
     if (lists.length === 0) {
       createList("my-list")
@@ -19,7 +18,6 @@ export default function UserListsRow({ movies = [] }: Props) {
 
   const mainList = lists[0]
 
-  // If no list yet - show placeholder
   if (!mainList) {
     return (
       <div className="latest-root">
@@ -39,7 +37,6 @@ export default function UserListsRow({ movies = [] }: Props) {
     )
   }
 
-  // Get actual movie objects from IDs
   const myMovies = movies.filter((m: any) => mainList.movieIds?.includes(m.id))
 
   return (
@@ -65,7 +62,7 @@ export default function UserListsRow({ movies = [] }: Props) {
                   <div className="l-card-fade" />
                   <div className="l-card-actions" style={{borderRadius:"0 0 6px 6px"}}>
                     <button className="l-a-btn play on" style={{borderRadius:"0 0 0 6px"}}>PLAY</button>
-                    <button className="l-a-btn prev on" style={{borderRadius:"0 0 6px 0"}}>{movie.genre}</button>
+                    <button className="l-a-btn prev on" style={{borderRadius:"0 0 6px 0"}}>PRE</button>
                   </div>
                 </div>
               </div>
