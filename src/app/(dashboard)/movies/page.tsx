@@ -103,7 +103,7 @@ export default function MoviesPage(){
     setJustAdded(true);
     setTimeout(()=> setJustAdded(false), 1200);
   },[m, lists, createList, store, isInMyList]);
-
+  
   const handleShare = useCallback(async ()=>{  
     if(!m) return;
     const url = `${window.location.origin}/movies/watch/${m.id}?t=${anchor}`;
@@ -114,7 +114,7 @@ export default function MoviesPage(){
     }
   },[m, anchor]);
 
-   const handlePlay = useCallback(()=>{
+   const handlePlay = useCallback(()=>{ 
     if(!m) return;
     setClicking(true);
     setTimeout(()=>setClicking(false),420);
