@@ -237,8 +237,29 @@
   background:rgba(255,255,255,.28);
   border-radius:999px;
   position:relative;
+  overflow:hidden; /* keeps buffered inside pill */
 }
-.starz-progress-fill{ height:100%; border-radius:999px; background:hsl(var(--primary)); }
+.starz-buffered{
+  position:absolute;
+  left:0;
+  top:0;
+  height:100%;
+  background:rgba(255,255,255,.45);
+  border-radius:999px;
+  pointer-events:none;
+  z-index:1;
+  transition:width .2s linear;
+}
+.starz-progress-fill{
+  position:absolute;
+  left:0;
+  top:0;
+  height:100%;
+  border-radius:999px;
+  background:hsl(var(--primary));
+  z-index:2;
+  pointer-events:none;
+}
 .starz-thumb{
   position:absolute;
   top:50%;
@@ -248,7 +269,10 @@
   background:white;
   border-radius:50%;
   box-shadow:0 0 8px rgba(0,0,0,.5);
+  z-index:3;
+  pointer-events:none;
 }
+
 .starz-time-out{
   color:white;
   font-size:10px;
@@ -505,3 +529,5 @@ html:has(.connect-root.is-shell-full),
 body:has(.connect-root.is-shell-full) {
   overflow: hidden !important;
 }
+
+
