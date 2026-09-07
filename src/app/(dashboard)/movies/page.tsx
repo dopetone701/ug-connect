@@ -104,7 +104,7 @@ export default function MoviesPage(){
     setTimeout(()=> setJustAdded(false), 1200);
   },[m, lists, createList, store, isInMyList]);
 
-  const handleShare = useCallback(async ()=>{
+  const handleShare = useCallback(async ()=>{  
     if(!m) return;
     const url = `${window.location.origin}/movies/watch/${m.id}?t=${anchor}`;
     if((navigator as any).share){
