@@ -1,4 +1,6 @@
 "use client";
+import { useRouter } from "next/navigation";
+
 import { useEffect, useState, useCallback, useRef, useMemo } from "react";
 import "./movies.css";
 import "./latest-movies.css";
@@ -37,6 +39,8 @@ export default function MoviesPage(){
   const pauseRef = useRef<number>(0);
   const { favIds, recentIds, lists, createList } = useMovieStore() as any;
   const store = useMovieStore() as any;
+  const router = useRouter();
+
 
   useEffect(()=>{
     async function load(){
@@ -110,13 +114,13 @@ export default function MoviesPage(){
     }
   },[m, anchor]);
 
-  const handlePlay = useCallback(()=>{
+   const handlePlay = useCallback(()=>{
     if(!m) return;
     setClicking(true);
     setTimeout(()=>setClicking(false),420);
-    if(anchor==="full"){ if(m.video) window.open(m.video, "_blank"); }
-    else { if(m.preview?.[0]) window.open(m.preview[0], "_blank"); }
-  },[m, anchor]);
+    router.push(`/movies/watch/${m.id}?t=${anchor}`);
+  },[m, anchor, router]);
+
 
   const sections = useMemo(() => getSections(allMovies, { favIds, recentIds }), [allMovies, favIds, recentIds]);
 
