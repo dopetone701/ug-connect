@@ -8,7 +8,6 @@ import "./connect-player.css"
 import { useMovieStore } from "../../_lib/use-movie-store"
 import SimilarMovies from "./similar-movies"
 
-
 const API_URL = "https://movie-server-api.connectu89.workers.dev/api/movies"
 
 export default function WatchPage(){
@@ -29,7 +28,6 @@ export default function WatchPage(){
   const volRef = useRef<HTMLDivElement>(null)
   const lastTimeRef = useRef(0)
 
-
   const [playing, setPlaying] = useState(false)
   const [progress, setProgress] = useState(0)
   const [duration, setDuration] = useState(0)
@@ -43,7 +41,6 @@ export default function WatchPage(){
   const [isDraggingVol, setIsDraggingVol] = useState(false)
    const [showQualityMenu, setShowQualityMenu] = useState(false)
   const [quality, setQuality] = useState("auto")
-
 
   useEffect(()=>{
     fetch(API_URL, { cache:"no-store" }).then(r=>r.json()).then(d=> setMovie(d.find((m:any)=> String(m.id)===String(params.id))))
@@ -93,26 +90,26 @@ export default function WatchPage(){
 
   if(!movie) return <div className="film-root"><div className="film-giant inner-body" style={{display:"flex",alignItems:"center",justifyContent:"center",background:"#000",color:"#fff"}}>Loading connect...</div></div>
 
- // QUALITY - supports 4K beyond 1080
-  // QUALITY - FIXED - no duplicate URLs, no stretch, keeps time
-  const rawSources = [
-    { label: "Auto", value: "auto", url: isPreview? movie.preview_urls?.[0] : movie.video_url },
-    { label: "4K • 2160p", value: "2160", url: movie.video_url_4k || movie.video_url_2160 || movie.qualities?.["2160"] || movie.qualities?.["4k"] },
-    { label: "2K • 1440p", value: "1440", url: movie.video_url_1440 || movie.qualities?.["1440"] },
-    { label: "1080p", value: "1080", url: movie.video_url_1080 || movie.qualities?.["1080"] },
-    { label: "720p", value: "720", url: movie.video_url_720 || movie.qualities?.["720"] },
-    { label: "480p", value: "480", url: movie.video_url_480 || movie.qualities?.["480"] },
-  ].filter(q=>!!q.url)
+ // QUALITY - FIXED FOR MOBILE FALLBACK
+  const isMobile = typeof navigator!== 'undefined' && /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
 
-  // if you only have 1 mp4, show only Auto + 1080 to avoid fake options
-  const qualitySources = rawSources.length === 1? rawSources : [
-    rawSources[0],
-   ...rawSources.slice(1),
-    { label: "Original", value: "orig", url: isPreview? movie.preview_urls?.[0] : movie.video_url }
-  ].filter((v,i,a)=> a.findIndex(x=>x.url===v.url)===i)
+  const rawSources = [
+    { label: "Auto", value: "auto", url: isPreview? movie.preview_urls?.[0] : (movie.video_url_720 || movie.video_url_1080 || movie.video_url), mobileAllowed: true },
+    { label: "4K • 2160p", value: "2160", url: movie.video_url_4k || movie.video_url_2160 || movie.qualities?.["2160"] || movie.qualities?.["4k"], mobileAllowed: false },
+    { label: "2K • 1440p", value: "1440", url: movie.video_url_1440 || movie.qualities?.["1440"], mobileAllowed: false },
+    { label: "1080p", value: "1080", url: movie.video_url_1080 || movie.qualities?.["1080"], mobileAllowed: true },
+    { label: "720p", value: "720", url: movie.video_url_720 || movie.qualities?.["720"], mobileAllowed: true },
+    { label: "480p", value: "480", url: movie.video_url_480 || movie.qualities?.["480"], mobileAllowed: true },
+  ].filter(q=>!!q.url).filter(q=>{
+    if(isMobile && q.mobileAllowed === false) return false
+    return true
+  })
+
+  // if you only have 1 mp4, show only Auto to avoid fake options
+  const qualitySources = rawSources.filter((v,i,a)=> a.findIndex(x=>x.url===v.url)===i)
 
   const currentQualityObj = qualitySources.find(q=>q.value===quality) || qualitySources[0]
-  const videoUrl = currentQualityObj.url
+  const videoUrl = currentQualityObj?.url
 
   const changeQuality = async (q:any) => {
     if(!videoRef.current) return
@@ -128,6 +125,14 @@ export default function WatchPage(){
     }, 80)
   }
 
+  const handleVideoError = () => {
+    if(isMobile && (quality === '2160' || quality === '1440')) {
+      const fallback = qualitySources.find(q=>q.value==='720') || qualitySources.find(q=>q.value==='1080') || qualitySources.find(q=>q.value==='480') || qualitySources[0]
+      if(fallback && fallback.url!== videoUrl) {
+        changeQuality(fallback)
+      }
+    }
+  }
 
   const togglePlay = () => {
     if(!videoRef.current) return
@@ -160,7 +165,6 @@ export default function WatchPage(){
     return `${m}:${String(s).padStart(2,'0')}`
   }
 
-
   const handleShare = async () => {
     const shareUrl = `${window.location.origin}${pathname}?t=full`
     if (navigator.share) {
@@ -186,6 +190,10 @@ export default function WatchPage(){
               src={videoUrl}
               poster={movie.cover_url}
               className="connect-video"
+              playsInline
+              preload="metadata"
+              crossOrigin="anonymous"
+              onError={handleVideoError}
               onTimeUpdate={(e)=>{
                 const v=e.currentTarget
                 setCurrentTime(v.currentTime)
@@ -198,7 +206,6 @@ export default function WatchPage(){
               }}
               onEnded={()=> setPlaying(false)}
               onClick={togglePlay}
-              playsInline
               loop={isPreview}
             />
             {!hasStarted &&!playing && <img src={movie.cover_url} alt={movie.title} className="connect-poster" />}
@@ -297,8 +304,6 @@ export default function WatchPage(){
 </svg>
                 </button>
 
-
-
                                <div className="settings-wrap">
                   <button className={`cc-icon settings-btn ${showQualityMenu? 'active':''}`} onClick={()=> setShowQualityMenu(!showQualityMenu)} title="Quality">
 <svg
@@ -312,7 +317,7 @@ export default function WatchPage(){
   strokeLinejoin="round"
 >
   <circle cx="12" cy="12" r="3" />
-  <path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.6v.1a2 2 0 1 1-4 0V21a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.6-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3h.1A1.7 1.7 0 0 0 10 3.1V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.6 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9v.1a1.7 1.7 0 0 0 1.6 1h.1a2 2 0 1 1 0 4H21a1.7 1.7 0 0 0-1.6 1.8Z" />
+  <path d="M19.4 15a1.7 1.7 0 0 0.3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.6v.1a2 2 0 1 1-4 0V21a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0.3-1.9 1.7 1.7 0 0 0-1.6-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3h.1A1.7 1.7 0 0 0 10 3.1V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.6 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9v.1a1.7 1.7 0 0 0 1.6 1h.1a2 2 0 1 1 0 4H21a1.7 1.7 0 0 0-1.6 1.8Z" />
 </svg>
                   </button>
                   {showQualityMenu && (
@@ -326,10 +331,6 @@ export default function WatchPage(){
                     </div>
                   )}
                 </div>
-
-
-
-
 
                 <button
                   className="cc-icon apple-full"
@@ -351,10 +352,10 @@ export default function WatchPage(){
                       console.error("Fullscreen toggle failed:", error);
                     }
                   }}
-                  title={isFullScreen ? "Exit fullscreen" : "Enter fullscreen"}
-                  aria-label={isFullScreen ? "Exit fullscreen" : "Enter fullscreen"}
+                  title={isFullScreen? "Exit fullscreen" : "Enter fullscreen"}
+                  aria-label={isFullScreen? "Exit fullscreen" : "Enter fullscreen"}
                 >
-                  {isFullScreen ? (
+                  {isFullScreen? (
   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
     <path d="M4 9h5V4" />
     <path d="M9 9L4 4" />
