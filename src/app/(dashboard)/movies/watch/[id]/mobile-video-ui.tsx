@@ -231,14 +231,15 @@ export default function MobileVideoUI({ movie }: any) {
        */
       try {
         const orientation = screen.orientation as ScreenOrientation & {
-          lock?: (
-            orientation: OrientationLockType
-          ) => Promise<void>
-        }
+  lock?: (
+    orientation: string
+  ) => Promise<void>
+}
 
-        if (orientation.lock) {
-          await orientation.lock("landscape")
-        }
+if (orientation.lock) {
+  await orientation.lock("landscape")
+}
+
       } catch {}
     }
 
