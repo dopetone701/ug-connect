@@ -18,9 +18,6 @@ export default function MobileVideoUI({ movie }: any) {
    *
    * MobilePreview owns preview playback.
    * MobileVideoUI owns full movie playback.
-   *
-   * This prevents preview_urls and video_url
-   * from fighting over the same global ref.
    */
   const videoRef = useRef<HTMLVideoElement>(null)
 
@@ -48,8 +45,7 @@ export default function MobileVideoUI({ movie }: any) {
    * ?t=full     = full movie mode
    * ?t=preview  = preview mode
    *
-   * The parent/page can therefore open this component
-   * from anywhere in the application.
+   * Normal URL = YouTube-style movie page.
    */
   useEffect(() => {
     const mode = searchParams.get("t")
@@ -64,12 +60,33 @@ export default function MobileVideoUI({ movie }: any) {
   /*
    * FULL MOVIE LOADING
    * -----------------------------------------
-   * video_url is ONLY used here.
+   * video_url is used ONLY when this component
+   * is not in preview mode.
    *
-   * MobilePreview never reaches this player.
+   * MobilePreview owns preview playback.
    */
   useEffect(() => {
+    const mode = searchParams.get("t")
     const video = videoRef.current
+
+    /*
+     * Preview mode belongs to MobilePreview.
+     * Never load the full movie here.
+     */
+    if (mode === "preview") {
+      if (video) {
+        try {
+          video.pause()
+          video.removeAttribute("src")
+          video.load()
+        } catch {}
+      }
+
+      setPlaying(false)
+      setProgress(0)
+
+      return
+    }
 
     if (!video || !movie?.video_url) return
 
@@ -143,7 +160,13 @@ export default function MobileVideoUI({ movie }: any) {
         video.pause()
       } catch {}
     }
-  }, [movie?.id, movie?.video_url])
+  }, [
+    movie?.id,
+    movie?.video_url,
+    searchParams,
+    isMuted,
+    volume,
+  ])
 
   /*
    * FULLSCREEN / LANDSCAPE SHELL
@@ -152,13 +175,13 @@ export default function MobileVideoUI({ movie }: any) {
    *
    * - hide app navigation
    * - lock body scrolling
-   * - lock orientation to landscape
+   * - attempt landscape orientation
    *
    * When leaving full:
    *
    * - restore navigation
    * - restore body
-   * - unlock orientation
+   * - attempt orientation unlock
    */
   useEffect(() => {
     const shellEls = document.querySelectorAll(
@@ -177,14 +200,17 @@ export default function MobileVideoUI({ movie }: any) {
         element.style.pointerEvents = ""
       })
 
+      /*
+       * TypeScript's current ScreenOrientation
+       * definition may not expose unlock().
+       */
       try {
-  const orientation = screen.orientation as ScreenOrientation & {
-    unlock?: () => void
-  }
+        const orientation = screen.orientation as ScreenOrientation & {
+          unlock?: () => void
+        }
 
-  orientation.unlock?.()
-} catch {}
-
+        orientation.unlock?.()
+      } catch {}
     }
 
     const hideShell = async () => {
@@ -199,20 +225,21 @@ export default function MobileVideoUI({ movie }: any) {
       /*
        * Try the native orientation API.
        *
-       * iOS Safari may reject this depending on the
-       * browser/PWA environment, so it must never break
-       * the player if it fails.
+       * Some browsers, especially iOS Safari,
+       * may reject this. It must never break
+       * the player.
        */
       try {
-  const orientation = screen.orientation as ScreenOrientation & {
-    lock?: (orientation: OrientationLockType) => Promise<void>
-  }
+        const orientation = screen.orientation as ScreenOrientation & {
+          lock?: (
+            orientation: OrientationLockType
+          ) => Promise<void>
+        }
 
-  if (orientation.lock) {
-    await orientation.lock("landscape")
-  }
-} catch {}
-
+        if (orientation.lock) {
+          await orientation.lock("landscape")
+        }
+      } catch {}
     }
 
     if (isFull) {
@@ -283,7 +310,12 @@ export default function MobileVideoUI({ movie }: any) {
       const pct =
         (video.currentTime / video.duration) * 100
 
-      setProgress(Math.max(0, Math.min(100, pct)))
+      setProgress(
+        Math.max(
+          0,
+          Math.min(100, pct)
+        )
+      )
     }
   }
 
@@ -301,22 +333,27 @@ export default function MobileVideoUI({ movie }: any) {
 
     if (!touch) return
 
-    const x = touch.clientX - rect.left
+    const x =
+      touch.clientX - rect.left
 
     /*
      * Left 45% of player = volume gesture.
      */
     if (x < rect.width * 0.45) {
-      touchStartY.current = touch.clientY
+      touchStartY.current =
+        touch.clientY
 
-      touchStartVol.current = isMuted
-        ? 0
-        : volume
+      touchStartVol.current =
+        isMuted
+          ? 0
+          : volume
 
       setShowVol(true)
 
       if (volTimeout.current) {
-        clearTimeout(volTimeout.current)
+        clearTimeout(
+          volTimeout.current
+        )
       }
     }
   }
@@ -333,7 +370,8 @@ export default function MobileVideoUI({ movie }: any) {
 
     if (!touch) return
 
-    const x = touch.clientX - rect.left
+    const x =
+      touch.clientX - rect.left
 
     if (
       x < rect.width * 0.45 &&
@@ -346,29 +384,38 @@ export default function MobileVideoUI({ movie }: any) {
       const delta =
         dy / rect.height
 
-      const newVol = Math.max(
-        0,
-        Math.min(
-          1,
-          touchStartVol.current + delta
+      const newVol =
+        Math.max(
+          0,
+          Math.min(
+            1,
+            touchStartVol.current +
+              delta
+          )
         )
-      )
 
       setVolume(newVol)
 
       setVolPct(
-        Math.round(newVol * 100)
+        Math.round(
+          newVol * 100
+        )
       )
 
-      setIsMuted(newVol === 0)
+      setIsMuted(
+        newVol === 0
+      )
 
       if (volTimeout.current) {
-        clearTimeout(volTimeout.current)
+        clearTimeout(
+          volTimeout.current
+        )
       }
 
-      volTimeout.current = setTimeout(() => {
-        setShowVol(false)
-      }, 1200)
+      volTimeout.current =
+        setTimeout(() => {
+          setShowVol(false)
+        }, 1200)
     }
   }
 
@@ -379,27 +426,36 @@ export default function MobileVideoUI({ movie }: any) {
     if (!showVol) return
 
     if (volTimeout.current) {
-      clearTimeout(volTimeout.current)
+      clearTimeout(
+        volTimeout.current
+      )
     }
 
-    volTimeout.current = setTimeout(() => {
-      setShowVol(false)
-    }, 1000)
+    volTimeout.current =
+      setTimeout(() => {
+        setShowVol(false)
+      }, 1000)
   }
 
   /*
    * MUTE
    */
-  const toggleMute = (e: React.MouseEvent) => {
+  const toggleMute = (
+    e: React.MouseEvent
+  ) => {
     e.stopPropagation()
 
-    if (isMuted || volume === 0) {
+    if (
+      isMuted ||
+      volume === 0
+    ) {
       const restored =
         volPct > 0
           ? volPct / 100
           : 0.5
 
       setVolume(restored)
+
       setVolPct(
         volPct > 0
           ? volPct
@@ -414,20 +470,25 @@ export default function MobileVideoUI({ movie }: any) {
     setShowVol(true)
 
     if (volTimeout.current) {
-      clearTimeout(volTimeout.current)
+      clearTimeout(
+        volTimeout.current
+      )
     }
 
-    volTimeout.current = setTimeout(() => {
-      setShowVol(false)
-    }, 1000)
+    volTimeout.current =
+      setTimeout(() => {
+        setShowVol(false)
+      }, 1000)
   }
 
   /*
    * ENTER FULL MODE
    *
-   * We update the URL rather than only changing local
-   * state. This means the full player can be opened from
-   * any page and the URL remains shareable/direct.
+   * Normal movie page:
+   * /movies/watch/ID
+   *
+   * Full movie mode:
+   * /movies/watch/ID?t=full
    */
   const enterFull = (
     e: React.MouseEvent
@@ -444,10 +505,8 @@ export default function MobileVideoUI({ movie }: any) {
   /*
    * EXIT FULL MODE
    *
-   * We return to the normal movie page.
-   *
-   * If you have a specific previous route,
-   * replace this with router.back().
+   * Return to the normal YouTube-style
+   * movie page.
    */
   const exitFull = (
     e?: React.MouseEvent
@@ -456,13 +515,10 @@ export default function MobileVideoUI({ movie }: any) {
 
     setIsFull(false)
 
-    const video = videoRef.current
+    const video =
+      videoRef.current
 
     if (video) {
-      /*
-       * Keep playback state predictable when leaving
-       * landscape mode.
-       */
       video.pause()
       setPlaying(false)
     }
@@ -485,13 +541,19 @@ export default function MobileVideoUI({ movie }: any) {
   ) => {
     e?.stopPropagation()
 
-    const video = videoRef.current
+    const video =
+      videoRef.current
 
     if (video) {
-      video.pause()
+      try {
+        video.pause()
+        video.removeAttribute("src")
+        video.load()
+      } catch {}
     }
 
     setPlaying(false)
+    setProgress(0)
 
     router.push(
       `/movies/watch/${movie.id}?t=preview`
@@ -506,7 +568,8 @@ export default function MobileVideoUI({ movie }: any) {
   ) => {
     e.stopPropagation()
 
-    const url = window.location.href
+    const url =
+      window.location.href
 
     try {
       if (
@@ -519,7 +582,9 @@ export default function MobileVideoUI({ movie }: any) {
       } else if (
         navigator.clipboard
       ) {
-        await navigator.clipboard.writeText(url)
+        await navigator.clipboard.writeText(
+          url
+        )
       }
     } catch {
       /*
@@ -529,6 +594,22 @@ export default function MobileVideoUI({ movie }: any) {
   }
 
   if (!movie) {
+    return null
+  }
+
+  /*
+   * Preview mode:
+   *
+   * MobilePreview should handle the actual
+   * preview UI/player.
+   *
+   * This component must never load video_url
+   * while ?t=preview is active.
+   */
+  const isPreview =
+    searchParams.get("t") === "preview"
+
+  if (isPreview) {
     return null
   }
 
@@ -581,7 +662,10 @@ export default function MobileVideoUI({ movie }: any) {
 
         <video
           ref={videoRef}
-          src={movie.video_url || undefined}
+          src={
+            movie.video_url ||
+            undefined
+          }
           poster={
             movie.cover_url ||
             movie.cover ||
@@ -592,7 +676,9 @@ export default function MobileVideoUI({ movie }: any) {
           controls={false}
           preload="auto"
           className="mob-full-video"
-          onTimeUpdate={onTimeUpdate}
+          onTimeUpdate={
+            onTimeUpdate
+          }
           onPlay={() => {
             setPlaying(true)
           }}
@@ -652,7 +738,9 @@ export default function MobileVideoUI({ movie }: any) {
             {/* MUTE */}
             <button
               className="mob-yt-icon"
-              onClick={toggleMute}
+              onClick={
+                toggleMute
+              }
               aria-label={
                 isMuted
                   ? "Unmute"
@@ -696,7 +784,7 @@ export default function MobileVideoUI({ movie }: any) {
                   strokeLinecap="round"
                   strokeLinejoin="round"
                 >
-                  <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+                  <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 11 19 11 5" />
                   <path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
                 </svg>
               )}
@@ -705,7 +793,9 @@ export default function MobileVideoUI({ movie }: any) {
             {/* FULLSCREEN */}
             <button
               className="mob-yt-icon"
-              onClick={enterFull}
+              onClick={
+                enterFull
+              }
               aria-label="Full screen"
             >
               <svg
@@ -721,7 +811,7 @@ export default function MobileVideoUI({ movie }: any) {
                 <path d="M8 3H5a2 2 0 0 0-2 2v3" />
                 <path d="M21 8V5a2 2 0 0 0-2-2h-3" />
                 <path d="M3 16v3a2 2 0 0 0 2 2h3" />
-                <path d="M16 21h3a2 2 0 0 0 2-2v-3" />
+                <path d="M16 21h3a2 2 0 0 0 2-2h-3" />
               </svg>
             </button>
 
@@ -799,7 +889,9 @@ export default function MobileVideoUI({ movie }: any) {
         <div className="mob-yt-actions-under">
 
           <button
-            onClick={openPreview}
+            onClick={
+              openPreview
+            }
             className="btn-preview"
           >
             ▶ Play Preview
@@ -807,7 +899,9 @@ export default function MobileVideoUI({ movie }: any) {
 
           <button
             className="btn-share"
-            onClick={shareMovie}
+            onClick={
+              shareMovie
+            }
           >
             Share
           </button>
@@ -831,7 +925,9 @@ export default function MobileVideoUI({ movie }: any) {
         <div className="mob-full-btns">
 
           <button
-            onClick={openPreview}
+            onClick={
+              openPreview
+            }
             className="btn-preview"
           >
             ▶ Play Preview
@@ -839,7 +935,9 @@ export default function MobileVideoUI({ movie }: any) {
 
           <button
             className="btn-share"
-            onClick={shareMovie}
+            onClick={
+              shareMovie
+            }
           >
             Share
           </button>
