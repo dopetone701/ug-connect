@@ -178,10 +178,13 @@ export default function MobileVideoUI({ movie }: any) {
       })
 
       try {
-        if (screen.orientation?.unlock) {
-          screen.orientation.unlock()
-        }
-      } catch {}
+  const orientation = screen.orientation as ScreenOrientation & {
+    unlock?: () => void
+  }
+
+  orientation.unlock?.()
+} catch {}
+
     }
 
     const hideShell = async () => {
@@ -201,10 +204,15 @@ export default function MobileVideoUI({ movie }: any) {
        * the player if it fails.
        */
       try {
-        if (screen.orientation?.lock) {
-          await screen.orientation.lock("landscape")
-        }
-      } catch {}
+  const orientation = screen.orientation as ScreenOrientation & {
+    lock?: (orientation: OrientationLockType) => Promise<void>
+  }
+
+  if (orientation.lock) {
+    await orientation.lock("landscape")
+  }
+} catch {}
+
     }
 
     if (isFull) {
