@@ -1,0 +1,61 @@
+/* src/components/media/skins/skins.css */
+.skin-wrapper {
+  position: relative;
+  width: 100%;
+  background: #000;
+  overflow: hidden;
+  border-radius: 12px;
+}
+
+.skin-wrapper--standard {
+  aspect-ratio: 16/9;
+}
+
+.skin-wrapper--vertical {
+  aspect-ratio: 9/16;
+  max-height: 100dvh;
+  border-radius: 16px;
+}
+
+.skin-wrapper--mini {
+  width: 100%;
+  height: 100%;
+  border-radius: 12px;
+}
+
+.skin-wrapper--living-room {
+  aspect-ratio: 16/9;
+  border-radius: 0;
+}
+
+.skin-viewport {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+/* the real video from core-engine gets teleported visually via CSS */
+.skin-viewport video {
+  width: 100%!important;
+  height: 100%!important;
+  object-fit: contain;
+}
+
+.skin-wrapper--vertical .skin-viewport video {
+  object-fit: cover;
+}
+
+.skin-controls {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 40%, transparent 100%);
+  padding: 12px;
+}
+
+.skin-controls--vertical {
+  background: linear-gradient(to top, rgba(0,0,0,0.6) 0%, transparent 30%, rgba(0,0,0,0.3) 100%);
+}

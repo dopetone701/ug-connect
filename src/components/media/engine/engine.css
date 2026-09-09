@@ -1,0 +1,57 @@
+/* src/components/media/engine/engine.css */
+.core-engine {
+  width: 100%;
+  height: 100%;
+  background: #000;
+  object-fit: contain;
+  display: block;
+}
+
+.core-engine--hidden {
+  display: none!important;
+  width: 0!important;
+  height: 0!important;
+  position: fixed;
+  top: -9999px;
+}
+
+/* when teleported, it fills its skin-viewport */
+.skin-viewport video {
+  width: 100%!important;
+  height: 100%!important;
+  object-fit: contain;
+  display: block!important;
+}
+
+.skin-viewport--vertical video,
+#skin-viewport-vertical video {
+  object-fit: cover!important;
+}
+
+/* mini mode wrapper */
+.mini-container-fixed {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 360px;
+  height: 202px;
+  z-index: 9999;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.1);
+  background: #000;
+  transition: all 0.35s cubic-bezier(0.4,0,0.2,1);
+}
+
+@media (max-width: 768px) {
+ .mini-container-fixed {
+    width: 196px;
+    height: 110px;
+    bottom: 84px; /* above your bottom-bar.tsx */
+    right: 12px;
+  }
+}
+
+.mini-container-fixed:hover {
+  transform: scale(1.03);
+}

@@ -1,0 +1,16 @@
+/* src/components/media/desktop/desktop.css */
+.desktop-shell {
+  width: 100%;
+  max-width: 1280px;
+  margin: 0 auto;
+  background: #000;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+}
+
+@media (max-width: 768px) {
+ .desktop-shell {
+    border-radius: 0;
+  }
+}

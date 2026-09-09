@@ -1,0 +1,9 @@
+/* src/components/media/mini/mini.css */
+.mini-player {
+  cursor: pointer;
+}
+
+.mini-container-fixed.skin-wrapper {
+  width: 100%;
+  height: 100%;
+}
