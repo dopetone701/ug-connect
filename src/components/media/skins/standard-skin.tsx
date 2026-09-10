@@ -1,6 +1,6 @@
 "use client"
 
-export default function StandardSkin({ movie, videoRef, playing, showPlay, progress, volPct, isMuted, showVol, onTogglePlay, onTimeUpdate, onTouchStart, onTouchMove, onTouchEnd, onToggleMute, onExitFull, onOpenPreview, onShare }: any) {
+export function StandardSkin({ movie, videoRef, playing, showPlay, progress, volPct, isMuted, showVol, onTogglePlay, onTimeUpdate, onTouchStart, onTouchMove, onTouchEnd, onToggleMute, onExitFull, onOpenPreview, onShare }: any) {
 
   if (!movie) return null
 
@@ -15,7 +15,7 @@ export default function StandardSkin({ movie, videoRef, playing, showPlay, progr
         </svg>
       </button>
 
-      {/* 
+      {/*
           VIDEO WRAP - FIXED OVERLAY
           ALL ACTIONS WRAPPED TOGETHER
           This is the only overlay, everything else is in vertical-skin
@@ -88,3 +88,5 @@ export default function StandardSkin({ movie, videoRef, playing, showPlay, progr
     </div>
   )
 }
+
+export default StandardSkin;

@@ -3,7 +3,7 @@
 import { useState } from "react"
 import SimilarMovies from "../../../app/(dashboard)/movies/watch/[id]/similar-movies"
 
-export default function VerticalSkin({ movie, videoRef, playing, showPlay, progress, volPct, isMuted, showVol, onTogglePlay, onTimeUpdate, onTouchStart, onTouchMove, onTouchEnd, onToggleMute, onEnterFull, onOpenPreview, onShare }: any) {
+export function VerticalSkin({ movie, videoRef, playing, showPlay, progress, volPct, isMuted, showVol, onTogglePlay, onTimeUpdate, onTouchStart, onTouchMove, onTouchEnd, onToggleMute, onEnterFull, onOpenPreview, onShare }: any) {
   const [descOpen, setDescOpen] = useState(false)
 
   if (!movie) return null
@@ -89,3 +89,5 @@ export default function VerticalSkin({ movie, videoRef, playing, showPlay, progr
     </div>
   )
 }
+
+export default VerticalSkin;
