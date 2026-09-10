@@ -122,3 +122,13 @@
   display:flex; align-items:center; gap:8px; padding:0 12px; z-index:101;
   flex-shrink:0; /* <-- ADD - never let it shrink */
 }
+
+
+/* If you use <img> for cover/poster */
+.mob-cover-img,
+.mob-full-video[poster]{
+  width:100%!important;
+  height:100%!important;
+  object-fit:cover!important;
+  object-position:center!important;
+}
