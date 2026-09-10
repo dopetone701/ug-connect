@@ -199,6 +199,8 @@
 .mode-youtube .mob-full-video{
   width:100%;
   height:100%;
-  object-fit:contain!important;
-  object-position:center!important;
+  object-fit:cover;
+  object-position:center;
 }
+
+
