@@ -22,9 +22,7 @@
 .mob-full-video{
   width:100%;
   height:100%;
-  object-fit:contain!important;
-  object-position:center center!important;
-  background:#000;
+  object-fit:cover;
 }
 
 /* X TOP RIGHT - DNA */
@@ -110,97 +108,3 @@
 .mob-desc-more{
   display:inline-flex; align-items:center; gap:2px; background:none; border:none; color:hsl(var(--text-muted)); font-size:13px; font-weight:600; margin-top:6px; cursor:pointer
 }
-
-/* PRO SMOOTH ANIMATION - KEEP ROTATED LANDSCAPE */
-.mob-full-video-wrap{
-  transition: all 0.45s cubic-bezier(0.32, 0.72, 0, 1);
-  will-change: transform, width, height;
-}
-
-.mode-youtube .mob-full-video-wrap{
-  animation: toYoutube 0.45s cubic-bezier(0.32, 0.72, 0, 1) forwards;
-}
-
-.mode-landscape .mob-full-video-wrap{
-  animation: toLandscape 0.45s cubic-bezier(0.32, 0.72, 0, 1) forwards;
-}
-
-@keyframes toLandscape {
-  0% {
-    transform: translate(-50%, -50%) rotate(0deg) scale(0.92);
-    width: 100%;
-    height: auto;
-    border-radius: 12px;
-  }
-  100% {
-    transform: translate(-50%, -50%) rotate(90deg) scale(1);
-    width: 100dvh;
-    height: 100vw;
-    border-radius: 0;
-  }
-}
-
-@keyframes toYoutube {
-  0% {
-    transform: translate(-50%, -50%) rotate(90deg) scale(1.08);
-    width: 100dvh;
-    height: 100vw;
-  }
-  100% {
-    transform: translate(0, 0) rotate(0deg) scale(1);
-    width: 100%;
-    height: auto;
-  }
-}
-
-/* FADE BODY & BUTTONS */
-.mob-full-body, .mob-yt-actions-under, .mob-full-btns{
-  transition: opacity 0.3s ease, transform 0.3s ease;
-}
-.mode-landscape .mob-full-body,
-.mode-landscape .mob-yt-actions-under{
-  opacity: 0;
-  transform: translateY(16px);
-  pointer-events: none;
-}
-.mode-youtube .mob-full-btns{
-  opacity: 0;
-  pointer-events: none;
-}
-
-/* APPLE ICON POP */
-.apple-play-pure{
-  animation: applePop 0.35s cubic-bezier(0.32, 0.72, 0, 1);
-}
-@keyframes applePop{
-  0%{ transform: translate(-50%,-50%) scale(0.5); opacity:0; }
-  100%{ transform: translate(-50%,-50%) scale(1); opacity:1; }
-}
-
-
-
-/* PORTRAIT - PRECISE FULL WIDTH FIT */
-.mode-youtube .mob-full-video-wrap{
-  position:relative;
-  width:100vw;
-  left:50%;
-  right:50%;
-  margin-left:-50vw;
-  margin-right:-50vw;
-  height:auto;
-  aspect-ratio:16/9;
-  top:0;
-  transform:none;
-  background:#000;
-  overflow:hidden;
-  border-radius:0;
-}
-
-.mode-youtube .mob-full-video{
-  width:100%;
-  height:100%;
-  object-fit:cover;
-  object-position:center;
-}
-
-
