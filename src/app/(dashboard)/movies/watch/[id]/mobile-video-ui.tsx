@@ -10,6 +10,7 @@ export default function MobileVideoUI({ movie }: any) {
   const searchParams = useSearchParams()
 
   const videoRef = useRef<HTMLVideoElement>(null)
+  const rootRef = useRef<HTMLDivElement>(null)
   const hasLoadedSrc = useRef<string | null>(null)
 
   const [isFull, setIsFull] = useState(false)
@@ -21,6 +22,7 @@ export default function MobileVideoUI({ movie }: any) {
   const [showVol, setShowVol] = useState(false)
   const [volPct, setVolPct] = useState(100)
   const [descOpen, setDescOpen] = useState(false)
+  const [isAnimating, setIsAnimating] = useState(false)
 
   const touchStartY = useRef(0)
   const touchStartVol = useRef(1)
@@ -30,6 +32,15 @@ export default function MobileVideoUI({ movie }: any) {
   useEffect(() => {
     setIsFull(searchParams.get("t") === "full")
   }, [searchParams])
+
+  // FIX: always in viewport, never under nav on reload
+  useEffect(() => {
+    if ('scrollRestoration' in history) {
+      history.scrollRestoration = 'manual'
+    }
+    window.scrollTo(0, 0)
+    rootRef.current?.scrollIntoView({ block: 'start' } as any)
+  }, [movie?.id, isFull])
 
   // LOAD ONCE
   useEffect(() => {
@@ -89,24 +100,21 @@ export default function MobileVideoUI({ movie }: any) {
     setShowVol(true)
   }
 
-  // add isAnimating state
-const [isAnimating, setIsAnimating] = useState(false)
+  const enterFull = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    setIsAnimating(true)
+    setTimeout(() => {
+      router.replace(`/movies/watch/${movie.id}?t=full`, {scroll:false} as any)
+      setTimeout(() => setIsAnimating(false), 460)
+    }, 10)
+  }
 
-const enterFull = (e: React.MouseEvent) => {
-  e.stopPropagation()
-  setIsAnimating(true)
-  setTimeout(() => {
-    router.replace(`/movies/watch/${movie.id}?t=full`, {scroll:false} as any)
+  const exitFull = (e?: React.MouseEvent) => {
+    e?.stopPropagation()
+    setIsAnimating(true)
+    router.replace(`/movies/watch/${movie.id}`, {scroll:false} as any)
     setTimeout(() => setIsAnimating(false), 460)
-  }, 10)
-}
-
-const exitFull = (e?: React.MouseEvent) => {
-  e?.stopPropagation()
-  setIsAnimating(true)
-  router.replace(`/movies/watch/${movie.id}`, {scroll:false} as any)
-  setTimeout(() => setIsAnimating(false), 460)
-}
+  }
 
   const openPreview = (e?: React.MouseEvent) => { e?.stopPropagation(); router.push(`/movies/watch/${movie.id}?t=preview`) }
   const shareMovie = async (e: React.MouseEvent) => {
@@ -118,7 +126,7 @@ const exitFull = (e?: React.MouseEvent) => {
   if (searchParams.get("t") === "preview") return null
 
   return (
-    <div className={["mob-full-root", isFull? "mode-landscape" : "mode-youtube"].join(" ")}>
+    <div ref={rootRef} className={["mob-full-root", isFull? "mode-landscape" : "mode-youtube", isAnimating? "is-animating" : ""].join(" ")}>
 
       {/* SINGLE VIDEO - NEVER UNMOUNTS - ALL ACTIONS WRAPPED HERE */}
       <div className="mob-full-video-wrap" onClick={togglePlay} onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}>
@@ -136,32 +144,23 @@ const exitFull = (e?: React.MouseEvent) => {
         )}
 
         {showPlay && (
-  <div className="apple-play-pure">
-    {!playing ? (
-      <svg
-        viewBox="0 0 24 24"
-        width="64"
-        height="64"
-        fill="white"
-        style={{ filter: "drop-shadow(0 2px 8px rgba(0,0,0,.6))" }}
-      >
-        <path d="M8 5.2a1 1 0 0 0-1 1v11.6a1 1 0 0 0 1.54.84l8.9-5.8a1 1 0 0 0 0-1.68l-8.9-5.8a1 1 0 0 0-.54-.16Z" />
-      </svg>
-    ) : (
-      <svg
-        viewBox="0 0 24 24"
-        width="64"
-        height="64"
-        fill="white"
-        style={{ filter: "drop-shadow(0 2px 8px rgba(0,0,0,.6))" }}
-      >
-        <rect x="7" y="5" width="3.5" height="14" rx="1" />
-        <rect x="13.5" y="5" width="3.5" height="14" rx="1" />
-      </svg>
-    )}
-  </div>
-)}
+          <div className="apple-play-pure">
+            {!playing? (
+              <svg viewBox="0 0 24 24" width="64" height="64" fill="white" style={{ filter: "drop-shadow(0 2px 8px rgba(0,0,0,.6))" }}>
+                <path d="M8 5.2a1 1 0 0 0-1 1v11.6a1 1 0 0 0 1.54.84l8.9-5.8a1 1 0 0 0 0-1.68l-8.9-5.8a1 1 0 0 0-.54-.16Z" />
+              </svg>
+            ) : (
+              <svg viewBox="0 0 24 24" width="64" height="64" fill="white" style={{ filter: "drop-shadow(0 2px 8px rgba(0,0,0,.6))" }}>
+                <rect x="7" y="5" width="3.5" height="14" rx="1" />
+                <rect x="13.5" y="5" width="3.5" height="14" rx="1" />
+              </svg>
+            )}
+          </div>
+        )}
 
+        <div className="mob-progress-track">
+          <div className="mob-progress-fill" style={{ width: `${progress}%` }} />
+        </div>
 
         {isFull && (
           <div className="mob-full-btns">

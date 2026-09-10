@@ -2,15 +2,13 @@
 import { useRef, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Movie } from "../_lib/types"
-import { usesingleplayer } from "./single-player"
 import MovieCard from "./movie-card"
 import "../latest-movies.css"
 
-export default function movierow({ title, movies }: { title: string; movies: Movie[] }) {
+export default function MovieRow({ title, movies }: { title: string; movies: Movie[] }) {
   const ref = useRef<HTMLDivElement>(null)
   const isDraggingRef = useRef(false)
   const router = useRouter()
-  const { playmovie } = usesingleplayer()
 
   useEffect(() => {
     const container = ref.current
@@ -99,19 +97,19 @@ export default function movierow({ title, movies }: { title: string; movies: Mov
     <div className="latest-root">
       <div className="latest-head">
         <h3 className="latest-title">{title}</h3>
-        <button className="latest-see" onClick={()=> location.hash="#/movies"}>SEE ALL</button>
+        <button className="latest-see" onClick={()=> router.push("/movies")}>SEE ALL</button>
       </div>
       <div className="latest-track-wrap">
         <div ref={ref} className="latest-track">
           {movies.map(m => (
             <div
               key={m.id}
-              onClick={()=>{
-                if(isDraggingRef.current) return
-                // disarm current + load clicked
-                playmovie(m)
-                router.push(`/movies/watch/${m.id}?t=full`)
-              }}
+              // before: router.push(`/movies/watch/${m.id}?t=full`)
+onClick={()=>{
+  if(isDraggingRef.current) return
+  router.push(`/movies/watch/${m.id}`) // yt page
+}}
+
             >
               <MovieCard m={m} />
             </div>

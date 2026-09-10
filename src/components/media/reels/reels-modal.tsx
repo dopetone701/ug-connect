@@ -1,6 +1,10 @@
 'use client'
-export function ReelsModal({ current, onWatchFull }: any) {
+import { useRouter } from "next/navigation"
+
+export function ReelsModal({ current }: any) {
+  const router = useRouter()
   if(!current) return null
+
   return (
     <div className="reel-info">
       <h3>{current.title}</h3>
@@ -9,7 +13,13 @@ export function ReelsModal({ current, onWatchFull }: any) {
         {current.genre && <span style={{ background:"hsl(var(--surface))", border:"1px solid hsl(var(--border))", color:"hsl(var(--text))"}}>{current.genre}</span>}
         {current.vj && <span style={{ background:"hsl(var(--surface))", border:"1px solid hsl(var(--border))", color:"hsl(var(--text))"}}>{current.vj}</span>}
       </div>
-      <button className="reel-watch-full" style={{ background:"hsl(var(--primary))", color:"hsl(var(--primary-text))"}} onClick={onWatchFull}>▶ Watch Full Movie</button>
+      <button 
+        className="reel-watch-full" 
+        style={{ background:"hsl(var(--primary))", color:"hsl(var(--primary-text))"}} 
+        onClick={() => router.push(`/movies/watch/${current.id}?t=full`)}
+      >
+        ▶ Watch Full Movie
+      </button>
     </div>
   )
 }
