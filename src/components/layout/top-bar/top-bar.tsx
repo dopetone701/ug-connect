@@ -12,7 +12,8 @@ export default function TopBar() {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [collapsed, setCollapsed] = useState(false);
-  const [waOpen, setWaOpen] = useState(false);
+const [waOpen, setWaOpen] = useState(false);
+const [drawerMode, setDrawerMode] = useState<"menu" | "search">("menu");
 
   const isAllMoviesPage = pathname?.startsWith("/movies") || pathname?.startsWith("/all-movies");
 
@@ -95,7 +96,14 @@ export default function TopBar() {
 </button>
 
           {isAllMoviesPage && (
-            <button className="mobile-search-icon" aria-label="Search">
+<button
+  className="mobile-search-icon"
+  aria-label="Search"
+  onClick={() => {
+    setDrawerMode("search");
+    setWaOpen(true);
+  }}
+>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="11" cy="11" r="6"/>
                 <path d="M21 21l-4.3-4.3"/>
@@ -103,13 +111,65 @@ export default function TopBar() {
             </button>
           )}
           <button className="grid-btn">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="3" width="4" height="4" rx="1"/><rect x="10" y="3" width="4" height="4" rx="1"/><rect x="17" y="3" width="4" height="4" rx="1"/><rect x="3" y="10" width="4" height="4" rx="1"/><rect x="10" y="10" width="4" height="4" rx="1"/><rect x="17" y="10" width="4" height="4" rx="1"/><rect x="3" y="17" width="4" height="4" rx="1"/><rect x="10" y="17" width="4" height="4" rx="1"/><rect x="17" y="17" width="4" height="4" rx="1"/></svg>
-          </button>
-          <div className="profile">E</div>
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+    <rect x="3" y="3" width="4" height="4" rx="1"/>
+    <rect x="10" y="3" width="4" height="4" rx="1"/>
+    <rect x="17" y="3" width="4" height="4" rx="1"/>
+    <rect x="3" y="10" width="4" height="4" rx="1"/>
+    <rect x="10" y="10" width="4" height="4" rx="1"/>
+    <rect x="17" y="10" width="4" height="4" rx="1"/>
+    <rect x="3" y="17" width="4" height="4" rx="1"/>
+    <rect x="10" y="17" width="4" height="4" rx="1"/>
+    <rect x="17" y="17" width="4" height="4" rx="1"/>
+  </svg>
+</button>
+
+{/* Sliders button */}
+<button className="sliders-btn" aria-label="Settings">
+  <svg
+    width="22"
+    height="22"
+    viewBox="0 0 24 24"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      d="M4 7H20"
+      stroke="currentColor"
+      strokeWidth="2.5"
+      strokeLinecap="round"
+    />
+    <circle
+      cx="10"
+      cy="7"
+      r="3"
+      fill="currentColor"
+    />
+
+    <path
+      d="M4 17H20"
+      stroke="currentColor"
+      strokeWidth="2.5"
+      strokeLinecap="round"
+    />
+    <circle
+      cx="15"
+      cy="17"
+      r="3"
+      fill="currentColor"
+    />
+  </svg>
+</button>
+
+<div className="profile">E</div>
+
           <button
   className="apple-burger"
   aria-label="menu"
-  onClick={() => setWaOpen(true)}
+onClick={() => {
+  setDrawerMode("menu");
+  setWaOpen(true);
+}}
 >
   <svg
     width="20"
@@ -150,24 +210,114 @@ export default function TopBar() {
       </header>
 
       {waOpen && (
-        <div className="wa-mob-panel">
-  <div className="wa-mob-top">
-    <img src="/logo.png" alt="UG Connect" className="wa-panel-logo" />
-    <button className="wa-v" onClick={()=>setWaOpen(false)}>
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M9 18l6-6-6-6" />
-      </svg>
-    </button>
-  </div>
+  <div className="wa-mob-panel">
 
-  <div className="wa-mob-body">
-    <div className="wa-card">
-      <SideBar />
+    <div className="wa-mob-top">
+  <img
+    src="/logo.png"
+    alt="UG Connect"
+    className="wa-panel-logo"
+  />
+
+  {drawerMode === "search" && (
+    <div className="wa-filtered-title">
+      Filtered Content
     </div>
-  </div>
+  )}
+
+  <button
+    className="wa-v"
+    onClick={() => setWaOpen(false)}
+    aria-label="Close"
+  >
+    <svg
+      width="22"
+      height="22"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <path d="M9 18l6-6-6-6" />
+    </svg>
+  </button>
 </div>
 
-      )}
+
+    <div className="wa-mob-body">
+      <div className="wa-card">
+
+        {drawerMode === "menu" ? (
+          <SideBar />
+        ) : (
+          <div className="mobile-search-panel">
+
+  <div className="mobile-search-input-wrap">
+
+    <svg
+      className="mobile-search-icon"
+      width="19"
+      height="19"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <circle cx="11" cy="11" r="6" />
+      <path d="M21 21l-4.3-4.3" />
+    </svg>
+
+    <input
+      autoFocus
+      className="mobile-drawer-search"
+      placeholder="Search movies..."
+    />
+
+    <button
+      className="mobile-search-settings"
+      aria-label="Search filters"
+    >
+      <svg
+        width="21"
+        height="21"
+        viewBox="0 0 24 24"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M4 7H20"
+          stroke="currentColor"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+        />
+        <circle cx="10" cy="7" r="3" fill="currentColor" />
+
+        <path
+          d="M4 17H20"
+          stroke="currentColor"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+        />
+        <circle cx="15" cy="17" r="3" fill="currentColor" />
+      </svg>
+    </button>
+
+  </div>
+
+</div>
+
+        )}
+
+      </div>
+    </div>
+
+  </div>
+)}
+
     </>
   );
 }
