@@ -162,4 +162,64 @@ html, body { overflow-x: hidden; }
 
 }
 
+/* ===== FIX PC MODE ON MOBILE WATCH - FINAL ===== */
+@media (max-width: 1024px) {
+  /* When mobile video exists, kill PC chrome */
+  body:has(.mob-full-root) {
+    background: #000 !important;
+    overflow: hidden !important;
+  }
+
+  body:has(.mob-full-root) .google-shell {
+    height: 100dvh !important;
+    overflow: hidden !important;
+  }
+
+  body:has(.mob-full-root) .content-panel {
+    background: #000 !important;
+    border: none !important;
+    border-radius: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    overflow: hidden !important;
+  }
+
+  body:has(.mob-full-root) .giant-body,
+  body:has(.mob-full-root) .giant-panel {
+    padding: 0 !important;
+    gap: 0 !important;
+    background: #000 !important;
+  }
+}
+
+@media (max-width: 1024px) and (orientation: landscape) {
+  /* landscape = pure video, no sidebar, no topbar, no bottom bar */
+  body:has(.mob-full-root) .top-bar,
+  body:has(.mob-full-root) .giant-body > :first-child,
+  body:has(.mob-full-root) .side-bar,
+  body:has(.mob-full-root) [class*="side-bar"],
+  body:has(.mob-full-root) .bottom-bar,
+  body:has(.mob-full-root) .bottom-bar-glass {
+    display: none !important;
+  }
+
+  body:has(.mob-full-root) .content-panel {
+    width: 100vw !important;
+    height: 100dvh !important;
+  }
+}
+
+@media (max-width: 1024px) and (orientation: portrait) {
+  /* portrait = YouTube style, hide only desktop sidebar chrome but keep bottom bar for nav */
+  body:has(.mob-full-root) .giant-body > :first-child,
+  body:has(.mob-full-root) .side-bar {
+    display: none !important;
+  }
+  body:has(.mob-full-root) .content-panel {
+    overflow-y: auto !important;
+    height: auto !important;
+    min-height: 100dvh !important;
+    background: hsl(var(--bg)) !important;
+  }
+}
 

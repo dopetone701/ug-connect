@@ -66,3 +66,30 @@
     overflow: auto; 
   }
 }
+
+/* FIX: On watch page on phone landscape, hide PC shell but keep mobile video */
+@media (max-width: 1024px) and (orientation: landscape) {
+  body:has(.mob-full-root) .giant-body > aside,
+  body:has(.mob-full-root) .giant-body > div:first-child,
+  body:has(.mob-full-root) .side-bar,
+  body:has(.mob-full-root) [class*="side-bar"] {
+    display: none !important;
+  }
+  
+  body:has(.mob-full-root) .content-panel {
+    width: 100vw !important;
+    height: 100dvh !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    overflow: hidden !important;
+  }
+
+  body:has(.mob-full-root) .google-shell .giant-panel > div:first-child,
+  body:has(.mob-full-root) .top-bar {
+    display: none !important;
+  }
+  
+  body:has(.mob-full-root) .bottom-bar {
+    display: none !important;
+  }
+}
