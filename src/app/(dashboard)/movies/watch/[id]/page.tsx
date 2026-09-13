@@ -87,37 +87,44 @@ export default function WatchPage(){
     }
   }, [])
 
-  // ===== NEW YOUTUBE-STYLE FULLSCREEN =====
+  // ===== FINAL FULLSCREEN - COVERS BROWSER BAR =====
   const toggleFullscreen = useCallback(async () => {
-    const mobile = window.innerWidth <= 768;
-    if (mobile) {
-      // MOBILE: fake fullscreen like YouTube, no requestFullscreen
-      if (!isFullScreen) {
-        setIsFullScreen(true);
-        document.body.style.overflow = 'hidden';
-        try {
+    const video = videoRef.current as any;
+    const root = rootRef.current as any;
+    if (!video ||!root) return;
+
+    if (!isFullScreen) {
+      setIsFullScreen(true);
+      document.body.style.overflow = 'hidden';
+      document.documentElement.style.overflow = 'hidden';
+
+      try {
+        // iPhone - this hides the Safari bar
+        if (video.webkitEnterFullscreen) {
+          video.webkitEnterFullscreen();
+        }
+        // Android Chrome - hide nav bar
+        else if (root.requestFullscreen) {
+          await root.requestFullscreen({ navigationUI: "hide" });
+        }
+        // Lock landscape like YouTube
+        if (window.innerWidth <= 768) {
           // @ts-ignore
           if (screen.orientation?.lock) await screen.orientation.lock('landscape').catch(()=>{});
-        } catch {}
-      } else {
-        setIsFullScreen(false);
-        document.body.style.overflow = '';
-        try {
-          // @ts-ignore
-          if (screen.orientation?.unlock) screen.orientation.unlock();
-        } catch {}
-      }
-    } else {
-      // PC: real css fullscreen
-      if (!document.fullscreenElement) {
-        try {
-          await rootRef.current?.requestFullscreen();
-        } catch {
-          setIsFullScreen(true); // fallback to css fullscreen
         }
-      } else {
-        try { await document.exitFullscreen(); } catch { setIsFullScreen(false); }
-      }
+      } catch {}
+      window.scrollTo(0,0);
+    } else {
+      setIsFullScreen(false);
+      document.body.style.overflow = '';
+      document.documentElement.style.overflow = '';
+      try {
+        if (document.fullscreenElement) await document.exitFullscreen();
+        // @ts-ignore
+        if (document.webkitFullscreenElement) await document.webkitExitFullscreen();
+        // @ts-ignore
+        if (screen.orientation?.unlock) screen.orientation.unlock();
+      } catch {}
     }
   }, [isFullScreen]);
 
@@ -150,13 +157,14 @@ export default function WatchPage(){
     if(!movie) return
     const id = setTimeout(()=> setMounted(true), 50)
     const onFs = () => {
-      const fs =!!document.fullscreenElement;
-      if (!fs &&!isMobile) setIsFullScreen(false);
-      if (fs) setIsFullScreen(true);
+      const fs =!!document.fullscreenElement ||!!(document as any).webkitFullscreenElement;
+      setIsFullScreen(fs || (window.innerWidth <= 768 && document.body.style.overflow === 'hidden' && isFullScreen));
+      if (!fs && window.innerWidth > 768) setIsFullScreen(false);
     }
     document.addEventListener('fullscreenchange', onFs)
-    return () => { clearTimeout(id); document.removeEventListener('fullscreenchange', onFs) }
-  },[movie, isMobile])
+    document.addEventListener('webkitfullscreenchange', onFs as any)
+    return () => { clearTimeout(id); document.removeEventListener('fullscreenchange', onFs); document.removeEventListener('webkitfullscreenchange', onFs as any) }
+  },[movie, isFullScreen])
 
   useEffect(()=>{
     if(!playing) return
@@ -270,6 +278,7 @@ export default function WatchPage(){
               onEnded={()=> setPlaying(false)}
               onClick={togglePlay}
               playsInline
+              webkit-playsinline="true"
               loop={isPreview}
             />
             {!hasStarted &&!playing && <img src={movie.cover_url} alt={movie.title} className="connect-poster" />}
