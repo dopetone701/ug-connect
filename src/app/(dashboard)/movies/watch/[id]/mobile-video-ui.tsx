@@ -17,32 +17,21 @@ export default function MobileVideoUI({ movie }: any) {
   const [playing, setPlaying] = useState(false)
   const [showPlay, setShowPlay] = useState(false)
   const [progress, setProgress] = useState(0)
-  const [volume, setVolume] = useState(1)
+  const [isLoading, setIsLoading] = useState(true) // NEW: YT spinner
   const [isMuted, setIsMuted] = useState(false)
-  const [showVol, setShowVol] = useState(false)
-  const [volPct, setVolPct] = useState(100)
   const [descOpen, setDescOpen] = useState(false)
-  const [isAnimating, setIsAnimating] = useState(false)
 
-  const touchStartY = useRef(0)
-  const touchStartVol = useRef(1)
-  const volTimeout = useRef<any>(null)
   const playTimeout = useRef<any>(null)
 
   useEffect(() => {
     setIsFull(searchParams.get("t") === "full")
   }, [searchParams])
 
-  // FIX: always in viewport, never under nav on reload
   useEffect(() => {
-    if ('scrollRestoration' in history) {
-      history.scrollRestoration = 'manual'
-    }
     window.scrollTo(0, 0)
-    rootRef.current?.scrollIntoView({ block: 'start' } as any)
   }, [movie?.id, isFull])
 
-  // LOAD ONCE
+  // LOAD VIDEO - NO POSTER
   useEffect(() => {
     const v = videoRef.current
     if (!v ||!movie?.video_url) return
@@ -50,14 +39,13 @@ export default function MobileVideoUI({ movie }: any) {
     if (hasLoadedSrc.current === movie.video_url) return
 
     hasLoadedSrc.current = movie.video_url
+    setIsLoading(true) // show spinner
     v.src = movie.video_url
     v.load()
-    v.volume = isMuted? 0 : volume
     v.play().then(() => setPlaying(true)).catch(() => {})
   }, [movie?.video_url])
 
   useEffect(() => { hasLoadedSrc.current = null }, [movie?.id])
-  useEffect(() => { if (videoRef.current) videoRef.current.volume = isMuted? 0 : volume }, [volume, isMuted])
 
   const togglePlay = () => {
     const v = videoRef.current
@@ -71,49 +59,29 @@ export default function MobileVideoUI({ movie }: any) {
 
   const onTimeUpdate = () => {
     const v = videoRef.current
-    if (!v ||!v.duration) return
+    if (!v?.duration) return
     setProgress((v.currentTime / v.duration) * 100)
   }
 
-  const onTouchStart = (e: React.TouchEvent) => {
-    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect()
-    const x = e.touches[0].clientX - rect.left
-    if (x < rect.width * 0.45) {
-      touchStartY.current = e.touches[0].clientY
-      touchStartVol.current = isMuted? 0 : volume
-      setShowVol(true)
-    }
-  }
-  const onTouchMove = (e: React.TouchEvent) => {
-    if (!showVol) return
-    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect()
-    const dy = touchStartY.current - e.touches[0].clientY
-    const newVol = Math.max(0, Math.min(1, touchStartVol.current + dy / rect.height))
-    setVolume(newVol); setVolPct(Math.round(newVol * 100)); setIsMuted(newVol === 0)
-  }
-  const onTouchEnd = () => { setTimeout(() => setShowVol(false), 1000) }
-
-  const toggleMute = (e: React.MouseEvent) => {
+  const enterFull = async (e: React.MouseEvent) => {
     e.stopPropagation()
-    if (isMuted || volume === 0) { setVolume(volPct > 0? volPct/100 : 0.5); setIsMuted(false) }
-    else setIsMuted(true)
-    setShowVol(true)
+    const el = rootRef.current as any
+    try {
+      if (el?.requestFullscreen) await el.requestFullscreen()
+      // @ts-ignore
+      if (screen.orientation?.lock) await screen.orientation.lock('landscape').catch(()=>{})
+    } catch {}
+    router.replace(`/movies/watch/${movie.id}?t=full`, {scroll:false} as any)
   }
 
-  const enterFull = (e: React.MouseEvent) => {
-    e.stopPropagation()
-    setIsAnimating(true)
-    setTimeout(() => {
-      router.replace(`/movies/watch/${movie.id}?t=full`, {scroll:false} as any)
-      setTimeout(() => setIsAnimating(false), 460)
-    }, 10)
-  }
-
-  const exitFull = (e?: React.MouseEvent) => {
+  const exitFull = async (e?: React.MouseEvent) => {
     e?.stopPropagation()
-    setIsAnimating(true)
+    try {
+      if (document.fullscreenElement) await document.exitFullscreen()
+      // @ts-ignore
+      if (screen.orientation?.unlock) screen.orientation.unlock()
+    } catch {}
     router.replace(`/movies/watch/${movie.id}`, {scroll:false} as any)
-    setTimeout(() => setIsAnimating(false), 460)
   }
 
   const openPreview = (e?: React.MouseEvent) => { e?.stopPropagation(); router.push(`/movies/watch/${movie.id}?t=preview`) }
@@ -126,24 +94,41 @@ export default function MobileVideoUI({ movie }: any) {
   if (searchParams.get("t") === "preview") return null
 
   return (
-    <div ref={rootRef} className={["mob-full-root", isFull? "mode-landscape" : "mode-youtube", isAnimating? "is-animating" : ""].join(" ")}>
+    <div ref={rootRef} className={["mob-full-root", isFull? "mode-landscape" : "mode-youtube"].join(" ")}>
 
-      {/* SINGLE VIDEO - NEVER UNMOUNTS - ALL ACTIONS WRAPPED HERE */}
-      <div className="mob-full-video-wrap" onClick={togglePlay} onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd}>
-        <video ref={videoRef} poster={movie.cover_url || movie.cover} playsInline controls={false} preload="auto" className="mob-full-video" onTimeUpdate={onTimeUpdate} onPlay={() => setPlaying(true)} onPause={() => setPlaying(false)} />
+      <div className="mob-full-video-wrap" onClick={togglePlay}>
+        {/* NO POSTER - black screen like YT */}
+        <video
+          ref={videoRef}
+          playsInline
+          controls={false}
+          preload="auto"
+          className="mob-full-video"
+          onTimeUpdate={onTimeUpdate}
+          onPlay={() => { setPlaying(true); setIsLoading(false) }}
+          onPlaying={() => setIsLoading(false)}
+          onCanPlay={() => setIsLoading(false)}
+          onWaiting={() => setIsLoading(true)}
+          onPause={() => setPlaying(false)}
+        />
 
-        {showVol && <div className="mob-vol-counter"><span>{isMuted? 0 : volPct}%</span></div>}
+        {/* YT SPINNING CIRCLE - fade */}
+        {isLoading && (
+          <div className="yt-spinner">
+            <div className="yt-spinner-circle"></div>
+          </div>
+        )}
 
         {!isFull? (
           <div className="mob-yt-topbar">
-            <button className="mob-yt-icon" onClick={toggleMute}>{isMuted? "M" : "V"}</button>
+            <button className="mob-yt-icon" onClick={(e)=>{e.stopPropagation(); setIsMuted(!isMuted)}}>{isMuted? "M" : "V"}</button>
             <button className="mob-yt-icon" onClick={enterFull}>⛶</button>
           </div>
         ) : (
-          <button className="mob-close-x" onClick={exitFull}>X</button>
+          <button className="mob-close-x" onClick={exitFull}>✕</button>
         )}
 
-        {showPlay && (
+        {showPlay &&!isLoading && (
           <div className="apple-play-pure">
             {!playing? (
               <svg viewBox="0 0 24 24" width="64" height="64" fill="white" style={{ filter: "drop-shadow(0 2px 8px rgba(0,0,0,.6))" }}>
@@ -161,17 +146,8 @@ export default function MobileVideoUI({ movie }: any) {
         <div className="mob-progress-track">
           <div className="mob-progress-fill" style={{ width: `${progress}%` }} />
         </div>
-
-        {isFull && (
-          <div className="mob-full-btns">
-            <button onClick={openPreview} className="btn-preview">▶ Play Preview</button>
-            <button className="btn-share" onClick={shareMovie}>Share</button>
-            <button className="btn-list">+ My List</button>
-          </div>
-        )}
       </div>
 
-      {/* PORTRAIT = REAL PAGE */}
       {!isFull && (
         <>
           <div className="mob-yt-actions-under">

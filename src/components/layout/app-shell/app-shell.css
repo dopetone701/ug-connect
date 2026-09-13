@@ -7,13 +7,11 @@
   max-height: 100dvh;
   background: hsl(var(--surface));
   overflow: hidden;
-  /* FIX: remove safe area from shell itself */
-  padding-top: 0 !important;
 }
 
 .giant-panel {
   flex: 1;
-  min-height: 0;
+  min-height: 0; /* CRITICAL - allows shrink */
   width: 100%;
   display: flex;
   flex-direction: column;
@@ -23,7 +21,7 @@
 
 .giant-body {
   flex: 1;
-  min-height: 0;
+  min-height: 0; /* CRITICAL */
   display: flex;
   overflow: hidden;
   gap: 0;
@@ -33,22 +31,24 @@
 
 .content-panel {
   flex: 1;
-  min-height: 0;
+  min-height: 0; /* CRITICAL - video fits inside */
   width: 100%;
   background: hsl(var(--bg));
   border-radius: 16px;
-  padding: 0;
-  overflow: auto;
+  padding: 0; /* NO PADDING - so video touches edges and fits viewport */
+  overflow: auto; /* allow details + similar to scroll, but player stays visible */
   margin-left: 0;
   border: 1px solid hsl(var(--border));
   display: flex;
   flex-direction: column;
 }
 
+/* inner pages that need padding will add their own */
 .content-panel > * {
   flex-shrink: 0;
 }
 
+/* landing page no scroll - add class in landing */
 .content-panel.no-scroll {
   overflow: hidden;
 }
@@ -58,25 +58,11 @@
 
 @media (max-width: 768px) {
   .giant-body { padding: 0; min-height: 0; }
-  .content-panel {
-    border-radius: 0;
-    border: none;
+  .content-panel { 
+    border-radius: 0; 
+    border: none; 
     padding: 0;
-    /* FIX: was 80px pushing video down */
-    padding-bottom: 0;
-    overflow: auto;
-  }
-
-  /* NEW: Video pages should be edge-to-edge like YouTube */
-  .content-panel:has(.mob-full-root) {
-    padding-bottom: 0 !important;
-    overflow: hidden !important; /* video page handles its own scroll */
-    background: #000;
-  }
-
-  .content-panel:has(.mob-full-root) .mob-full-root.mode-youtube {
-    min-height: auto !important;
-    padding-bottom: 80px; /* only the details scroll, not whole shell */
-    overflow-y: auto !important;
+    padding-bottom: 80px; 
+    overflow: auto; 
   }
 }
