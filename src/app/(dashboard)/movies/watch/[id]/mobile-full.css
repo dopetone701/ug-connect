@@ -1,82 +1,89 @@
-/* ===== YOUTUBE MOBILE - NO ROTATE HACK ===== */
+/* ===== YOUTUBE MOBILE - FINAL PRO ===== */
 .mob-full-root {
   width: 100%;
   background: hsl(var(--bg));
   color: hsl(var(--text));
+  overflow-x: hidden;
 }
 
-/* Portrait - YouTube style: video sticks to top */
+/* video wrap is always relative - so controls stay ON video */
+.mob-full-video-wrap {
+  position: relative;
+  width: 100%;
+  background: #000;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mob-full-video {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: #000;
+  display: block;
+}
+
+/* ===== PORTRAIT - YouTube style ===== */
 .mob-full-root.mode-youtube {
   position: relative;
   width: 100%;
   height: auto;
   min-height: 100%;
   overflow-y: auto;
-  overflow-x: hidden;
   background: hsl(var(--bg));
 }
 
-.mode-youtube.mob-full-video-wrap {
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  width: 100%;
-  aspect-ratio: 16 / 9;
-  background: #000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+.mob-full-root.mode-youtube .mob-full-video-wrap {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 10 !important;
+  aspect-ratio: 16 / 9 !important;
 }
 
-.mode-youtube.mob-full-video {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  background: #000;
-}
-
-.mode-youtube.mob-full-body {
+.mob-full-root.mode-youtube .mob-full-body {
   display: flex;
   flex-direction: column;
   gap: 12px;
   padding: 14px;
   padding-bottom: 90px;
+  background: hsl(var(--bg));
 }
 
-/* Landscape - True fullscreen, NO rotate */
+/* ===== LANDSCAPE - True fullscreen, NO ROTATE ===== */
 .mob-full-root.mode-landscape {
-  position: fixed!important;
-  inset: 0!important;
-  width: 100vw!important;
-  height: 100dvh!important;
-  z-index: 9999!important;
-  background: #000!important;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  height: 100dvh !important;
+  z-index: 9999 !important;
+  background: #000 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
 }
 
-.mob-full-root.mode-landscape.mob-full-video-wrap {
-  position: relative;
-  width: 100vw;
-  height: 100dvh;
-  background: #000;
-  transform: none!important; /* FIXED - no rotate */
+.mob-full-root.mode-landscape .mob-full-video-wrap {
+  position: relative !important;
+  width: 100vw !important;
+  height: 100dvh !important;
+  transform: none !important;
 }
 
-.mob-full-root.mode-landscape.mob-full-video {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  transform: none!important;
+.mob-full-root.mode-landscape .mob-full-video {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: contain !important;
+  transform: none !important;
 }
 
-/* Controls */
+/* ===== CONTROLS - ALWAYS ON VIDEO ===== */
 .mob-close-x {
   position: absolute;
   top: max(14px, env(safe-area-inset-top));
   right: 14px;
-  z-index: 20;
+  z-index: 30;
   width: 36px;
   height: 36px;
   border-radius: 50%;
@@ -95,7 +102,8 @@
   right: 0;
   height: 3px;
   background: rgba(255,255,255,.3);
-  z-index: 20;
+  z-index: 30;
+  pointer-events: none;
 }
 .mob-progress-fill { height: 100%; background: #ff0000; }
 
@@ -103,8 +111,8 @@
   position: absolute;
   left: 50%;
   top: 50%;
-  transform: translate(-50%,-50%);
-  z-index: 15;
+  transform: translate(-50%, -50%);
+  z-index: 25;
   pointer-events: none;
 }
 
@@ -116,7 +124,7 @@
   display: flex;
   justify-content: space-between;
   padding: 0 12px;
-  z-index: 15;
+  z-index: 25;
 }
 
 .mob-yt-icon {
@@ -131,13 +139,14 @@
   color: #fff;
 }
 
-.mob-yt-actions-under,.mob-full-btns {
+.mob-yt-actions-under, .mob-full-btns {
   display: flex;
   gap: 8px;
   padding: 12px 14px;
+  background: hsl(var(--bg));
 }
 
-.btn-preview,.btn-share,.btn-list {
+.btn-preview, .btn-share, .btn-list {
   flex: 1;
   height: 42px;
   border-radius: 10px;
@@ -148,21 +157,28 @@
 }
 .btn-preview { background: hsl(var(--primary)); color: hsl(var(--primary-text)); border: none; }
 
-.mob-vol-counter {
+/* ===== SPINNER - YT fade circle ===== */
+.yt-spinner {
   position: absolute;
-  top: 20%;
-  left: 50%;
-  transform: translateX(-50%);
-  background: rgba(0,0,0,.7);
-  backdrop-filter: blur(10px);
-  color: #fff;
-  padding: 8px 14px;
-  border-radius: 20px;
-  font-size: 13px;
-  font-weight: 600;
-  z-index: 20;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: #000;
+  z-index: 35;
+  animation: ytFade .3s ease;
 }
+.yt-spinner-circle {
+  width: 48px;
+  height: 48px;
+  border: 3px solid rgba(255,255,255,.2);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: ytSpin .8s linear infinite;
+}
+@keyframes ytSpin { to { transform: rotate(360deg); } }
+@keyframes ytFade { from { opacity: 0; } to { opacity: 1; } }
 
+/* ===== TEXT ===== */
 .mob-full-desc.clamped {
   display: -webkit-box;
   -webkit-line-clamp: 5;
@@ -178,90 +194,23 @@
   margin-top: 6px;
 }
 
-
-/* YT SPINNER - fade circle */
-.yt-spinner {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  background: #000;
-  z-index: 25;
-  animation: ytFade.3s ease;
-}
-
-.yt-spinner-circle {
-  width: 48px;
-  height: 48px;
-  border: 3px solid rgba(255,255,255,.2);
-  border-top-color: #fff;
-  border-radius: 50%;
-  animation: ytSpin.8s linear infinite;
-}
-
-@keyframes ytSpin {
-  to { transform: rotate(360deg); }
-}
-
-@keyframes ytFade {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-
-/* ===== YT CONTROLS - MUST BE ON VIDEO IN BOTH MODES ===== */
-.mob-full-video-wrap {
-  position: relative !important;
-}
-
-.mode-youtube .mob-full-video-wrap {
-  position: sticky !important;
-  top: 0 !important;
-  z-index: 10 !important;
-  width: 100% !important;
-  aspect-ratio: 16 / 9 !important;
-  background: #000 !important;
-  overflow: hidden !important;
-}
-
-/* progress bar must stick to video, not screen */
-.mob-progress-track {
-  position: absolute !important;
-  bottom: 0 !important;
-  left: 0 !important;
-  right: 0 !important;
-  height: 3px !important;
-  background: rgba(255,255,255,.3) !important;
-  z-index: 30 !important;
-  pointer-events: none;
-}
-
-.mob-progress-fill {
-  height: 100% !important;
-  background: #ff0000 !important;
-}
-
-/* play btn centered on VIDEO */
-.apple-play-pure {
-  position: absolute !important;
-  left: 50% !important;
-  top: 50% !important;
-  transform: translate(-50%, -50%) !important;
-  z-index: 25 !important;
-  pointer-events: none;
-}
-
-/* YT top bar on video */
-.mob-yt-topbar {
-  position: absolute !important;
-  top: 8px !important;
-  left: 0 !important;
-  right: 0 !important;
-  z-index: 25 !important;
-}
-
-/* spinner on video */
-.yt-spinner {
-  position: absolute !important;
-  inset: 0 !important;
+/* ===== PRO FIX: Never show PC on phone, even landscape ===== */
+@media (max-width: 1024px) and (orientation: landscape) {
+  .mob-full-root.mode-youtube {
+    position: fixed !important;
+    inset: 0 !important;
+    width: 100vw !important;
+    height: 100dvh !important;
+    z-index: 9999 !important;
+    background: #000 !important;
+  }
+  .mob-full-root.mode-youtube .mob-full-video-wrap {
+    width: 100vw !important;
+    height: 100dvh !important;
+    aspect-ratio: auto !important;
+  }
+  .mob-full-root.mode-youtube .mob-yt-actions-under,
+  .mob-full-root.mode-youtube .mob-full-body {
+    display: none !important;
+  }
 }

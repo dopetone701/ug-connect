@@ -17,11 +17,18 @@ export default function MobileVideoUI({ movie }: any) {
   const [playing, setPlaying] = useState(false)
   const [showPlay, setShowPlay] = useState(false)
   const [progress, setProgress] = useState(0)
-  const [isLoading, setIsLoading] = useState(true) // NEW: YT spinner
+  const [isLoading, setIsLoading] = useState(true)
   const [isMuted, setIsMuted] = useState(false)
   const [descOpen, setDescOpen] = useState(false)
+  const [isMobileDevice, setIsMobileDevice] = useState(true) // default true to prevent PC flash
 
   const playTimeout = useRef<any>(null)
+
+  // FIX 1: Lock as mobile device forever - not by width
+  useEffect(() => {
+    const mobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent) || window.innerWidth <= 1024
+    setIsMobileDevice(mobile)
+  }, [])
 
   useEffect(() => {
     setIsFull(searchParams.get("t") === "full")
@@ -29,9 +36,40 @@ export default function MobileVideoUI({ movie }: any) {
 
   useEffect(() => {
     window.scrollTo(0, 0)
-  }, [movie?.id, isFull])
+  }, [movie?.id])
 
-  // LOAD VIDEO - NO POSTER
+  // FIX 2: YouTube auto-fullscreen on rotate - this stops PC from mounting
+  useEffect(() => {
+    if (!isMobileDevice) return
+
+    const handleOrientation = () => {
+      const isLandscape = window.innerHeight < window.innerWidth && window.innerWidth <= 1024
+
+      if (isLandscape &&!isFull) {
+        // rotate to landscape -> go fullscreen like YT
+        router.replace(`/movies/watch/${movie.id}?t=full`, { scroll: false } as any)
+      } else if (!isLandscape && isFull) {
+        // rotate back to portrait -> exit fullscreen
+        // optional: comment this out if you want to stay fullscreen
+        router.replace(`/movies/watch/${movie.id}`, { scroll: false } as any)
+      }
+    }
+
+    // Listen to both
+    window.addEventListener('resize', handleOrientation)
+    window.addEventListener('orientationchange', handleOrientation)
+    // Also media query
+    const mql = window.matchMedia("(orientation: landscape)")
+    mql.addEventListener('change', handleOrientation)
+
+    return () => {
+      window.removeEventListener('resize', handleOrientation)
+      window.removeEventListener('orientationchange', handleOrientation)
+      mql.removeEventListener('change', handleOrientation)
+    }
+  }, [isFull, isMobileDevice, movie?.id, router])
+
+  // LOAD VIDEO ONCE - never reload on rotate
   useEffect(() => {
     const v = videoRef.current
     if (!v ||!movie?.video_url) return
@@ -39,7 +77,7 @@ export default function MobileVideoUI({ movie }: any) {
     if (hasLoadedSrc.current === movie.video_url) return
 
     hasLoadedSrc.current = movie.video_url
-    setIsLoading(true) // show spinner
+    setIsLoading(true)
     v.src = movie.video_url
     v.load()
     v.play().then(() => setPlaying(true)).catch(() => {})
@@ -71,7 +109,7 @@ export default function MobileVideoUI({ movie }: any) {
       // @ts-ignore
       if (screen.orientation?.lock) await screen.orientation.lock('landscape').catch(()=>{})
     } catch {}
-    router.replace(`/movies/watch/${movie.id}?t=full`, {scroll:false} as any)
+    router.replace(`/movies/watch/${movie.id}?t=full`, { scroll: false } as any)
   }
 
   const exitFull = async (e?: React.MouseEvent) => {
@@ -81,23 +119,22 @@ export default function MobileVideoUI({ movie }: any) {
       // @ts-ignore
       if (screen.orientation?.unlock) screen.orientation.unlock()
     } catch {}
-    router.replace(`/movies/watch/${movie.id}`, {scroll:false} as any)
+    router.replace(`/movies/watch/${movie.id}`, { scroll: false } as any)
   }
 
   const openPreview = (e?: React.MouseEvent) => { e?.stopPropagation(); router.push(`/movies/watch/${movie.id}?t=preview`) }
   const shareMovie = async (e: React.MouseEvent) => {
     e.stopPropagation()
-    try { if (navigator.share) await navigator.share({title: movie.title, url: window.location.href}) } catch {}
+    try { if (navigator.share) await navigator.share({ title: movie.title, url: window.location.href }) } catch {}
   }
 
   if (!movie) return null
   if (searchParams.get("t") === "preview") return null
 
   return (
-    <div ref={rootRef} className={["mob-full-root", isFull? "mode-landscape" : "mode-youtube"].join(" ")}>
+    <div ref={rootRef} className={["mob-full-root", isFull? "mode-landscape" : "mode-youtube", isMobileDevice? "is-mobile" : ""].join(" ")}>
 
       <div className="mob-full-video-wrap" onClick={togglePlay}>
-        {/* NO POSTER - black screen like YT */}
         <video
           ref={videoRef}
           playsInline
@@ -112,7 +149,6 @@ export default function MobileVideoUI({ movie }: any) {
           onPause={() => setPlaying(false)}
         />
 
-        {/* YT SPINNING CIRCLE - fade */}
         {isLoading && (
           <div className="yt-spinner">
             <div className="yt-spinner-circle"></div>
@@ -121,7 +157,7 @@ export default function MobileVideoUI({ movie }: any) {
 
         {!isFull? (
           <div className="mob-yt-topbar">
-            <button className="mob-yt-icon" onClick={(e)=>{e.stopPropagation(); setIsMuted(!isMuted)}}>{isMuted? "M" : "V"}</button>
+            <button className="mob-yt-icon" onClick={(e)=>{e.stopPropagation(); setIsMuted(!isMuted)}}>{isMuted? "🔇" : "🔊"}</button>
             <button className="mob-yt-icon" onClick={enterFull}>⛶</button>
           </div>
         ) : (
