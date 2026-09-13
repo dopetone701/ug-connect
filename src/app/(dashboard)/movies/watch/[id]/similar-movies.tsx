@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import "../../latest-movies.css";
 import "./similar-movies.css";
 import { usesingleplayer } from "../../_components/single-player";
+import { useGlobalSearch } from "@/stores/use-global-search";
 
 const API_URL = "https://movie-server-api.connectu89.workers.dev/api/movies";
 
@@ -19,8 +20,8 @@ export default function similarmovies({ current }: { current: Movie }) {
   useEffect(()=>{
     if(!current?.id) return;
     fetch(API_URL, {cache:"no-store"})
-  .then(r=>r.json())
-  .then((all:Movie[])=>{
+ .then(r=>r.json())
+ .then((all:Movie[])=>{
        const others = all.filter(m=> String(m.id)!== String(current.id));
        let list = others.filter(m=> m.genre && String(m.genre).toLowerCase().trim() === String(current.genre||"").toLowerCase().trim());
        if(list.length < 8 && current.vj){
@@ -35,6 +36,16 @@ export default function similarmovies({ current }: { current: Movie }) {
        setMovies(list.slice(0,12));
      });
   },[current]);
+
+  const handleSeeAll = () => {
+    let q = (current.genre || current.vj || "").toLowerCase().trim()
+    if(q &&!q.includes("movies") && q.split(" ").length === 1){
+      q = `${q} movies`
+    }
+    if(!q) q = "action movies"
+    useGlobalSearch.getState().setQuery(q)
+    useGlobalSearch.getState().setSection(q)
+  }
 
   useEffect(() => {
     const container = trackRef.current;
@@ -97,8 +108,8 @@ export default function similarmovies({ current }: { current: Movie }) {
   return (
     <div className="latest-root">
       <div className="latest-head">
-        <h3 className="latest-title">More {current.genre || current.vj}</h3>
-        <button className="latest-see" onClick={()=>{ location.hash="#/movies" }}>SEE ALL</button>
+        <h3 className="latest-title" style={{cursor:"pointer"}} onClick={handleSeeAll}>More {current.genre || current.vj}</h3>
+        <button className="latest-see" onClick={handleSeeAll}>SEE ALL</button>
       </div>
 
       <div className="latest-track" ref={trackRef}>
@@ -112,9 +123,7 @@ export default function similarmovies({ current }: { current: Movie }) {
                 <button className="l-a-btn play on" onClick={(e)=>{
                   e.stopPropagation();
                   if(isDraggingRef.current) return;
-                  // disarm current + load clicked
                   playmovie(m, 'full');
-                  // update url without full reload
                   router.replace(`/movies/watch/${m.id}?t=full`);
                 }}>PLAY</button>
                 <button className="l-a-btn prev on" onClick={(e)=>{

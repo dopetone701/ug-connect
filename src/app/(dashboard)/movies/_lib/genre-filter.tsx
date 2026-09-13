@@ -3,7 +3,6 @@ import { useEffect, useRef, useState } from "react";
 import { attachNoonScroll } from "./noon-scroll";
 import "./genre-filter.css";
 
-
 const GENRES = [
   { id: "all", label: "All", img: "/genre-filter-images/rango-all.PNG", fallback: "A" },
   { id: "action", label: "Action", img: "/genre-filter-images/action.JPG" },
@@ -32,6 +31,7 @@ export default function GenreFilter({ onSelect }: Props) {
 
   const handleClick = (id: string) => {
     setActive(id);
+    // "all" clears, others become "action movies" in parent
     onSelect?.(id);
   };
 
@@ -41,7 +41,7 @@ export default function GenreFilter({ onSelect }: Props) {
         {GENRES.map((g) => (
           <button
             key={g.id}
-            className={`genre-card ${active === g.id? "on" : ""}`}
+            className={`genre-card ${active === g.id ? "on" : ""}`}
             onClick={() => handleClick(g.id)}
           >
             <div className="genre-circle">

@@ -1,0 +1,161 @@
+/* REAL LIQUID SPLIT - DNA ONLY */
+
+@media(min-width:769px){
+  .wa-mob-panel{ display:none !important; }
+
+  .island-group{
+    display:flex;
+    align-items:center;
+    gap:0px;
+    flex:1;
+    max-width: 560px;
+    position:relative;
+  }
+
+  /* both pills identical material */
+  .search-wrap.main-pill,
+  .search-wrap.split-pill{
+    height: 44px;
+    background: hsl(var(--surface));
+    border: 1px solid hsl(var(--border));
+    border-radius: 999px;
+    display:flex;
+    align-items:center;
+  }
+
+  .search-wrap.main-pill{
+    flex:1;
+    padding: 0 16px;
+    transition: all 0.6s cubic-bezier(0.34,1.56,0.64,1);
+    z-index:2;
+  }
+
+  .search-wrap.main-pill.is-split{
+    border-radius: 999px;
+    /* shrinks slightly when split */
+    margin-right: 8px;
+  }
+
+  /* THE SPLIT PILL - starts inside main pill */
+  .search-wrap.split-pill{
+    width: 0;
+    opacity: 0;
+    padding: 0;
+    overflow:hidden;
+    transform: translateX(-30px) scaleX(0.3) scaleY(0.8);
+    transform-origin: left center;
+    pointer-events:none;
+    border-color: hsl(var(--border));
+    background: hsl(var(--surface));
+    transition: all 0.6s cubic-bezier(0.34,1.56,0.64,1);
+    will-change: transform, width, opacity;
+  }
+
+  .search-wrap.split-pill.is-visible{
+    width: auto;
+    min-width: 120px;
+    max-width: 240px;
+    opacity: 1;
+    padding: 0 12px;
+    transform: translateX(0) scaleX(1) scaleY(1);
+    pointer-events:auto;
+    animation: waterBubble 0.6s cubic-bezier(0.34,1.56,0.64,1);
+  }
+
+  .split-content{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    white-space:nowrap;
+  }
+
+  .split-chip{
+    background: hsl(var(--surface-hover));
+    color: hsl(var(--text));
+    border: 1px solid hsl(var(--border));
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: capitalize;
+  }
+
+  .split-close{
+    width:22px; height:22px; border-radius:50%;
+    background: hsl(var(--surface-hover));
+    color: hsl(var(--text));
+    border: 1px solid hsl(var(--border));
+    display:grid; place-items:center;
+    font-size:11px; cursor:pointer;
+  }
+
+  @keyframes waterBubble{
+    0%{ transform: translateX(-30px) scaleX(0.2) scaleY(0.6); border-radius: 50%; }
+    40%{ transform: translateX(5px) scaleX(1.15) scaleY(0.9); }
+    65%{ transform: translateX(-2px) scaleX(0.92) scaleY(1.08); }
+    80%{ transform: translateX(1px) scaleX(1.03) scaleY(0.97); }
+    100%{ transform: translateX(0) scaleX(1) scaleY(1); border-radius: 999px; }
+  }
+}
+
+@media(max-width:768px){
+  .island-group{ display:none !important; }
+  /* your mobile edge-to-edge from before - keep it */
+  .wa-mob-body{ padding:0 !important; }
+  .wa-card:has(.mobile-search-panel){
+    padding:0 !important; margin:0 !important; border:0 !important;
+    background: hsl(var(--bg)) !important; border-radius:0 !important;
+  }
+  .mobile-search-panel.is-search-mode{
+    padding: 12px 12px 0 12px !important;
+    background: hsl(var(--bg)) !important;
+  }
+  .mobile-search-panel.is-search-mode .mobile-search-input-wrap{
+    margin:0 !important; width:100% !important;
+    height:46px !important; border-radius:12px !important;
+    background: hsl(var(--surface)) !important;
+    border: 1px solid hsl(var(--border)) !important;
+  }
+  .mobile-drawer-search{ color: hsl(var(--text)) !important; font-size:15px !important; }
+  .mobile-drawer-search::placeholder{ color: hsl(var(--text-muted)) !important; }
+  .search-results-scroll,.wa-scroll-wrap{
+    padding: 8px 4px 0 4px !important; scrollbar-width:none !important;
+  }
+  .search-results-scroll::-webkit-scrollbar,.wa-scroll-wrap::-webkit-scrollbar{ display:none !important; }
+}
+
+
+@media (max-width: 768px) {
+  /* SEARCH BAR - WITH PADDING + RADIUS */
+  .wa-mob-panel.is-search .mobile-search-input-wrap {
+    margin: 10px 12px 10px 12px !important;
+    width: calc(100% - 24px) !important; /* 12px gap both sides so never touches edge */
+    height: 54px !important;
+    padding: 0 14px !important;
+    border-radius: 12px !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 12px !important;
+    box-sizing: border-box !important;
+  }
+
+  .wa-mob-panel.is-search .mobile-drawer-search {
+    height: 54px !important;
+    line-height: 54px !important;
+    font-size: 16px !important;
+    flex: 1 !important;
+  }
+
+  /* SETTINGS SVG BIGGER LENGTHWISE */
+  .wa-mob-panel.is-search .mobile-search-settings {
+    width: 36px !important;
+    height: 36px !important;
+    flex-shrink: 0 !important;
+  }
+
+  .wa-mob-panel.is-search .mobile-search-settings svg {
+    width: 30px !important;
+    height: 20px !important;
+    transform: scaleX(1.4) !important; /* longer sideways */
+  }
+}

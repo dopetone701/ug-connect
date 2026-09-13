@@ -1,0 +1,20 @@
+.search-drawer-root {
+  background: hsl(var(--bg));
+  min-height: 100vh;
+}
+.search-3col-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  padding: 12px;
+}
+.search-3col-grid .latest-card {
+  width: 100%;
+}
+@media (min-width: 768px) {
+  .search-3col-grid {
+    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+    gap: 16px;
+    padding: 20px;
+  }
+}

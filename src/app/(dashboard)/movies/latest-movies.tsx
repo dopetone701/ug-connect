@@ -3,6 +3,7 @@ import { useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import "./latest-movies.css";
 import { usesingleplayer } from "./_components/single-player";
+import { useGlobalSearch } from "@/stores/use-global-search";
 
 type Movie = { id:number; title:string; genre:string; vj:string; cover:string; cover_url?:string; desc:string; video:string; video_url?:string; preview:string[]; preview_urls?:string[] };
 
@@ -103,11 +104,16 @@ export default function latestmovies({ movies = [] }: { movies?: Movie[] }) {
 
   if (!movies.length) return null;
 
+  const handleSeeAll = () => {
+    const clean = "latest movies"
+    useGlobalSearch.getState().setQuery(clean)
+  }
+
   return (
     <div className="latest-root">
       <div className="latest-head">
-        <h3 className="latest-title">latest movies</h3>
-        <button className="latest-see" onClick={()=>{ location.hash="#/movies" }}>SEE ALL</button>
+        <h3 className="latest-title" onClick={handleSeeAll} style={{cursor:"pointer"}}>latest movies</h3>
+        <button className="latest-see" onClick={handleSeeAll}>SEE ALL</button>
       </div>
 
       <div className="latest-track" ref={trackRef}>
@@ -121,7 +127,6 @@ export default function latestmovies({ movies = [] }: { movies?: Movie[] }) {
                 <button className="l-a-btn play on" onClick={(e)=>{
                   e.stopPropagation();
                   if(isDraggingRef.current) return;
-                  // disarm current + load clicked
                   playmovie(m);
                   router.push(`/movies/watch/${m.id}?t=full`);
                 }}>PLAY</button>

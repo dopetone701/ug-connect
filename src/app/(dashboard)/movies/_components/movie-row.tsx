@@ -4,8 +4,9 @@ import { useRouter } from "next/navigation"
 import { Movie } from "../_lib/types"
 import MovieCard from "./movie-card"
 import "../latest-movies.css"
+import { useGlobalSearch } from "@/stores/use-global-search"
 
-export default function MovieRow({ title, movies }: { title: string; movies: Movie[] }) {
+export default function MovieRow({ title, movies, onSeeAll }: { title: string; movies: Movie[]; onSeeAll?: (v: string) => void }) {
   const ref = useRef<HTMLDivElement>(null)
   const isDraggingRef = useRef(false)
   const router = useRouter()
@@ -91,25 +92,34 @@ export default function MovieRow({ title, movies }: { title: string; movies: Mov
     }
   }, [movies])
 
+  const handleSeeAll = () => {
+    const clean = title.toLowerCase().trim() // adventure, vj junior, actor name, movie title - all dynamic
+    if(onSeeAll){
+      onSeeAll(clean)
+      return
+    }
+    // fallback if no prop passed
+    useGlobalSearch.getState().setQuery(clean)
+    router.push(`/search?q=${encodeURIComponent(clean)}`)
+  }
+
   if(!movies?.length) return null
 
   return (
     <div className="latest-root">
       <div className="latest-head">
-        <h3 className="latest-title">{title}</h3>
-        <button className="latest-see" onClick={()=> router.push("/movies")}>SEE ALL</button>
+        <h3 className="latest-title" onClick={handleSeeAll} style={{cursor:"pointer"}}>{title}</h3>
+        <button className="latest-see" onClick={handleSeeAll}>SEE ALL</button>
       </div>
       <div className="latest-track-wrap">
         <div ref={ref} className="latest-track">
           {movies.map(m => (
             <div
               key={m.id}
-              // before: router.push(`/movies/watch/${m.id}?t=full`)
-onClick={()=>{
-  if(isDraggingRef.current) return
-  router.push(`/movies/watch/${m.id}`) // yt page
-}}
-
+              onClick={()=>{
+                if(isDraggingRef.current) return
+                router.push(`/movies/watch/${m.id}`)
+              }}
             >
               <MovieCard m={m} />
             </div>

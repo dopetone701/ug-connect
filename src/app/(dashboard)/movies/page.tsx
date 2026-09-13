@@ -1,6 +1,5 @@
-"use client";
+"use client"
 import { useRouter } from "next/navigation";
-
 import { useEffect, useState, useCallback, useRef, useMemo } from "react";
 import "./movies.css";
 import "./latest-movies.css";
@@ -11,7 +10,7 @@ import { useMovieStore } from "./_lib/use-movie-store";
 import { Movie as LibMovie } from "./_lib/types";
 import ExploreMore from "./_lib/explore-more";
 import GenreFilter from "./_lib/genre-filter";
-
+import { useGlobalSearch } from "@/stores/use-global-search";
 
 type ApiMovie = {
   id: number;
@@ -41,7 +40,6 @@ export default function MoviesPage(){
   const store = useMovieStore() as any;
   const router = useRouter();
 
-
   useEffect(()=>{
     async function load(){
       const res = await fetch(API_URL, { cache: "no-store" });
@@ -61,6 +59,7 @@ export default function MoviesPage(){
         createdAt: (m as any).created_at,
       }));
       setAllMovies(mapped);
+      useGlobalSearch.getState().setAll(mapped)
     }
     load();
   },[]);
@@ -79,13 +78,13 @@ export default function MoviesPage(){
     setAnchor(type);
     pauseRef.current = Date.now() + 20000;
   };
+
   const m = movies[active];
   const isInMyList = useMemo(() => lists?.[0]?.movieIds?.includes(m?.id), [lists, m]);
 
   const handleAddToList = useCallback(()=>{
     if(!m) return;
     if(isInMyList){
-      // remove if already added - toggle behavior
       if(store.removeFromMyList) store.removeFromMyList(m.id);
       else if(store.toggleListMovie) store.toggleListMovie("my-list", m.id);
       return;
@@ -99,12 +98,11 @@ export default function MoviesPage(){
     else if(store.addToList) store.addToList(myList.id, m.id);
     else if(store.toggleListMovie) store.toggleListMovie(myList.id, m.id);
     else if(store.addToMyList) store.addToMyList(m.id);
-
     setJustAdded(true);
     setTimeout(()=> setJustAdded(false), 1200);
   },[m, lists, createList, store, isInMyList]);
-  
-  const handleShare = useCallback(async ()=>{  
+
+  const handleShare = useCallback(async ()=>{
     if(!m) return;
     const url = `${window.location.origin}/movies/watch/${m.id}?t=${anchor}`;
     if((navigator as any).share){
@@ -114,12 +112,33 @@ export default function MoviesPage(){
     }
   },[m, anchor]);
 
-   const handlePlay = useCallback(()=>{ 
+  const handlePlay = useCallback(()=>{
     if(!m) return;
     setClicking(true);
     setTimeout(()=>setClicking(false),420);
     router.push(`/movies/watch/${m.id}?t=${anchor}`);
   },[m, anchor, router]);
+
+  // DYNAMIC SEE ALL - NO HARDCODED NAMES
+  const handleSeeAll = useCallback((value: string) => {
+  let clean = value.toLowerCase().trim()
+  if(!clean || clean === "all"){
+    useGlobalSearch.getState().setQuery("")
+    useGlobalSearch.getState().setSection(null)
+    return
+  }
+  if(!clean.includes("movies") && clean.split(" ").length === 1){
+    clean = `${clean} movies`
+  }
+  const store = useGlobalSearch.getState() as any
+  store.setQuery(clean)
+  store.setSection?.(clean)
+  // toggle island bar - THIS WAS MISSING
+  store.setOpen?.(true)
+  store.setIsOpen?.(true)
+  store.openDrawer?.()
+  store.setShowDrawer?.(true)
+}, [])
 
 
   const sections = useMemo(() => getSections(allMovies, { favIds, recentIds }), [allMovies, favIds, recentIds]);
@@ -143,9 +162,12 @@ export default function MoviesPage(){
           <div className="center-cover">
             <img src={m.cover} alt={m.title} />
             <div className="center-fade"/>
-            <div className="center-top"><span className="c-pill">{m.genre}</span><span className="c-pill muted">{m.vj}</span></div>
+            <div className="center-top">
+              <span className="c-pill" style={{cursor:"pointer"}} onClick={()=>handleSeeAll(m.genre)}>{m.genre}</span>
+              <span className="c-pill muted" style={{cursor:"pointer"}} onClick={()=>handleSeeAll(m.vj)}>{m.vj}</span>
+            </div>
             <div className="center-desc">
-              <div className="c-title">{m.title}</div>
+              <div className="c-title" style={{cursor:"pointer"}} onClick={()=>handleSeeAll(m.title)}>{m.title}</div>
               <div className="c-meta">{m.genre} • {m.vj}</div>
               <div className="c-text">{m.desc}</div>
             </div>
@@ -207,16 +229,13 @@ export default function MoviesPage(){
         </div>
       </div>
 
-        <GenreFilter onSelect={(g) => console.log("filter:", g)} />
-
+      <GenreFilter onSelect={handleSeeAll} />
 
       {sections.map(s => {
         if((s as any).hidden) return null;
         if(!s.data?.length) return null;
-        return <MovieRow key={s.id} title={s.title} movies={s.data} />
+        return <MovieRow key={s.id} title={s.title} movies={s.data} onSeeAll={handleSeeAll} />
       })}
-
-      
 
       <UserListsRow movies={allMovies} />
       <ExploreMore movies={allMovies} />
