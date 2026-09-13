@@ -9,6 +9,7 @@
 .dna-pose{ border:none!important; }
 
 /* PLAYER - PC (keep your rigut PC look) */
+/* PLAYER - PC - INNER FIX ONLY, OUTER STAYS SAME */
 .film-giant.inner-body{
   position:relative;
   width:100%;
@@ -19,11 +20,15 @@
   background:#000;
   border:1px solid hsl(var(--border) /.6);
   margin:0 auto;
+  padding:0 !important; /* no inner padding */
 }
 .film-center,.center-cover{
   width:100%;
   height:100%;
-  border-radius:18px;
+  border-radius:0 !important; /* remove double radius that makes gap */
+  border:none !important;
+  margin:0 !important;
+  padding:0 !important;
   overflow:hidden;
   position:relative;
 }
@@ -33,6 +38,10 @@
   object-fit:cover;
   background:#000;
   display:block;
+  margin:0 !important;
+  padding:0 !important;
+  border:none !important;
+  border-radius:0 !important;
 }
 .connect-poster{
   position:absolute;
@@ -40,9 +49,11 @@
   width:100%;
   height:100%;
   object-fit:cover;
-  z-index:1;
-  pointer-events:none;
+  margin:0 !important;
+  padding:0 !important;
+  border-radius:0 !important;
 }
+
 
 /* TOP BAR */
 .center-top{
@@ -475,4 +486,136 @@ html:has(.connect-root.is-shell-full) .similar-slot {
 }
 :fullscreen.connect-root, :fullscreen.film-giant, :-webkit-full-screen.connect-root{
   width:100vw!important; height:100vh!important; height:100dvh!important; background:#000!important;
+}
+
+
+/* ===== MOBILE WRAP EDGE TO EDGE - NUCLEAR - LAST IN FILE ===== */
+@media(max-width:768px){
+  html, body {
+    overflow-x: hidden !important;
+  }
+
+  /* kill dashboard parent constraints */
+  main, 
+  [class*="dashboard"] > main,
+  [class*="content"],
+  .film-root {
+    padding-left:0 !important;
+    padding-right:0 !important;
+    margin-left:0 !important;
+    margin-right:0 !important;
+    max-width:100vw !important;
+    overflow-x:hidden !important;
+  }
+
+  .connect-root{
+    position:relative !important;
+    left:50% !important;
+    right:50% !important;
+    margin-left:-50vw !important;
+    margin-right:-50vw !important;
+    width:100vw !important;
+    max-width:100vw !important;
+    min-width:100vw !important;
+    padding:0 !important;
+    border:none !important;
+    border-radius:0 !important;
+    background:#000 !important;
+    transform:none !important;
+  }
+
+  .connect-root .film-giant.inner-body,
+  .connect-root .film-center,
+  .connect-root .center-cover{
+    width:100vw !important;
+    max-width:100vw !important;
+    margin:0 !important;
+    padding:0 !important;
+    border:none !important;
+    border-radius:0 !important;
+  }
+}
+
+
+/* ===== MOBILE LOGO SMALLER ===== */
+@media(max-width:768px){
+  .fullscreen-logo.top-right{
+    top:8px !important;
+    right:8px !important;
+    max-width:36px !important;
+    max-height:36px !important;
+  }
+  .fullscreen-logo.top-right img{
+    max-width:32px !important;
+    max-height:32px !important;
+    width:32px !important;
+    height:auto !important;
+  }
+  .connect-root.is-shell-full .fullscreen-logo.top-right img{
+    max-width:36px !important;
+    max-height:36px !important;
+  }
+}
+
+
+/* ===== MOBILE SMALL RECT -> LANDSCAPE FULL ANIMATION ===== */
+@media(max-width:768px){
+  .connect-root{
+    will-change: transform, width, height;
+  }
+
+  /* entering fullscreen - animate from 16:9 top to full landscape */
+  .connect-root.is-shell-full{
+    position:fixed !important;
+    inset:0 !important;
+    width:100vw !important;
+    height:100dvh !important;
+    width:100dvw !important;
+    height:100dvh !important;
+    background:#000 !important;
+    z-index:2147483647 !important;
+    animation: rectToFull .42s cubic-bezier(.16,1,.3,1) forwards !important;
+  }
+
+  .connect-root.is-shell-full .film-giant.inner-body{
+    width:100% !important;
+    height:100% !important;
+    animation: rectToFullInner .42s cubic-bezier(.16,1,.3,1) forwards !important;
+  }
+
+  @keyframes rectToFull{
+    0%{
+      width:100vw;
+      height:56.25vw; /* your small rectangle height */
+      top:0;
+      left:0;
+      transform: scale(1) translateY(0);
+      border-radius:0;
+    }
+    100%{
+      width:100dvh;
+      height:100dvw;
+      top:50%;
+      left:50%;
+      transform: translate(-50%, -50%) rotate(90deg);
+      border-radius:0;
+    }
+  }
+
+  @keyframes rectToFullInner{
+    0%{ transform: scale(.98); }
+    100%{ transform: scale(1); }
+  }
+
+  /* when already landscape, don't rotate */
+  @media(orientation:landscape){
+    .connect-root.is-shell-full{
+      animation: rectToFullLandscape .32s cubic-bezier(.16,1,.3,1) forwards !important;
+      transform:none !important;
+    }
+    @keyframes rectToFullLandscape{
+      0%{ transform: scale(.96); }
+      100%{ transform: scale(1); }
+    }
+  }
 }
