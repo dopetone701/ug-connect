@@ -413,3 +413,36 @@ html:has(.connect-root.is-shell-full) .similar-slot {
     overflow-x:hidden!important;
   }
 }
+
+@media(max-width:768px){
+ .connect-root.is-shell-full{
+    position:fixed!important;
+    inset:0!important;
+    width:100vw!important;
+    height:100dvh!important;
+    width:100dvw!important;
+    height:100dvh!important;
+    z-index:999999!important;
+    background:#000!important;
+    animation: ytExpand.25s ease;
+  }
+  @keyframes ytExpand{ from{transform:scale(.96)} to{transform:scale(1)} }
+
+ .connect-root.is-shell-full.film-giant.inner-body{
+    width:100vw!important;
+    height:56.25vw!important;
+    top:50%!important;
+    left:50%!important;
+    transform:translate(-50%,-50%)!important;
+    position:absolute!important;
+    border:none!important;
+    border-radius:0!important;
+  }
+  @media(orientation:portrait){
+   .connect-root.is-shell-full.film-giant.inner-body{
+      width:100dvh!important;
+      height:56.25dvh!important;
+      transform:translate(-50%,-50%) rotate(90deg)!important;
+    }
+  }
+}

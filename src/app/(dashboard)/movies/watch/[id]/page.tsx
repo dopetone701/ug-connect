@@ -1,6 +1,4 @@
-
-
-"use client"
+"use client";
 export const runtime = 'edge';
 
 import { useEffect, useState, useRef, useCallback } from "react"
@@ -22,7 +20,6 @@ export default function WatchPage(){
   const type = search.get("t") || "full"
   const isPreview = type === "preview"
 
-  // ---- ALL HOOKS AT TOP - NEVER CONDITIONAL ----
   const { lists, addToList, removeFromList, createList } = useMovieStore() as any
   const mainList = lists?.[0]
 
@@ -51,7 +48,6 @@ export default function WatchPage(){
   const [bufferedProgress, setBufferedProgress] = useState(0)
   const [isMobile, setIsMobile] = useState(false)
 
-  // Hooks - always run
   const updateBufferedProgress = useCallback(() => {
     const video = videoRef.current
     if (!video ||!video.duration ||!video.buffered.length) return
@@ -91,6 +87,40 @@ export default function WatchPage(){
     }
   }, [])
 
+  // ===== NEW YOUTUBE-STYLE FULLSCREEN =====
+  const toggleFullscreen = useCallback(async () => {
+    const mobile = window.innerWidth <= 768;
+    if (mobile) {
+      // MOBILE: fake fullscreen like YouTube, no requestFullscreen
+      if (!isFullScreen) {
+        setIsFullScreen(true);
+        document.body.style.overflow = 'hidden';
+        try {
+          // @ts-ignore
+          if (screen.orientation?.lock) await screen.orientation.lock('landscape').catch(()=>{});
+        } catch {}
+      } else {
+        setIsFullScreen(false);
+        document.body.style.overflow = '';
+        try {
+          // @ts-ignore
+          if (screen.orientation?.unlock) screen.orientation.unlock();
+        } catch {}
+      }
+    } else {
+      // PC: real css fullscreen
+      if (!document.fullscreenElement) {
+        try {
+          await rootRef.current?.requestFullscreen();
+        } catch {
+          setIsFullScreen(true); // fallback to css fullscreen
+        }
+      } else {
+        try { await document.exitFullscreen(); } catch { setIsFullScreen(false); }
+      }
+    }
+  }, [isFullScreen]);
+
   const formatTime = useCallback((sec: number) => {
     if(!sec || isNaN(sec)) return "0:00"
     const h = Math.floor(sec / 3600)
@@ -119,10 +149,14 @@ export default function WatchPage(){
   useEffect(()=>{
     if(!movie) return
     const id = setTimeout(()=> setMounted(true), 50)
-    const onFs = () => setIsFullScreen(!!document.fullscreenElement)
+    const onFs = () => {
+      const fs =!!document.fullscreenElement;
+      if (!fs &&!isMobile) setIsFullScreen(false);
+      if (fs) setIsFullScreen(true);
+    }
     document.addEventListener('fullscreenchange', onFs)
     return () => { clearTimeout(id); document.removeEventListener('fullscreenchange', onFs) }
-  },[movie])
+  },[movie, isMobile])
 
   useEffect(()=>{
     if(!playing) return
@@ -149,7 +183,6 @@ export default function WatchPage(){
     }
   },[isDraggingVol, updateVolumeFromY])
 
-  // ---- COMPUTED VALUES (not hooks) - safe after hooks ----
   const isInMyList = mainList?.movieIds?.includes(Number(params.id)) || mainList?.movieIds?.includes(String(params.id))
 
   const rawSources = movie? [
@@ -197,7 +230,6 @@ export default function WatchPage(){
     }
   }
 
-  // ---- RENDERS AFTER ALL HOOKS ----
   if(!movie) return <div className="film-root"><div className="film-giant inner-body" style={{display:"flex",alignItems:"center",justifyContent:"center",background:"#000",color:"#fff"}}>Loading connect...</div></div>
 
   if(isPreview && isMobile){
@@ -274,7 +306,7 @@ export default function WatchPage(){
                   <button className={`cc-icon settings-btn ${showQualityMenu? 'active':''}`} onClick={()=> setShowQualityMenu(!showQualityMenu)}><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth={2}><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.7 1.7 0 0 0.3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.6v.1a2 2 0 1 1-4 0V21a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0.3-1.9 1.7 1.7 0 0 0-1.6-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3h.1A1.7 1.7 0 0 0 10 3.1V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.6 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9v.1a1.7 1.7 0 0 0 1.6 1h.1a2 2 0 1 1 0 4H21a1.7 1.7 0 0 0-1.6 1.8Z" /></svg></button>
                   {showQualityMenu && (<div className="settings-menu"><div className="settings-head">QUALITY</div>{qualitySources.map(q=>(<button key={q.value} className={`settings-item ${quality===q.value? 'active':''}`} onClick={()=> changeQuality(q)}><span>{q.label}</span>{quality===q.value && <span className="q-dot">●</span>}</button>))}</div>)}
                 </div>
-                <button className="cc-icon apple-full" onClick={async()=>{ try{ if(!document.fullscreenElement) await rootRef.current?.requestFullscreen(); else await document.exitFullscreen(); }catch{}}}>{isFullScreen? <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M4 9h5V4"/><path d="M9 9L4 4"/><path d="M20 9h-5V4"/><path d="M15 9l5-5"/><path d="M4 15h5v5"/><path d="M9 15l-5 5"/><path d="M20 15h-5v5"/><path d="M15 15l5 5"/></svg> : <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M3 3l6 6"/><path d="M16 3h3a2 2 0 0 1 2 2v3"/><path d="M21 3l-6 6"/><path d="M8 21H5a2 2 0 0 1-2-2v-3"/><path d="M3 21l6-6"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/><path d="M21 21l-6-6"/></svg>}</button>
+                <button className="cc-icon apple-full" onClick={toggleFullscreen}>{isFullScreen? <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M4 9h5V4"/><path d="M9 9L4 4"/><path d="M20 9h-5V4"/><path d="M15 9l5-5"/><path d="M4 15h5v5"/><path d="M9 15l-5 5"/><path d="M20 15h-5v5"/><path d="M15 15l5 5"/></svg> : <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M3 3l6 6"/><path d="M16 3h3a2 2 0 0 1 2 2v3"/><path d="M21 3l-6 6"/><path d="M8 21H5a2 2 0 0 1-2-2v-3"/><path d="M3 21l6-6"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/><path d="M21 21l-6-6"/></svg>}</button>
               </div>
             </div>
           </div>
