@@ -19,3 +19,20 @@
 .cc-status{margin-top:16px;padding:12px;background:#111;border:1px solid #222;border-radius:10px;font-size:11px;color:#888;overflow-wrap:break-word}
 .cc-btn{padding:10px 18px;border-radius:8px;font-weight:700;cursor:pointer;border:none}
 .cc-btn.ghost{background:#111;border:1px solid #333;color:#fff}.cc-btn.primary{background:linear-gradient(135deg,#00ff88,#00cc6a);color:#000}
+
+
+.series-manager{border:1px solid #2a2a2a; border-radius:12px; padding:12px; background:#0f0f0f}
+.series-head{display:flex; justify-content:space-between; align-items:center; margin-bottom:12px}
+.season-block{border:1px solid #222; border-radius:10px; padding:10px; margin-bottom:12px; background:#141414}
+.season-header{display:flex; gap:8px; justify-content:space-between; margin-bottom:10px}
+.season-name-input{flex:1; background:#1c1c1c; border:1px solid #333; color:#fff; padding:6px 10px; border-radius:8px}
+.episode-row{display:flex; gap:10px; background:#1a1a1a; padding:10px; border-radius:10px; margin-bottom:8px; position:relative}
+.ep-num{background:#333; width:28px; height:28px; display:flex; align-items:center; justify-content:center; border-radius:99px; font-size:12px; flex-shrink:0}
+.ep-fields{flex:1; display:flex; flex-direction:column; gap:8px}
+.ep-fields input{background:#222; border:1px solid #333; color:#fff; padding:6px 8px; border-radius:6px; width:100%}
+.ep-file-grid{display:grid; grid-template-columns:1fr 1fr; gap:8px}
+.ep-file{font-size:11px; display:flex; flex-direction:column; gap:4px}
+.ep-remove{position:absolute; top:6px; right:6px; background:#ff3b3b; border:none; color:#fff; border-radius:99px; width:20px; height:20px; cursor:pointer}
+.cc-btn.small{padding:4px 10px; font-size:12px}
+.cc-btn.danger{background:#ff3b3b; color:#fff}
+.cc-hint{color:#888; font-size:12px; padding:6px}

@@ -10,10 +10,17 @@ import { useMovieStore } from "./_lib/use-movie-store";
 import { Movie as LibMovie } from "./_lib/types";
 import ExploreMore from "./_lib/explore-more";
 import GenreFilter from "./_lib/genre-filter";
+import TvSeriesRow from "./_lib/tv-series-row";
+import MiniSeriesRow from "./_lib/mini-series-row";
 import { useGlobalSearch } from "@/stores/use-global-search";
 
 type ApiMovie = {
-  id: number;
+  id: any;
+  type?: string;
+  year?: number;
+  actors?: string;
+  seasons?: any[];
+
   title: string;
   genre: string;
   vj: string;
@@ -53,10 +60,15 @@ export default function MoviesPage(){
         desc: m.description,
         video: m.video_url,
         preview: m.preview_urls,
-        views: (m as any).views || Math.floor(Math.random()*5000),
+               views: (m as any).views || Math.floor(Math.random()*5000),
         likes: (m as any).likes || Math.floor(Math.random()*1000),
         isEditorsPick: (m as any).is_editors_pick || false,
         createdAt: (m as any).created_at,
+        type: (m as any).type || "Single",
+        year: (m as any).year,
+        actors: (m as any).actors,
+        seasons: (m as any).seasons || [],
+
       }));
       setAllMovies(mapped);
       useGlobalSearch.getState().setAll(mapped)
@@ -120,28 +132,31 @@ export default function MoviesPage(){
   },[m, anchor, router]);
 
   // DYNAMIC SEE ALL - NO HARDCODED NAMES
-  const handleSeeAll = useCallback((value: string) => {
-  let clean = value.toLowerCase().trim()
-  if(!clean || clean === "all"){
-    useGlobalSearch.getState().setQuery("")
-    useGlobalSearch.getState().setSection(null)
-    return
-  }
-  if(!clean.includes("movies") && clean.split(" ").length === 1){
-    clean = `${clean} movies`
-  }
-  const store = useGlobalSearch.getState() as any
-  store.setQuery(clean)
-  store.setSection?.(clean)
-  // toggle island bar - THIS WAS MISSING
-  store.setOpen?.(true)
-  store.setIsOpen?.(true)
-  store.openDrawer?.()
-  store.setShowDrawer?.(true)
-}, [])
+   const handleSeeAll = useCallback((value: string) => {
+    try {
+      let clean = (value || "").toLowerCase().trim()
+      const s:any = useGlobalSearch.getState()
+      if(!clean || clean === "all"){
+        s.setQuery?.("")
+        s.setSection?.(null)
+        return
+      }
+      if(!clean.includes("movies") && clean.split(" ").length === 1){
+        clean = `${clean} movies`
+      }
+      s.setQuery?.(clean)
+      s.setSection?.(clean)
+      if(s.setOpen) s.setOpen(true)
+      else if(s.setIsOpen) s.setIsOpen(true)
+      else if(s.openDrawer) s.openDrawer()
+    } catch {}
+  }, [])
 
 
-  const sections = useMemo(() => getSections(allMovies, { favIds, recentIds }), [allMovies, favIds, recentIds]);
+
+ const sections = useMemo(() => getSections(allMovies, { favIds, recentIds }), [allMovies, favIds, recentIds]);
+  const tvSeriesMovies = useMemo(() => allMovies.filter((x:any) => x.type === "Full"), [allMovies]);
+  const miniSeriesMovies = useMemo(() => allMovies.filter((x:any) => x.type === "Mini"), [allMovies]);
 
   if(!allMovies.length) return <div className="film-root"><div className="film-giant" style={{display:"flex",alignItems:"center",justifyContent:"center"}}>Loading latest...</div></div>;
 
@@ -231,11 +246,24 @@ export default function MoviesPage(){
 
       <GenreFilter onSelect={handleSeeAll} />
 
-      {sections.map(s => {
-        if((s as any).hidden) return null;
+           {sections.slice(0,4).map((s:any) => {
+        if(s.hidden) return null;
         if(!s.data?.length) return null;
         return <MovieRow key={s.id} title={s.title} movies={s.data} onSeeAll={handleSeeAll} />
       })}
+      {tvSeriesMovies.length > 0 && <TvSeriesRow movies={tvSeriesMovies} onSeeAll={handleSeeAll} />}
+      {sections.slice(4,7).map((s:any) => {
+        if(s.hidden) return null;
+        if(!s.data?.length) return null;
+        return <MovieRow key={s.id} title={s.title} movies={s.data} onSeeAll={handleSeeAll} />
+      })}
+      {miniSeriesMovies.length > 0 && <MiniSeriesRow movies={miniSeriesMovies} onSeeAll={handleSeeAll} />}
+      {sections.slice(7).map((s:any) => {
+        if(s.hidden) return null;
+        if(!s.data?.length) return null;
+        return <MovieRow key={s.id} title={s.title} movies={s.data} onSeeAll={handleSeeAll} />
+      })}
+
 
       <UserListsRow movies={allMovies} />
       <ExploreMore movies={allMovies} />

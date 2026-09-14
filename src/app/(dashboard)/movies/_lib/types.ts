@@ -1,5 +1,5 @@
 export type Movie = {
-  id: number
+  id: any
   title: string
   genre: string
   vj: string
@@ -11,12 +11,17 @@ export type Movie = {
   likes?: number
   isEditorsPick?: boolean
   createdAt?: string
+  // SURGICAL - from D1/R2 for series
+  type?: string
+  year?: number
+  actors?: string
+  seasons?: any[]
 }
 
 export type UserList = {
   id: string
   name: string
-  movieIds: number[]
+  movieIds: any[]
 }
 
 export type Section = {
