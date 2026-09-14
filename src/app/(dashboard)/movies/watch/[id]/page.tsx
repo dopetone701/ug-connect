@@ -32,6 +32,7 @@ export default function WatchPage(){
   const rootRef = useRef<HTMLDivElement>(null)
   const volRef = useRef<HTMLDivElement>(null)
   const lastTimeRef = useRef(0)
+  const autoPlayTimerRef = useRef<any>(null)
 
   const [playing, setPlaying] = useState(false)
   const [progress, setProgress] = useState(0)
@@ -48,11 +49,14 @@ export default function WatchPage(){
   const [quality, setQuality] = useState("auto")
   const [bufferedProgress, setBufferedProgress] = useState(0)
   const [isMobile, setIsMobile] = useState(false)
-  const skip = useCallback((sec: number) => {
-  if(!videoRef.current) return
-  videoRef.current.currentTime = Math.max(0, Math.min(duration, videoRef.current.currentTime + sec))
-}, [duration])
+  const [isLoading, setIsLoading] = useState(true)
+  const [descExpanded, setDescExpanded] = useState(false) // <-- NEW
 
+
+  const skip = useCallback((sec: number) => {
+    if(!videoRef.current) return
+    videoRef.current.currentTime = Math.max(0, Math.min(duration, videoRef.current.currentTime + sec))
+  }, [duration])
 
   const updateBufferedProgress = useCallback(() => {
     const video = videoRef.current
@@ -86,6 +90,7 @@ export default function WatchPage(){
   const togglePlay = useCallback(() => {
     if(!videoRef.current) return
     if(videoRef.current.paused){
+      videoRef.current.muted = false
       videoRef.current.play().then(()=>{ setPlaying(true); setHasStarted(true)}).catch(()=>{})
     }else{
       videoRef.current.pause()
@@ -93,27 +98,17 @@ export default function WatchPage(){
     }
   }, [])
 
-  // ===== FINAL FULLSCREEN - COVERS BROWSER BAR =====
   const toggleFullscreen = useCallback(async () => {
     const video = videoRef.current as any;
     const root = rootRef.current as any;
     if (!video ||!root) return;
-
     if (!isFullScreen) {
       setIsFullScreen(true);
       document.body.style.overflow = 'hidden';
       document.documentElement.style.overflow = 'hidden';
-
       try {
-        // iPhone - this hides the Safari bar
-        if (video.webkitEnterFullscreen) {
-          video.webkitEnterFullscreen();
-        }
-        // Android Chrome - hide nav bar
-        else if (root.requestFullscreen) {
-          await root.requestFullscreen({ navigationUI: "hide" });
-        }
-        // Lock landscape like YouTube
+        if (video.webkitEnterFullscreen) video.webkitEnterFullscreen();
+        else if (root.requestFullscreen) await root.requestFullscreen({ navigationUI: "hide" });
         if (window.innerWidth <= 768) {
           // @ts-ignore
           if (screen.orientation?.lock) await screen.orientation.lock('landscape').catch(()=>{});
@@ -212,6 +207,29 @@ export default function WatchPage(){
   const currentQualityObj = qualitySources.find(q=>q.value===quality) || qualitySources[0]
   const videoUrl = currentQualityObj?.url
 
+  useEffect(()=>{
+    if(!videoUrl ||!videoRef.current) return
+    if(isPreview) return
+    setIsLoading(true)
+    if(autoPlayTimerRef.current) clearTimeout(autoPlayTimerRef.current)
+    autoPlayTimerRef.current = setTimeout(async () => {
+      const v = videoRef.current
+      if(!v) return
+      try {
+        v.muted = true
+        v.volume = volume
+        await v.play()
+        setPlaying(true)
+        setHasStarted(true)
+        setIsLoading(false)
+        setTimeout(()=> { if(v){ v.muted = false; v.volume = volume } }, 300)
+      } catch (e) {
+        setIsLoading(false)
+      }
+    }, 3000)
+    return ()=> clearTimeout(autoPlayTimerRef.current)
+  }, [videoUrl, isPreview])
+
   const changeQuality = async (q:any) => {
     if(!videoRef.current || q.value===quality) return
     lastTimeRef.current = videoRef.current.currentTime
@@ -244,6 +262,14 @@ export default function WatchPage(){
     }
   }
 
+  const handlePlayPreview = () => {
+    if(isPreview){
+      router.push(`${pathname}?t=full`)
+    } else {
+      router.push(`${pathname}?t=preview`)
+    }
+  }
+
   if(!movie) return <div className="film-root"><div className="film-giant inner-body" style={{display:"flex",alignItems:"center",justifyContent:"center",background:"#000",color:"#fff"}}>Loading connect...</div></div>
 
   if(isPreview && isMobile){
@@ -260,78 +286,115 @@ export default function WatchPage(){
       <div className="film-giant connect-player inner-body" onMouseMove={()=> setShowControls(true)} onMouseLeave={()=> playing && setShowControls(false)} onTouchStart={()=> setShowControls(true)}>
         <div className="film-center">
           <div className="center-cover">
-  <div className="fullscreen-logo top-right"><img src="/logo.png" alt="logo" /></div>
-  <video
-    key={movie.id}
-    ref={videoRef}
-    src={videoUrl}
-    poster={movie.cover_url}
-    className="connect-video"
-    onTimeUpdate={(e)=>{
-      const v = e.currentTarget
-      setCurrentTime(v.currentTime)
-      lastTimeRef.current = v.currentTime
-      if (v.duration) { setProgress((v.currentTime / v.duration) * 100); setDuration(v.duration) }
-      updateBufferedProgress()
-    }}
-    onProgress={updateBufferedProgress}
-    onCanPlay={updateBufferedProgress}
-    onLoadedMetadata={(e)=> {
-      setDuration((e.target as HTMLVideoElement).duration)
-      if(lastTimeRef.current) (e.target as HTMLVideoElement).currentTime = lastTimeRef.current
-      updateBufferedProgress()
-    }}
-    onEnded={()=> setPlaying(false)}
-    onClick={togglePlay}
-    playsInline
-    webkit-playsinline="true"
-    loop={isPreview}
-  />
-  {!hasStarted &&!playing && <img src={movie.cover_url} alt={movie.title} className="connect-poster" />}
-
-  {/* TOP - ONLY VJ, NO GENRE */}
-  <div className={`center-top ${showControls? 'show' : ''}`}>
-    <div className="top-pills"><span className="c-pill">{movie.vj}</span></div>
-  </div>
-
-  {!playing && (
-    <button className="play-apple" onClick={togglePlay} aria-label="play">
-      <span className="play-apple-core"><svg viewBox="0 0 24 24" className="play-apple-tri" fill="none"><path d="M8.2 5.2a1 1 0 0 0-1 1v11.6a1 1 0 0 0 1.54.84l8.9-5.8a1 1 0 0 0 0-1.68l-8.9-5.8a1 1 0 0 0-.54-.16Z" fill="white"/></svg></span>
-    </button>
-  )}
-
-  {/* CONTROLS - PRO CLEAN - TIME LEFT + FULLSCREEN RIGHT, PROGRESS ABOVE */}
-  <div className={`connect-controls ${showControls? 'show' : ''}`}>
-    {/* PROGRESS LIFTED ABOVE TIME */}
-    <div className="cc-progress-top">
-      <div className="starz-progress" onClick={(e)=>{ const bg = e.currentTarget.querySelector('.starz-progress-bg') as HTMLElement; if(bg) seekTo(e.clientX, bg.getBoundingClientRect()) }}>
-        <div className="starz-progress-bg">
-          <div className="starz-buffered" style={{ width: `${bufferedProgress}%` }} />
-          <div className="starz-progress-fill" style={{ width: `${progress}%` }} />
-          <div className="starz-thumb" style={{ left: `${progress}%` }} />
+            <div className="fullscreen-logo top-right"><img src="/logo.png" alt="logo" /></div>
+            <video
+              key={`${movie.id}-${quality}`}
+              ref={videoRef}
+              src={videoUrl}
+              className="connect-video"
+              onLoadStart={()=> setIsLoading(true)}
+              onWaiting={()=> setIsLoading(true)}
+              onCanPlay={()=> setIsLoading(false)}
+              onPlaying={()=> { setIsLoading(false); setPlaying(true); setHasStarted(true) }}
+              onPause={()=> setPlaying(false)}
+              onTimeUpdate={(e)=>{
+                const v = e.currentTarget
+                setCurrentTime(v.currentTime)
+                lastTimeRef.current = v.currentTime
+                if (v.duration) { setProgress((v.currentTime / v.duration) * 100); setDuration(v.duration) }
+                updateBufferedProgress()
+              }}
+              onProgress={updateBufferedProgress}
+              onLoadedMetadata={(e)=> {
+                setDuration((e.target as HTMLVideoElement).duration)
+                if(lastTimeRef.current) (e.target as HTMLVideoElement).currentTime = lastTimeRef.current
+                updateBufferedProgress()
+              }}
+              onEnded={()=> setPlaying(false)}
+              onClick={togglePlay}
+              playsInline
+              webkit-playsinline="true"
+              loop={isPreview}
+              preload="auto"
+              muted
+            />
+            {isLoading && (
+              <div className="connect-loader">
+                <div className="connect-spinner" />
+              </div>
+            )}
+            <div className={`center-top ${showControls? 'show' : ''}`}>
+              <div className="top-pills"><span className="c-pill">{movie.vj}</span></div>
+            </div>
+            {!playing &&!isLoading && (
+              <button className="play-apple" onClick={togglePlay} aria-label="play">
+                <span className="play-apple-core"><svg viewBox="0 0 24 24" className="play-apple-tri" fill="none"><path d="M8.2 5.2a1 1 0 0 0-1 1v11.6a1 1 0 0 0 1.54.84l8.9-5.8a1 1 0 0 0 0-1.68l-8.9-5.8a1 1 0 0 0-.54-.16Z" fill="white"/></svg></span>
+              </button>
+            )}
+            <div className={`connect-controls ${showControls? 'show' : ''}`}>
+              <div className="cc-progress-top">
+                <div className="starz-progress" onClick={(e)=>{ const bg = e.currentTarget.querySelector('.starz-progress-bg') as HTMLElement; if(bg) seekTo(e.clientX, bg.getBoundingClientRect()) }}>
+                  <div className="starz-progress-bg">
+                    <div className="starz-buffered" style={{ width: `${bufferedProgress}%` }} />
+                    <div className="starz-progress-fill" style={{ width: `${progress}%` }} />
+                    <div className="starz-thumb" style={{ left: `${progress}%` }} />
+                  </div>
+                </div>
+              </div>
+              <div className="cc-bottom-row">
+                <div className="cc-left-time">{formatTime(currentTime)} / {formatTime(duration)}</div>
+                <div className="cc-right-simple">
+                  <button className="cc-icon apple-full" onClick={toggleFullscreen}>
+                    {isFullScreen? <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M4 9h5V4"/><path d="M9 9L4 4"/><path d="M20 9h-5V4"/><path d="M15 9l5-5"/><path d="M4 15h5v5"/><path d="M9 15l-5 5"/><path d="M20 15h-5v5"/><path d="M15 15l5 5"/></svg> : <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M3 3l6 6"/><path d="M16 3h3a2 2 0 0 1 2 2v3"/><path d="M21 3l-6 6"/><path d="M8 21H5a2 2 0 0 1-2-2v-3"/><path d="M3 21l6-6"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/><path d="M21 21l-6-6"/></svg>}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
-    </div>
 
-    <div className="cc-bottom-row">
-      {/* TIME ELAPSED ON LEFT */}
-      <div className="cc-left-time">
-        {formatTime(currentTime)} / {formatTime(duration)}
-      </div>
+<div className="connect-under-section" style={{ display: isFullScreen ? 'none' : 'flex' }}>
+        <div className="connect-action-row">
+          <button className="c-action-btn primary" onClick={handlePlayPreview}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="white"><path d="M8 5.14v14l11-7-11-7z"/></svg>
+            {isPreview? "Play Full" : "Play Preview"}
+          </button>
+          <button className={`c-action-btn ${isInMyList? 'active' : ''}`} onClick={handleMyList}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 5v14M5 12h14"/></svg>
+            {isInMyList? "In My List" : "My List"}
+          </button>
+          <button className="c-action-btn" onClick={handleShare}>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.59 13.51l6.83 3.98M15.41 6.51l-6.82 3.98"/></svg>
+            Share
+          </button>
+        </div>
 
-      {/* RIGHT - ONLY FULLSCREEN (DETAIL + SETTINGS REMOVED) */}
-      <div className="cc-right-simple">
-        <button className="cc-icon apple-full" onClick={toggleFullscreen}>
-          {isFullScreen? <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M4 9h5V4"/><path d="M9 9L4 4"/><path d="M20 9h-5V4"/><path d="M15 9l5-5"/><path d="M4 15h5v5"/><path d="M9 15l-5 5"/><path d="M20 15h-5v5"/><path d="M15 15l5 5"/></svg> : <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M3 3l6 6"/><path d="M16 3h3a2 2 0 0 1 2 2v3"/><path d="M21 3l-6 6"/><path d="M8 21H5a2 2 0 0 1-2-2v-3"/><path d="M3 21l6-6"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/><path d="M21 21l-6-6"/></svg>}
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
+        <div className="connect-desc-block">
+          <h1 className="c-title">{movie.title}</h1>
+          <div className="c-meta-row">
+            <span className="c-pill">{movie.genre}</span>
+            <span className="c-pill muted">{movie.vj}</span>
+            <span className="c-pill muted">{movie.year || "2024"}</span>
+            <span className="c-pill muted">{movie.rating || "HD"}</span>
+          </div>
 
+          {/* 5 LINES + MORE/LESS */}
+          <div className="c-desc-wrap">
+            <p className={`c-desc ${!descExpanded? 'clamped' : ''}`}>
+              {movie.description}
+            </p>
+            {movie.description && movie.description.length > 100 && (
+              <button className="c-more-btn" onClick={()=> setDescExpanded(!descExpanded)}>
+                {descExpanded? "See less" : "...more"}
+              </button>
+            )}
+          </div>
         </div>
       </div>
+
       {detailsOpen && (<div className="details-panel under-player"><div className="dp-head"><h2>{movie.title}</h2><button className="dp-close" onClick={()=> setDetailsOpen(false)}>✕</button></div><div className="dp-meta"><span className="c-pill">{movie.genre}</span><span className="c-pill muted">{movie.vj}</span><span className="c-pill muted">{movie.year || "2024"}</span></div><p className="dp-desc">{movie.description}</p></div>)}
+
       <SimilarMovies current={movie} />
     </div>
     </SinglePlayerProvider>
