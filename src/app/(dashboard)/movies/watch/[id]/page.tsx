@@ -47,6 +47,11 @@ export default function WatchPage(){
   const [quality, setQuality] = useState("auto")
   const [bufferedProgress, setBufferedProgress] = useState(0)
   const [isMobile, setIsMobile] = useState(false)
+  const skip = useCallback((sec: number) => {
+  if(!videoRef.current) return
+  videoRef.current.currentTime = Math.max(0, Math.min(duration, videoRef.current.currentTime + sec))
+}, [duration])
+
 
   const updateBufferedProgress = useCallback(() => {
     const video = videoRef.current
@@ -254,71 +259,75 @@ export default function WatchPage(){
       <div className="film-giant connect-player inner-body" onMouseMove={()=> setShowControls(true)} onMouseLeave={()=> playing && setShowControls(false)} onTouchStart={()=> setShowControls(true)}>
         <div className="film-center">
           <div className="center-cover">
-            <div className="fullscreen-logo top-right"><img src="/logo.png" alt="logo" /></div>
-            <video
-              key={movie.id}
-              ref={videoRef}
-              src={videoUrl}
-              poster={movie.cover_url}
-              className="connect-video"
-              onTimeUpdate={(e)=>{
-                const v = e.currentTarget
-                setCurrentTime(v.currentTime)
-                lastTimeRef.current = v.currentTime
-                if (v.duration) { setProgress((v.currentTime / v.duration) * 100); setDuration(v.duration) }
-                updateBufferedProgress()
-              }}
-              onProgress={updateBufferedProgress}
-              onCanPlay={updateBufferedProgress}
-              onLoadedMetadata={(e)=> {
-                setDuration((e.target as HTMLVideoElement).duration)
-                if(lastTimeRef.current) (e.target as HTMLVideoElement).currentTime = lastTimeRef.current
-                updateBufferedProgress()
-              }}
-              onEnded={()=> setPlaying(false)}
-              onClick={togglePlay}
-              playsInline
-              webkit-playsinline="true"
-              loop={isPreview}
-            />
-            {!hasStarted &&!playing && <img src={movie.cover_url} alt={movie.title} className="connect-poster" />}
-            <div className={`center-top ${showControls? 'show' : ''}`}>
-              <div className="top-pills"><span className="c-pill">{movie.genre}</span><span className="c-pill muted">{movie.vj}</span></div>
-            </div>
-            {!playing && (
-              <button className="play-apple" onClick={togglePlay} aria-label="play">
-                <span className="play-apple-core"><svg viewBox="0 0 24 24" className="play-apple-tri" fill="none"><path d="M8.2 5.2a1 1 0 0 0-1 1v11.6a1 1 0 0 0 1.54.84l8.9-5.8a1 1 0 0 0 0-1.68l-8.9-5.8a1 1 0 0 0-.54-.16Z" fill="white"/></svg></span>
-              </button>
-            )}
-            <div className={`connect-controls ${showControls? 'show' : ''}`}>
-              <div className="cc-left">
-                <div ref={volRef} className="vol-vertical" onMouseDown={(e)=> { setIsDraggingVol(true); updateVolumeFromY(e.clientY) }} onTouchStart={(e)=> { setIsDraggingVol(true); updateVolumeFromY(e.touches[0].clientY) }} onClick={(e)=> updateVolumeFromY(e.clientY)}>
-                  <div className="vol-vertical-track"><div className="vol-vertical-fill" style={{height:`${volume*100}%`}} /><div className="vol-vertical-thumb" style={{bottom:`calc(${volume*100}% - 5px)`}} /></div>
-                  <div className="vol-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.8"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg></div>
-                </div>
-                <div className="action-pills-row">
-                  <button className={`pill-btn mylist ${isInMyList? 'added' : ''}`} onClick={handleMyList}>{isInMyList? "✓ ADDED" : "+ MY LIST"}</button>
-                  <button className="pill-btn share" onClick={handleShare}>SHARE</button>
-                </div>
-              </div>
-              <div className="cc-center">
-                <div className="starz-progress-wrap">
-                  <div className="starz-progress" onClick={(e)=>{ const bg = e.currentTarget.querySelector('.starz-progress-bg') as HTMLElement; if(bg) seekTo(e.clientX, bg.getBoundingClientRect()) }}>
-                    <div className="starz-progress-bg"><div className="starz-buffered" style={{ width: `${bufferedProgress}%` }} /><div className="starz-progress-fill" style={{ width: `${progress}%` }} /><div className="starz-thumb" style={{ left: `${progress}%` }} /></div>
-                  </div>
-                  <div className="starz-time-out">{formatTime(currentTime)} / {formatTime(duration)}</div>
-                </div>
-              </div>
-              <div className="cc-right">
-                <button className="cc-icon details-btn" onClick={()=> setDetailsOpen(!detailsOpen)}><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth={2}><circle cx="12" cy="12" r="10" /><path d="M12 16v-4M12 8h.01" /></svg></button>
-                <div className="settings-wrap">
-                  <button className={`cc-icon settings-btn ${showQualityMenu? 'active':''}`} onClick={()=> setShowQualityMenu(!showQualityMenu)}><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth={2}><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.7 1.7 0 0 0.3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.6v.1a2 2 0 1 1-4 0V21a1.7 1.7 0 0 0-1-1.6 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0.3-1.9 1.7 1.7 0 0 0-1.6-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.6-1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3h.1A1.7 1.7 0 0 0 10 3.1V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.6 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9v.1a1.7 1.7 0 0 0 1.6 1h.1a2 2 0 1 1 0 4H21a1.7 1.7 0 0 0-1.6 1.8Z" /></svg></button>
-                  {showQualityMenu && (<div className="settings-menu"><div className="settings-head">QUALITY</div>{qualitySources.map(q=>(<button key={q.value} className={`settings-item ${quality===q.value? 'active':''}`} onClick={()=> changeQuality(q)}><span>{q.label}</span>{quality===q.value && <span className="q-dot">●</span>}</button>))}</div>)}
-                </div>
-                <button className="cc-icon apple-full" onClick={toggleFullscreen}>{isFullScreen? <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M4 9h5V4"/><path d="M9 9L4 4"/><path d="M20 9h-5V4"/><path d="M15 9l5-5"/><path d="M4 15h5v5"/><path d="M9 15l-5 5"/><path d="M20 15h-5v5"/><path d="M15 15l5 5"/></svg> : <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M3 3l6 6"/><path d="M16 3h3a2 2 0 0 1 2 2v3"/><path d="M21 3l-6 6"/><path d="M8 21H5a2 2 0 0 1-2-2v-3"/><path d="M3 21l6-6"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/><path d="M21 21l-6-6"/></svg>}</button>
-              </div>
-            </div>
-          </div>
+  <div className="fullscreen-logo top-right"><img src="/logo.png" alt="logo" /></div>
+  <video
+    key={movie.id}
+    ref={videoRef}
+    src={videoUrl}
+    poster={movie.cover_url}
+    className="connect-video"
+    onTimeUpdate={(e)=>{
+      const v = e.currentTarget
+      setCurrentTime(v.currentTime)
+      lastTimeRef.current = v.currentTime
+      if (v.duration) { setProgress((v.currentTime / v.duration) * 100); setDuration(v.duration) }
+      updateBufferedProgress()
+    }}
+    onProgress={updateBufferedProgress}
+    onCanPlay={updateBufferedProgress}
+    onLoadedMetadata={(e)=> {
+      setDuration((e.target as HTMLVideoElement).duration)
+      if(lastTimeRef.current) (e.target as HTMLVideoElement).currentTime = lastTimeRef.current
+      updateBufferedProgress()
+    }}
+    onEnded={()=> setPlaying(false)}
+    onClick={togglePlay}
+    playsInline
+    webkit-playsinline="true"
+    loop={isPreview}
+  />
+  {!hasStarted &&!playing && <img src={movie.cover_url} alt={movie.title} className="connect-poster" />}
+
+  {/* TOP - ONLY VJ, NO GENRE */}
+  <div className={`center-top ${showControls? 'show' : ''}`}>
+    <div className="top-pills"><span className="c-pill">{movie.vj}</span></div>
+  </div>
+
+  {!playing && (
+    <button className="play-apple" onClick={togglePlay} aria-label="play">
+      <span className="play-apple-core"><svg viewBox="0 0 24 24" className="play-apple-tri" fill="none"><path d="M8.2 5.2a1 1 0 0 0-1 1v11.6a1 1 0 0 0 1.54.84l8.9-5.8a1 1 0 0 0 0-1.68l-8.9-5.8a1 1 0 0 0-.54-.16Z" fill="white"/></svg></span>
+    </button>
+  )}
+
+  {/* CONTROLS - PRO CLEAN - TIME LEFT + FULLSCREEN RIGHT, PROGRESS ABOVE */}
+  <div className={`connect-controls ${showControls? 'show' : ''}`}>
+    {/* PROGRESS LIFTED ABOVE TIME */}
+    <div className="cc-progress-top">
+      <div className="starz-progress" onClick={(e)=>{ const bg = e.currentTarget.querySelector('.starz-progress-bg') as HTMLElement; if(bg) seekTo(e.clientX, bg.getBoundingClientRect()) }}>
+        <div className="starz-progress-bg">
+          <div className="starz-buffered" style={{ width: `${bufferedProgress}%` }} />
+          <div className="starz-progress-fill" style={{ width: `${progress}%` }} />
+          <div className="starz-thumb" style={{ left: `${progress}%` }} />
+        </div>
+      </div>
+    </div>
+
+    <div className="cc-bottom-row">
+      {/* TIME ELAPSED ON LEFT */}
+      <div className="cc-left-time">
+        {formatTime(currentTime)} / {formatTime(duration)}
+      </div>
+
+      {/* RIGHT - ONLY FULLSCREEN (DETAIL + SETTINGS REMOVED) */}
+      <div className="cc-right-simple">
+        <button className="cc-icon apple-full" onClick={toggleFullscreen}>
+          {isFullScreen? <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M4 9h5V4"/><path d="M9 9L4 4"/><path d="M20 9h-5V4"/><path d="M15 9l5-5"/><path d="M4 15h5v5"/><path d="M9 15l-5 5"/><path d="M20 15h-5v5"/><path d="M15 15l5 5"/></svg> : <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2"><path d="M8 3H5a2 2 0 0 0-2 2v3"/><path d="M3 3l6 6"/><path d="M16 3h3a2 2 0 0 1 2 2v3"/><path d="M21 3l-6 6"/><path d="M8 21H5a2 2 0 0 1-2-2v-3"/><path d="M3 21l6-6"/><path d="M16 21h3a2 2 0 0 0 2-2v-3"/><path d="M21 21l-6-6"/></svg>}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
         </div>
       </div>
       {detailsOpen && (<div className="details-panel under-player"><div className="dp-head"><h2>{movie.title}</h2><button className="dp-close" onClick={()=> setDetailsOpen(false)}>✕</button></div><div className="dp-meta"><span className="c-pill">{movie.genre}</span><span className="c-pill muted">{movie.vj}</span><span className="c-pill muted">{movie.year || "2024"}</span></div><p className="dp-desc">{movie.description}</p></div>)}
