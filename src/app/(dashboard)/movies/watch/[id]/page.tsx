@@ -10,6 +10,8 @@ import MobilePreview from "./mobile-preview"
 import { singleplayerprovider as SinglePlayerProvider } from "../../_components/single-player"
 import { useMovieStore } from "../../_lib/use-movie-store"
 import SimilarMovies from "./similar-movies"
+import EpisodesRow from "./episodes-row"
+
 
 const API_URL = "https://movie-server-api.connectu89.workers.dev/api/movies"
 
@@ -51,6 +53,8 @@ export default function WatchPage(){
   const [isMobile, setIsMobile] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [descExpanded, setDescExpanded] = useState(false) // <-- NEW
+
+  
 
 
   const skip = useCallback((sec: number) => {
@@ -194,8 +198,14 @@ export default function WatchPage(){
 
   const isInMyList = mainList?.movieIds?.includes(Number(params.id)) || mainList?.movieIds?.includes(String(params.id))
 
+   const epId = search.get("ep") || search.get("e")
+  const allEps = movie?.seasons?.flatMap((s:any)=>s.episodes||[]) || []
+  const activeEp = epId? allEps.find((ep:any)=> String(ep.id)===String(epId) || String(ep.episode_number)===String(epId)) : null
+  const epUrl = activeEp?.video_url || activeEp?.url
+
   const rawSources = movie? [
-    { label: "Auto", value: "auto", url: isPreview? movie.preview_urls?.[0] : movie.video_url },
+    { label: "Auto", value: "auto", url: epUrl || (isPreview? movie.preview_urls?.[0] : movie.video_url) },
+
     { label: "4K • 2160p", value: "2160", url: movie.video_url_4k || movie.video_url_2160 || movie.qualities?.["2160"] || movie.qualities?.["4k"] },
     { label: "2K • 1440p", value: "1440", url: movie.video_url_1440 || movie.qualities?.["1440"] },
     { label: "1080p", value: "1080", url: movie.video_url_1080 || movie.qualities?.["1080"] },
@@ -288,7 +298,7 @@ export default function WatchPage(){
           <div className="center-cover">
             <div className="fullscreen-logo top-right"><img src="/logo.png" alt="logo" /></div>
             <video
-              key={`${movie.id}-${quality}`}
+key={`${movie.id}-${quality}-${epId}`}
               ref={videoRef}
               src={videoUrl}
               className="connect-video"
@@ -394,6 +404,16 @@ export default function WatchPage(){
       </div>
 
       {detailsOpen && (<div className="details-panel under-player"><div className="dp-head"><h2>{movie.title}</h2><button className="dp-close" onClick={()=> setDetailsOpen(false)}>✕</button></div><div className="dp-meta"><span className="c-pill">{movie.genre}</span><span className="c-pill muted">{movie.vj}</span><span className="c-pill muted">{movie.year || "2024"}</span></div><p className="dp-desc">{movie.description}</p></div>)}
+
+
+           {!isFullScreen && movie?.seasons?.length > 0 && (
+        <EpisodesRow 
+          movie={movie} 
+          activeEpId={epId} 
+          onSelect={(ep)=> router.push(`${pathname}?t=full&ep=${ep.id || ep.episode_number}`)} 
+        />
+      )}
+
 
       <SimilarMovies current={movie} />
     </div>
