@@ -417,6 +417,15 @@ key={`${movie.id}-${quality}-${epId}`}
 
       <SimilarMovies current={movie} />
     </div>
+
+    {isMobile && (
+  <style>{`
+    @media (max-width: 768px){
+      header, .top-bar, .topbar, .dashboard-header { display:none !important; }
+    }
+  `}</style>
+)}
+
     </SinglePlayerProvider>
   )
 }
