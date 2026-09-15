@@ -71,9 +71,9 @@ export default function DotsMenu({ itemData, items = ITEMS, onAction }: any) {
       <div ref={wrapRef} className="dots-menu-wrap">
         <div ref={btnRef} className={`dots-menu-btn ${open? "open" : ""}`} onClick={() => setOpen((v) =>!v)}>
           <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-            <circle cx="12" cy="5" r="2" />
-            <circle cx="12" cy="12" r="2" />
-            <circle cx="12" cy="19" r="2" />
+            <circle cx="12" cy="5" r="3" />
+            <circle cx="12" cy="12" r="3" />
+            <circle cx="12" cy="19" r="3" />
           </svg>
         </div>
       </div>

@@ -62,3 +62,9 @@
 }
 .dots-menu-item.danger{ color:#ff5a5a; }
 .dots-menu-item.danger:hover{ background:rgba(255,90,90,.12); }
+
+
+.dots-menu-btn{
+  width:34px;
+  height:34px;
+}
