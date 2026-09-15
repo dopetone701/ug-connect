@@ -11,7 +11,7 @@
   place-items:center;
   border-radius:50%;
   color:hsl(var(--text-muted));
-  transition:background .2s, color .2s;
+  transition:background.2s, color.2s;
   cursor:pointer;
 }
 .dots-menu-btn:hover,
@@ -33,10 +33,10 @@
   display:flex;
   flex-direction:column;
   gap:2px;
-  animation: dotsIn .16s ease;
+  animation: dotsIn.16s ease;
 }
 .dots-menu-panel.up{
-  animation: dotsInUp .16s ease;
+  animation: dotsInUp.16s ease;
 }
 @keyframes dotsIn{
   from{ opacity:0; transform:scale(.96) translateY(-4px); }
@@ -54,7 +54,7 @@
   color:hsl(var(--text));
   border-radius:8px;
   cursor:pointer;
-  transition:background .2s, color .2s;
+  transition:background.2s, color.2s;
 }
 .dots-menu-item:hover{
   background:hsl(var(--surface-hover));

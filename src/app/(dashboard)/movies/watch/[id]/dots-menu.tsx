@@ -1,120 +1,100 @@
 "use client";
 import "./dots-menu.css";
 import { useState, useEffect, useRef, useCallback, useLayoutEffect } from "react";
+import { createPortal } from "react-dom";
 
-type MenuItem = { label: string; value: string; danger?: boolean };
+type Item = { label: string; value: string; danger?: boolean };
 
-const MENU_ITEMS: MenuItem[] = [
+const ITEMS: Item[] = [
   { label: "Download", value: "download" },
   { label: "Add to my list", value: "list" },
   { label: "Share", value: "share" },
   { label: "Report a problem", value: "report", danger: true },
 ];
 
-type Props = {
-  itemData?: unknown;
-  items?: MenuItem[];
-  onAction?: (type: string, data?: unknown) => void;
-};
-
-export default function DotsMenu({ itemData, items = MENU_ITEMS, onAction }: Props){
-  const [isOpen, setIsOpen] = useState(false);
-  const [coords, setCoords] = useState({ top: 0, left: 0, up: false });
-  const wrapRef = useRef<HTMLDivElement>(null);
+export default function DotsMenu({ itemData, items = ITEMS, onAction }: any) {
+  const [open, setOpen] = useState(false);
+  const [pos, setPos] = useState({ top: 0, left: 0 });
   const btnRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const [mounted, setMounted] = useState(false);
 
-  const closeMenu = useCallback(()=> setIsOpen(false), []);
-  const toggleMenu = useCallback(()=> setIsOpen((v)=>!v), []);
+  useEffect(() => setMounted(true), []);
 
-  const updatePos = useCallback(()=>{
-    if(!btnRef.current) return;
-    const rect = btnRef.current.getBoundingClientRect();
-    const h = panelRef.current?.offsetHeight || 176;
+  const updatePos = useCallback(() => {
+    if (!btnRef.current) return;
+    const r = btnRef.current.getBoundingClientRect();
     const w = 176;
-    const spaceBelow = window.innerHeight - rect.bottom;
-    const up = spaceBelow < h + 16;
-    const top = up? rect.top - h - 8 : rect.bottom + 8;
-    const left = Math.max(8, Math.min(window.innerWidth - w - 8, rect.right - w));
-    setCoords({ top, left, up });
-  },[]);
+    const h = panelRef.current?.offsetHeight || 160;
+    let left = r.right - w;
+    let top = r.bottom + 8;
 
-  useLayoutEffect(()=>{
-    if(!isOpen) return;
+    // clamp to screen - NO overflow right
+    left = Math.max(8, Math.min(left, window.innerWidth - w - 8));
+    // flip up if no space below
+    if (top + h > window.innerHeight - 8) {
+      top = r.top - h - 8;
+    }
+    top = Math.max(8, top);
+
+    setPos({ top, left });
+  }, []);
+
+  useLayoutEffect(() => {
+    if (!open) return;
     updatePos();
-    const onScroll = ()=> requestAnimationFrame(updatePos);
+    const onScroll = () => updatePos();
+    const onResize = () => updatePos();
     window.addEventListener("scroll", onScroll, true);
-    window.addEventListener("resize", updatePos);
-    return ()=>{
+    window.addEventListener("resize", onResize);
+    return () => {
       window.removeEventListener("scroll", onScroll, true);
-      window.removeEventListener("resize", updatePos);
+      window.removeEventListener("resize", onResize);
     };
-  },[isOpen, updatePos]);
+  }, [open, updatePos]);
 
-  useEffect(()=>{
-    const onDocClick = (e: MouseEvent)=>{
-      if(!wrapRef.current?.contains(e.target as Node)) closeMenu();
+  useEffect(() => {
+    if (!open) return;
+    const onDown = (e: MouseEvent) => {
+      if (!wrapRef.current?.contains(e.target as Node) &&!panelRef.current?.contains(e.target as Node)) {
+        setOpen(false);
+      }
     };
-    document.addEventListener("click", onDocClick);
-    return ()=> document.removeEventListener("click", onDocClick);
-  },[closeMenu]);
-
-  const onKey = (e: React.KeyboardEvent, fn: () => void)=>{
-    if(e.key === "Enter" || e.key === " "){
-      e.preventDefault();
-      fn();
-    }
-  };
-
-  const handleItemClick = (type: string)=>{
-    closeMenu();
-    if(onAction){
-      onAction(type, itemData);
-      return;
-    }
-    if(type === "share" && typeof navigator!== "undefined" && "share" in navigator){
-      (navigator as any).share({ title: document.title, url: window.location.href }).catch(()=>{});
-    }
-  };
+    // use mousedown not click so it doesn't fight toggle
+    setTimeout(() => document.addEventListener("mousedown", onDown), 0);
+    return () => document.removeEventListener("mousedown", onDown);
+  }, [open]);
 
   return (
-    <div ref={wrapRef} className="dots-menu-wrap" onClick={(e)=> e.stopPropagation()}>
-      <div
-        ref={btnRef}
-        className={`dots-menu-btn ${isOpen? "open" : ""}`}
-        role="button"
-        tabIndex={0}
-        aria-label="more options"
-        onClick={toggleMenu}
-        onKeyDown={(e)=> onKey(e, toggleMenu)}
-      >
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-          <circle cx="12" cy="5" r="2" />
-          <circle cx="12" cy="12" r="2" />
-          <circle cx="12" cy="19" r="2" />
-        </svg>
+    <>
+      <div ref={wrapRef} className="dots-menu-wrap">
+        <div ref={btnRef} className={`dots-menu-btn ${open? "open" : ""}`} onClick={() => setOpen((v) =>!v)}>
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <circle cx="12" cy="5" r="2" />
+            <circle cx="12" cy="12" r="2" />
+            <circle cx="12" cy="19" r="2" />
+          </svg>
+        </div>
       </div>
 
-      {isOpen && (
-        <div
-          ref={panelRef}
-          className={`dots-menu-panel ${coords.up? "up" : "down"}`}
-          style={{ position: "fixed", top: coords.top, left: coords.left }}
-        >
-          {items.map((it)=>(
+      {mounted && open && createPortal(
+        <div ref={panelRef} className="dots-menu-panel" style={{ top: pos.top, left: pos.left }}>
+          {items.map((it: Item) => (
             <div
               key={it.value}
               className={`dots-menu-item ${it.danger? "danger" : ""}`}
-              role="button"
-              tabIndex={0}
-              onClick={()=> handleItemClick(it.value)}
-              onKeyDown={(e)=> onKey(e, ()=> handleItemClick(it.value))}
+              onClick={() => {
+                setOpen(false);
+                onAction?.(it.value, itemData);
+              }}
             >
               {it.label}
             </div>
           ))}
-        </div>
+        </div>,
+        document.body
       )}
-    </div>
+    </>
   );
 }
