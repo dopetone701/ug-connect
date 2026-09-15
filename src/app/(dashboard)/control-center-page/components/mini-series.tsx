@@ -1,12 +1,12 @@
 "use client";
-import { SeasonManager, SeasonDraft } from "./tv-series";
+import { SeasonManager } from "./tv-series";
+import type { SeasonDraft } from "./tv-series";
 
-export default function MiniSeriesManager({ seasons, setSeasons }: {
+export default function MiniSeriesManager(props: {
   seasons: SeasonDraft[],
   setSeasons: (s: SeasonDraft[]) => void
 }) {
-  return <SeasonManager seasons={seasons} setSeasons={setSeasons} label="Season" />;
+  return <SeasonManager {...props} label="Part" />;
 }
 
-// also export type for convenience
-export type { SeasonDraft } from "./tv-series";
+export type { SeasonDraft, EpisodeDraft } from "./tv-series";

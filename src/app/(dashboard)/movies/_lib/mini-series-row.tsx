@@ -1,16 +1,16 @@
 "use client"
-import { useRef, useEffect } from "react"
+import { useRef } from "react"
 import { useRouter } from "next/navigation"
-import { attachNoonScroll } from "./noon-scroll"
 import "./series-row.css"
-import { usesingleplayer } from "../_components/single-player"
 
 export default function MiniSeriesRow({ movies, onSeeAll }: { movies: any[]; onSeeAll?: (v: string) => void }) {
-  const trackRef = useRef<HTMLDivElement>(null)
   const router = useRouter()
-  const { playmovie } = usesingleplayer()
+  const trackRef = useRef<HTMLDivElement>(null)
 
-  useEffect(()=>{ if(!trackRef.current) return; const cleanup = attachNoonScroll(trackRef.current); return cleanup; }, [])
+  const scroll = (dir: "left" | "right") => {
+    if (!trackRef.current) return
+    trackRef.current.scrollBy({ left: dir === "left" ? -360 : 360, behavior: "smooth" })
+  }
 
   if (!movies?.length) return null
 
@@ -21,45 +21,63 @@ export default function MiniSeriesRow({ movies, onSeeAll }: { movies: any[]; onS
         <button className="series-see" onClick={() => onSeeAll?.("mini series")}>SEE ALL</button>
       </div>
 
-      <div className="series-track" ref={trackRef}>
-        {movies.map((m) => {
-          const allEps = (m.seasons || []).flatMap((s:any)=> s.episodes || [])
-          const eps = allEps.length ? allEps.slice(0,20) : Array.from({length: Math.min(20, m.seasons?.length || 8)}).map((_,i)=>({ episode_number:i+1, title:`Episode ${i+1}` }))
-          
-          return (
-            <div key={m.id} className="series-big-card">
-              <img className="series-big-cover" src={m.cover_url || m.cover} alt={m.title} draggable={false} />
-              <div className="series-big-dark" />
+      <div className="series-track-wrap">
+        <button className="s-arrow left" onClick={() => scroll("left")} aria-label="prev">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="m15 18-6-6 6-6" />
+          </svg>
+        </button>
+        <button className="s-arrow right" onClick={() => scroll("right")} aria-label="next">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="m9 18 6-6-6-6" />
+          </svg>
+        </button>
 
-              <div className="series-big-top">
-                <span className="s-pill">MINI</span>
-                <span className="s-pill muted">{m.year || m.genre}</span>
-              </div>
+        <div className="series-track" ref={trackRef}>
+          {movies.map((m: any) => {
+            const seasons = m.seasons || []
+            const episodes = seasons.flatMap((s: any) => s.episodes || [])
+            const seasonLabel = seasons.length > 1 ? `S1-S${seasons.length}` : "S1"
+            return (
+              <div key={m.id} className="series-big-card rectangle">
+                <div className="series-cover-wrap" onClick={() => router.push(`/movies/watch/${m.id}`)}>
+                  <img src={m.cover_url || m.cover} alt={m.title} draggable={false} />
+                  <div className="series-dark" />
+                  <div className="series-top-row">
+                    <div className="series-vj">{m.vj || "VJ Junior"}</div>
+                    <div className="series-season">{seasonLabel}</div>
+                  </div>
+                  <div className="series-big-title">{m.title}</div>
+                </div>
 
-              <button className="series-play-fab" onClick={()=>{ playmovie(m); router.push(`/movies/watch/${m.id}?t=full`) }}>
-                <svg viewBox="0 0 24 24" width="22" height="22"><path d="M8 5.8 L18 12 L8 18.2 Z" fill="white"/></svg>
-              </button>
-
-              <div className="series-big-bottom">
-                <div className="s-title" onClick={()=> router.push(`/movies/watch/${m.id}`)}>{m.title}</div>
-                <div className="s-sub">{(m.actors || m.vj || "").toString().slice(0,40)} • {m.seasons?.length || 1} Season</div>
-
-                <div className="s-ep-track">
-                  {eps.map((ep:any, i:number)=>(
-                    <button key={i} className="s-ep-card" onClick={(e)=>{
-                      e.stopPropagation()
-                      playmovie(m)
-                      router.push(`/movies/watch/${m.id}?t=full&e=${ep.episode_number || i+1}`)
-                    }}>
-                      <div className="s-ep-num">{ep.episode_number || i+1}</div>
-                      <div className="s-ep-name">{(ep.title || `Ep ${i+1}`).slice(0,16)}</div>
-                    </button>
+                <div
+                  className="s-ep-track"
+                  ref={(el: any) => {
+                    if (!el) return
+                    if (el._wheelAdded) return
+                    el._wheelAdded = true
+                    el.addEventListener("wheel", (e: WheelEvent) => {
+                      if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+                        e.preventDefault()
+                        el.scrollLeft += e.deltaY
+                      }
+                    }, { passive: false })
+                  }}
+                >
+                  {episodes.slice(0, 30).map((ep: any, i: number) => (
+                    <div key={ep.id || i} className="s-ep-mini-card" onClick={() => router.push(`/movies/watch/${m.id}?ep=${ep.id || i}`)}>
+                      <div className="s-ep-mini-cover">
+                        <img src={ep.preview_url || ep.cover_url || m.cover_url || m.cover} alt={ep.title} loading="lazy" draggable={false} />
+                        <div className="s-ep-fade" />
+                      </div>
+                      <div className="s-ep-title">{ep.title || `Ep ${i + 1}`}</div>
+                    </div>
                   ))}
                 </div>
               </div>
-            </div>
-          )
-        })}
+            )
+          })}
+        </div>
       </div>
     </div>
   )

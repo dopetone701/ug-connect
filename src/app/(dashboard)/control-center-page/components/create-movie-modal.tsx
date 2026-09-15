@@ -1,5 +1,5 @@
 "use client";
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import "./create-movie-modal.css";
 import { SeasonManager, type SeasonDraft } from "@/app/(dashboard)/control-center-page/components/tv-series";
 import MiniSeriesManager from "@/app/(dashboard)/control-center-page/components/mini-series";
@@ -8,23 +8,23 @@ const WORKER_URL = "https://movie-creation-portal-api.connectu89.workers.dev";
 const CHUNK_SIZE = 10 * 1024 * 1024;
 const SINGLE_LIMIT = 90 * 1024 * 1024;
 
-async function uploadToR2(file: File, key: string, progEl: HTMLElement | null) {
-  const fill = progEl?.querySelector('.prog-fill') as HTMLElement;
-  const text = progEl?.querySelector('.prog-text') as HTMLElement;
-  if (progEl) progEl.style.display = 'block';
+function cleanKey(str: string) {
+  return str.replace(/[^a-zA-Z0-9-_.]/g, "-").replace(/-+/g, "-").slice(0, 80);
+}
+
+async function uploadToR2(file: File, key: string, onProgress: (pct: number) => void) {
+  onProgress(0);
   if (file.size < SINGLE_LIMIT) {
-    const xhr = new XMLHttpRequest();
     return new Promise<string>((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
       xhr.upload.onprogress = (e) => {
-        if (e.lengthComputable) {
-          const pct = Math.round((e.loaded / e.total) * 100);
-          if (fill) fill.style.width = pct + '%';
-          if (text) text.textContent = pct + '%';
-        }
+        if (e.lengthComputable) onProgress(Math.round((e.loaded / e.total) * 100));
       };
       xhr.onload = () => {
-        if (xhr.status >= 200 && xhr.status < 300) resolve(key);
-        else reject(new Error('upload failed ' + xhr.status));
+        if (xhr.status >= 200 && xhr.status < 300) {
+          onProgress(100);
+          resolve(key);
+        } else reject(new Error(`upload failed ${xhr.status}: ${xhr.responseText}`));
       };
       xhr.onerror = () => reject(new Error('network error'));
       xhr.open('PUT', `${WORKER_URL}/upload-single?key=${encodeURIComponent(key)}`);
@@ -32,35 +32,50 @@ async function uploadToR2(file: File, key: string, progEl: HTMLElement | null) {
       xhr.send(file);
     });
   }
+
+  // multipart
   const createRes = await fetch(`${WORKER_URL}/create-multipart`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ key })
   });
+  if (!createRes.ok) throw new Error('create-multipart failed: ' + await createRes.text());
   const { uploadId } = await createRes.json();
+
   const totalParts = Math.ceil(file.size / CHUNK_SIZE);
   const parts: { partNumber: number; etag: string }[] = [];
   let uploaded = 0;
-  for (let i = 0; i < totalParts; i++) {
-    const partNumber = i + 1;
-    const chunk = file.slice(i * CHUNK_SIZE, (i + 1) * CHUNK_SIZE);
-    const res = await fetch(`${WORKER_URL}/multipart/upload-part?key=${encodeURIComponent(key)}&uploadId=${encodeURIComponent(uploadId)}&partNumber=${partNumber}`, {
+
+  try {
+    for (let i = 0; i < totalParts; i++) {
+      const chunk = file.slice(i * CHUNK_SIZE, (i + 1) * CHUNK_SIZE);
+      const res = await fetch(`${WORKER_URL}/multipart/upload-part?key=${encodeURIComponent(key)}&uploadId=${encodeURIComponent(uploadId)}&partNumber=${i+1}`, {
+        method: 'POST', body: chunk
+      });
+      if (!res.ok) throw new Error(`part ${i+1} failed: ${await res.text()}`);
+      let etag = "";
+      try {
+        const data = await res.clone().json();
+        etag = data.etag || data.ETag || "";
+      } catch { etag = res.headers.get("etag") || ""; }
+      if (!etag) throw new Error(`part ${i+1} missing etag`);
+      parts.push({ partNumber: i+1, etag: etag.replaceAll('"','') });
+      uploaded += chunk.size;
+      onProgress(Math.round((uploaded / file.size) * 100));
+    }
+
+    const complete = await fetch(`${WORKER_URL}/complete-multipart`, {
       method: 'POST',
-      body: chunk
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ key, uploadId, parts })
     });
-    const data = await res.json();
-    parts.push({ partNumber, etag: data.etag });
-    uploaded += chunk.size;
-    const pct = Math.round((uploaded / file.size) * 100);
-    if (fill) fill.style.width = pct + '%';
-    if (text) text.textContent = `STREAM ${pct}%`;
+    if (!complete.ok) throw new Error('complete failed: ' + await complete.text());
+    return key;
+  } catch (err) {
+    // try to abort to avoid orphaned parts
+    try { await fetch(`${WORKER_URL}/abort-multipart`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ key, uploadId }) }) } catch {}
+    throw err;
   }
-  await fetch(`${WORKER_URL}/complete-multipart`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ key, uploadId, parts })
-  });
-  return key;
 }
 
 export default function CreateMovieModal({ open, onClose }: { open: boolean, onClose: () => void }) {
@@ -69,59 +84,66 @@ export default function CreateMovieModal({ open, onClose }: { open: boolean, onC
   const [genre, setGenre] = useState("");
   const [vj, setVj] = useState("VJ Junior");
   const [year, setYear] = useState(new Date().getFullYear().toString());
-  const [actors, setActors] = useState(""); // <-- FIXED - ADDED
+  const [actors, setActors] = useState("");
   const [desc, setDesc] = useState("");
 
   const [coverUrl, setCoverUrl] = useState<string | null>(null);
   const [movieUrl, setMovieUrl] = useState<string | null>(null);
   const [previewFiles, setPreviewFiles] = useState<File[]>([]);
-  const [previewUrls, setPreviewUrls] = useState<string[]>([]);
   const [uploading, setUploading] = useState(false);
   const [seasons, setSeasons] = useState<SeasonDraft[]>([]);
+  const [coverProg, setCoverProg] = useState(0);
+  const [mainProg, setMainProg] = useState(0);
 
   const mainRef = useRef<HTMLInputElement>(null);
   const coverRef = useRef<HTMLInputElement>(null);
 
+  useEffect(() => {
+    return () => {
+      if (coverUrl) URL.revokeObjectURL(coverUrl);
+      if (movieUrl) URL.revokeObjectURL(movieUrl);
+    }
+  }, [coverUrl, movieUrl]);
+
   if (!open) return null;
   const isSeries = type === "Full" || type === "Mini";
+
+  const updateEpStatus = (seasonId: string, epId: string, patch: Partial<SeasonDraft['episodes'][0]>) => {
+    setSeasons(prev => prev.map(s => s.id!== seasonId? s : {
+     ...s,
+      episodes: s.episodes.map(e => e.id === epId? {...e,...patch } : e)
+    }));
+  };
 
   const handleUpload = async () => {
     const main = mainRef.current?.files?.[0];
     const cover = coverRef.current?.files?.[0];
 
-    if (!title ||!cover ||!year ||!actors) return alert('Title, Year, Actors, Cover required');
+    if (!title.trim() ||!cover ||!year.trim() ||!actors.trim()) return alert('Title, Year, Actors, Cover required');
     if (!isSeries &&!main) return alert('Main movie required for Single');
-
     if (isSeries && seasons.length === 0) return alert('Add at least 1 season');
-    if (isSeries) {
-      for (const s of seasons) {
-        if (s.episodes.length === 0) return alert(`${s.name} has no episodes`);
-        for (const ep of s.episodes) {
-          if (!ep.file) return alert(`${s.name} - ${ep.title} missing video file`);
-        }
-      }
-    }
+    if (isSeries && seasons.some(s => s.episodes.some(e =>!e.file))) return alert('All episodes must have a file');
 
     try {
       setUploading(true);
-      const coverKey = `covers/${Date.now()}-${cover.name}`;
-      const progCover = document.getElementById('progCover');
-      const coverUploadedKey = await uploadToR2(cover, coverKey, progCover);
+      const uid = crypto.randomUUID().slice(0, 8);
+      const safeTitle = cleanKey(title);
+
+      const coverKey = `covers/${uid}-${safeTitle}-${cleanKey(cover.name)}`;
+      const coverUploadedKey = await uploadToR2(cover, coverKey, (p) => setCoverProg(p));
 
       let payload: any = {
-        title, genre, vj, type, year: parseInt(year), actors, description: desc,
+        title: title.trim(), genre: genre.trim(), vj: vj.trim(), type, year: parseInt(year), actors: actors.trim(), description: desc.trim(),
         cover_url: coverUploadedKey,
       };
 
       if (!isSeries) {
-        const progMain = document.getElementById('progMain');
-        const mainKey = `movies/${Date.now()}-${main!.name}`;
-        const mainUploadedKey = await uploadToR2(main!, mainKey, progMain);
-
+        const mainKey = `movies/${uid}-${safeTitle}-${cleanKey(main!.name)}`;
+        const mainUploadedKey = await uploadToR2(main!, mainKey, (p) => setMainProg(p));
         const previewKeys: string[] = [];
         for (const pf of previewFiles) {
-          const pk = `previews/${Date.now()}-${pf.name}`;
-          const k = await uploadToR2(pf, pk, null);
+          const pk = `previews/${uid}-${cleanKey(pf.name)}`;
+          const k = await uploadToR2(pf, pk, () => {});
           previewKeys.push(k);
         }
         payload.main_url = mainUploadedKey;
@@ -131,39 +153,47 @@ export default function CreateMovieModal({ open, onClose }: { open: boolean, onC
         for (const season of seasons) {
           const uploadedEps = [];
           for (const ep of season.episodes) {
-            const epKey = `series/${title.replace(/\s+/g,'-')}/${season.name.replace(/\s+/g,'-')}/${Date.now()}-${ep.file!.name}`;
-            const epUploaded = await uploadToR2(ep.file!, epKey, null);
-
-            let previewUploaded = null;
-            if (ep.previewFile) {
-              const preKey = `previews/${title.replace(/\s+/g,'-')}/${season.name}/${Date.now()}-${ep.previewFile.name}`;
-              previewUploaded = await uploadToR2(ep.previewFile, preKey, null);
+            if (!ep.file) throw new Error(`${season.name} - ${ep.title} missing file`);
+            updateEpStatus(season.id, ep.id, { status: "uploading", progress: 0 });
+            try {
+              const epKey = `series/${uid}-${safeTitle}/${cleanKey(season.name)}/${crypto.randomUUID()}-${cleanKey(ep.file.name)}`;
+              const epUploaded = await uploadToR2(ep.file, epKey, (pct) => {
+                updateEpStatus(season.id, ep.id, { progress: pct, status: "uploading" });
+              });
+              let previewUploaded = null;
+              if (ep.previewFile) {
+                const preKey = `previews/${uid}-${safeTitle}/${crypto.randomUUID()}-${cleanKey(ep.previewFile.name)}`;
+                previewUploaded = await uploadToR2(ep.previewFile, preKey, () => {});
+              }
+              updateEpStatus(season.id, ep.id, { progress: 100, status: "done" });
+              uploadedEps.push({ title: ep.title, main_url: epUploaded, preview_url: previewUploaded });
+            } catch (err: any) {
+              updateEpStatus(season.id, ep.id, { status: "error", error: err.message });
+              throw err;
             }
-            uploadedEps.push({
-              title: ep.title,
-              main_url: epUploaded,
-              preview_url: previewUploaded
-            });
           }
           uploadedSeasons.push({ name: season.name, episodes: uploadedEps });
         }
         payload.seasons = uploadedSeasons;
       }
 
-      await fetch(`${WORKER_URL}/movies`, {
+      const saveRes = await fetch(`${WORKER_URL}/movies`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
+      if (!saveRes.ok) throw new Error(await saveRes.text());
 
       alert('✅ Uploaded to R2 + Saved to D1');
       onClose();
       setSeasons([]);
-      setActors("");
+      setPreviewFiles([]);
     } catch (e: any) {
       alert('❌ ' + e.message);
     } finally {
       setUploading(false);
+      setCoverProg(0);
+      setMainProg(0);
     }
   };
 
@@ -171,14 +201,13 @@ export default function CreateMovieModal({ open, onClose }: { open: boolean, onC
     <div className="cc-modal-bg" onClick={onClose}>
       <div className="cc-modal" onClick={e => e.stopPropagation()}>
         <div className="cc-modal-head"><h3>🎬 Create Movie</h3><button onClick={onClose} className="cc-close">✕</button></div>
-
         <div className="cc-modal-body">
           <div className="cc-form-grid">
             <div><label>TITLE *</label><input value={title} onChange={e=>setTitle(e.target.value)} placeholder="BATTLE OF KAMPALA" /></div>
-            <div><label>YEAR *</label><input value={year} onChange={e=>setYear(e.target.value)} type="number" placeholder="2024" /></div>
-            <div><label>GENRE</label><input value={genre} onChange={e=>setGenre(e.target.value)} placeholder="Action" /></div>
-            <div><label>VJ</label><input value={vj} onChange={e=>setVj(e.target.value)} placeholder="VJ Junior" /></div>
-            <div><label>ACTORS *</label><input value={actors} onChange={e=>setActors(e.target.value)} placeholder="e.g. John, Mercy, Bobi" /></div>
+            <div><label>YEAR *</label><input value={year} onChange={e=>setYear(e.target.value)} type="number" /></div>
+            <div><label>GENRE</label><input value={genre} onChange={e=>setGenre(e.target.value)} /></div>
+            <div><label>VJ</label><input value={vj} onChange={e=>setVj(e.target.value)} /></div>
+            <div><label>ACTORS *</label><input value={actors} onChange={e=>setActors(e.target.value)} /></div>
             <div><label>TYPE *</label>
               <select value={type} onChange={e=>{setType(e.target.value); if(e.target.value==="Single") setSeasons([])}}>
                 <option value="Single">Single Movie</option>
@@ -198,7 +227,7 @@ export default function CreateMovieModal({ open, onClose }: { open: boolean, onC
                   if (f) { if (movieUrl) URL.revokeObjectURL(movieUrl); setMovieUrl(URL.createObjectURL(f)); }
                 }} />
                 {movieUrl && <video src={movieUrl} controls style={{ width: '100%', marginTop: 10, borderRadius: 8, maxHeight: 180 }} />}
-                <div id="progMain" className="prog" style={{ display: 'none' }}><div className="prog-bar"><div className="prog-fill"></div></div><span className="prog-text">0%</span></div>
+                <div className="prog" style={{ display: mainProg>0?'block':'none' }}><div className="prog-bar"><div className="prog-fill" style={{width: mainProg+'%'}}></div></div><span className="prog-text">{mainProg}%</span></div>
               </div>
               <div className="cc-up-box">
                 <label>🖼️ COVER ART *</label>
@@ -207,7 +236,12 @@ export default function CreateMovieModal({ open, onClose }: { open: boolean, onC
                   if (f) { if (coverUrl) URL.revokeObjectURL(coverUrl); setCoverUrl(URL.createObjectURL(f)); }
                 }} />
                 {coverUrl && <img src={coverUrl} alt="cover" style={{ width: '100%', marginTop: 10, borderRadius: 8, maxHeight: 180, objectFit: 'cover' }} />}
-                <div id="progCover" className="prog" style={{ display: 'none' }}><div className="prog-bar"><div className="prog-fill"></div></div><span className="prog-text">0%</span></div>
+                <div className="prog" style={{ display: coverProg>0?'block':'none' }}><div className="prog-bar"><div className="prog-fill" style={{width: coverProg+'%'}}></div></div><span className="prog-text">{coverProg}%</span></div>
+              </div>
+              <div className="cc-up-box" style={{gridColumn:'1/-1'}}>
+                <label>🎞️ PREVIEWS (optional)</label>
+                <input type="file" multiple accept="video/*,image/*" onChange={e => setPreviewFiles(Array.from(e.target.files||[]))} />
+                {previewFiles.length>0 && <small>{previewFiles.length} files selected</small>}
               </div>
             </div>
           )}
@@ -220,36 +254,7 @@ export default function CreateMovieModal({ open, onClose }: { open: boolean, onC
                 if (f) { if (coverUrl) URL.revokeObjectURL(coverUrl); setCoverUrl(URL.createObjectURL(f)); }
               }} />
               {coverUrl && <img src={coverUrl} alt="cover" style={{ width: '100%', marginTop: 10, borderRadius: 8, maxHeight: 180, objectFit: 'cover' }} />}
-              <div id="progCover" className="prog" style={{ display: 'none' }}><div className="prog-bar"><div className="prog-fill"></div></div><span className="prog-text">0%</span></div>
-            </div>
-          )}
-
-          {!isSeries && (
-            <div className="cc-up-box" style={{ marginTop: 14 }}>
-              <label>🎞️ PREVIEWS - upto 10</label>
-              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginTop: 8 }}>
-                <label className="cc-preview-add">
-                  <input type="file" accept="video/*" hidden onChange={e => {
-                    const f = e.target.files?.[0];
-                    if (f && previewFiles.length < 10) {
-                      setPreviewFiles([...previewFiles, f]);
-                      setPreviewUrls([...previewUrls, URL.createObjectURL(f)]);
-                    }
-                  }} />
-                  + Preview {previewFiles.length + 1}
-                </label>
-              </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginTop: 10 }}>
-                {previewUrls.map((url, i) => (
-                  <div key={i} style={{ position: 'relative' }}>
-                    <video src={url} controls style={{ width: '100%', borderRadius: 8, height: 90, objectFit: 'cover' }} />
-                    <span onClick={() => {
-                      setPreviewFiles(previewFiles.filter((_, x) => x!== i));
-                      setPreviewUrls(previewUrls.filter((_, x) => x!== i));
-                    }} style={{ position: 'absolute', top: 4, right: 4, background: 'rgba(0,0,0,.7)', color: '#fff', borderRadius: 99, padding: '2px 6px', cursor: 'pointer', fontSize: 10 }}>✕</span>
-                  </div>
-                ))}
-              </div>
+              <div className="prog" style={{ display: coverProg>0?'block':'none' }}><div className="prog-bar"><div className="prog-fill" style={{width: coverProg+'%'}}></div></div><span className="prog-text">{coverProg}%</span></div>
             </div>
           )}
 
@@ -263,7 +268,7 @@ export default function CreateMovieModal({ open, onClose }: { open: boolean, onC
             </div>
           )}
 
-          <div id="createStatus" className="cc-status">{uploading? '⏳ Uploading to R2...' : '🚀 Ready to upload to ug-connect-r2'}</div>
+          <div id="createStatus" className="cc-status">{uploading? '⏳ Uploading to R2...' : '🚀 Ready'}</div>
         </div>
 
         <div className="cc-modal-foot">

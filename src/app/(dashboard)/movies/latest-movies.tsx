@@ -138,7 +138,6 @@ export default function latestmovies({ movies = [] }: { movies?: Movie[] }) {
                 }}>PRE</button>
               </div>
             </div>
-            <div className="l-card-title centered">{m.title}</div>
           </div>
         ))}
       </div>

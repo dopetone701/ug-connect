@@ -1,11 +1,11 @@
-.latest-root{width:100%;margin-top:18px;padding:0 0 12px 0;overflow:visible}
-.latest-head{display:flex;align-items:center;justify-content:space-between;padding:0 12px;margin-bottom:10px}
+.latest-root{width:100%;margin-top:10px;padding:0 0 2px 0;overflow:visible}
+.latest-head{display:flex;align-items:center;justify-content:space-between;padding:0 12px;margin-bottom:6px}
 .latest-title{font-size:14px;font-weight:900;color:hsl(var(--text));text-transform:capitalize!important}
 .latest-see{font-size:10px;font-weight:800;letter-spacing:.08em;color:hsl(var(--text-muted));background:transparent;border:none;cursor:pointer}
 .latest-track-wrap{position:relative;width:100%;overflow:visible}
 .latest-track{
-  display:flex;gap:12px;overflow-x:auto;overflow-y:hidden;
-  padding:4px 12px 12px 12px;
+  display:flex;gap:8px;overflow-x:auto;overflow-y:hidden;
+  padding:2px 12px 6px 12px;
   -webkit-overflow-scrolling:touch;
   scrollbar-width:none;
   -ms-overflow-style:none;
@@ -19,7 +19,7 @@
 .latest-track.is-dragging{cursor:grabbing;user-select:none}
 
 /* STARZPLAY EXACT - 6px */
-.latest-card{flex:0 0 auto;width:158px;display:flex;flex-direction:column;gap:8px;background:transparent;border:none;border-radius:6px;overflow:visible;scroll-snap-align:none !important}
+.latest-card{flex:0 0 auto;width:158px;display:flex;flex-direction:column;gap:0;background:transparent;border:none;border-radius:6px;overflow:visible;scroll-snap-align:none !important}
 
 .l-card-cover{position:relative;width:100%;aspect-ratio:2/3;border-radius:6px;overflow:hidden;background:hsl(var(--surface));border:1px solid hsl(var(--border));isolation:isolate}
 .l-card-cover img{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none;-webkit-user-drag:none}
@@ -30,5 +30,12 @@
 .l-a-btn.play.on{background:hsl(var(--primary));color:hsl(var(--primary-text));border-radius:0 0 0 6px}
 .l-a-btn.prev.on{background:hsl(var(--surface-hover));color:hsl(var(--text));border-left:1px solid hsl(var(--border));border-radius:0 0 6px 0}
 
-@media(min-width:769px){.latest-card{width:184px}.latest-head{padding:0 6px}.latest-track{padding:4px 6px 14px 6px;gap:14px}}
-@media(max-width:768px){.latest-root{width:100vw;margin-left:calc(-50vw + 50%)}.latest-head{padding:0 14px}.latest-track{padding:4px 12px 12px 12px}}
+@media(min-width:769px){.latest-card{width:184px}.latest-head{padding:0 6px}.latest-track{padding:2px 6px 6px 6px;gap:14px}}
+
+@media(max-width:768px){
+  .latest-root{width:100vw;margin-left:calc(-50vw + 50%);margin-top:8px;padding-bottom:0}
+  .latest-head{padding:0 14px;margin-bottom:5px}
+  .latest-track{padding:2px 12px 4px 12px;gap:8px}
+  /* 3 cards + peek of 4th */
+  .latest-card{width:calc((100vw - 12px - 12px - 16px) / 3.2);min-width:0}
+}
