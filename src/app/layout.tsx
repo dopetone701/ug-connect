@@ -13,9 +13,9 @@ export const viewport: Viewport = {
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }){
-  return(
+  return (
     <html lang="en">
-      <body>
+      <body className="bg-black">
         <EngineProvider>
           <CoreEngine />
           <AppShell>{children}</AppShell>
