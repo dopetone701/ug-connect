@@ -2,12 +2,14 @@
 import { useState } from "react";
 import "./control-center.css";
 import CreateMovieModal from "./components/create-movie-modal";
+import EditMovieModal from "./components/edit-movie-modal"; // create this file
 
-const tabs = ["Overview", "Users", "Orders", "Settings", "Create"];
+const tabs = ["Overview", "Users", "Orders", "Settings", "Create", "Edit Movie"];
 
 export default function Page() {
   const [active, setActive] = useState("Overview");
   const [showCreate, setShowCreate] = useState(false);
+  const [showEdit, setShowEdit] = useState(false);
 
   return (
     <div className="cc-wrap">
@@ -16,18 +18,20 @@ export default function Page() {
 
       <div className="cc-tabs">
         {tabs.map(t => (
-          <button 
-            key={t} 
+          <button
+            key={t}
             onClick={() => {
               if (t === "Create") {
                 setShowCreate(true);
+              } else if (t === "Edit Movie") {
+                setShowEdit(true);
               } else {
                 setActive(t);
               }
-            }} 
-            className={`cc-tab ${active===t ? 'active' : ''} ${t==='Create' ? 'cc-tab-create' : ''}`}
+            }}
+            className={`cc-tab ${active===t ? 'active' : ''} ${t==='Create' ? 'cc-tab-create' : ''} ${t==='Edit Movie' ? 'cc-tab-edit' : ''}`}
           >
-            {t === "Create" ? "+ Create" : t}
+            {t === "Create" ? "+ Create" : t === "Edit Movie" ? "✏️ Edit Movie" : t}
           </button>
         ))}
       </div>
@@ -43,8 +47,9 @@ export default function Page() {
         <p style={{color:'#777'}}>This is the {active} section.</p>
       </div>
 
-      {/* MODAL - separate file */}
+      {/* MODALS */}
       <CreateMovieModal open={showCreate} onClose={() => setShowCreate(false)} />
+      <EditMovieModal open={showEdit} onClose={() => setShowEdit(false)} />
     </div>
   );
 }

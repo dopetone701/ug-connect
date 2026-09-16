@@ -200,8 +200,9 @@ export default function WatchPage(){
 
    const epId = search.get("ep") || search.get("e")
   const allEps = movie?.seasons?.flatMap((s:any)=>s.episodes||[]) || []
-  const activeEp = epId? allEps.find((ep:any)=> String(ep.id)===String(epId) || String(ep.episode_number)===String(epId)) : null
+  const activeEp = epId? allEps.find((ep:any)=> String(ep.id)===String(epId)) : null
   const epUrl = activeEp?.video_url || activeEp?.url
+
 
   const rawSources = movie? [
     { label: "Auto", value: "auto", url: epUrl || (isPreview? movie.preview_urls?.[0] : movie.video_url) },
@@ -217,28 +218,31 @@ export default function WatchPage(){
   const currentQualityObj = qualitySources.find(q=>q.value===quality) || qualitySources[0]
   const videoUrl = currentQualityObj?.url
 
-  useEffect(()=>{
-    if(!videoUrl ||!videoRef.current) return
-    if(isPreview) return
-    setIsLoading(true)
-    if(autoPlayTimerRef.current) clearTimeout(autoPlayTimerRef.current)
-    autoPlayTimerRef.current = setTimeout(async () => {
-      const v = videoRef.current
-      if(!v) return
-      try {
-        v.muted = true
-        v.volume = volume
-        await v.play()
-        setPlaying(true)
-        setHasStarted(true)
-        setIsLoading(false)
-        setTimeout(()=> { if(v){ v.muted = false; v.volume = volume } }, 300)
-      } catch (e) {
-        setIsLoading(false)
-      }
-    }, 3000)
-    return ()=> clearTimeout(autoPlayTimerRef.current)
-  }, [videoUrl, isPreview])
+
+useEffect(()=>{
+  if(!videoUrl || !videoRef.current) return
+  if(!activeEp) return // <-- THIS FIXES SMALL CARDS NEVER AUTOPLAYING
+  if(isPreview) return
+  setIsLoading(true)
+  if(autoPlayTimerRef.current) clearTimeout(autoPlayTimerRef.current)
+  autoPlayTimerRef.current = setTimeout(async () => {
+    const v = videoRef.current
+    if(!v) return
+    try {
+      v.muted = true
+      v.volume = volume
+      await v.play()
+      setPlaying(true)
+      setHasStarted(true)
+      setIsLoading(false)
+      setTimeout(()=> { if(v){ v.muted = false; v.volume = volume } }, 400)
+    } catch (e) {
+      setIsLoading(false)
+    }
+  }, 800) // 800ms not 3000ms = instant
+  return ()=> clearTimeout(autoPlayTimerRef.current)
+}, [videoUrl, activeEp?.id, isPreview])
+
 
   const changeQuality = async (q:any) => {
     if(!videoRef.current || q.value===quality) return
@@ -298,7 +302,7 @@ export default function WatchPage(){
           <div className="center-cover">
             <div className="fullscreen-logo top-right"><img src="/logo.png" alt="logo" /></div>
             <video
-key={`${movie.id}-${quality}-${epId}`}
+key={`${movie.id}-${quality}-${activeEp?.id || 'default'}`}
               ref={videoRef}
               src={videoUrl}
               className="connect-video"
@@ -410,7 +414,7 @@ key={`${movie.id}-${quality}-${epId}`}
         <EpisodesRow 
           movie={movie} 
           activeEpId={epId} 
-          onSelect={(ep)=> router.push(`${pathname}?t=full&ep=${ep.id || ep.episode_number}`)} 
+onSelect={(ep)=> router.push(`${pathname}?t=full&ep=${ep.id}`)}
         />
       )}
 
