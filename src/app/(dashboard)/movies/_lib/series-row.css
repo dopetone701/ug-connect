@@ -3,11 +3,11 @@
 .series-title{ font-size:14px; font-weight:800; text-transform:uppercase; cursor:pointer; color:hsl(var(--text)); }
 .series-see{ font-size:11px; opacity:.6; background:none; border:none; font-weight:700; cursor:pointer; color:hsl(var(--text-muted)); }
 
-.series-track{ 
-  display:flex; 
-  gap:12px; 
-  overflow-x:auto; 
-  padding:0 14px 10px; 
+.series-track{
+  display:flex;
+  gap:12px;
+  overflow-x:auto;
+  padding:0 14px 10px;
   scroll-snap-type:x mandatory;
   scrollbar-width:none;
 }
@@ -18,7 +18,7 @@
   max-width:92vw;
   aspect-ratio: 4/5.2;
   position:relative;
-  border-radius:16px;
+  border-radius:6px;
   overflow:hidden;
   background:#0a0a0a;
   border:1px solid hsl(var(--border));
@@ -38,18 +38,18 @@
   background: #000;
 }
 .series-cover-wrap img{
-  position:absolute; 
-  inset:0; 
-  width:100%; 
-  height:100%; 
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
   object-fit:cover;
   filter: brightness(0.85);
 }
 
-.series-dark{ 
-  position:absolute; 
-  inset:0; 
-  background:linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.5) 40%, rgba(0,0,0,0.2) 70%, rgba(0,0,0,0.15) 100%); 
+.series-dark{
+  position:absolute;
+  inset:0;
+  background:linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.5) 40%, rgba(0,0,0,0.2) 70%, rgba(0,0,0,0.15) 100%);
 }
 
 /* TOP ROW - VJ LEFT, SEASON RIGHT */
@@ -103,15 +103,16 @@
 /* SMALL CARDS - LOOK LIKE latest-card */
 .s-ep-track{
   height: 92px;
-  display:flex; 
-  gap:10px; 
-  overflow-x:auto; 
+  display:flex;
+  gap:10px;
+  overflow-x:auto;
   overflow-y:hidden;
   padding: 10px 12px;
   background: #080808;
   border-top: 1px solid rgba(255,255,255,0.08);
   scrollbar-width:none;
   touch-action: pan-x;
+  overscroll-behavior-x: contain;
 }
 .s-ep-track::-webkit-scrollbar{ display:none; }
 
@@ -124,7 +125,7 @@
   position: relative;
   width: 88px;
   height: 52px;
-  border-radius: 8px;
+  border-radius:6px;
   overflow: hidden;
   background: #111;
   border: 1px solid rgba(255,255,255,0.1);
@@ -159,14 +160,13 @@
 
 .s-no-ep{ color: rgba(255,255,255,0.3); font-size: 11px; padding: 10px 0; }
 
-
 .series-track-wrap{
   position: relative;
 }
 
 /* ARROWS ON CARDS */
 .s-arrow{
-  display: none; /* hide on mobile */
+  display: none;
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
@@ -195,22 +195,16 @@
 .s-arrow.left{ left: 8px; }
 .s-arrow.right{ right: 8px; }
 
-/* SHOW ONLY ON PC */
 @media(min-width:768px){
   .s-arrow{ display: flex; }
 }
 
-
-.s-ep-track{
-  overscroll-behavior-x: contain;
-}
-
-
 .series-big-card.rectangle{
   aspect-ratio: 16 / 10;
   max-height: 320px;
+  border-radius:6px;
 }
-.series-big-card.rectangle.series-cover-wrap{
+.series-big-card.rectangle .series-cover-wrap{
   flex: 1;
 }
 
@@ -219,5 +213,6 @@
     flex: 0 0 380px;
     max-width: 380px;
     aspect-ratio: 16 / 9;
+    border-radius:6px;
   }
 }
