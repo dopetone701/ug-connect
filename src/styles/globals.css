@@ -5,21 +5,35 @@
 @tailwind utilities;
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
-html { 
-  background: hsl(var(--bg)); 
-  min-height: calc(100% + env(safe-area-inset-top));
-}
-body { 
-  min-height:100dvh;
-  width:100vw;
-  background: hsl(var(--bg)); 
-  color: hsl(var(--text)); 
-  font-family: Inter, -apple-system, BlinkMacSystemFont, sans-serif; 
-  -webkit-font-smoothing: antialiased; 
-}
-button { cursor: pointer; border: none; background: none; }
-html, body { overflow-x: hidden; }
 
+html, body {
+  height: 100% !important;
+  width: 100% !important;
+  overflow: hidden !important;
+  overscroll-behavior: none !important;
+  background: hsl(var(--bg));
+}
+
+html {
+  position: fixed !important;
+  inset: 0 !important;
+  /* safe area for notch */
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+body {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100% !important;
+  background: hsl(var(--bg));
+  color: hsl(var(--text));
+  font-family: Inter, -apple-system, BlinkMacSystemFont, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  padding-top: env(safe-area-inset-top);
+}
+
+button { cursor: pointer; border: none; background: none; }
 
 /* DEPTH + VARIATION SYSTEM */
 :root {
@@ -64,33 +78,11 @@ html, body { overflow-x: hidden; }
   box-shadow: inset 0 1px 0 hsl(var(--border));
 }
 
-/* MOBILE - kill separators only */
-@media (max-width: 768px){
-  .top-bar,
-  .app-shell,
-  .main-content,
-  .sidebar,
-  .bottom-bar-glass,
-  .bottom-inner {
-    border: none !important;
-    box-shadow: none !important;
-  }
-  .top-bar {
-    background: hsl(var(--bg)) !important;
-  }
-  .content-panel {
-    border: none !important;
-    margin-top: 0 !important;
-    padding-top: 12px !important;
-    box-shadow: none !important;
-  }
-}
-
 /* DESKTOP - giant shell like google */
 @media (min-width: 769px) {
   .google-shell {
     height: 100dvh !important;
-    width: 100vw;
+    width: 100% !important;
     overflow: hidden !important;
     background: hsl(var(--bg));
   }
@@ -113,6 +105,7 @@ html, body { overflow-x: hidden; }
     flex: 1 !important;
     overflow-y: auto !important;
     overflow-x: hidden !important;
+    overscroll-behavior: contain !important;
     min-height: 0 !important;
     background: hsl(var(--bg));
     border-radius: 20px;
@@ -131,15 +124,15 @@ html, body { overflow-x: hidden; }
   }
   .content-panel::-webkit-scrollbar { width: 0; }
   .content-panel { scrollbar-width: none; -ms-overflow-style: none; }
+}
 
-
-  /* MOBILE - kill separators only */
+/* MOBILE */
 @media (max-width: 768px){
-  .top-bar{
+  .top-bar {
     border: none !important;
     box-shadow: none !important;
     background: hsl(var(--bg)) !important;
-    padding-top: env(safe-area-inset-top) !important;
+    padding-top: max(12px, env(safe-area-inset-top)) !important;
     height: calc(56px + env(safe-area-inset-top)) !important;
     min-height: calc(56px + env(safe-area-inset-top)) !important;
   }
@@ -157,24 +150,20 @@ html, body { overflow-x: hidden; }
     margin-top: 0 !important;
     padding-top: 12px !important;
     box-shadow: none !important;
+    padding-bottom: calc(100px + env(safe-area-inset-bottom)) !important;
   }
-}
-
 }
 
 /* ===== FIX PC MODE ON MOBILE WATCH - FINAL ===== */
 @media (max-width: 1024px) {
-  /* When mobile video exists, kill PC chrome */
   body:has(.mob-full-root) {
     background: #000 !important;
     overflow: hidden !important;
   }
-
   body:has(.mob-full-root) .google-shell {
     height: 100dvh !important;
     overflow: hidden !important;
   }
-
   body:has(.mob-full-root) .content-panel {
     background: #000 !important;
     border: none !important;
@@ -183,7 +172,6 @@ html, body { overflow-x: hidden; }
     margin: 0 !important;
     overflow: hidden !important;
   }
-
   body:has(.mob-full-root) .giant-body,
   body:has(.mob-full-root) .giant-panel {
     padding: 0 !important;
@@ -193,7 +181,6 @@ html, body { overflow-x: hidden; }
 }
 
 @media (max-width: 1024px) and (orientation: landscape) {
-  /* landscape = pure video, no sidebar, no topbar, no bottom bar */
   body:has(.mob-full-root) .top-bar,
   body:has(.mob-full-root) .giant-body > :first-child,
   body:has(.mob-full-root) .side-bar,
@@ -202,7 +189,6 @@ html, body { overflow-x: hidden; }
   body:has(.mob-full-root) .bottom-bar-glass {
     display: none !important;
   }
-
   body:has(.mob-full-root) .content-panel {
     width: 100vw !important;
     height: 100dvh !important;
@@ -210,7 +196,6 @@ html, body { overflow-x: hidden; }
 }
 
 @media (max-width: 1024px) and (orientation: portrait) {
-  /* portrait = YouTube style, hide only desktop sidebar chrome but keep bottom bar for nav */
   body:has(.mob-full-root) .giant-body > :first-child,
   body:has(.mob-full-root) .side-bar {
     display: none !important;
@@ -222,4 +207,3 @@ html, body { overflow-x: hidden; }
     background: hsl(var(--bg)) !important;
   }
 }
-
