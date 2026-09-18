@@ -1,17 +1,19 @@
 .google-shell {
   display: flex;
   flex-direction: column;
-  width: 100vw;
+  width: 100%;
   height: 100dvh;
   min-height: 100dvh;
   max-height: 100dvh;
   background: hsl(var(--surface));
   overflow: hidden;
+  position: fixed;
+  inset: 0;
 }
 
 .giant-panel {
   flex: 1;
-  min-height: 0; /* CRITICAL - allows shrink */
+  min-height: 0;
   width: 100%;
   display: flex;
   flex-direction: column;
@@ -21,7 +23,7 @@
 
 .giant-body {
   flex: 1;
-  min-height: 0; /* CRITICAL */
+  min-height: 0;
   display: flex;
   overflow: hidden;
   gap: 0;
@@ -31,12 +33,15 @@
 
 .content-panel {
   flex: 1;
-  min-height: 0; /* CRITICAL - video fits inside */
+  min-height: 0;
   width: 100%;
   background: hsl(var(--bg));
   border-radius: 16px;
-  padding: 0; /* NO PADDING - so video touches edges and fits viewport */
-  overflow: auto; /* allow details + similar to scroll, but player stays visible */
+  padding: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
   margin-left: 0;
   border: 1px solid hsl(var(--border));
   display: flex;
@@ -58,12 +63,13 @@
 
 @media (max-width: 768px) {
   .giant-body { padding: 0; min-height: 0; }
-  .content-panel { 
-    border-radius: 0; 
-    border: none; 
+  .content-panel {
+    border-radius: 0;
+    border: none;
     padding: 0;
-    padding-bottom: 80px; 
-    overflow: auto; 
+    padding-bottom: 80px;
+    overflow-y: auto;
+    overflow-x: hidden;
   }
 }
 
@@ -75,7 +81,7 @@
   body:has(.mob-full-root) [class*="side-bar"] {
     display: none !important;
   }
-  
+ 
   body:has(.mob-full-root) .content-panel {
     width: 100vw !important;
     height: 100dvh !important;
@@ -88,7 +94,7 @@
   body:has(.mob-full-root) .top-bar {
     display: none !important;
   }
-  
+ 
   body:has(.mob-full-root) .bottom-bar {
     display: none !important;
   }
