@@ -12,6 +12,21 @@ export const viewport: Viewport = {
   themeColor: "#000000",
 }
 
+// ADD THIS BLOCK right after viewport:
+export const metadata: Metadata = {
+  manifest: "/manifest.json",
+  icons: {
+    icon: "/icons/icon-192x192.png",
+    apple: "/apple-touch-icon.png",
+  },
+  appleWebApp: {
+    capable: true,
+    title: "UG Connect",
+    statusBarStyle: "black-translucent",
+  },
+}
+
+
 export default function RootLayout({ children }: { children: React.ReactNode }){
   return (
     <html lang="en">

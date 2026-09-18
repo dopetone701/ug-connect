@@ -2,9 +2,10 @@
 import { useState } from "react";
 import "./control-center.css";
 import CreateMovieModal from "./components/create-movie-modal";
-import EditMovieModal from "./components/edit-movie-modal"; // create this file
+import EditMovieModal from "./components/edit-movie-modal";
+import AppLogoManager from "./components/app-logo-manager";
 
-const tabs = ["Overview", "Users", "Orders", "Settings", "Create", "Edit Movie"];
+const tabs = ["Overview", "Users", "Orders", "Settings", "Create", "Edit Movie", "Logo"];
 
 export default function Page() {
   const [active, setActive] = useState("Overview");
@@ -29,9 +30,9 @@ export default function Page() {
                 setActive(t);
               }
             }}
-            className={`cc-tab ${active===t ? 'active' : ''} ${t==='Create' ? 'cc-tab-create' : ''} ${t==='Edit Movie' ? 'cc-tab-edit' : ''}`}
+            className={`cc-tab ${active === t ? 'active' : ''} ${t === 'Create' ? 'cc-tab-create' : ''} ${t === 'Edit Movie' ? 'cc-tab-edit' : ''} ${t === 'Logo' ? 'cc-tab-logo' : ''}`}
           >
-            {t === "Create" ? "+ Create" : t === "Edit Movie" ? "✏️ Edit Movie" : t}
+            {t === "Create" ? "+ Create" : t === "Edit Movie" ? "✏️ Edit Movie" : t === "Logo" ? "🎨 Logo" : t}
           </button>
         ))}
       </div>
@@ -43,8 +44,14 @@ export default function Page() {
       </div>
 
       <div className="cc-panel">
-        <h3 style={{fontWeight:700, marginBottom:12}}>{active} Content</h3>
-        <p style={{color:'#777'}}>This is the {active} section.</p>
+        {active === "Logo" ? (
+          <AppLogoManager />
+        ) : (
+          <>
+            <h3 style={{fontWeight:700, marginBottom:12}}>{active} Content</h3>
+            <p style={{color:'#777'}}>This is the {active} section.</p>
+          </>
+        )}
       </div>
 
       {/* MODALS */}

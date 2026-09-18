@@ -1,9 +1,11 @@
-"use client";
+﻿"use client";
 import { useState, useEffect, useMemo } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import "./top-bar.css";
 import "./top-bar-dynamics.css";
 import SideBar from "../side-bar/side-bar";
+import AppLogo from "@/components/AppLogo";
+
 import SearchDrawer from "./search-drawer/search-drawer";
 import { useGlobalSearch } from "../../../stores/use-global-search";
 
@@ -86,7 +88,7 @@ export default function TopBar() {
     <>
       <header className={`top-bar ${isAllMoviesPage? 'all-movies-page' : ''}`}>
         <div className="logo">
-          <img src="/logo.png" alt="UG Connect" className="logo-img" />
+<AppLogo className="logo-img" />
         </div>
 
         <div className="location-wrap pc-only" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -177,7 +179,7 @@ export default function TopBar() {
       {waOpen && (
 <div className={`wa-mob-panel ${drawerMode === "search" ? "is-search" : "is-menu"}`}>
           <div className="wa-mob-top">
-            <img src="/logo.png" alt="UG Connect" className="wa-panel-logo" />
+<AppLogo className="wa-panel-logo" />
             {drawerMode === "search" && <div className="wa-filtered-title">Filtered Content</div>}
             <button className="wa-v" onClick={() => setWaOpen(false)} aria-label="Close">
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6" /></svg>
