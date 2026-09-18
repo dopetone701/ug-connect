@@ -5,13 +5,7 @@ import { CoreEngine } from "@/components/media/engine/core-engine";
 import type { Viewport, Metadata } from "next";
 import PWAInstallPrompt from "@/components/pwa/install-prompt";
 
-export const viewport: Viewport = {
-  width: "device-width",
-  initialScale: 1,
-  maximumScale: 1,
-  viewportFit: "cover",
-  themeColor: "#000000",
-}
+
 
 export const metadata: Metadata = {
   manifest: "/manifest.json",
