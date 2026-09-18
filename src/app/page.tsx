@@ -136,6 +136,21 @@ function CardLabel({l, icon}: any){
 }
 
 export default function Page(){
+
+  
+  useEffect(()=>{
+    const panel = document.querySelector('.content-panel') as HTMLElement;
+    const topBar = document.querySelector('.top-bar') as HTMLElement;
+    if(!panel || !topBar) return;
+    const onScroll = () => {
+      if(panel.scrollTop > 20) topBar.classList.add('scrolled');
+      else topBar.classList.remove('scrolled');
+    };
+    panel.addEventListener('scroll', onScroll, {passive:true});
+    return ()=> panel.removeEventListener('scroll', onScroll);
+  },[]);
+  // ===== PASTE THIS BLOCK HERE - END =====
+
   const [rate, setRate] = useState(1008);
   useEffect(()=>{
     async function load(){
