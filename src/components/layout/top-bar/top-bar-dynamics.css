@@ -161,3 +161,15 @@
 }
 
 
+@media(max-width:768px){
+  .wa-mob-panel{
+    padding-top: env(safe-area-inset-top) !important;
+    padding-bottom: env(safe-area-inset-bottom) !important;
+    height: 100dvh !important;
+    box-sizing: border-box !important;
+  }
+  .wa-mob-top{
+    height: calc(56px + env(safe-area-inset-top)) !important;
+    padding-top: env(safe-area-inset-top) !important;
+  }
+}

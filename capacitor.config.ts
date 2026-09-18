@@ -5,13 +5,17 @@ const config: CapacitorConfig = {
   appName: 'UG Connect',
   webDir: 'out',
   ios: {
-    contentInset: 'never',
+    contentInset: 'always', // <— FIX: was 'never'
   },
   plugins: {
     StatusBar: {
       overlaysWebView: false,
       style: 'DARK',
+      backgroundColor: '#0a0a0a', // <— FIX: match your --bg so no white flash
     },
+    SplashScreen: {
+      launchShowDuration: 0
+    }
   },
 };
 
