@@ -9,6 +9,8 @@
   overflow: hidden;
   position: fixed;
   inset: 0;
+  padding-top: env(safe-area-inset-top); /* <— FIX 1 */
+  box-sizing: border-box;
 }
 
 .giant-panel {
@@ -38,6 +40,7 @@
   background: hsl(var(--bg));
   border-radius: 16px;
   padding: 0;
+  padding-top: 64px; /* <— FIX 2 space for top-bar */
   overflow-y: auto;
   overflow-x: hidden;
   overscroll-behavior: contain;
@@ -48,16 +51,8 @@
   flex-direction: column;
 }
 
-/* inner pages that need padding will add their own */
-.content-panel > * {
-  flex-shrink: 0;
-}
-
-/* landing page no scroll - add class in landing */
-.content-panel.no-scroll {
-  overflow: hidden;
-}
-
+.content-panel > * { flex-shrink: 0; }
+.content-panel.no-scroll { overflow: hidden; }
 .content-panel::-webkit-scrollbar { display: none; }
 .content-panel { scrollbar-width: none; -ms-overflow-style: none; }
 
@@ -67,35 +62,9 @@
     border-radius: 0;
     border: none;
     padding: 0;
-    padding-bottom: 80px;
+    padding-top: calc(56px + env(safe-area-inset-top)); /* <— FIX 3 mobile */
+    padding-bottom: calc(80px + env(safe-area-inset-bottom));
     overflow-y: auto;
     overflow-x: hidden;
-  }
-}
-
-/* FIX: On watch page on phone landscape, hide PC shell but keep mobile video */
-@media (max-width: 1024px) and (orientation: landscape) {
-  body:has(.mob-full-root) .giant-body > aside,
-  body:has(.mob-full-root) .giant-body > div:first-child,
-  body:has(.mob-full-root) .side-bar,
-  body:has(.mob-full-root) [class*="side-bar"] {
-    display: none !important;
-  }
- 
-  body:has(.mob-full-root) .content-panel {
-    width: 100vw !important;
-    height: 100dvh !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    overflow: hidden !important;
-  }
-
-  body:has(.mob-full-root) .google-shell .giant-panel > div:first-child,
-  body:has(.mob-full-root) .top-bar {
-    display: none !important;
-  }
- 
-  body:has(.mob-full-root) .bottom-bar {
-    display: none !important;
   }
 }
