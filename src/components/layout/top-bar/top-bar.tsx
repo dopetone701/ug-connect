@@ -74,21 +74,6 @@ export default function TopBar() {
     document.body.classList.remove("wa-pushed");
   }, [pathname]);
 
-   // ===== TOP BAR DISAPPEAR ON SCROLL + CONTENT EDGE TO EDGE =====
-  useEffect(() => {
-    const panel = document.querySelector('.content-panel') as HTMLElement;
-    const top = document.querySelector('.top-bar') as HTMLElement;
-    if (!panel ||!top) return;
-    const onScroll = () => {
-      if (panel.scrollTop > 14) top.classList.add('scrolled');
-      else top.classList.remove('scrolled');
-    };
-    panel.addEventListener('scroll', onScroll, { passive: true });
-    return () => panel.removeEventListener('scroll', onScroll);
-  }, []);
-
-
-
   const filtered = PLACES.filter(p => p.toLowerCase().includes(query.toLowerCase())).slice(0, 2);
 
   const toggleSidebar = () => {

@@ -7,20 +7,20 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
 html, body {
-  height: 100%;
-  width: 100%;
+  height: 100% !important;
+  width: 100% !important;
+  overflow: hidden !important;
+  overscroll-behavior: none !important;
   background: hsl(var(--bg));
-  overflow: hidden;
-  overscroll-behavior: none;
 }
 
-/* shell is the only fixed layer, not html/body */
-html, body {
-  position: relative !important;
+html {
+  position: fixed !important;
+  inset: 0 !important;
+  /* safe area for notch */
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
 }
-
-button { cursor: pointer; border: none; background: none; }
-
 
 body {
   position: fixed !important;
@@ -206,96 +206,4 @@ button { cursor: pointer; border: none; background: none; }
     min-height: 100dvh !important;
     background: hsl(var(--bg)) !important;
   }
-}
-
-
-/* ===== SURGICAL OVERRIDE - PASTE AT VERY BOTTOM ===== */
-html, body { padding-top:0 !important; padding-bottom:0 !important; position:relative !important; }
-.google-shell { position:fixed !important; inset:0 !important; height:100% !important; padding-top:env(safe-area-inset-top) !important; }
-.bottom-bar-glass { bottom:calc(16px + env(safe-area-inset-bottom)) !important; }
-.giant-body { padding-bottom:0 !important; padding-right:0 !important; }
-.content-panel { padding-bottom:calc(110px + env(safe-area-inset-bottom)) !important; border-radius:0 !important; border:none !important; }
-.landing-root { height:auto !important; min-height:100% !important; overflow:visible !important; padding-bottom:calc(130px + env(safe-area-inset-bottom)) !important; }
-.top-grid { grid-template-columns:repeat(3, minmax(280px, 1fr)) !important; }
-.bottom-grid { grid-template-columns:repeat(4, minmax(180px, 1fr)) !important; }
-@media (max-width:1100px) and (min-width:769px){
-  .top-grid{grid-template-columns:repeat(2, minmax(280px,1fr)) !important;}
-  .bottom-grid{grid-template-columns:repeat(3, minmax(180px,1fr)) !important;}
-}
-@media (max-width:900px) and (min-width:769px){
-  .top-grid{grid-template-columns:1fr !important;}
-  .bottom-grid{grid-template-columns:repeat(2,1fr) !important;}
-}
-@media (max-width:768px){
-  .landing-root{padding-top:68px !important;}
-  .top-bar{position:fixed !important; top:0 !important; left:0 !important; right:0 !important; background:transparent !important; border:none !important; box-shadow:none !important; z-index:100 !important; pointer-events:none !important; height:auto !important; padding-top:calc(8px + env(safe-area-inset-top)) !important;}
-  .top-bar .logo, .top-bar .right-actions{pointer-events:auto !important; backdrop-filter:blur(20px) !important;}
-  .top-bar .location-wrap, .top-bar .search-wrap{transition:all 0.25s ease !important;}
-  .top-bar.scrolled .location-wrap, .top-bar.scrolled .search-wrap{opacity:0 !important; transform:translateY(-20px) !important; pointer-events:none !important;}
-  .top-grid{grid-template-columns:1fr !important;}
-  .bottom-grid{grid-template-columns:repeat(2,1fr) !important;}
-}
-
-
-
-@media (max-width:768px){
-  /* TOP BAR - solid to edge, then disappears on scroll */
-  .top-bar{
-    position:fixed !important;
-    top:0 !important;
-    left:0 !important;
-    right:0 !important;
-    z-index:100 !important;
-    min-height: calc(52px + env(safe-area-inset-top)) !important;
-    padding-top: env(safe-area-inset-top) !important;
-    padding-bottom: 10px !important;
-    padding-left:12px !important;
-    padding-right:12px !important;
-    background: hsl(var(--bg)) !important;
-    border:none !important;
-    box-shadow:none !important;
-    transform: translateY(0) !important;
-    transition: transform 0.32s cubic-bezier(.32,.72,0,1) !important;
-  }
-  .top-bar .logo,
-  .top-bar .right-actions,
-  .top-bar .location-wrap,
-  .top-bar .search-wrap{
-    margin-top: 10px !important;
-  }
-  .top-bar.scrolled{
-    transform: translateY(-110%) !important;
-  }
-
-  /* CONTENT HITS TOP + BOTTOM EDGE */
-  .content-panel{
-    padding-top: 0 !important;
-    padding-bottom: 0 !important;
-  }
-  .landing-root{
-    padding: calc(66px + env(safe-area-inset-top)) 12px 0 !important;
-    min-height: 100% !important;
-  }
-  .film-root{
-    padding-top: calc(62px + env(safe-area-inset-top)) !important;
-    padding-bottom: 0 !important;
-  }
-  .film-giant{
-    height: auto !important;
-    min-height: calc(100dvh - 62px - env(safe-area-inset-top)) !important;
-    padding-bottom: 0 !important;
-    margin-bottom: 0 !important;
-  }
-  /* kill that panel behind bottom nav - let content go under it */
-  .bottom-bar-glass{
-    bottom: calc(12px + env(safe-area-inset-bottom)) !important;
-  }
-}
-
-
-@media (max-width:768px){
- .top-bar.scrolled{ transform: translateY(-110%)!important; }
- .content-panel{ padding-bottom: 0!important; padding-top: 0!important; }
- .landing-root{ padding-bottom: 0!important; }
- .film-root{ padding-bottom: 0!important; }
 }

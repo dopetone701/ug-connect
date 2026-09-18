@@ -7,16 +7,15 @@
 }
 
 @media (max-width: 768px) {
+
   .bottom-bar-glass {
     display: block;
     position: fixed;
-    bottom: calc(16px + env(safe-area-inset-bottom)); /* FIXED - was 16px only */
+    bottom: 16px;
     left: 12px;
     right: 12px;
     z-index: 100;
   }
-
-
 
   /* ==========================================================
      GLASS CONTAINER
