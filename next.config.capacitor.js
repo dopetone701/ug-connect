@@ -1,9 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // output: 'export' -> NUKED for now, we add back only when building APK
+  output: 'export',
   images: { unoptimized: true },
+  trailingSlash: true,
   eslint: { ignoreDuringBuilds: true },
   typescript: { ignoreBuildErrors: true },
 };
-
 module.exports = nextConfig;

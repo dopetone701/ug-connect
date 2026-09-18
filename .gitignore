@@ -7,3 +7,9 @@ dist
 .env.local
 .vercel
 .eslintcache
+
+# Capacitor - DO NOT PUSH - rebuild with npx cap add android
+android/
+ios/
+icons/
+resources/
