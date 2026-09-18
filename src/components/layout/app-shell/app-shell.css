@@ -9,7 +9,8 @@
   overflow: hidden;
   position: fixed;
   inset: 0;
-  padding-top: env(safe-area-inset-top); /* <— FIX 1 */
+  padding-top: env(safe-area-inset-top); /* battery handled ONCE here */
+  padding-bottom: env(safe-area-inset-bottom);
   box-sizing: border-box;
 }
 
@@ -21,6 +22,7 @@
   flex-direction: column;
   overflow: hidden;
   background: hsl(var(--surface));
+  position: relative; /* drawer anchor */
 }
 
 .giant-body {
@@ -31,6 +33,7 @@
   gap: 0;
   padding-right: 8px;
   padding-bottom: 8px;
+  position: relative; /* drawer lives inside here */
 }
 
 .content-panel {
@@ -40,7 +43,7 @@
   background: hsl(var(--bg));
   border-radius: 16px;
   padding: 0;
-  padding-top: 64px; /* <— FIX 2 space for top-bar */
+  padding-top: 64px; /* space for top-bar desktop — NO safe-area here */
   overflow-y: auto;
   overflow-x: hidden;
   overscroll-behavior: contain;
@@ -62,9 +65,31 @@
     border-radius: 0;
     border: none;
     padding: 0;
-    padding-top: calc(56px + env(safe-area-inset-top)); /* <— FIX 3 mobile */
-    padding-bottom: calc(80px + env(safe-area-inset-bottom));
+    padding-top: 56px; /* mobile top-bar height — NO env, shell already has it */
+    padding-bottom: 80px; /* bottom nav */
     overflow-y: auto;
     overflow-x: hidden;
   }
+}
+
+/* DRAWER INSIDE SHELL — arrow aligns with PEAKY tabs */
+@media (max-width: 768px){
+  .wa-mob-panel{
+    position: absolute !important;
+    top: 0 !important; /* inside giant-body, not overlay battery */
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    padding-top: 0 !important;
+    padding-bottom: env(safe-area-inset-bottom) !important;
+    z-index: 50 !important;
+  }
+  .wa-mob-top{
+    height: 56px !important;
+    min-height: 56px !important;
+    padding-top: 0 !important;
+  }
+  .wa-v{ top: 10px !important; }
 }
