@@ -432,3 +432,212 @@
   transform:translateY(0) !important;
   pointer-events:auto !important;
 }
+
+
+/* =========================
+   TOP BAR
+========================= */
+
+.center-top {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  right: 12px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  z-index: 50;
+
+  opacity: 0;
+  visibility: hidden;
+
+  transition:
+    opacity 0.3s ease,
+    visibility 0s linear 0.8s;
+}
+
+.center-top.show {
+  opacity: 1;
+  visibility: visible;
+
+  transition:
+    opacity 0.3s ease,
+    visibility 0s linear 0s;
+}
+
+.top-left {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.fullscreen-logo {
+  display: flex;
+  align-items: center;
+}
+
+.fullscreen-logo img {
+  display: block;
+}
+
+
+/* =========================
+   PLAYER CONTROLS
+========================= */
+
+.connect-controls {
+  position: absolute;
+  inset: 0;
+
+  z-index: 40;
+
+  pointer-events: none;
+
+  opacity: 0;
+  visibility: hidden;
+
+  transition:
+    opacity 0.4s ease,
+    visibility 0s linear 0.8s;
+}
+
+.connect-controls.show {
+  opacity: 1;
+  visibility: visible;
+
+  transition:
+    opacity 0.3s ease,
+    visibility 0s linear 0s;
+}
+
+.connect-controls > * {
+  pointer-events: auto;
+}
+
+
+/* =========================
+   TIME + FULLSCREEN
+========================= */
+
+.cc-above-progress {
+  position: absolute;
+
+  left: 12px;
+  right: 12px;
+  bottom: 14px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.cc-left-time {
+  font-size: 11px;
+  font-weight: 600;
+
+  color: #fff;
+
+  text-shadow:
+    0 1px 4px rgba(0, 0, 0, 0.8);
+}
+
+
+/* =========================
+   FULLSCREEN BUTTON
+========================= */
+
+.apple-full {
+  width: 28px;
+  height: 28px;
+
+  padding: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: transparent;
+  border: 0;
+
+  cursor: pointer;
+}
+
+
+/* =========================
+   PROGRESS BAR
+========================= */
+
+.cc-progress-bottom {
+  position: absolute;
+
+  left: 0;
+  right: 0;
+  bottom: 0;
+
+  width: 100%;
+}
+
+.cc-progress-bottom .starz-progress {
+  width: 100%;
+
+  cursor: pointer;
+}
+
+.cc-progress-bottom .starz-progress-bg {
+  position: relative;
+
+  width: 100%;
+  height: 3px;
+}
+
+
+/* =========================
+   CENTER PLAY BUTTON
+========================= */
+
+.play-apple {
+  opacity: 1;
+  visibility: visible;
+
+  transition:
+    opacity 0.3s ease,
+    transform 0.2s ease;
+}
+
+.play-apple:active {
+  transform: scale(0.94);
+}
+
+.play-apple.hidden {
+  opacity: 0;
+  visibility: hidden;
+
+  pointer-events: none;
+}
+
+
+/* =========================
+   PROGRESS PARTS
+========================= */
+
+.starz-buffered,
+.starz-progress-fill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+}
+
+.starz-thumb {
+  position: absolute;
+  top: 50%;
+
+  width: 9px;
+  height: 9px;
+
+  transform: translate(-50%, -50%);
+
+  border-radius: 50%;
+}
