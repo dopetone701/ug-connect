@@ -918,3 +918,63 @@
     height:100% !important;
   }
 }
+
+
+@media (max-width: 768px){
+  .landing-root{
+    padding: 12px 12px 130px 12px !important;
+  }
+}
+
+
+/* ============================================================
+   SURGICAL FIX: TABLET — NO SQUASH, NO OVERFLOW, NO REPOSITION
+   Keeps 3 top + 4 bottom till 768px, just shrinks to fit viewport
+============================================================ */
+.landing-root{
+  min-width: 0;
+  width: 100%;
+}
+.grid{
+  width: 100%;
+  min-width: 0;
+}
+.service-card{
+  min-width: 0;
+  max-width: 100%;
+}
+
+@media (max-width: 1100px) and (min-width: 769px){
+  .landing-root{
+    height: auto;
+    overflow: visible;
+    gap: 12px;
+    padding: 16px 16px 20px 16px;
+  }
+  .top-grid{
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    gap: 10px !important;
+  }
+  .bottom-grid{
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    gap: 10px !important;
+  }
+  .service-card,
+  .movies-card,
+  .ug-foods-card,
+  .mobile-money-card{
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    height: auto !important;
+    aspect-ratio: 16/9 !important; /* locked till mobile */
+  }
+  .bottom-grid .service-card{
+    aspect-ratio: 4/3 !important;
+  }
+}
+
+/* prevent CTA pushing overflow on tablet */
+@media (max-width: 1100px){
+  .cta-wrap{ padding-bottom: 20px; }
+}
