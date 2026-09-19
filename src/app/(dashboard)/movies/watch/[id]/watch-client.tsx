@@ -10,6 +10,8 @@ import { singleplayerprovider as SinglePlayerProvider } from "../../_components/
 import { useMovieStore } from "../../_lib/use-movie-store"
 import SimilarMovies from "./similar-movies"
 import EpisodesRow from "./episodes-row"
+import BackBtn from "../../_components/back-btn"
+
 
 
 const API_URL = "https://movie-server-api.connectu89.workers.dev/api/movies"
@@ -336,9 +338,17 @@ key={`${movie.id}-${quality}-${activeEp?.id || 'default'}`}
                 <div className="connect-spinner" />
               </div>
             )}
-            <div className={`center-top ${showControls? 'show' : ''}`}>
-              <div className="top-pills"><span className="c-pill">{movie.vj}</span></div>
-            </div>
+            {/* BACK + VJ - SAME TOP BAR - NEVER FADE */}
+<div className={`center-top ${showControls? 'show' : ''}`} style={{ opacity: 1, transform: 'translateY(0)' }}>
+  <BackBtn
+    onClick={() => router.push("/movies")}
+    className="w-8 h-8 mr-1"
+  />
+  <div className="top-pills">
+    <span className="c-pill">{movie.vj}</span>
+  </div>
+</div>
+
             {!playing &&!isLoading && (
               <button className="play-apple" onClick={togglePlay} aria-label="play">
                 <span className="play-apple-core"><svg viewBox="0 0 24 24" className="play-apple-tri" fill="none"><path d="M8.2 5.2a1 1 0 0 0-1 1v11.6a1 1 0 0 0 1.54.84l8.9-5.8a1 1 0 0 0 0-1.68l-8.9-5.8a1 1 0 0 0-.54-.16Z" fill="white"/></svg></span>

@@ -395,3 +395,40 @@
   display:flex !important;
   z-index:2147483647 !important;
 }
+
+
+.connect-root .center-top{
+  opacity:1 !important;
+  transform:translateY(0) !important;
+  pointer-events:auto !important;
+  gap:8px !important;
+}
+
+
+/* BACK stays, VJ fades - logo stays ref */
+.connect-root .center-top{
+  position:absolute !important;
+  top: 12px !important;
+  left: 12px !important;
+  height: 36px !important;
+  display:flex !important;
+  align-items:center !important;
+  gap:10px !important;
+  z-index:50 !important;
+  opacity:1 !important;
+  transform:translateY(0) !important;
+  pointer-events:auto !important;
+}
+
+.connect-root .center-top .top-pills{
+  opacity:0 !important;
+  transform:translateY(-6px) !important;
+  pointer-events:none !important;
+  transition:.32s ease !important;
+}
+
+.connect-root .center-top.show .top-pills{
+  opacity:1 !important;
+  transform:translateY(0) !important;
+  pointer-events:auto !important;
+}
