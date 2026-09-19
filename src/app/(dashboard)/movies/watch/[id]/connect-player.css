@@ -1,961 +1,397 @@
-.connect-root{
-  position:relative;
-  width:100%;
-  max-width:100%;
-  margin:0 auto;
-  padding:12px 16px 0 16px;
-  background:transparent;
-}
-.dna-pose{ border:none!important; }
+.connect-root{position:relative;width:100%;max-width:1280px;margin:0 auto;padding:12px 16px 0 16px;background:transparent;isolation:isolate;box-sizing:border-box}
+.dna-pose{border:none!important}
+.connect-root .film-giant.inner-body{position:relative;width:100%;aspect-ratio:16/9;max-height:68vh;border-radius:18px;overflow:hidden;background:#000;border:1px solid hsl(var(--border) /.6);margin:0 auto;padding:0!important}
+.connect-root .film-center,.connect-root .center-cover{width:100%;height:100%;border-radius:18px;overflow:hidden;background:#000;position:relative;margin:0!important;padding:0!important;border:none!important}
+.connect-root .connect-video{width:100%;height:100%;object-fit:contain!important;background:#000!important;display:block;margin:0!important;padding:0!important;border:none!important;border-radius:0!important}
+.connect-root .connect-poster{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;margin:0!important;padding:0!important;border-radius:0!important}
+.connect-root .center-top{position:absolute;left:16px;top:16px;z-index:6;display:flex;gap:12px;align-items:center;opacity:0;transform:translateY(-10px);transition:.32s ease;pointer-events:none}
+.connect-root .center-top.show{opacity:1;transform:translateY(0);pointer-events:auto}
+.connect-root .top-pills{display:flex;gap:10px}
+.connect-root .c-pill{font-size:10px;font-weight:700;padding:5px 10px;border-radius:999px;background:hsl(var(--surface) /.6);border:1px solid hsl(var(--border) /.5);backdrop-filter:blur(10px);color:white}
+.connect-root .c-pill.muted{opacity:.7}
+.connect-root .connect-controls{position:absolute;left:12px;right:12px;bottom:8px;z-index:8;display:flex;justify-content:space-between;align-items:center;gap:12px;opacity:0;transform:translateY(10px);transition:.32s;pointer-events:none;background:rgba(0,0,0,.22);border:1px solid rgba(255,255,255,.12);backdrop-filter:blur(22px) saturate(180%);padding:8px 10px;border-radius:14px;flex-direction:column}
+.connect-root .connect-controls.show{opacity:1;transform:translateY(0);pointer-events:auto}
+.connect-root .cc-left{display:flex;flex-direction:row;align-items:center;gap:12px;flex-shrink:0}
+.connect-root .cc-center{flex:1;display:flex;justify-content:center;min-width:0}
+.connect-root .cc-right{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.connect-root .vol-vertical{display:flex;flex-direction:column;align-items:center;gap:6px;background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.18);backdrop-filter:blur(14px);padding:8px 6px 6px 6px;border-radius:999px;cursor:pointer;width:32px;height:88px}
+.connect-root .vol-vertical-track{position:relative;width:3px;flex:1;background:rgba(255,255,255,.22);border-radius:999px;overflow:visible}
+.connect-root .vol-vertical-fill{position:absolute;left:0;right:0;bottom:0;background:white;border-radius:999px;pointer-events:none}
+.connect-root .vol-vertical-thumb{position:absolute;left:50%;transform:translateX(-50%);width:8px;height:8px;background:white;border-radius:50%;box-shadow:0 1px 6px rgba(0,0,0,.5);pointer-events:none}
+.connect-root .action-pills-row{display:flex;flex-direction:row;align-items:center;gap:8px}
+.connect-root .pill-btn{display:inline-flex;align-items:center;justify-content:center;gap:5px;font-size:10px;font-weight:800;letter-spacing:.03em;padding:0 12px;height:28px;min-height:28px;border-radius:999px;border:1px solid rgba(255,255,255,.18);backdrop-filter:blur(14px);cursor:pointer;transition:.2s;white-space:nowrap;line-height:1}
+.connect-root .pill-btn.mylist{background:white;color:black;border-color:white}
+.connect-root .pill-btn.mylist.added{background:hsl(var(--primary));color:white;border-color:hsl(var(--primary))}
+.connect-root .pill-btn.share{background:rgba(20,20,20,.6);color:white}
+.connect-root .starz-progress-wrap{display:flex;align-items:center;gap:8px;width:100%;max-width:520px}
+.connect-root .starz-progress{flex:1;height:28px;display:flex;align-items:center;cursor:pointer;background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.15);backdrop-filter:blur(10px);padding:0 10px;border-radius:999px}
+.connect-root .starz-progress-bg{width:100%;height:4px;background:rgba(255,255,255,.28);border-radius:999px;position:relative;overflow:hidden}
+.connect-root .starz-buffered{position:absolute;left:0;top:0;height:100%;background:rgba(255,255,255,.45);border-radius:999px;pointer-events:none;z-index:1;transition:width .2s linear}
+.connect-root .starz-progress-fill{position:absolute;left:0;top:0;height:100%;border-radius:999px;background:hsl(var(--primary));z-index:2;pointer-events:none}
+.connect-root .starz-thumb{position:absolute;top:50%;transform:translate(-50%,-50%);width:10px;height:10px;background:white;border-radius:50%;box-shadow:0 0 8px rgba(0,0,0,.5);z-index:3;pointer-events:none}
+.connect-root .starz-time-out{color:white;font-size:10px;font-weight:700;white-space:nowrap;background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.15);backdrop-filter:blur(10px);padding:0 10px;height:28px;display:flex;align-items:center;border-radius:999px;flex-shrink:0}
+.connect-root .cc-icon{width:28px;height:28px;border-radius:50%;background:rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.18);backdrop-filter:blur(12px);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0}
+.connect-root .fullscreen-logo.top-right{position:absolute;right:10px;top:10px;z-index:30;width:auto;height:auto;max-width:72px;max-height:72px;background:transparent;border:none;backdrop-filter:none;border-radius:0;padding:0;display:flex;align-items:center;justify-content:center;overflow:visible;pointer-events:none}
+.connect-root .fullscreen-logo.top-right img{display:block;width:auto;height:auto;max-width:64px;max-height:64px;object-fit:contain}
+.connect-root .play-apple{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:9;width:88px;height:88px;border:none;background:transparent;display:flex;align-items:center;justify-content:center;cursor:pointer}
+.connect-root .play-apple-core{width:72px;height:72px;border-radius:50%;background:rgba(0,0,0,.42);backdrop-filter:blur(22px);border:1px solid rgba(255,255,255,.25);display:flex;align-items:center;justify-content:center;box-shadow:0 10px 30px rgba(0,0,0,.35)}
+.connect-root .center-play-group{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);display:flex;align-items:center;justify-content:center;gap:34px;z-index:30;pointer-events:auto}
+.connect-root .center-skip-btn{width:76px;height:76px;padding:0;margin:0;border-radius:50%;border:1px solid rgba(255,255,255,.18);background:rgba(20,20,20,.58);color:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);box-shadow:0 4px 18px rgba(0,0,0,.35),inset 0 1px 1px rgba(255,255,255,.12);-webkit-tap-highlight-color:transparent;transition:transform .15s ease,background .15s ease}
+.connect-root .skip-icon{width:58px;height:58px;display:block;overflow:visible}
+.connect-root .center-play-group .play-apple{position:relative;left:auto;top:auto;transform:none;margin:0;flex-shrink:0}
+.connect-root .c-desc-wrap{display:flex;flex-direction:column;align-items:flex-start;gap:6px}
+.connect-root .c-desc{font-size:14px;line-height:1.6;color:hsl(var(--text-muted));margin:0;white-space:pre-wrap;word-break:break-word}
+.connect-root .c-desc.clamped{display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;overflow:hidden}
+.connect-root .c-more-btn{background:none;border:none;padding:0;font-size:13.5px;font-weight:700;color:hsl(var(--text));cursor:pointer;opacity:.9}
+.connect-root .connect-under-section{width:100%;max-width:1280px;margin:0 auto;padding:14px 16px 0;background:hsl(var(--bg));display:flex;flex-direction:column;gap:16px}
+.connect-root .connect-action-row{display:flex;gap:10px;overflow-x:auto;scrollbar-width:none;-ms-overflow-style:none;padding-bottom:2px}
+.connect-root .connect-action-row::-webkit-scrollbar{display:none}
+.connect-root .c-action-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:10px 18px;border-radius:999px;border:1px solid hsl(var(--border));background:hsl(var(--surface));color:hsl(var(--text));font-size:13.5px;font-weight:600;line-height:1;white-space:nowrap;cursor:pointer;transition:all 0.2s ease;user-select:none;-webkit-tap-highlight-color:transparent}
+.connect-root .c-meta-row{display:flex;flex-wrap:wrap;gap:10px;margin-top:8px;margin-bottom:10px}
+.connect-root .c-pill{display:inline-flex;align-items:center;padding:5px 12px;border-radius:999px;font-size:12px;font-weight:600;line-height:1;background:hsl(var(--surface));border:1px solid hsl(var(--border));color:hsl(var(--text-muted))}
+.connect-root .details-panel.under-player{width:100%;margin:18px auto 0 auto;background:hsl(var(--surface) /.8);border:1px solid hsl(var(--border) /.6);border-radius:16px;padding:18px;backdrop-filter:blur(12px)}
+.connect-root .settings-wrap{position:relative}
+.connect-root .settings-menu{position:absolute;bottom:36px;right:0;width:150px;background:rgba(18,18,18,.94);border:1px solid rgba(255,255,255,.15);backdrop-filter:blur(20px);border-radius:12px;padding:6px;z-index:99}
 
-/* PLAYER - PC (keep your rigut PC look) */
-/* PLAYER - PC - INNER FIX ONLY, OUTER STAYS SAME */
-.film-giant.inner-body{
-  position:relative;
-  width:100%;
-  aspect-ratio:16/9;
-  max-height:68vh;
-  border-radius:18px;
-  overflow:hidden;
-  background:#000;
-  border:1px solid hsl(var(--border) /.6);
-  margin:0 auto;
-  padding:0 !important; /* no inner padding */
+/* MOBILE YOUTUBE TOP - ONLY .connect-root */
+@media(max-width:768px){
+.connect-root{padding:0!important;margin:0 auto!important;width:100%!important;max-width:100%!important;background:#000!important;border-radius:0!important;border:none!important}
+.connect-root .film-giant.inner-body{width:100%!important;max-width:100%!important;height:auto!important;aspect-ratio:16/9!important;max-height:none!important;border-radius:0!important;border:none!important;margin:0!important;background:#000!important}
+.connect-root .film-center,.connect-root .center-cover{border-radius:0!important;width:100%!important;height:100%!important;padding:0!important;margin:0!important}
+.connect-root .connect-video,.connect-root .connect-poster{border-radius:0!important;object-fit:contain!important;background:#000!important}
+.connect-root .vol-vertical{display:none!important}
+.connect-root .connect-controls{left:10px!important;right:10px!important;bottom:10px!important}
+.connect-root .pill-btn{padding:0 10px;font-size:9px;height:26px;min-height:26px}
+.connect-root .starz-progress,.connect-root .starz-time-out,.connect-root .cc-icon{height:26px}
+.connect-root .starz-time-out{display:none}
+.connect-root .details-panel.under-player{width:calc(100% - 24px)!important;margin:14px 12px 0 12px!important;border-radius:14px!important}
+.connect-root .similar-slot{padding:0 12px}
+.connect-root .action-pills-row,.connect-root .vol-vertical{display:none!important}
+.connect-root .fullscreen-logo.top-right{top:8px!important;right:8px!important;max-width:36px!important;max-height:36px!important}
+.connect-root .fullscreen-logo.top-right img{max-width:32px!important;max-height:32px!important;width:32px!important}
 }
-.film-center,.center-cover{
-  width:100%;
-  height:100%;
-  border-radius:0 !important; /* remove double radius that makes gap */
-  border:none !important;
-  margin:0 !important;
-  padding:0 !important;
-  overflow:hidden;
-  position:relative;
+
+/* FULLSCREEN - SCOPED ONLY */
+.connect-root.is-shell-full{position:fixed!important;inset:0!important;width:100vw!important;height:100dvh!important;z-index:2147483647!important;background:#000!important;padding:0!important;margin:0!important;max-width:100vw!important}
+.connect-root.is-shell-full .film-giant.inner-body{position:fixed!important;inset:0!important;width:100vw!important;height:100dvh!important;max-width:100vw!important;max-height:100dvh!important;aspect-ratio:auto!important;border-radius:0!important;border:none!important;margin:0!important}
+.connect-root.is-shell-full .film-center,.connect-root.is-shell-full .center-cover{width:100vw!important;height:100dvh!important;max-width:100vw!important;max-height:100dvh!important;border-radius:0!important}
+.connect-root.is-shell-full .connect-video,.connect-root.is-shell-full .connect-poster{width:100vw!important;height:100dvh!important;border-radius:0!important;object-fit:contain!important;background:#000}
+.connect-root.is-shell-full .center-top{top:20px!important;left:20px!important}
+.connect-root.is-shell-full .fullscreen-logo.top-right{top:20px!important;right:20px!important}
+.connect-root.is-shell-full .connect-controls{left:16px!important;right:16px!important;bottom:16px!important;max-width:100vw!important}
+.connect-root.is-shell-full .film-similar-wrap,.connect-root.is-shell-full .sim-root,.connect-root.is-shell-full .similar-slot,.connect-root.is-shell-full .similar-movies,.connect-root.is-shell-full .details-panel,.connect-root.is-shell-full .latest-root{display:none!important}
+.connect-root.is-shell-full .connect-controls,.connect-root.is-shell-full .center-top,.connect-root.is-shell-full .play-apple,.connect-root.is-shell-full .fullscreen-logo{z-index:20!important}
+.connect-root.is-shell-full .connect-under-section,.connect-root.is-shell-full .c-desc-wrap,.connect-root.is-shell-full .connect-action-row,.connect-root.is-shell-full .c-meta-row,.connect-root.is-shell-full .c-more-btn,.connect-root.is-shell-full .connect-desc-block{display:none!important}
+
+
+/* ===== VIDEO ACTIONS + BUTTONS - RESTORED AS WAS - SCOPED ===== */
+.connect-root .action-pills-row{
+  display:flex !important;
+  flex-direction:row !important;
+  align-items:center !important;
+  gap:8px !important;
 }
-.connect-video{
-  width:100%;
-  height:100%;
-  object-fit:cover;
-  background:#000;
-  display:block;
-  margin:0 !important;
+
+.connect-root .pill-btn{
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  gap:5px !important;
+  font-size:10px !important;
+  font-weight:800 !important;
+  letter-spacing:.03em !important;
+  padding:0 12px !important;
+  height:28px !important;
+  min-height:28px !important;
+  border-radius:999px !important;
+  border:1px solid rgba(255,255,255,.18) !important;
+  backdrop-filter:blur(14px) !important;
+  cursor:pointer !important;
+  transition:.2s !important;
+  white-space:nowrap !important;
+  line-height:1 !important;
+}
+.connect-root .pill-btn.mylist{ background:white !important; color:black !important; border-color:white !important; }
+.connect-root .pill-btn.mylist.added{ background:hsl(var(--primary)) !important; color:white !important; border-color:hsl(var(--primary)) !important; }
+.connect-root .pill-btn.share{ background:rgba(20,20,20,.6) !important; color:white !important; }
+.connect-root .pill-btn:hover{ transform:scale(1.02) !important; }
+
+.connect-root .connect-under-section{
+  width:100% !important;
+  max-width:1280px !important;
+  margin:0 auto !important;
+  padding:14px 16px 0 !important;
+  background:hsl(var(--bg)) !important;
+  display:flex !important;
+  flex-direction:column !important;
+  gap:16px !important;
+}
+
+.connect-root .connect-action-row{
+  display:flex !important;
+  gap:10px !important;
+  overflow-x:auto !important;
+  scrollbar-width:none !important;
+  -ms-overflow-style:none !important;
+  padding-bottom:2px !important;
+}
+.connect-root .connect-action-row::-webkit-scrollbar{ display:none !important; }
+
+.connect-root .c-action-btn{
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  gap:8px !important;
+  padding:10px 18px !important;
+  border-radius:999px !important;
+  border:1px solid hsl(var(--border)) !important;
+  background:hsl(var(--surface)) !important;
+  color:hsl(var(--text)) !important;
+  font-size:13.5px !important;
+  font-weight:600 !important;
+  line-height:1 !important;
+  white-space:nowrap !important;
+  cursor:pointer !important;
+  transition:all 0.2s ease !important;
+}
+
+.connect-root .c-action-btn.primary{
+  background:hsl(var(--primary)) !important;
+  color:hsl(var(--primary-text)) !important;
+  border-color:hsl(var(--primary)) !important;
+}
+.connect-root .c-action-btn.active{
+  background:hsl(var(--text)) !important;
+  color:hsl(var(--bg)) !important;
+  border-color:hsl(var(--text)) !important;
+}
+
+/* MOBILE KEEP BUTTONS VISIBLE - DON'T HIDE */
+@media(max-width:768px){
+  .connect-root .action-pills-row{
+    display:flex !important;
+  }
+  .connect-root .pill-btn.mylist,
+  .connect-root .pill-btn.share{
+    display:inline-flex !important;
+  }
+  .connect-root .connect-action-row{
+    gap:8px !important;
+  }
+  .connect-root .c-action-btn{
+    padding:10px 16px !important;
+    font-size:13px !important;
+  }
+}
+
+
+/* ===== YOUTUBE PRO PROGRESS - CLEAN ===== */
+.connect-root .connect-controls{
+  left:0 !important;
+  right:0 !important;
+  bottom:0 !important;
   padding:0 !important;
+  background:linear-gradient(0deg,rgba(0,0,0,.85) 0%,rgba(0,0,0,.4) 60%,transparent 100%) !important;
   border:none !important;
+  backdrop-filter:none !important;
+  border-radius:0 !important;
+  gap:0 !important;
+}
+
+.connect-root .cc-progress-top{
+  width:100% !important;
+  padding:0 !important;
+}
+
+.connect-root .starz-progress{
+  width:100% !important;
+  height:12px !important;
+  display:flex !important;
+  align-items:center !important;
+  background:transparent !important;
+  border:none !important;
+  backdrop-filter:none !important;
+  padding:0 !important;
+  border-radius:0 !important;
+  cursor:pointer !important;
+}
+
+.connect-root .starz-progress-bg{
+  width:100% !important;
+  height:3px !important;
+  background:rgba(255,255,255,.3) !important;
+  border-radius:0 !important;
+  position:relative !important;
+  transition:height .15s ease !important;
+}
+
+.connect-root .starz-progress:hover .starz-progress-bg{
+  height:5px !important;
+}
+
+.connect-root .starz-buffered{
+  position:absolute !important;
+  left:0 !important;
+  top:0 !important;
+  height:100% !important;
+  background:rgba(255,255,255,.5) !important;
   border-radius:0 !important;
 }
-.connect-poster{
-  position:absolute;
-  inset:0;
-  width:100%;
-  height:100%;
-  object-fit:cover;
-  margin:0 !important;
-  padding:0 !important;
+
+.connect-root .starz-progress-fill{
+  position:absolute !important;
+  left:0 !important;
+  top:0 !important;
+  height:100% !important;
+  background:#FF0000 !important;
   border-radius:0 !important;
+  z-index:2 !important;
+}
+
+.connect-root .starz-thumb{
+  position:absolute !important;
+  top:50% !important;
+  transform:translate(-50%,-50%) scale(0) !important;
+  width:12px !important;
+  height:12px !important;
+  background:#FF0000 !important;
+  border-radius:50% !important;
+  box-shadow:0 1px 4px rgba(0,0,0,.5) !important;
+  transition:transform .15s ease !important;
+  z-index:3 !important;
+}
+
+.connect-root .starz-progress:hover .starz-thumb,
+.connect-root .starz-progress:active .starz-thumb{
+  transform:translate(-50%,-50%) scale(1) !important;
+}
+
+.connect-root .cc-bottom-row{
+  padding:8px 12px 10px 12px !important;
+  margin:0 !important;
+}
+
+.connect-root .cc-left-time{
+  background:transparent !important;
+  border:none !important;
+  backdrop-filter:none !important;
+  padding:0 !important;
+  height:auto !important;
+  font-size:12px !important;
+  font-weight:400 !important;
 }
 
 
-/* TOP BAR */
-.center-top{
-  position:absolute;
-  left:16px;
-  top:16px;
-  z-index:6;
-  display:flex;
-  gap:12px;
-  align-items:center;
-  opacity:0;
-  transform:translateY(-10px);
-  transition:.32s ease;
-  pointer-events:none;
+/* ===== YT TIME + FULLSCREEN BTN - PRO ===== */
+.connect-root .cc-bottom-row{
+  display:flex !important;
+  justify-content:space-between !important;
+  align-items:center !important;
+  padding:6px 12px 12px 12px !important;
+  background:transparent !important;
 }
-.center-top.show{ opacity:1; transform:translateY(0); pointer-events:auto; }
-.top-pills{ display:flex; gap:10px; }
-.c-pill{
-  font-size:10px;
-  font-weight:700;
-  padding:5px 10px;
-  border-radius:999px;
-  background:hsl(var(--surface) /.6);
-  border:1px solid hsl(var(--border) /.5);
-  backdrop-filter:blur(10px);
-  color:white;
+
+.connect-root .cc-left-time{
+  background:transparent !important;
+  border:none !important;
+  backdrop-filter:none !important;
+  padding:0 !important;
+  height:auto !important;
+  color:#fff !important;
+  font-size:12px !important;
+  font-weight:400 !important;
+  font-family:Roboto,Arial,sans-serif !important;
+  letter-spacing:.02em !important;
+  opacity:.9 !important;
 }
-.c-pill.muted{ opacity:.7; }
 
-/* CONTROLS */
-.connect-controls{
-  position:absolute;
-  left:12px;
-  right:12px;
-  bottom:8px;
-  z-index:8;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:12px;
-  opacity:0;
-  transform:translateY(10px);
-  transition:.32s;
-  pointer-events:none;
+.connect-root .cc-right-simple{
+  display:flex !important;
+  align-items:center !important;
+  gap:16px !important;
 }
-.connect-controls.show{ opacity:1; transform:translateY(0); pointer-events:auto; }
-.cc-left{ display:flex; flex-direction:row; align-items:center; gap:12px; flex-shrink:0; }
-.cc-center{ flex:1; display:flex; justify-content:center; min-width:0; }
-.cc-right{ display:flex; align-items:center; gap:8px; flex-shrink:0; }
 
-/* VOLUME */
-.vol-vertical{
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  gap:6px;
-  background:rgba(0,0,0,.45);
-  border:1px solid rgba(255,255,255,.18);
-  backdrop-filter:blur(14px);
-  padding:8px 6px 6px 6px;
-  border-radius:999px;
-  cursor:pointer;
-  width:32px;
-  height:88px;
+.connect-root .cc-icon{
+  width:36px !important;
+  height:36px !important;
+  background:transparent !important;
+  border:none !important;
+  backdrop-filter:none !important;
+  border-radius:0 !important;
+  color:#fff !important;
+  opacity:.9 !important;
+  transition:.15s ease !important;
 }
-.vol-vertical-track{ position:relative; width:3px; flex:1; background:rgba(255,255,255,.22); border-radius:999px; overflow:visible; }
-.vol-vertical-fill{ position:absolute; left:0; right:0; bottom:0; background:white; border-radius:999px; pointer-events:none; }
-.vol-vertical-thumb{ position:absolute; left:50%; transform:translateX(-50%); width:8px; height:8px; background:white; border-radius:50%; box-shadow:0 1px 6px rgba(0,0,0,.5); pointer-events:none; }
-.vol-icon{ width:18px; height:18px; display:flex; align-items:center; justify-content:center; }
 
-/* PILLS */
-.action-pills-row{ display:flex; flex-direction:row; align-items:center; gap:8px; }
-.pill-btn{
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  gap:5px;
-  font-size:10px;
-  font-weight:800;
-  letter-spacing:.03em;
-  padding:0 12px;
-  height:28px;
-  min-height:28px;
-  border-radius:999px;
-  border:1px solid rgba(255,255,255,.18);
-  backdrop-filter:blur(14px);
-  cursor:pointer;
-  transition:.2s;
-  white-space:nowrap;
-  line-height:1;
+.connect-root .cc-icon:hover{
+  opacity:1 !important;
+  transform:scale(1.1) !important;
 }
-.pill-btn.mylist{ background:white; color:black; border-color:white; }
-.pill-btn.mylist.added{ background:hsl(var(--primary)); color:white; border-color:hsl(var(--primary)); }
-.pill-btn.share{ background:rgba(20,20,20,.6); color:white; }
-.pill-btn:hover{ transform:scale(1.02); }
 
-/* PROGRESS */
-.starz-progress-wrap{ display:flex; align-items:center; gap:8px; width:100%; max-width:520px; }
-.starz-progress{ flex:1; height:28px; display:flex; align-items:center; cursor:pointer; background:rgba(0,0,0,.35); border:1px solid rgba(255,255,255,.15); backdrop-filter:blur(10px); padding:0 10px; border-radius:999px; }
-.starz-progress-bg{ width:100%; height:4px; background:rgba(255,255,255,.28); border-radius:999px; position:relative; overflow:hidden; }
-.starz-buffered{ position:absolute; left:0; top:0; height:100%; background:rgba(255,255,255,.45); border-radius:999px; pointer-events:none; z-index:1; transition:width .2s linear; }
-.starz-progress-fill{ position:absolute; left:0; top:0; height:100%; border-radius:999px; background:hsl(var(--primary)); z-index:2; pointer-events:none; }
-.starz-thumb{ position:absolute; top:50%; transform:translate(-50%,-50%); width:10px; height:10px; background:white; border-radius:50%; box-shadow:0 0 8px rgba(0,0,0,.5); z-index:3; pointer-events:none; }
-.starz-time-out{ color:white; font-size:10px; font-weight:700; white-space:nowrap; background:rgba(0,0,0,.35); border:1px solid rgba(255,255,255,.15); backdrop-filter:blur(10px); padding:0 10px; height:28px; display:flex; align-items:center; border-radius:999px; flex-shrink:0; }
-.cc-icon{ width:28px; height:28px; border-radius:50%; background:rgba(0,0,0,.4); border:1px solid rgba(255,255,255,.18); backdrop-filter:blur(12px); display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0; }
-
-/* LOGO - NO CHOP */
-.fullscreen-logo.top-right{
-  position:absolute;
-  right:10px;
-  top:10px;
-  z-index:30;
-  width:auto;
-  height:auto;
-  max-width:72px;
-  max-height:72px;
-  background:transparent;
-  border:none;
-  backdrop-filter:none;
-  border-radius:0;
-  padding:0;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  overflow:visible;
-  pointer-events:none;
+.connect-root .cc-icon svg{
+  width:22px !important;
+  height:22px !important;
+  fill:white !important;
 }
-.fullscreen-logo.top-right img{ display:block; width:auto; height:auto; max-width:64px; max-height:64px; object-fit:contain; }
-.connect-root.is-shell-full .fullscreen-logo.top-right img{ max-width:72px; max-height:72px; }
 
-/* PLAY */
-.play-apple{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:9;width:88px;height:88px;border:none;background:transparent;display:flex;align-items:center;justify-content:center;cursor:pointer}
-.play-apple-core{width:72px;height:72px;border-radius:50%;background:rgba(0,0,0,.42);backdrop-filter:blur(22px);border:1px solid rgba(255,255,255,.25);display:flex;align-items:center;justify-content:center;box-shadow:0 10px 30px rgba(0,0,0,.35)}
-.play-apple-tri{width:30px;height:30px;margin-left:2px}
-
-/* SETTINGS */
-.settings-wrap{ position:relative; }
-.settings-menu{
-  position:absolute; bottom:36px; right:0; width:150px;
-  background:rgba(18,18,18,.94); border:1px solid rgba(255,255,255,.15);
-  backdrop-filter:blur(20px); border-radius:12px; padding:6px; z-index:99;
+/* FULLSCREEN LOGO - HIDE IN NORMAL, SHOW ONLY ON HOVER LIKE YT */
+.connect-root .fullscreen-logo.top-right{
+  opacity:0 !important;
+  transition:.2s ease !important;
+  top:12px !important;
+  right:12px !important;
+  max-width:40px !important;
 }
-.settings-head{ font-size:9px; font-weight:800; opacity:.5; padding:6px 8px; color:white; letter-spacing:.08em; }
-.settings-item{ width:100%; display:flex; justify-content:space-between; padding:8px 10px; border-radius:8px; background:transparent; border:none; color:white; font-size:12px; font-weight:600; cursor:pointer; }
-.settings-item:hover{ background:rgba(255,255,255,.1); }
-.settings-item.active{ background:rgba(255,255,255,.14); }
-.q-dot{ color:hsl(var(--primary)); }
-
-/* DETAILS */
-.details-panel.under-player{
-  width:100%;
-  margin:18px auto 0 auto;
-  background:hsl(var(--surface) /.8);
-  border:1px solid hsl(var(--border) /.6);
-  border-radius:16px;
-  padding:18px;
-  backdrop-filter:blur(12px);
+.connect-root:hover .fullscreen-logo.top-right{
+  opacity:.7 !important;
 }
-.dp-head{ display:flex; justify-content:space-between; align-items:center; gap:12px; }
-.dp-head h2{ font-size:20px; font-weight:900; }
-.dp-close{ width:32px; height:32px; border-radius:50%; border:1px solid hsl(var(--border) /.6); background:hsl(var(--surface)); cursor:pointer; }
-.dp-meta{ display:flex; gap:8px; margin:12px 0; flex-wrap:wrap; }
-.dp-desc{ font-size:13px; line-height:1.6; opacity:.85; margin:10px 0 16px 0; }
-.dp-actions{ display:flex; gap:10px; }
-.similar-slot{ width:100%; margin-top:22px; }
+.connect-root .fullscreen-logo.top-right img{
+  max-width:36px !important;
+  filter:drop-shadow(0 1px 2px rgba(0,0,0,.6)) !important;
+}
 
-/* =========================================================
-   PHONE = YOUTUBE STYLE - RECTANGLE ON TOP BEFORE FULLSCREEN
-   ========================================================= */
+/* MOBILE - BIGGER TOUCH TARGETS */
 @media(max-width:768px){
-  .connect-root{
-    padding:0 !important;
-    margin:0 !important;
-    width:100vw !important;
-    max-width:100vw !important;
-    background:#000 !important;
+  .connect-root .cc-left-time{
+    font-size:11px !important;
   }
-
-  /* YouTube mini - video sticks to top, full width, no radius */
-  .film-giant.inner-body{
-    width:100vw !important;
-    max-width:100vw !important;
-    height:auto !important;
-    aspect-ratio:16/9 !important;
-    max-height:none !important;
-    border-radius:0 !important;
-    border:none !important;
-    margin:0 !important;
-    background:#000 !important;
+  .connect-root .cc-icon{
+    width:40px !important;
+    height:40px !important;
   }
-
-  .film-center,
-  .center-cover{
-    border-radius:0 !important;
-    width:100vw !important;
-    height:100% !important;
-  }
-
-  .connect-video,
-  .connect-poster{
-    border-radius:0 !important;
-    object-fit:contain !important;
-    background:#000 !important;
-  }
-
-  /* Hide PC chrome - no rounded shell */
-  .vol-vertical{ display:none !important; }
-
-  /* Controls tighter like YouTube */
-  .connect-controls{
-    left:10px !important;
-    right:10px !important;
-    bottom:10px !important;
-  }
-
-  .pill-btn{ padding:0 10px; font-size:9px; height:26px; min-height:26px; }
-  .starz-progress,.starz-time-out,.cc-icon{ height:26px; }
-  .cc-icon{ width:26px; }
-  .starz-time-out{ display:none; } /* YouTube hides time on portrait mini */
-
-  /* Details below video with padding, not edge to edge */
-  .details-panel.under-player{
-    width:calc(100% - 24px) !important;
-    margin:14px 12px 0 12px !important;
-    border-radius:14px !important;
-  }
-  .similar-slot{
-    padding:0 12px;
-  }
-}
-
-/* Landscape phone before fullscreen - still rectangle top but bigger */
-@media(max-width:768px) and (orientation:landscape){
-  .film-giant.inner-body{
-    height:100dvh !important;
-    width:100vw !important;
-    aspect-ratio:auto !important;
-  }
-}
-
-/* =========================================================
-   FULLSCREEN — PLAYER ONLY
-   ========================================================= */
-.connect-root.is-shell-full{
-  position:fixed!important;
-  inset:0!important;
-  width:100vw!important;
-  height:100dvh!important;
-  z-index:99999!important;
-  background:#000!important;
-  padding:0!important;
-  margin:0!important;
-}
-.connect-root.is-shell-full .film-giant.inner-body{
-  position:fixed!important;
-  inset:0!important;
-  width:100vw!important;
-  height:100dvh!important;
-  max-width:100vw!important;
-  max-height:100dvh!important;
-  aspect-ratio:auto!important;
-  border-radius:0!important;
-  border:none!important;
-  margin:0!important;
-}
-.connect-root.is-shell-full .film-center,
-.connect-root.is-shell-full .center-cover{
-  width:100vw!important;
-  height:100dvh!important;
-  max-width:100vw!important;
-  max-height:100dvh!important;
-  border-radius:0!important;
-}
-.connect-root.is-shell-full .connect-video,
-.connect-root.is-shell-full .connect-poster{
-  width:100vw!important;
-  height:100dvh!important;
-  border-radius:0!important;
-  object-fit:contain!important;
-  background:#000;
-}
-.connect-root.is-shell-full .center-top{ top:20px!important; left:20px!important; }
-.connect-root.is-shell-full .fullscreen-logo.top-right{ top:20px!important; right:20px!important; }
-.connect-root.is-shell-full .connect-controls{ left:16px!important; right:16px!important; bottom:16px!important; max-width:100vw!important; }
-
-/* HIDE SIMILAR ONLY IN FULLSCREEN */
-.connect-root.is-shell-full .film-similar-wrap,
-.connect-root.is-shell-full .sim-root,
-.connect-root.is-shell-full .similar-slot,
-.connect-root.is-shell-full .similar-movies,
-.connect-root.is-shell-full .details-panel,
-.connect-root.is-shell-full .details-panel.overlay-full,
-.connect-root.is-shell-full .details-panel.under-player{
-  display:none !important;
-}
-
-.connect-root.is-shell-full .connect-controls,
-.connect-root.is-shell-full .center-top,
-.connect-root.is-shell-full .play-apple,
-.connect-root.is-shell-full .fullscreen-logo {
-  z-index: 20 !important;
-}
-html:has(.connect-root.is-shell-full),
-body:has(.connect-root.is-shell-full) {
-  overflow: hidden !important;
-}
-
-
-/* ===== PRECISE TARGET FOR YOUR similar-movies.tsx ===== */
-.connect-root.is-shell-full .latest-root,
-.connect-root.is-shell-full .similar-slot,
-.connect-root.is-shell-full .latest-root * {
-  display: none !important;
-}
-
-/* native browser fullscreen - when film-giant goes fullscreen */
-.film-giant:fullscreen ~ .similar-slot,
-.film-giant:fullscreen ~ .latest-root,
-:fullscreen .latest-root,
-:fullscreen .similar-slot {
-  display: none !important;
-}
-
-/* extra safety - hide when any fullscreen is active */
-html:has(.connect-root.is-shell-full) .latest-root,
-body:has(.connect-root.is-shell-full) .latest-root,
-html:has(.connect-root.is-shell-full) .similar-slot {
-  display: none !important;
-}
-
-
-
-
-
-/* ===== MOBILE ONLY NUCLEAR - NO LEFT/RIGHT PADDING ===== */
-@media(max-width:768px){
-  .connect-root{
-    width:100vw!important;
-    max-width:100vw!important;
-    margin-left:calc(-50vw + 50%)!important;
-    margin-right:calc(-50vw + 50%)!important;
-    margin-top:0!important;
-    padding:0!important;
-    border-radius:0!important;
-    border:none!important;
-    background:#000!important;
-  }
-
-  .film-giant.inner-body,
-  .film-center,
-  .center-cover{
-    width:100vw!important;
-    max-width:100vw!important;
-    margin:0!important;
-    padding:0!important;
-    border-radius:0!important;
-    border:none!important;
-  }
-
-  .film-giant.inner-body{
-    aspect-ratio:16/9!important;
-    max-height:none!important;
-    box-shadow:none!important;
-    outline:none!important;
-  }
-
-  html, body{
-    overflow-x:hidden!important;
-  }
-}
-
-@media(max-width:768px){
- .connect-root.is-shell-full{
-    position:fixed!important;
-    inset:0!important;
-    width:100vw!important;
-    height:100dvh!important;
-    width:100dvw!important;
-    height:100dvh!important;
-    z-index:999999!important;
-    background:#000!important;
-    animation: ytExpand.25s ease;
-  }
-  @keyframes ytExpand{ from{transform:scale(.96)} to{transform:scale(1)} }
-
- .connect-root.is-shell-full.film-giant.inner-body{
-    width:100vw!important;
-    height:56.25vw!important;
-    top:50%!important;
-    left:50%!important;
-    transform:translate(-50%,-50%)!important;
-    position:absolute!important;
-    border:none!important;
-    border-radius:0!important;
-  }
-  @media(orientation:portrait){
-   .connect-root.is-shell-full.film-giant.inner-body{
-      width:100dvh!important;
-      height:56.25dvh!important;
-      transform:translate(-50%,-50%) rotate(90deg)!important;
-    }
+  .connect-root .cc-icon svg{
+    width:24px !important;
+    height:24px !important;
   }
 }
 
 
-/* COVER BROWSER SEARCH BAR */
-@media(max-width:768px){
- .connect-root.is-shell-full{
-    position:fixed!important; inset:0!important;
-    width:100vw!important; width:100dvw!important;
-    height:100vh!important; height:100dvh!important; height:100svh!important;
-    height:-webkit-fill-available!important;
-    z-index:2147483647!important; background:#000!important;
-  }
- .connect-root.is-shell-full.film-giant.inner-body{
-    width:100vw!important; width:100dvw!important;
-    height:100vh!important; height:100dvh!important;
-    height:-webkit-fill-available!important;
-    max-width:none!important; max-height:none!important;
-    border:none!important; border-radius:0!important;
-  }
- .connect-root.is-shell-full.connect-video{
-    width:100vw!important; height:100vh!important;
-    height:100dvh!important; height:-webkit-fill-available!important;
-    object-fit:contain!important;
-  }
-  html:has(.is-shell-full), body:has(.is-shell-full){
-    overflow:hidden!important; position:fixed!important; width:100%!important; height:100%!important;
-  }
-}
-:fullscreen.connect-root, :fullscreen.film-giant, :-webkit-full-screen.connect-root{
-  width:100vw!important; height:100vh!important; height:100dvh!important; background:#000!important;
+/* ===== LOGO NEVER TIMEOUT - ALWAYS VISIBLE ===== */
+.connect-root .fullscreen-logo.top-right{
+  opacity:1 !important;
+  visibility:visible !important;
+  pointer-events:none !important;
+  z-index:50 !important;
+  transition:none !important;
+  display:flex !important;
 }
 
-
-/* ===== MOBILE WRAP EDGE TO EDGE - NUCLEAR - LAST IN FILE ===== */
-@media(max-width:768px){
-  html, body {
-    overflow-x: hidden !important;
-  }
-
-  /* kill dashboard parent constraints */
-  main, 
-  [class*="dashboard"] > main,
-  [class*="content"],
-  .film-root {
-    padding-left:0 !important;
-    padding-right:0 !important;
-    margin-left:0 !important;
-    margin-right:0 !important;
-    max-width:100vw !important;
-    overflow-x:hidden !important;
-  }
-
-  .connect-root{
-    position:relative !important;
-    left:50% !important;
-    right:50% !important;
-    margin-left:-50vw !important;
-    margin-right:-50vw !important;
-    width:100vw !important;
-    max-width:100vw !important;
-    min-width:100vw !important;
-    padding:0 !important;
-    border:none !important;
-    border-radius:0 !important;
-    background:#000 !important;
-    transform:none !important;
-  }
-
-  .connect-root .film-giant.inner-body,
-  .connect-root .film-center,
-  .connect-root .center-cover{
-    width:100vw !important;
-    max-width:100vw !important;
-    margin:0 !important;
-    padding:0 !important;
-    border:none !important;
-    border-radius:0 !important;
-  }
+.connect-root .connect-controls,
+.connect-root .connect-controls.show,
+.connect-root:hover .fullscreen-logo.top-right,
+.connect-root .center-top,
+.connect-root .center-top.show{
+  /* don't hide logo with controls */
 }
 
-
-/* ===== MOBILE LOGO SMALLER ===== */
-@media(max-width:768px){
-  .fullscreen-logo.top-right{
-    top:8px !important;
-    right:8px !important;
-    max-width:36px !important;
-    max-height:36px !important;
-  }
-  .fullscreen-logo.top-right img{
-    max-width:32px !important;
-    max-height:32px !important;
-    width:32px !important;
-    height:auto !important;
-  }
-  .connect-root.is-shell-full .fullscreen-logo.top-right img{
-    max-width:36px !important;
-    max-height:36px !important;
-  }
+.connect-root .fullscreen-logo.top-right img{
+  opacity:1 !important;
+  visibility:visible !important;
 }
 
-
-/* ===== MOBILE SMALL RECT -> LANDSCAPE FULL ANIMATION ===== */
-@media(max-width:768px){
-  .connect-root{
-    will-change: transform, width, height;
-  }
-
-  /* entering fullscreen - animate from 16:9 top to full landscape */
-  .connect-root.is-shell-full{
-    position:fixed !important;
-    inset:0 !important;
-    width:100vw !important;
-    height:100dvh !important;
-    width:100dvw !important;
-    height:100dvh !important;
-    background:#000 !important;
-    z-index:2147483647 !important;
-    animation: rectToFull .42s cubic-bezier(.16,1,.3,1) forwards !important;
-  }
-
-  .connect-root.is-shell-full .film-giant.inner-body{
-    width:100% !important;
-    height:100% !important;
-    animation: rectToFullInner .42s cubic-bezier(.16,1,.3,1) forwards !important;
-  }
-
-  @keyframes rectToFull{
-    0%{
-      width:100vw;
-      height:56.25vw; /* your small rectangle height */
-      top:0;
-      left:0;
-      transform: scale(1) translateY(0);
-      border-radius:0;
-    }
-    100%{
-      width:100dvh;
-      height:100dvw;
-      top:50%;
-      left:50%;
-      transform: translate(-50%, -50%) rotate(90deg);
-      border-radius:0;
-    }
-  }
-
-  @keyframes rectToFullInner{
-    0%{ transform: scale(.98); }
-    100%{ transform: scale(1); }
-  }
-
-  /* when already landscape, don't rotate */
-  @media(orientation:landscape){
-    .connect-root.is-shell-full{
-      animation: rectToFullLandscape .32s cubic-bezier(.16,1,.3,1) forwards !important;
-      transform:none !important;
-    }
-    @keyframes rectToFullLandscape{
-      0%{ transform: scale(.96); }
-      100%{ transform: scale(1); }
-    }
-  }
+.connect-root.is-shell-full .fullscreen-logo.top-right{
+  opacity:1 !important;
+  visibility:visible !important;
+  display:flex !important;
+  z-index:2147483647 !important;
 }
-
-/* REMOVE SHARE + MY LIST ON MOBILE ONLY */
-@media(max-width:768px){
-  .action-pills-row,
-  .pill-btn.mylist,
-  .pill-btn.share,
-  .btn-share,
-  .btn-list,
-  .mob-yt-actions-under .btn-share,
-  .mob-yt-actions-under .btn-list{
-    display:none !important;
-  }
-}
-
-
-.connect-root{position:relative;width:100%;max-width:100%;margin:0 auto;padding:12px 16px 0 16px;background:transparent}
-.film-giant.inner-body{position:relative;width:100%;aspect-ratio:16/9;max-height:68vh;border-radius:18px;overflow:hidden;background:#000;border:1px solid hsl(var(--border)/.6);margin:0 auto}
-.film-center,.center-cover{width:100%;height:100%;border-radius:18px;overflow:hidden;background:#000;position:relative}
-.connect-video{width:100%;height:100%;object-fit:contain !important;background:#000 !important;display:block}
-.connect-poster{position:absolute;inset:0;width:100%;height:100%;object-fit:contain !important;background:#000}
-
-/* TOP - ONLY VJ */
-.center-top{position:absolute;left:16px;top:16px;z-index:6;display:flex;opacity:0;transform:translateY(-10px);transition:.32s;pointer-events:none}
-.center-top.show{opacity:1;transform:translateY(0);pointer-events:auto}
-.c-pill{font-size:10px;font-weight:700;padding:5px 10px;border-radius:999px;background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.15);backdrop-filter:blur(20px);color:#fff}
-
-/* CONTROLS - YOUR LAYOUT - FULL WIDTH BAR TOP, TIME LEFT */
-.connect-controls{position:absolute;left:12px;right:12px;bottom:8px;z-index:8;display:flex;flex-direction:column;gap:0;opacity:0;transform:translateY(10px);transition:.32s;pointer-events:none;background:rgba(0,0,0,.22);border:1px solid rgba(255,255,255,.12);backdrop-filter:blur(22px) saturate(180%);padding:8px 10px;border-radius:14px}
-.connect-controls.show{opacity:1;transform:translateY(0);pointer-events:auto}
-.cc-progress-top{width:100%}
-.starz-progress{width:100%;height:28px;display:flex;align-items:center;background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.15);backdrop-filter:blur(10px);padding:0 10px;border-radius:999px;cursor:pointer}
-.starz-progress-bg{width:100%;height:4px;background:rgba(255,255,255,.28);border-radius:999px;position:relative;overflow:hidden}
-.starz-buffered{position:absolute;left:0;top:0;height:100%;background:rgba(255,255,255,.45);border-radius:999px}
-.starz-progress-fill{position:absolute;left:0;top:0;height:100%;background:hsl(var(--primary));border-radius:999px}
-.starz-thumb{position:absolute;top:50%;transform:translate(-50%,-50%);width:10px;height:10px;background:#fff;border-radius:50%}
-.cc-bottom-row{width:100%;display:flex;justify-content:space-between;align-items:center;margin-top:8px}
-.cc-left-time{color:#fff;font-size:11px;font-weight:700;background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.15);backdrop-filter:blur(10px);padding:0 10px;height:26px;display:flex;align-items:center;border-radius:999px}
-.cc-right-simple{display:flex;align-items:center}
-.cc-icon{width:28px;height:28px;border-radius:50%;background:rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.18);backdrop-filter:blur(12px);display:flex;align-items:center;justify-content:center;cursor:pointer}
-.fullscreen-logo.top-right{position:absolute;right:10px;top:10px;z-index:30;pointer-events:none}.fullscreen-logo.top-right img{max-width:56px;object-fit:contain}
-.play-apple{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:9;width:88px;height:88px;background:transparent;border:none;display:flex;align-items:center;justify-content:center}
-.play-apple-core{width:72px;height:72px;border-radius:50%;background:rgba(0,0,0,.32);backdrop-filter:blur(22px);border:1px solid rgba(255,255,255,.22);display:flex;align-items:center;justify-content:center}
-
-/* MOBILE - EDGE TO EDGE + HIDE MY LIST/SHARE */
-@media(max-width:768px){
-  .connect-root{left:50% !important;right:50% !important;margin-left:-50vw !important;margin-right:-50vw !important;width:100vw !important;max-width:100vw !important;padding:0 !important;background:#000 !important;border-radius:0 !important;border:none !important}
-  .film-giant.inner-body{width:100vw !important;max-width:100vw !important;aspect-ratio:16/9 !important;border-radius:0 !important;border:none !important;background:#000 !important}
-  .film-center,.center-cover{width:100vw !important;border-radius:0 !important}
-  .action-pills-row,.vol-vertical{display:none !important}
-  .connect-controls{left:0 !important;right:0 !important;bottom:0 !important;border-radius:0 !important;background:linear-gradient(0deg,rgba(0,0,0,.85),rgba(0,0,0,.4) 60%,transparent) !important;border:none !important;backdrop-filter:none !important}
-}
-
-/* FULLSCREEN */
-.connect-root.is-shell-full{position:fixed !important;inset:0 !important;width:100vw !important;height:100dvh !important;width:100dvw !important;height:100dvh !important;z-index:2147483647 !important;background:#000 !important;padding:0 !important;margin:0 !important}
-.connect-root.is-shell-full .film-giant.inner-body,.connect-root.is-shell-full .film-center,.connect-root.is-shell-full .center-cover{width:100vw !important;height:100dvh !important;border-radius:0 !important;background:#000 !important}
-.connect-root.is-shell-full .connect-video{width:100vw !important;height:100dvh !important;object-fit:contain !important}
-
-
-
-.center-play-group{
-  position:absolute;
-  left:50%;
-  top:50%;
-  transform:translate(-50%, -50%);
-
-  display:flex;
-  align-items:center;
-  justify-content:center;
-
-  gap:34px;
-
-  z-index:30;
-  pointer-events:auto;
-}
-
-
-/* =========================
-   SKIP BUTTON
-   ========================= */
-
-.center-skip-btn{
-  width:76px;
-  height:76px;
-
-  padding:0;
-  margin:0;
-
-  border-radius:50%;
-  border:1px solid rgba(255,255,255,.18);
-
-  background:rgba(20,20,20,.58);
-
-  color:#fff;
-
-  display:flex;
-  align-items:center;
-  justify-content:center;
-
-  cursor:pointer;
-
-  backdrop-filter:blur(14px);
-  -webkit-backdrop-filter:blur(14px);
-
-  box-shadow:
-    0 4px 18px rgba(0,0,0,.35),
-    inset 0 1px 1px rgba(255,255,255,.12);
-
-  -webkit-tap-highlight-color:transparent;
-
-  transition:
-    transform .15s ease,
-    background .15s ease;
-}
-
-
-.skip-icon{
-  width:58px;
-  height:58px;
-
-  display:block;
-
-  overflow:visible;
-}
-
-
-.center-skip-btn:hover{
-  background:rgba(35,35,35,.7);
-}
-
-
-.center-skip-btn:active{
-  transform:scale(.9);
-}
-
-
-/* =========================
-   PLAY BUTTON
-   ========================= */
-
-.center-play-group .play-apple{
-  position:relative;
-
-  left:auto;
-  top:auto;
-
-  transform:none;
-
-  margin:0;
-
-  flex-shrink:0;
-}
-
-
-.c-desc-wrap { display:flex; flex-direction:column; align-items:flex-start; gap:6px; }
-
-.c-desc {
-  font-size:14px; line-height:1.6;
-  color: hsl(var(--text-muted));
-  margin:0;
-  white-space: pre-wrap;
-  word-break: break-word;
-}
-
-.c-desc.clamped {
-  display: -webkit-box;
-  -webkit-line-clamp: 5;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.c-more-btn {
-  background: none; border: none; padding: 0;
-  font-size: 13.5px; font-weight: 700;
-  color: hsl(var(--text));
-  cursor: pointer;
-  opacity:.9;
-}
-.c-more-btn:hover { text-decoration: underline; }
-
-
-/* ===== UNDER PLAYER BUTTONS ===== */
-.connect-under-section {
-  width: 100%;
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 14px 16px 0;
-  background: hsl(var(--bg));
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.connect-action-row {
-  display: flex;
-  gap: 10px;
-  overflow-x: auto;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-  padding-bottom: 2px;
-}
-.connect-action-row::-webkit-scrollbar {
-  display: none;
-}
-
-.c-action-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 10px 18px;
-  border-radius: 999px;
-  border: 1px solid hsl(var(--border));
-  background: hsl(var(--surface));
-  color: hsl(var(--text));
-  font-size: 13.5px;
-  font-weight: 600;
-  line-height: 1;
-  white-space: nowrap;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  user-select: none;
-  -webkit-tap-highlight-color: transparent;
-}
-
-.c-action-btn:hover {
-  background: hsl(var(--surface-hover));
-  border-color: hsl(var(--text-muted));
-}
-
-.c-action-btn:active {
-  transform: scale(0.97);
-}
-
-/* Primary - Play Preview */
-.c-action-btn.primary {
-  background: hsl(var(--primary));
-  color: hsl(var(--primary-text));
-  border-color: hsl(var(--primary));
-}
-
-.c-action-btn.primary:hover {
-  opacity: 0.9;
-  background: hsl(var(--primary));
-}
-
-/* Active - In My List */
-.c-action-btn.active {
-  background: hsl(var(--text));
-  color: hsl(var(--bg));
-  border-color: hsl(var(--text));
-}
-
-/* Icons inside */
-.c-action-btn svg {
-  width: 16px;
-  height: 16px;
-  flex-shrink: 0;
-}
-
-/* Mobile */
-@media (max-width: 768px) {
-  .connect-action-row {
-    gap: 8px;
-  }
-  .c-action-btn {
-    padding: 10px 16px;
-    font-size: 13px;
-  }
-}
-
-/* Desktop - a bit bigger */
-@media (min-width: 769px) {
-  .connect-under-section {
-    padding: 18px 24px 0;
-  }
-  .c-action-btn {
-    padding: 11px 20px;
-    font-size: 14px;
-  }
-}
-
-
-/* ===== TITLE PILLS GAP ===== */
-.c-meta-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px; /* gap between pills under title */
-  margin-top: 8px;
-  margin-bottom: 10px;
-}
-
-.c-pill {
-  display: inline-flex;
-  align-items: center;
-  padding: 5px 12px;
-  border-radius: 999px;
-  font-size: 12px;
-  font-weight: 600;
-  line-height: 1;
-  background: hsl(var(--surface));
-  border: 1px solid hsl(var(--border));
-  color: hsl(var(--text-muted));
-}
-
-.c-pill.muted {
-  opacity: .85;
-}
-
-/* ===== FULLSCREEN - HIDE EVERYTHING UNDER PLAYER ===== */
-.is-shell-full .connect-under-section,
-.is-shell-full .c-desc-wrap,
-.is-shell-full .connect-action-row,
-.is-shell-full .c-meta-row,
-.is-shell-full .c-more-btn,
-.is-shell-full .connect-desc-block {
-  display: none !important;
-  visibility: hidden !important;
-  opacity: 0 !important;
-  pointer-events: none !important;
-  height: 0 !important;
-  overflow: hidden !important;
-}
-
-/* Also hide SimilarMovies in fullscreen */
-.is-shell-full .similar-movies,
-.is-shell-full [class*="similar"] {
-  display: none !important;
-}
-
-/* Make player truly full */
-.is-shell-full .film-giant.connect-player {
-  height: 100vh !important;
-  height: 100dvh !important;
-}
-.is-shell-full .center-cover {
-  height: 100vh !important;
-  height: 100dvh !important;
-}
-
-
