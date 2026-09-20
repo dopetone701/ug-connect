@@ -1,3 +1,6 @@
+export const runtime = 'edge';
+
+
 import WatchClient from "../../../watch/[id]/watch-client";
 
 export default function WatchModal() {

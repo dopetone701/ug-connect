@@ -1,3 +1,6 @@
+export const runtime = 'edge';
+
+
 export default function MoviesLayout({
   children,
   modal,
