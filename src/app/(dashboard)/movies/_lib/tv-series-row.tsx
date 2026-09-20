@@ -24,9 +24,17 @@ function SeriesCard({ m }: { m: any }) {
   const seasons = m.seasons || []
   const episodes = seasons.flatMap((s: any) => s.episodes || [])
   const seasonLabel = seasons.length > 1? `S1-S${seasons.length}` : seasons[0]?.name? seasons[0].name.slice(0,4) : "S1"
+
+  const open = (u:string) => {
+  const p = document.querySelector('.content-panel') as HTMLElement
+  if(p) sessionStorage.setItem('movies-scroll', String(p.scrollTop))
+  router.push(u, { scroll: false })
+}
+
   return (
     <div className="series-big-card" ref={cardRef}>
-      <div className="series-cover-wrap" role="button" tabIndex={0} onClick={() => router.push(`/movies/watch/${m.id}`)}>
+      <div className="series-cover-wrap" role="button" tabIndex={0} onClick={() => open(`/movies/watch/${m.id}`)}
+>
         <img src={m.cover_url || m.cover} alt={m.title} draggable={false} loading="lazy" decoding="async" />
         <div className="series-dark" />
         <div className="series-top-row">
@@ -38,7 +46,8 @@ function SeriesCard({ m }: { m: any }) {
       <div className="s-ep-track">
         {isVisible? (
           episodes.length > 0? episodes.slice(0, 10).map((ep: any, i: number) => (
-<div key={ep.id} className="s-ep-mini-card" role="button" tabIndex={0} onClick={(e) => { e.stopPropagation(); router.push(`/movies/watch/${m.id}?ep=${ep.id}`) }}>
+<div key={ep.id} className="s-ep-mini-card" role="button" tabIndex={0} onClick={(e) => { e.stopPropagation(); open(`/movies/watch/${m.id}?ep=${ep.id}`) }}
+>
               <div className="s-ep-mini-cover">
                 <img src={ep.preview_url || ep.cover_url || m.cover_url || m.cover} alt={ep.title} loading="lazy" decoding="async" draggable={false} />
                 <div className="s-ep-fade" />

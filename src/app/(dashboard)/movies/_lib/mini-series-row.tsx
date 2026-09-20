@@ -95,7 +95,12 @@ export default function MiniSeriesRow({ movies, onSeeAll }: { movies: any[]; onS
 
         <div className="series-track" ref={trackRef}>
           {movies.map((m: any) => (
-            <MiniCard key={m.id} m={m} onPush={(url) => router.push(url)} />
+// new:
+<MiniCard key={m.id} m={m} onPush={(url) => {
+  const p = document.querySelector('.content-panel') as HTMLElement
+  if(p) sessionStorage.setItem('movies-scroll', String(p.scrollTop))
+  router.push(url, { scroll: false })
+}} />
           ))}
         </div>
       </div>

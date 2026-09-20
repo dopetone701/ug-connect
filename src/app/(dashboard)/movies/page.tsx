@@ -45,6 +45,13 @@ const API_URL =
   "https://movie-server-api.connectu89.workers.dev/api/movies"
 
 /* -------------------------------------------------------
+   HOME CACHE
+   ------------------------------------------------------- */
+
+const MOVIES_CACHE_KEY = "movies_home_cache_v1"
+const MOVIES_SCROLL_KEY = "movies_home_scroll_v1"
+
+/* -------------------------------------------------------
    CLICK / SWIPE GUARD
    ------------------------------------------------------- */
 
@@ -210,12 +217,94 @@ export default function MoviesPage() {
   const router = useRouter()
 
   /* -------------------------------------------------------
-     LOAD API DATA
+     MAP API MOVIES
+     ------------------------------------------------------- */
+
+  const mapMovies = useCallback(
+    (data: ApiMovie[]): LibMovie[] => {
+      return data.map((m) => ({
+        id: m.id,
+        title: m.title.toLowerCase(),
+        genre: m.genre,
+        vj: m.vj,
+        cover: m.cover_url,
+        desc: m.description,
+        video: m.video_url,
+        preview: m.preview_urls,
+
+        /*
+         * IMPORTANT:
+         * No random fallback here.
+         *
+         * Random values would change every time the
+         * background API refresh happens.
+         */
+        views:
+          typeof m.views === "number"
+            ? m.views
+            : 0,
+
+        likes:
+          typeof m.likes === "number"
+            ? m.likes
+            : 0,
+
+        isEditorsPick:
+          m.is_editors_pick || false,
+
+        createdAt: m.created_at,
+        type: m.type || "Single",
+        year: m.year,
+        actors: m.actors,
+        seasons: m.seasons || [],
+      }))
+    },
+    []
+  )
+
+  /* -------------------------------------------------------
+     LOAD HOME CACHE IMMEDIATELY
+     
+     THEN REFRESH API IN BACKGROUND.
+
+     This means returning to /movies does NOT wait for
+     the API before showing the previous home content.
      ------------------------------------------------------- */
 
   useEffect(() => {
     let cancelled = false
 
+    /*
+     * 1. INSTANT CACHE
+     */
+    try {
+      const cached = sessionStorage.getItem(
+        MOVIES_CACHE_KEY
+      )
+
+      if (cached) {
+        const parsed: LibMovie[] = JSON.parse(cached)
+
+        if (
+          Array.isArray(parsed) &&
+          parsed.length > 0
+        ) {
+          setAllMovies(parsed)
+          useGlobalSearch
+            .getState()
+            .setAll(parsed)
+        }
+      }
+    } catch (error) {
+      console.warn(
+        "Failed to restore movie cache:",
+        error
+      )
+    }
+
+    /*
+     * 2. BACKGROUND API UPDATE
+     */
     async function load() {
       try {
         const res = await fetch(API_URL, {
@@ -223,48 +312,45 @@ export default function MoviesPage() {
         })
 
         if (!res.ok) {
-          throw new Error(`Movie API failed: ${res.status}`)
+          throw new Error(
+            `Movie API failed: ${res.status}`
+          )
         }
 
         const data: ApiMovie[] = await res.json()
 
         if (cancelled) return
 
-        const mapped: LibMovie[] = data.map((m) => ({
-          id: m.id,
-          title: m.title.toLowerCase(),
-          genre: m.genre,
-          vj: m.vj,
-          cover: m.cover_url,
-          desc: m.description,
-          video: m.video_url,
-          preview: m.preview_urls,
+        const mapped = mapMovies(data)
 
-          /*
-           * Keep your existing fallback behavior.
-           */
-          views:
-            (m as any).views ||
-            Math.floor(Math.random() * 5000),
-
-          likes:
-            (m as any).likes ||
-            Math.floor(Math.random() * 1000),
-
-          isEditorsPick:
-            (m as any).is_editors_pick || false,
-
-          createdAt: (m as any).created_at,
-          type: (m as any).type || "Single",
-          year: (m as any).year,
-          actors: (m as any).actors,
-          seasons: (m as any).seasons || [],
-        }))
-
+        /*
+         * Update UI with fresh API data.
+         */
         setAllMovies(mapped)
-        useGlobalSearch.getState().setAll(mapped)
+
+        useGlobalSearch
+          .getState()
+          .setAll(mapped)
+
+        /*
+         * Save fresh data for the next instant return.
+         */
+        try {
+          sessionStorage.setItem(
+            MOVIES_CACHE_KEY,
+            JSON.stringify(mapped)
+          )
+        } catch (error) {
+          console.warn(
+            "Failed to cache movies:",
+            error
+          )
+        }
       } catch (error) {
-        console.error("Failed to load movies:", error)
+        console.error(
+          "Failed to load movies:",
+          error
+        )
       }
     }
 
@@ -272,6 +358,110 @@ export default function MoviesPage() {
 
     return () => {
       cancelled = true
+    }
+  }, [mapMovies])
+
+  /* -------------------------------------------------------
+     RESTORE EXACT HOME SCROLL POSITION
+     
+     Runs when /movies is mounted again.
+     ------------------------------------------------------- */
+
+  useEffect(() => {
+    let cancelled = false
+
+    const restoreHomeScroll = () => {
+      if (cancelled) return
+
+      try {
+        const saved = sessionStorage.getItem(
+          MOVIES_SCROLL_KEY
+        )
+
+        if (saved === null) return
+
+        const y = Number(saved)
+
+        if (!Number.isFinite(y)) return
+
+        /*
+         * Wait until React has painted the cached page.
+         */
+        requestAnimationFrame(() => {
+          if (cancelled) return
+
+          requestAnimationFrame(() => {
+            if (cancelled) return
+
+            window.scrollTo({
+              top: y,
+              left: 0,
+              behavior: "auto",
+            })
+          })
+        })
+      } catch {}
+    }
+
+    restoreHomeScroll()
+
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  /* -------------------------------------------------------
+     SAVE HOME SCROLL
+     ------------------------------------------------------- */
+
+  const saveHomeScroll = useCallback(() => {
+    try {
+      sessionStorage.setItem(
+        MOVIES_SCROLL_KEY,
+        String(window.scrollY)
+      )
+    } catch {}
+  }, [])
+
+  /*
+   * Also keep the latest position while the user scrolls.
+   *
+   * This means if the user scrolls and then opens a movie
+   * from a MovieRow, we still have the latest position.
+   */
+  useEffect(() => {
+    let timer: ReturnType<typeof setTimeout> | null = null
+
+    const handleScroll = () => {
+      if (timer) {
+        clearTimeout(timer)
+      }
+
+      timer = setTimeout(() => {
+        try {
+          sessionStorage.setItem(
+            MOVIES_SCROLL_KEY,
+            String(window.scrollY)
+          )
+        } catch {}
+      }, 80)
+    }
+
+    window.addEventListener(
+      "scroll",
+      handleScroll,
+      { passive: true }
+    )
+
+    return () => {
+      window.removeEventListener(
+        "scroll",
+        handleScroll
+      )
+
+      if (timer) {
+        clearTimeout(timer)
+      }
     }
   }, [])
 
@@ -344,7 +534,10 @@ export default function MoviesPage() {
       if (store.removeFromMyList) {
         store.removeFromMyList(m.id)
       } else if (store.toggleListMovie) {
-        store.toggleListMovie("my-list", m.id)
+        store.toggleListMovie(
+          "my-list",
+          m.id
+        )
       }
 
       return
@@ -360,11 +553,20 @@ export default function MoviesPage() {
     }
 
     if (store.addMovieToList) {
-      store.addMovieToList(myList.id, m.id)
+      store.addMovieToList(
+        myList.id,
+        m.id
+      )
     } else if (store.addToList) {
-      store.addToList(myList.id, m.id)
+      store.addToList(
+        myList.id,
+        m.id
+      )
     } else if (store.toggleListMovie) {
-      store.toggleListMovie(myList.id, m.id)
+      store.toggleListMovie(
+        myList.id,
+        m.id
+      )
     } else if (store.addToMyList) {
       store.addToMyList(m.id)
     }
@@ -418,6 +620,11 @@ export default function MoviesPage() {
   const handlePlay = useCallback(() => {
     if (!m) return
 
+    /*
+     * Save exact home position BEFORE leaving.
+     */
+    saveHomeScroll()
+
     setClicking(true)
 
     if (playTimerRef.current) {
@@ -428,10 +635,25 @@ export default function MoviesPage() {
       setClicking(false)
     }, 420)
 
+    /*
+     * Client-side navigation.
+     *
+     * No full browser refresh.
+     * scroll:false prevents Next from moving the
+     * home page to the top during navigation.
+     */
     router.push(
-      `/movies/watch/${m.id}?t=${anchor}`
+      `/movies/watch/${m.id}?t=${anchor}`,
+      {
+        scroll: false,
+      }
     )
-  }, [m, anchor, router])
+  }, [
+    m,
+    anchor,
+    router,
+    saveHomeScroll,
+  ])
 
   /* -------------------------------------------------------
      CLEANUP TIMERS
@@ -575,10 +797,6 @@ export default function MoviesPage() {
             <img
               src={m.cover}
               alt={m.title}
-              /*
-               * Hero image is immediately visible.
-               * Do NOT lazy-load the main active image.
-               */
               loading="eager"
               fetchPriority="high"
               decoding="async"
@@ -949,7 +1167,7 @@ export default function MoviesPage() {
 
         return (
           <MovieRow
-          key={s.id}
+            key={s.id}
             title={s.title}
             movies={s.data}
             onSeeAll={handleSeeAll}

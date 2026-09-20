@@ -3,25 +3,23 @@ import { useRef, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import "../../latest-movies.css";
 import "./similar-movies.css";
-import { usesingleplayer } from "../../_components/single-player";
 import { useGlobalSearch } from "@/stores/use-global-search";
 
 const API_URL = "https://movie-server-api.connectu89.workers.dev/api/movies";
 
 type Movie = { id:number; title:string; genre:string; vj:string; cover:string; cover_url?:string; video?:string; video_url?:string; preview?:string[]; preview_urls?:string[] };
 
-export default function similarmovies({ current }: { current: Movie }) {
+export default function SimilarMovies({ current }: { current: Movie }) {
   const [movies, setMovies] = useState<Movie[]>([]);
   const trackRef = useRef<HTMLDivElement>(null);
   const isDraggingRef = useRef(false);
   const router = useRouter();
-  const { playmovie } = usesingleplayer();
 
   useEffect(()=>{
     if(!current?.id) return;
     fetch(API_URL, {cache:"no-store"})
- .then(r=>r.json())
- .then((all:Movie[])=>{
+.then(r=>r.json())
+.then((all:Movie[])=>{
        const others = all.filter(m=> String(m.id)!== String(current.id));
        let list = others.filter(m=> m.genre && String(m.genre).toLowerCase().trim() === String(current.genre||"").toLowerCase().trim());
        if(list.length < 8 && current.vj){
@@ -123,14 +121,12 @@ export default function similarmovies({ current }: { current: Movie }) {
                 <button className="l-a-btn play on" onClick={(e)=>{
                   e.stopPropagation();
                   if(isDraggingRef.current) return;
-                  playmovie(m, 'full');
-                  router.replace(`/movies/watch/${m.id}?t=full`);
+                  router.push(`/movies/watch/${m.id}?t=full`, { scroll: false });
                 }}>PLAY</button>
                 <button className="l-a-btn prev on" onClick={(e)=>{
                   e.stopPropagation();
                   if(isDraggingRef.current) return;
-                  playmovie(m, 'preview');
-                  router.replace(`/movies/watch/${m.id}?t=preview`);
+                  router.push(`/movies/watch/${m.id}?t=preview`, { scroll: false });
                 }}>PRE</button>
               </div>
             </div>

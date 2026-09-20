@@ -14,11 +14,20 @@ export default function BackBtn(props: Props) {
 
   return (
     <button
-      onClick={() => {
-        if (props.onClick) return props.onClick();
-        if (window.history.length > 1) router.back();
-        else router.push(fallback);
-      }}
+    onClick={() => {
+  if (props.onClick) return props.onClick();
+  const root = document.querySelector('.yt-overlay-root') as HTMLElement | null;
+  const panel = document.querySelector('.content-panel') as HTMLElement | null;
+  const saved = sessionStorage.getItem('movies-scroll');
+  const go = () => {
+    if (window.history.length > 1) router.back();
+    else router.push(fallback, { scroll: false });
+    setTimeout(() => { if(panel && saved) panel.scrollTop = parseInt(saved,10) }, 80);
+  };
+  if(root && window.innerWidth <= 768){ root.classList.add('is-closing'); setTimeout(go, 300); } else { go(); }
+}}
+
+
       aria-label="Back"
       className={"inline-flex items-center justify-center w-14 h-14 text-white active:scale-90 transition " + extra}
       style={{ background: "none", border: "none" }}

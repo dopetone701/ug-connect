@@ -15,10 +15,13 @@ export default function MovieCard({ m }: { m: Movie }) {
   const startYRef = useRef(0)
 
   const handlePointerDown = (e: React.PointerEvent) => {
-    movedRef.current = false
-    startXRef.current = e.clientX
-    startYRef.current = e.clientY
-  }
+  movedRef.current = false
+  startXRef.current = e.clientX
+  startYRef.current = e.clientY
+
+  preloadMoviePage()
+}
+
 
   const handlePointerMove = (e: React.PointerEvent) => {
     const dx = Math.abs(e.clientX - startXRef.current)
@@ -39,38 +42,45 @@ export default function MovieCard({ m }: { m: Movie }) {
     }, 100)
   }
 
+
+  const preloadMoviePage = () => {
+  router.prefetch(`/movies/watch/${m.id}`)
+  router.prefetch(`/movies/watch/${m.id}?t=preview`)
+
+  // Give the destination page the movie immediately.
+  try {
+    sessionStorage.setItem(
+      `movie_preload_${m.id}`,
+      JSON.stringify(m)
+    )
+  } catch {}
+}
+
+
   const openYT = (e?: React.MouseEvent) => {
-    e?.stopPropagation()
+  e?.stopPropagation()
+  if (movedRef.current) return
+  addRecent(m.id)
+  router.push(`/movies/watch/${m.id}`, { scroll: false }) // <-- scroll:false keeps grid scroll
+}
+const openPreview = (e?: React.MouseEvent) => {
+  e?.stopPropagation()
+  if (movedRef.current) return
+  addRecent(m.id)
+  router.push(`/movies/watch/${m.id}?t=preview`, { scroll: false })
+}
 
-    if (movedRef.current) {
-      e?.preventDefault()
-      return
-    }
-
-    addRecent(m.id)
-    router.push(`/movies/watch/${m.id}`)
-  }
-
-  const openPreview = (e?: React.MouseEvent) => {
-    e?.stopPropagation()
-
-    if (movedRef.current) {
-      e?.preventDefault()
-      return
-    }
-
-    addRecent(m.id)
-    router.push(`/movies/watch/${m.id}?t=preview`)
-  }
 
   return (
     <div
-      className="latest-card"
-      onPointerDown={handlePointerDown}
-      onPointerMove={handlePointerMove}
-      onPointerUp={handlePointerUp}
-      onClick={openYT}
-    >
+  className="latest-card"
+  onPointerEnter={preloadMoviePage}
+  onPointerDown={handlePointerDown}
+  onPointerMove={handlePointerMove}
+  onPointerUp={handlePointerUp}
+  onClick={openYT}
+>
+
       <div className="l-card-cover">
         <img
           src={m.cover}

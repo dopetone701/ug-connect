@@ -6,7 +6,6 @@ import "../../movies.css"
 import "./connect-player.css"
 import "./mobile-preview.css"
 import MobilePreview from "./mobile-preview"
-import { singleplayerprovider as SinglePlayerProvider } from "../../_components/single-player"
 import SimilarMovies from "./similar-movies"
 import EpisodesRow from "./episodes-row"
 
@@ -17,7 +16,7 @@ import UnderVideoStaBtns from "../../_components/under-vid-btns/under-video-sta-
 
 const API_URL = "https://movie-server-api.connectu89.workers.dev/api/movies"
 
-export default function WatchPage(){
+export default function WatchPage({ isOverlay = false }: { isOverlay?: boolean }) {
   const params = useParams()
   const search = useSearchParams()
   const router = useRouter()
@@ -25,7 +24,19 @@ export default function WatchPage(){
   const type = search.get("t") || "full"
   const isPreview = type === "preview"
 
-  const [movie, setMovie] = useState<any>(null)
+const [movie, setMovie] = useState<any>(() => {
+  if (typeof window === "undefined") return null
+
+  try {
+    const cached = sessionStorage.getItem(
+      `movie_preload_${params.id}`
+    )
+
+    return cached ? JSON.parse(cached) : null
+  } catch {
+    return null
+  }
+})
   const [allMovies, setAllMovies] = useState<any[]>([])
   const [reelIndex, setReelIndex] = useState(0)
 
@@ -138,14 +149,49 @@ export default function WatchPage(){
     return `${m}:${String(s).padStart(2,'0')}`
   }, [])
 
-  useEffect(()=>{
-    fetch(API_URL, { cache:"no-store" }).then(r=>r.json()).then(d=> {
+  useEffect(() => {
+
+  let cancelled = false
+
+  fetch(API_URL, { cache: "no-store" })
+    .then(r => r.json())
+    .then(d => {
+
+      if (cancelled) return
+
       setAllMovies(d)
-      setMovie(d.find((m:any)=> String(m.id)===String(params.id)))
-      const idx = d.findIndex((m:any)=> String(m.id)===String(params.id))
-      if(idx>=0) setReelIndex(idx)
+
+      const found = d.find(
+        (m: any) => String(m.id) === String(params.id)
+      )
+
+      if (found) {
+        setMovie(found)
+
+        try {
+          sessionStorage.setItem(
+            `movie_preload_${params.id}`,
+            JSON.stringify(found)
+          )
+        } catch {}
+      }
+
+      const idx = d.findIndex(
+        (m: any) => String(m.id) === String(params.id)
+      )
+
+      if (idx >= 0) {
+        setReelIndex(idx)
+      }
     })
-  },[params.id])
+    .catch(() => {})
+
+  return () => {
+    cancelled = true
+  }
+
+}, [params.id])
+
 
   useEffect(()=>{
     const check = () => setIsMobile(window.innerWidth <= 768)
@@ -154,18 +200,63 @@ export default function WatchPage(){
     return ()=> window.removeEventListener('resize', check)
   },[])
 
+   // KILL UNDERLYING GRID INSTANTLY - NO PANEL FLASH BEFORE SLIDE
   useEffect(()=>{
-    if(!movie) return
-    const id = setTimeout(()=> setMounted(true), 50)
-    const onFs = () => {
-      const fs =!!document.fullscreenElement ||!!(document as any).webkitFullscreenElement;
-      setIsFullScreen(fs || (window.innerWidth <= 768 && document.body.style.overflow === 'hidden' && isFullScreen));
-      if (!fs && window.innerWidth > 768) setIsFullScreen(false);
+    if(!isOverlay) return
+    const bg = document.querySelector('.movies-shell >.film-root:not(.yt-overlay-root)') as HTMLElement | null
+    if(bg){
+      bg.style.setProperty('display','none','important')
+      bg.style.setProperty('visibility','hidden','important')
     }
-    document.addEventListener('fullscreenchange', onFs)
-    document.addEventListener('webkitfullscreenchange', onFs as any)
-    return () => { clearTimeout(id); document.removeEventListener('fullscreenchange', onFs); document.removeEventListener('webkitfullscreenchange', onFs as any) }
-  },[movie, isFullScreen])
+    return ()=>{
+      if(bg){
+        bg.style.removeProperty('display')
+        bg.style.removeProperty('visibility')
+      }
+    }
+  },[isOverlay])
+
+
+  useEffect(() => {
+  if (!movie) return
+
+  setMounted(true)
+
+  const onFs = () => {
+    const fs =
+      !!document.fullscreenElement ||
+      !!(document as any).webkitFullscreenElement
+
+    setIsFullScreen(
+      fs ||
+      (
+        window.innerWidth <= 768 &&
+        document.body.style.overflow === 'hidden' &&
+        isFullScreen
+      )
+    )
+
+    if (!fs && window.innerWidth > 768) {
+      setIsFullScreen(false)
+    }
+  }
+
+  document.addEventListener("fullscreenchange", onFs)
+  document.addEventListener(
+    "webkitfullscreenchange",
+    onFs as any
+  )
+
+  return () => {
+    document.removeEventListener("fullscreenchange", onFs)
+    document.removeEventListener(
+      "webkitfullscreenchange",
+      onFs as any
+    )
+  }
+
+}, [movie, isFullScreen])
+
 
   useEffect(()=>{
     if(!playing) return
@@ -230,7 +321,7 @@ export default function WatchPage(){
       } catch (e) {
         setIsLoading(false)
       }
-    }, 800)
+    }, 0)
     return ()=> clearTimeout(autoPlayTimerRef.current)
   }, [videoUrl, activeEp?.id, isPreview])
 
@@ -247,97 +338,100 @@ export default function WatchPage(){
     }, 80)
   }
 
-  if(!movie) return <div className="film-root"><div className="film-giant inner-body" style={{display:"flex",alignItems:"center",justifyContent:"center",background:"#000",color:"#fff"}}>Loading connect...</div></div>
+if(!movie) return <div className={`film-root connect-root ${isOverlay ? 'yt-overlay-root' : ''}`} style={{background:"hsl(var(--bg))"}}><div className="film-giant inner-body" style={{display:"flex",alignItems:"center",justifyContent:"center",background:"transparent",color:"hsl(var(--text))"}} /></div>
 
-  if(isPreview && isMobile){
-    return (
-      <SinglePlayerProvider>
-        <MobilePreview movies={allMovies} startIndex={reelIndex} currentMovie={movie} onClose={()=> router.back()} />
-      </SinglePlayerProvider>
-    )
+   if(!movie) {
+    return <div ref={rootRef} className={`film-root connect-root ${isOverlay ? 'yt-overlay-root' : ''} ${isMobile? 'is-mobile-layout' : 'is-desktop-layout'}`} style={{background:"hsl(var(--bg))", minHeight:"100dvh"}} />
   }
 
   return (
-    <SinglePlayerProvider>
-    <div ref={rootRef} className={`film-root connect-root ${isFullScreen? 'is-shell-full' : ''} ${mounted? 'is-mounted' : 'is-entering'} ${isMobile? 'is-mobile-layout' : 'is-desktop-layout'}`}>
-      <div className="film-giant connect-player inner-body" onMouseMove={()=> setShowControls(true)} onMouseLeave={()=> playing && setShowControls(false)} onTouchStart={()=> setShowControls(true)}>
-        <div className="film-center">
-          <div className="center-cover">
-            <video
-              key={`${movie.id}-${quality}-${activeEp?.id || 'default'}`}
-              ref={videoRef}
-              src={videoUrl}
-              className="connect-video"
-              onLoadStart={()=> setIsLoading(true)}
-              onWaiting={()=> setIsLoading(true)}
-              onCanPlay={()=> setIsLoading(false)}
-              onPlaying={()=> { setIsLoading(false); setPlaying(true); setHasStarted(true) }}
-              onPause={()=> setPlaying(false)}
-              onTimeUpdate={(e)=>{
-                const v = e.currentTarget
-                setCurrentTime(v.currentTime)
-                lastTimeRef.current = v.currentTime
-                if (v.duration) { setProgress((v.currentTime / v.duration) * 100); setDuration(v.duration) }
-                updateBufferedProgress()
-              }}
-              onProgress={updateBufferedProgress}
-              onLoadedMetadata={(e)=> {
-                setDuration((e.target as HTMLVideoElement).duration)
-                if(lastTimeRef.current) (e.target as HTMLVideoElement).currentTime = lastTimeRef.current
-                updateBufferedProgress()
-              }}
-              onEnded={()=> setPlaying(false)}
-              onClick={togglePlay}
-              playsInline
-              webkit-playsinline="true"
-              loop={isPreview}
-              preload="auto"
-              muted
-            />
-            {/* ALL VIDEO ACTIONS IN ONE FILE - BACK + VJ + LOGO + PROGRESS + TIME + FULLSCREEN + PLAY */}
-            <PlayerOverlay
-              movie={movie}
-              showControls={showControls}
-              isLoading={isLoading}
-              playing={playing}
-              progress={progress}
-              bufferedProgress={bufferedProgress}
-              currentTime={currentTime}
-              duration={duration}
-              isFullScreen={isFullScreen}
-              formatTime={formatTime}
-              onSeek={(x: number, r: DOMRect) => seekTo(x, r)}
-              onTogglePlay={togglePlay}
-              onToggleFullscreen={toggleFullscreen}
-              onBack={() => router.push("/movies")}
-            />
+    <>
+      <div ref={rootRef} className={`film-root connect-root ${isOverlay ? 'yt-overlay-root' : ''} ${isFullScreen? 'is-shell-full' : ''} ${mounted? 'is-mounted' : 'is-entering'} ${isMobile? 'is-mobile-layout' : 'is-desktop-layout'}`}>
+
+        <div className="film-giant connect-player inner-body" onMouseMove={()=> setShowControls(true)} onMouseLeave={()=> playing && setShowControls(false)} onTouchStart={()=> setShowControls(true)}>
+          <div className="film-center">
+            <div className="center-cover">
+              <video
+                key={`${movie.id}-${quality}-${activeEp?.id || 'default'}`}
+                ref={videoRef}
+                src={videoUrl}
+                className="connect-video"
+                onLoadStart={()=> setIsLoading(true)}
+                onWaiting={()=> setIsLoading(true)}
+                onCanPlay={()=> setIsLoading(false)}
+                onPlaying={()=> { setIsLoading(false); setPlaying(true); setHasStarted(true) }}
+                onPause={()=> setPlaying(false)}
+                onTimeUpdate={(e)=>{
+                  const v = e.currentTarget
+                  setCurrentTime(v.currentTime)
+                  lastTimeRef.current = v.currentTime
+                  if (v.duration) { setProgress((v.currentTime / v.duration) * 100); setDuration(v.duration) }
+                  updateBufferedProgress()
+                }}
+                onProgress={updateBufferedProgress}
+                onLoadedMetadata={(e)=> {
+                  setDuration((e.target as HTMLVideoElement).duration)
+                  if(lastTimeRef.current) (e.target as HTMLVideoElement).currentTime = lastTimeRef.current
+                  updateBufferedProgress()
+                }}
+                onEnded={()=> setPlaying(false)}
+                onClick={togglePlay}
+                playsInline
+                webkit-playsinline="true"
+                loop={isPreview}
+                preload="auto"
+                muted
+              />
+              <PlayerOverlay
+                movie={movie}
+                showControls={showControls}
+                isLoading={isLoading}
+                playing={playing}
+                progress={progress}
+                bufferedProgress={bufferedProgress}
+                currentTime={currentTime}
+                duration={duration}
+                isFullScreen={isFullScreen}
+                formatTime={formatTime}
+                onSeek={(x: number, r: DOMRect) => seekTo(x, r)}
+                onTogglePlay={togglePlay}
+                onToggleFullscreen={toggleFullscreen}
+                onBack={() => {
+                  if(isOverlay) router.back()
+                  else router.push("/movies")
+                }}
+              />
+            </div>
           </div>
         </div>
+
+        <div className="connect-under-section" style={{ display: isFullScreen? 'none' : 'flex' }}>
+          <UnderVideoStaBtns movie={movie} paramsId={String(params.id)} isPreview={isPreview} />
+          <VideoMetaInfo movie={movie} descExpanded={descExpanded} setDescExpanded={setDescExpanded} />
+        </div>
+
+        {detailsOpen && (
+          <div className="details-panel under-player">
+            <div className="dp-head"><h2>{movie.title}</h2><button className="dp-close" onClick={()=> setDetailsOpen(false)}>✕</button></div>
+            <div className="dp-meta"><span className="c-pill">{movie.genre}</span><span className="c-pill muted">{movie.vj}</span><span className="c-pill muted">{movie.year || "2024"}</span></div>
+            <p className="dp-desc">{movie.description}</p>
+          </div>
+        )}
+
+        {!isFullScreen && movie?.seasons?.length > 0 && (
+          <EpisodesRow movie={movie} activeEpId={epId} onSelect={(ep)=> router.push(`${pathname}?t=full&ep=${ep.id}`)} />
+        )}
+
+        <SimilarMovies current={movie} />
       </div>
 
-      <div className="connect-under-section" style={{ display: isFullScreen? 'none' : 'flex' }}>
-        {/* UNDER VIDEO BUTTONS - SEPARATE FILE */}
-        <UnderVideoStaBtns movie={movie} paramsId={String(params.id)} isPreview={isPreview} />
-        {/* VIDEO META INFO - SEPARATE FILE */}
-        <VideoMetaInfo movie={movie} descExpanded={descExpanded} setDescExpanded={setDescExpanded} />
-      </div>
-
-      {detailsOpen && (<div className="details-panel under-player"><div className="dp-head"><h2>{movie.title}</h2><button className="dp-close" onClick={()=> setDetailsOpen(false)}>✕</button></div><div className="dp-meta"><span className="c-pill">{movie.genre}</span><span className="c-pill muted">{movie.vj}</span><span className="c-pill muted">{movie.year || "2024"}</span></div><p className="dp-desc">{movie.description}</p></div>)}
-
-      {!isFullScreen && movie?.seasons?.length > 0 && (
-        <EpisodesRow movie={movie} activeEpId={epId} onSelect={(ep)=> router.push(`${pathname}?t=full&ep=${ep.id}`)} />
+      {isMobile && (
+        <style>{`
+          @media (max-width: 768px){
+            header,.top-bar,.topbar,.dashboard-header { display:none!important; }
+          }
+        `}</style>
       )}
-
-      <SimilarMovies current={movie} />
-    </div>
-
-    {isMobile && (
-      <style>{`
-        @media (max-width: 768px){
-          header,.top-bar,.topbar,.dashboard-header { display:none!important; }
-        }
-      `}</style>
-    )}
-    </SinglePlayerProvider>
+    </>
   )
 }
