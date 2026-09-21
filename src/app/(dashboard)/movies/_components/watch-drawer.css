@@ -1,13 +1,19 @@
+/* ROOT */
 .watch-drawer-root{
   position:fixed !important;
   inset:0 !important;
   z-index:99999 !important;
-  pointer-events:none;
   visibility:hidden;
+  pointer-events:none;
 }
-.watch-drawer-root.open{ pointer-events:auto; visibility:visible; }
-.watch-drawer-root.closing{ pointer-events:none; visibility:visible; }
+.watch-drawer-root.open,
+.watch-drawer-root.is-mini,
+.watch-drawer-root.is-dragging{
+  visibility:visible;
+  pointer-events:auto;
+}
 
+/* BACKDROP */
 .watch-drawer-backdrop{
   position:absolute; inset:0;
   background:rgba(0,0,0,0.55);
@@ -15,8 +21,14 @@
   opacity:0;
   transition: opacity .35s ease;
 }
-.watch-drawer-root.open .watch-drawer-backdrop{ opacity:1; }
+.watch-drawer-root.open:not(.is-mini) .watch-drawer-backdrop{ opacity:1; }
+.watch-drawer-root.is-mini .watch-drawer-backdrop,
+.watch-drawer-root.closing .watch-drawer-backdrop{
+  opacity:0 !important;
+  pointer-events:none !important;
+}
 
+/* PANEL - FULL DRAWER */
 .watch-drawer-panel{
   position:absolute;
   left:0; right:0; bottom:0;
@@ -24,22 +36,150 @@
   background:hsl(var(--bg));
   border-radius:0 !important;
   transform: translate3d(0,100%,0);
-  transition: transform .58s cubic-bezier(0.32,0.72,0,1);
+  transition: transform .58s cubic-bezier(0.32,0.72,0,1), width .35s ease, height .35s ease, bottom .35s ease, right .35s ease, border-radius .35s ease;
   overflow:auto;
+  touch-action:none !important;
+  will-change: transform;
   -webkit-overflow-scrolling: touch;
 }
-.watch-drawer-root.open .watch-drawer-panel{ transform: translate3d(0,0,0); }
-.watch-drawer-root.closing .watch-drawer-panel{
-  transform: translate3d(0,100%,0) scale(0.96);
-  transition: transform .38s cubic-bezier(0.32,0,1,1);
-}
+.watch-drawer-root.open:not(.is-mini) .watch-drawer-panel{ transform: translate3d(0,0,0); }
+.watch-drawer-root.is-dragging .watch-drawer-panel{ transition:none !important; }
+.watch-drawer-root.closing .watch-drawer-panel{ transform: translate3d(0,100%,0); transition: transform .38s cubic-bezier(0.32,0,1,1) !important; }
+
+/* HANDLE */
 .watch-drawer-handle{
   width:40px; height:5px; border-radius:999px;
-  background: hsl(var(--border));
-  border:none; display:block; margin:10px auto;
+  background:hsl(var(--border));
+  display:block; margin:10px auto;
   position:sticky; top:8px; z-index:10;
 }
-.watch-drawer-content{
-  min-height:100%;
-  background:hsl(var(--bg));
+.watch-drawer-root.is-mini .watch-drawer-handle{ display:none; }
+
+/* CONTENT */
+.watch-drawer-content{ min-height:100%; background:hsl(var(--bg)); position:relative; }
+
+/* MINI BUBBLE STATE - ON MOVIES HOMEPAGE */
+.watch-drawer-root.is-mini{
+  pointer-events:none !important;
 }
+.watch-drawer-root.is-mini .watch-drawer-panel{
+  pointer-events:auto !important;
+  width:380px !important;
+  height:215px !important;
+  right:16px !important;
+  bottom:16px !important;
+  left:auto !important;
+  top:auto !important;
+  border-radius:12px !important;
+  overflow:hidden !important;
+  transform: translate3d(0,0,0) !important;
+  box-shadow:0 20px 50px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.08);
+  cursor:pointer;
+}
+.watch-drawer-root.is-mini .watch-drawer-content{
+  min-height:auto !important;
+  height:100% !important;
+}
+
+/* MINI BUTTONS */
+.bubble-close,.bubble-expand{
+  position:absolute; top:6px;
+  width:28px; height:28px; border-radius:50%;
+  background:rgba(0,0,0,0.65); color:white; border:none;
+  display:grid; place-items:center;
+  backdrop-filter:blur(10px); z-index:20;
+}
+.bubble-close{ right:6px; }
+.bubble-expand{ right:40px; }
+
+/* HOME BLUR ONLY WHEN FULL */
+.movies-shell:has(.watch-drawer-root.open:not(.is-mini)) > .film-root{
+  transform: scale(0.96) translateY(12px) !important;
+  opacity:0.5 !important;
+  filter: blur(8px) brightness(0.7) !important;
+  pointer-events:none !important;
+}
+.movies-shell:has(.watch-drawer-root.is-mini) > .film-root{
+  transform:none !important; opacity:1 !important; filter:none !important; pointer-events:auto !important;
+}
+
+@media(max-width:768px){
+  .watch-drawer-root.is-mini .watch-drawer-panel{
+    width:190px !important; height:108px !important;
+    right:12px !important; bottom:88px !important;
+  }
+}
+
+.mini-bubble-root{
+  position: fixed;
+  left: 0; top: 0;
+  width: 150px;
+  z-index: 99999;
+  will-change: transform;
+  user-select: none;
+}
+.mini-bubble-root.is-dragging{
+  transition: none!important;
+  cursor: grabbing;
+  scale: 1.05;
+}
+.mini-bubble-card{
+  position: relative;
+  width: 150px;
+  height: 220px;
+  border-radius: 14px;
+  overflow: hidden;
+  background: #111;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  cursor: grab;
+}
+.mini-bubble-card img{
+  width: 100%; height: 100%;
+  object-fit: cover;
+  pointer-events: none;
+}
+.mini-bubble-fade{
+  position: absolute; inset: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 60%);
+}
+.mini-bubble-title{
+  position: absolute; bottom: 8px; left: 8px; right: 8px;
+  font-size: 12px; font-weight: 600; color: white;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.mini-bubble-play{
+  position: absolute; top: 50%; left: 50%;
+  transform: translate(-50%,-50%);
+  width: 36px; height: 36px;
+  background: rgba(255,255,255,0.9);
+  border-radius: 50%;
+  display: grid; place-items: center;
+  font-size: 14px;
+}
+
+/* buttons hidden by default */
+.mini-bubble-close,.mini-bubble-expand{
+  position: absolute;
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(0,0,0,0.75);
+  backdrop-filter: blur(6px);
+  color: white;
+  display: grid; place-items: center;
+  cursor: pointer;
+  opacity: 0;
+  transform: scale(0.8);
+  pointer-events: none;
+  transition: all 0.2s ease;
+}
+.mini-bubble-close{ top: -8px; right: -8px; }
+.mini-bubble-expand{ bottom: -8px; right: -8px; }
+
+.mini-bubble-root.show-controls.mini-bubble-close,
+.mini-bubble-root.show-controls.mini-bubble-expand{
+  opacity: 1;
+  transform: scale(1);
+  pointer-events: auto;
+}
+

@@ -20,8 +20,8 @@ import GenreFilter from "./_lib/genre-filter"
 import TvSeriesRow from "./_lib/tv-series-row"
 import MiniSeriesRow from "./_lib/mini-series-row"
 import { useGlobalSearch } from "@/stores/use-global-search"
-import { useWatchDrawer } from "@/stores/use-watch-drawer";
-// replace handlePlay for now
+import MiniBubble from "./_components/mini-bubble";
+
 
 
 type ApiMovie = {
@@ -218,6 +218,7 @@ export default function MoviesPage() {
 
   const store = useMovieStore() as any
   const router = useRouter()
+  
 
   /* -------------------------------------------------------
      MAP API MOVIES
@@ -1180,6 +1181,8 @@ export default function MoviesPage() {
 
       <UserListsRow movies={allMovies} />
       <ExploreMore movies={allMovies} />
+           <MiniBubble />
+
     </div>
   )
 }

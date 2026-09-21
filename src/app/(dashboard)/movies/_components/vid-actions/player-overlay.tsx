@@ -18,15 +18,35 @@ export default function PlayerOverlay({
   onToggleFullscreen,
   onBack,
   onShowControls,
+  isMini = false,
 }: any) {
   const keepControlsVisible = () => {
     onShowControls?.();
   };
 
+  /*
+   * In mini mode the bubble has its own drag layer.
+   *
+   * The overlay itself must NOT capture the pointer,
+   * otherwise the video/action UI steals the drag.
+   *
+   * Individual buttons/progress areas are restored below.
+   */
+  const overlayStyle = isMini
+    ? {
+        pointerEvents: "none" as const,
+      }
+    : undefined;
+
   return (
     <>
-      {/* TOP BAR */}
-      <div className={`center-top ${showControls ? "show" : ""}`}>
+      {/* =====================================================
+          TOP BAR
+          ===================================================== */}
+      <div
+        className={`center-top ${showControls ? "show" : ""}`}
+        style={overlayStyle}
+      >
         <div className="top-left">
           <BackBtn
             onClick={() => {
@@ -46,18 +66,38 @@ export default function PlayerOverlay({
         </div>
       </div>
 
-      {/* LOADING */}
+      {/* =====================================================
+          LOADING
+          ===================================================== */}
       {isLoading && (
-        <div className="connect-loader">
+        <div
+          className="connect-loader"
+          style={
+            isMini
+              ? {
+                  pointerEvents: "none",
+                }
+              : undefined
+          }
+        >
           <div className="connect-spinner" />
         </div>
       )}
 
-      {/* CENTER PLAY BUTTON */}
+      {/* =====================================================
+          CENTER PLAY BUTTON
+          ===================================================== */}
       {!playing && !isLoading && (
         <button
           type="button"
           className="play-apple"
+          style={
+            isMini
+              ? {
+                  pointerEvents: "none",
+                }
+              : undefined
+          }
           onClick={() => {
             keepControlsVisible();
             onTogglePlay();
@@ -81,13 +121,18 @@ export default function PlayerOverlay({
         </button>
       )}
 
-      {/* PLAYER CONTROLS */}
+      {/* =====================================================
+          PLAYER CONTROLS
+          ===================================================== */}
       <div
         className={`connect-controls ${showControls ? "show" : ""}`}
+        style={overlayStyle}
         onPointerMove={keepControlsVisible}
         onPointerDown={keepControlsVisible}
       >
-        {/* TIME + FULLSCREEN */}
+        {/* ===================================================
+            TIME + FULLSCREEN
+            =================================================== */}
         <div className="cc-above-progress">
           <span className="cc-left-time">
             {formatTime(currentTime)} / {formatTime(duration)}
@@ -96,12 +141,21 @@ export default function PlayerOverlay({
           <button
             type="button"
             className="cc-icon apple-full"
+            style={
+              isMini
+                ? {
+                    pointerEvents: "none",
+                  }
+                : undefined
+            }
             onClick={() => {
               keepControlsVisible();
               onToggleFullscreen();
             }}
             aria-label={
-              isFullScreen ? "Exit fullscreen" : "Enter fullscreen"
+              isFullScreen
+                ? "Exit fullscreen"
+                : "Enter fullscreen"
             }
           >
             <svg
@@ -119,10 +173,13 @@ export default function PlayerOverlay({
                 <>
                   <path d="M9 4v5H4" />
                   <path d="M4 4l6 6" />
+
                   <path d="M15 4v5h5" />
                   <path d="M20 4l-6 6" />
+
                   <path d="M9 20v-5H4" />
                   <path d="M4 20l6-6" />
+
                   <path d="M15 20v-5h5" />
                   <path d="M20 20l-6-6" />
                 </>
@@ -130,10 +187,13 @@ export default function PlayerOverlay({
                 <>
                   <path d="M4 9V4h5" />
                   <path d="M4 4l6 6" />
+
                   <path d="M20 9V4h-5" />
                   <path d="M20 4l-6 6" />
+
                   <path d="M4 15v5h5" />
                   <path d="M4 20l6-6" />
+
                   <path d="M20 15v5h-5" />
                   <path d="M20 20l-6-6" />
                 </>
@@ -142,10 +202,19 @@ export default function PlayerOverlay({
           </button>
         </div>
 
-        {/* PROGRESS */}
+        {/* ===================================================
+            PROGRESS
+            =================================================== */}
         <div className="cc-progress-bottom">
           <div
             className="starz-progress"
+            style={
+              isMini
+                ? {
+                    pointerEvents: "none",
+                  }
+                : undefined
+            }
             onPointerDown={(e) => {
               keepControlsVisible();
 

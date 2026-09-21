@@ -11,17 +11,20 @@ import EpisodesRow from "./episodes-row"
 import PlayerOverlay from "../../_components/vid-actions/player-overlay"
 import VideoMetaInfo from "../../_components/vid-meta-info/video-meta-info"
 import UnderVideoStaBtns from "../../_components/under-vid-btns/under-video-sta-btns"
+import { useWatchDrawer } from "@/stores/use-watch-drawer";
+
 
 const API_URL = "https://movie-server-api.connectu89.workers.dev/api/movies"
 
-export default function WatchPage({ isOverlay = false, id: propId, onClose }: { isOverlay?: boolean, id?: string, onClose?: () => void }) {
+export default function WatchPage({ isOverlay = false, id: propId, onClose, isMini = false }: { isOverlay?: boolean, id?: string, onClose?: () => void, isMini?: boolean }) {
   const params = useParams()
   const search = useSearchParams()
   const router = useRouter()
   const pathname = usePathname()
   const effectiveId = propId || (params.id as string)
 
-  const type = search.get("t") || "full"
+   const storeType = useWatchDrawer((s) => s.playType);
+  const type = search.get("t") || storeType || "full"
   const isPreview = type === "preview"
 
   const [movie, setMovie] = useState<any>(() => {
@@ -265,15 +268,18 @@ export default function WatchPage({ isOverlay = false, id: propId, onClose }: { 
           </div>
         </div>
 
-        <div className="connect-under-section" style={{ display: isFullScreen? 'none' : 'flex' }}>
-          <UnderVideoStaBtns movie={movie} paramsId={String(effectiveId)} isPreview={isPreview} />
-          <VideoMetaInfo movie={movie} descExpanded={descExpanded} setDescExpanded={setDescExpanded} />
-        </div>
+               {!isMini && (
+          <div className="connect-under-section" style={{ display: isFullScreen? 'none' : 'flex' }}>
+            <UnderVideoStaBtns movie={movie} paramsId={String(effectiveId)} isPreview={isPreview} />
+            <VideoMetaInfo movie={movie} descExpanded={descExpanded} setDescExpanded={setDescExpanded} />
+          </div>
+        )}
 
-        {!isFullScreen && movie?.seasons?.length > 0 && (
+        {!isMini && !isFullScreen && movie?.seasons?.length > 0 && (
           <EpisodesRow movie={movie} activeEpId={epId} onSelect={(ep)=> router.push(`${pathname}?t=full&ep=${ep.id}`)} />
         )}
-        <SimilarMovies current={movie} />
+        {!isMini && <SimilarMovies current={movie} />}
+
       </div>
     </>
   )
