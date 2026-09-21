@@ -16,7 +16,7 @@ import { useWatchDrawer } from "@/stores/use-watch-drawer";
 
 const API_URL = "https://movie-server-api.connectu89.workers.dev/api/movies"
 
-export default function WatchPage({ isOverlay = false, id: propId, onClose, isMini = false }: { isOverlay?: boolean, id?: string, onClose?: () => void, isMini?: boolean }) {
+export default function WatchPage({ isOverlay = false, id: propId, onClose, onExpand, isMini = false }: { isOverlay?: boolean, id?: string, onClose?: () => void, onExpand?: () => void, isMini?: boolean }) {
   const params = useParams()
   const search = useSearchParams()
   const router = useRouter()
@@ -58,6 +58,8 @@ export default function WatchPage({ isOverlay = false, id: propId, onClose, isMi
   const [isMobile, setIsMobile] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [descExpanded, setDescExpanded] = useState(false)
+  const maximize = useWatchDrawer((s) => s.maximize);
+
 
   const skip = useCallback((sec: number) => {
     if(!videoRef.current) return
@@ -245,25 +247,29 @@ export default function WatchPage({ isOverlay = false, id: propId, onClose, isMi
                 muted
               />
               <PlayerOverlay
-                movie={movie}
-                showControls={showControls}
-                isLoading={isLoading}
-                playing={playing}
-                progress={progress}
-                bufferedProgress={bufferedProgress}
-                currentTime={currentTime}
-                duration={duration}
-                isFullScreen={isFullScreen}
-                formatTime={formatTime}
-                onSeek={(x: number, r: DOMRect) => seekTo(x, r)}
-                onTogglePlay={togglePlay}
-                onToggleFullscreen={toggleFullscreen}
-                onBack={() => {
-                  if(isOverlay && onClose) onClose()
-                  else if(isOverlay) router.back()
-                  else router.push("/movies")
-                }}
-              />
+  movie={movie}
+  showControls={showControls}
+  isLoading={isLoading}
+  playing={playing}
+  progress={progress}
+  bufferedProgress={bufferedProgress}
+  currentTime={currentTime}
+  duration={duration}
+  isFullScreen={isFullScreen}
+  formatTime={formatTime}
+  onSeek={(x: number, r: DOMRect) => seekTo(x, r)}
+  onTogglePlay={togglePlay}
+  onToggleFullscreen={toggleFullscreen}
+  onBack={() => {
+    if(isOverlay && onClose) onClose()
+    else if(isOverlay) router.back()
+    else router.push("/movies")
+  }}
+  isMini={isMini}
+  onClose={onClose}
+  onExpand={maximize}
+/>
+
             </div>
           </div>
         </div>

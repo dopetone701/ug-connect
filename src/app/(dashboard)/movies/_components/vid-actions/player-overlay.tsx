@@ -18,35 +18,81 @@ export default function PlayerOverlay({
   onToggleFullscreen,
   onBack,
   onShowControls,
+  onClose,
+  onExpand,
   isMini = false,
 }: any) {
+
   const keepControlsVisible = () => {
     onShowControls?.();
   };
 
-  /*
-   * In mini mode the bubble has its own drag layer.
-   *
-   * The overlay itself must NOT capture the pointer,
-   * otherwise the video/action UI steals the drag.
-   *
-   * Individual buttons/progress areas are restored below.
-   */
-  const overlayStyle = isMini
-    ? {
-        pointerEvents: "none" as const,
-      }
-    : undefined;
+   if (isMini) {
+  return (
+    <div
+      style={{
+        position: "absolute",
+        inset: 0,
+        zIndex: 100,
+        pointerEvents: "none",
+      }}
+    >
+      {/* EXPAND - LEFT */}
+      <button
+        className="bubble-expand"
+        style={{ pointerEvents: "auto" }}
+        onClick={(e) => {
+          e.stopPropagation();
+          (onExpand || onToggleFullscreen)?.();
+        }}
+        aria-label="Expand"
+      >
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="white"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" />
+        </svg>
+      </button>
+
+      {/* CLOSE - RIGHT */}
+      <button
+        className="bubble-close"
+        style={{ pointerEvents: "auto" }}
+        onClick={(e) => {
+          e.stopPropagation();
+          (onClose || onBack)?.();
+        }}
+        aria-label="Close"
+      >
+        <svg
+          width="12"
+          height="12"
+          viewBox="0 0 12 12"
+          fill="none"
+          stroke="white"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+        >
+          <path d="M1 1L11 11M11 1L1 11" />
+        </svg>
+      </button>
+    </div>
+  );
+}
+
+
 
   return (
     <>
-      {/* =====================================================
-          TOP BAR
-          ===================================================== */}
-      <div
-        className={`center-top ${showControls ? "show" : ""}`}
-        style={overlayStyle}
-      >
+      {/* TOP BAR */}
+      <div className={`center-top ${showControls ? "show" : ""}`}>
         <div className="top-left">
           <BackBtn
             onClick={() => {
@@ -66,38 +112,18 @@ export default function PlayerOverlay({
         </div>
       </div>
 
-      {/* =====================================================
-          LOADING
-          ===================================================== */}
+      {/* LOADING */}
       {isLoading && (
-        <div
-          className="connect-loader"
-          style={
-            isMini
-              ? {
-                  pointerEvents: "none",
-                }
-              : undefined
-          }
-        >
+        <div className="connect-loader">
           <div className="connect-spinner" />
         </div>
       )}
 
-      {/* =====================================================
-          CENTER PLAY BUTTON
-          ===================================================== */}
+      {/* CENTER PLAY BUTTON */}
       {!playing && !isLoading && (
         <button
           type="button"
           className="play-apple"
-          style={
-            isMini
-              ? {
-                  pointerEvents: "none",
-                }
-              : undefined
-          }
           onClick={() => {
             keepControlsVisible();
             onTogglePlay();
@@ -121,18 +147,13 @@ export default function PlayerOverlay({
         </button>
       )}
 
-      {/* =====================================================
-          PLAYER CONTROLS
-          ===================================================== */}
+      {/* PLAYER CONTROLS */}
       <div
         className={`connect-controls ${showControls ? "show" : ""}`}
-        style={overlayStyle}
         onPointerMove={keepControlsVisible}
         onPointerDown={keepControlsVisible}
       >
-        {/* ===================================================
-            TIME + FULLSCREEN
-            =================================================== */}
+        {/* TIME + FULLSCREEN */}
         <div className="cc-above-progress">
           <span className="cc-left-time">
             {formatTime(currentTime)} / {formatTime(duration)}
@@ -141,21 +162,12 @@ export default function PlayerOverlay({
           <button
             type="button"
             className="cc-icon apple-full"
-            style={
-              isMini
-                ? {
-                    pointerEvents: "none",
-                  }
-                : undefined
-            }
             onClick={() => {
               keepControlsVisible();
               onToggleFullscreen();
             }}
             aria-label={
-              isFullScreen
-                ? "Exit fullscreen"
-                : "Enter fullscreen"
+              isFullScreen ? "Exit fullscreen" : "Enter fullscreen"
             }
           >
             <svg
@@ -173,13 +185,10 @@ export default function PlayerOverlay({
                 <>
                   <path d="M9 4v5H4" />
                   <path d="M4 4l6 6" />
-
                   <path d="M15 4v5h5" />
                   <path d="M20 4l-6 6" />
-
                   <path d="M9 20v-5H4" />
                   <path d="M4 20l6-6" />
-
                   <path d="M15 20v-5h5" />
                   <path d="M20 20l-6-6" />
                 </>
@@ -187,13 +196,10 @@ export default function PlayerOverlay({
                 <>
                   <path d="M4 9V4h5" />
                   <path d="M4 4l6 6" />
-
                   <path d="M20 9V4h-5" />
                   <path d="M20 4l-6 6" />
-
                   <path d="M4 15v5h5" />
                   <path d="M4 20l6-6" />
-
                   <path d="M20 15v5h-5" />
                   <path d="M20 20l-6-6" />
                 </>
@@ -202,19 +208,10 @@ export default function PlayerOverlay({
           </button>
         </div>
 
-        {/* ===================================================
-            PROGRESS
-            =================================================== */}
+        {/* PROGRESS */}
         <div className="cc-progress-bottom">
           <div
             className="starz-progress"
-            style={
-              isMini
-                ? {
-                    pointerEvents: "none",
-                  }
-                : undefined
-            }
             onPointerDown={(e) => {
               keepControlsVisible();
 
