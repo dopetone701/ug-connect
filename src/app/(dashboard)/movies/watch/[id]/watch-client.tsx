@@ -5,41 +5,33 @@ import { useParams, useSearchParams, useRouter, usePathname } from "next/navigat
 import "../../movies.css"
 import "./connect-player.css"
 import "./mobile-preview.css"
-import MobilePreview from "./mobile-preview"
 import SimilarMovies from "./similar-movies"
 import EpisodesRow from "./episodes-row"
 
-// CLEAN IMPORTS - CORRECT NAMES
 import PlayerOverlay from "../../_components/vid-actions/player-overlay"
 import VideoMetaInfo from "../../_components/vid-meta-info/video-meta-info"
 import UnderVideoStaBtns from "../../_components/under-vid-btns/under-video-sta-btns"
 
 const API_URL = "https://movie-server-api.connectu89.workers.dev/api/movies"
 
-export default function WatchPage({ isOverlay = false }: { isOverlay?: boolean }) {
+export default function WatchPage({ isOverlay = false, id: propId, onClose }: { isOverlay?: boolean, id?: string, onClose?: () => void }) {
   const params = useParams()
   const search = useSearchParams()
   const router = useRouter()
   const pathname = usePathname()
+  const effectiveId = propId || (params.id as string)
+
   const type = search.get("t") || "full"
   const isPreview = type === "preview"
 
-const [movie, setMovie] = useState<any>(() => {
-  if (typeof window === "undefined") return null
-
-  try {
-    const cached = sessionStorage.getItem(
-      `movie_preload_${params.id}`
-    )
-
-    return cached ? JSON.parse(cached) : null
-  } catch {
-    return null
-  }
-})
+  const [movie, setMovie] = useState<any>(() => {
+    if (typeof window === "undefined") return null
+    try {
+      const cached = sessionStorage.getItem(`movie_preload_${effectiveId}`)
+      return cached ? JSON.parse(cached) : null
+    } catch { return null }
+  })
   const [allMovies, setAllMovies] = useState<any[]>([])
-  const [reelIndex, setReelIndex] = useState(0)
-
   const videoRef = useRef<HTMLVideoElement>(null)
   const rootRef = useRef<HTMLDivElement>(null)
   const volRef = useRef<HTMLDivElement>(null)
@@ -116,27 +108,14 @@ const [movie, setMovie] = useState<any>(() => {
     if (!isFullScreen) {
       setIsFullScreen(true);
       document.body.style.overflow = 'hidden';
-      document.documentElement.style.overflow = 'hidden';
       try {
         if (video.webkitEnterFullscreen) video.webkitEnterFullscreen();
         else if (root.requestFullscreen) await root.requestFullscreen({ navigationUI: "hide" });
-        if (window.innerWidth <= 768) {
-          // @ts-ignore
-          if (screen.orientation?.lock) await screen.orientation.lock('landscape').catch(()=>{});
-        }
       } catch {}
-      window.scrollTo(0,0);
     } else {
       setIsFullScreen(false);
       document.body.style.overflow = '';
-      document.documentElement.style.overflow = '';
-      try {
-        if (document.fullscreenElement) await document.exitFullscreen();
-        // @ts-ignore
-        if (document.webkitFullscreenElement) await document.webkitExitFullscreen();
-        // @ts-ignore
-        if (screen.orientation?.unlock) screen.orientation.unlock();
-      } catch {}
+      try { if (document.fullscreenElement) await document.exitFullscreen(); } catch {}
     }
   }, [isFullScreen]);
 
@@ -150,48 +129,21 @@ const [movie, setMovie] = useState<any>(() => {
   }, [])
 
   useEffect(() => {
-
-  let cancelled = false
-
-  fetch(API_URL, { cache: "no-store" })
-    .then(r => r.json())
-    .then(d => {
-
-      if (cancelled) return
-
-      setAllMovies(d)
-
-      const found = d.find(
-        (m: any) => String(m.id) === String(params.id)
-      )
-
-      if (found) {
-        setMovie(found)
-
-        try {
-          sessionStorage.setItem(
-            `movie_preload_${params.id}`,
-            JSON.stringify(found)
-          )
-        } catch {}
-      }
-
-      const idx = d.findIndex(
-        (m: any) => String(m.id) === String(params.id)
-      )
-
-      if (idx >= 0) {
-        setReelIndex(idx)
-      }
-    })
-    .catch(() => {})
-
-  return () => {
-    cancelled = true
-  }
-
-}, [params.id])
-
+    let cancelled = false
+    fetch(API_URL, { cache: "no-store" })
+      .then(r => r.json())
+      .then(d => {
+        if (cancelled) return
+        setAllMovies(d)
+        const found = d.find((m: any) => String(m.id) === String(effectiveId))
+        if (found) {
+          setMovie(found)
+          try { sessionStorage.setItem(`movie_preload_${effectiveId}`, JSON.stringify(found)) } catch {}
+        }
+      })
+      .catch(() => {})
+    return () => { cancelled = true }
+  }, [effectiveId])
 
   useEffect(()=>{
     const check = () => setIsMobile(window.innerWidth <= 768)
@@ -200,88 +152,22 @@ const [movie, setMovie] = useState<any>(() => {
     return ()=> window.removeEventListener('resize', check)
   },[])
 
-   // KILL UNDERLYING GRID INSTANTLY - NO PANEL FLASH BEFORE SLIDE
-  useEffect(()=>{
-    if(!isOverlay) return
-    const bg = document.querySelector('.movies-shell >.film-root:not(.yt-overlay-root)') as HTMLElement | null
-    if(bg){
-      bg.style.setProperty('display','none','important')
-      bg.style.setProperty('visibility','hidden','important')
-    }
-    return ()=>{
-      if(bg){
-        bg.style.removeProperty('display')
-        bg.style.removeProperty('visibility')
-      }
-    }
-  },[isOverlay])
-
-
   useEffect(() => {
-  if (!movie) return
-
-  setMounted(true)
-
-  const onFs = () => {
-    const fs =
-      !!document.fullscreenElement ||
-      !!(document as any).webkitFullscreenElement
-
-    setIsFullScreen(
-      fs ||
-      (
-        window.innerWidth <= 768 &&
-        document.body.style.overflow === 'hidden' &&
-        isFullScreen
-      )
-    )
-
-    if (!fs && window.innerWidth > 768) {
-      setIsFullScreen(false)
+    if (!movie) return
+    setMounted(true)
+    const onFs = () => {
+      const fs = !!document.fullscreenElement || !!(document as any).webkitFullscreenElement
+      setIsFullScreen(fs)
     }
-  }
-
-  document.addEventListener("fullscreenchange", onFs)
-  document.addEventListener(
-    "webkitfullscreenchange",
-    onFs as any
-  )
-
-  return () => {
-    document.removeEventListener("fullscreenchange", onFs)
-    document.removeEventListener(
-      "webkitfullscreenchange",
-      onFs as any
-    )
-  }
-
-}, [movie, isFullScreen])
-
+    document.addEventListener("fullscreenchange", onFs)
+    return () => document.removeEventListener("fullscreenchange", onFs)
+  }, [movie])
 
   useEffect(()=>{
     if(!playing) return
     const t = setTimeout(()=> setShowControls(false), 3200)
     return ()=> clearTimeout(t)
   },[playing, showControls])
-
-  useEffect(()=>{
-    if(!isDraggingVol) return
-    const handleMove = (e: any) => {
-      const y = 'touches' in e? e.touches[0].clientY : e.clientY
-      updateVolumeFromY(y)
-    }
-    const handleUp = () => setIsDraggingVol(false)
-    window.addEventListener('mousemove', handleMove)
-    window.addEventListener('mouseup', handleUp)
-    window.addEventListener('touchmove', handleMove, {passive:true})
-    window.addEventListener('touchend', handleUp)
-    return () => {
-      window.removeEventListener('mousemove', handleMove)
-      window.removeEventListener('mouseup', handleUp)
-      window.removeEventListener('touchmove', handleMove)
-      window.removeEventListener('touchend', handleUp)
-    }
-  },[isDraggingVol, updateVolumeFromY])
 
   const epId = search.get("ep") || search.get("e")
   const allEps = movie?.seasons?.flatMap((s:any)=>s.episodes||[]) || []
@@ -290,11 +176,9 @@ const [movie, setMovie] = useState<any>(() => {
 
   const rawSources = movie? [
     { label: "Auto", value: "auto", url: epUrl || (isPreview? movie.preview_urls?.[0] : movie.video_url) },
-    { label: "4K • 2160p", value: "2160", url: movie.video_url_4k || movie.video_url_2160 || movie.qualities?.["2160"] || movie.qualities?.["4k"] },
-    { label: "2K • 1440p", value: "1440", url: movie.video_url_1440 || movie.qualities?.["1440"] },
+    { label: "4K", value: "2160", url: movie.video_url_4k || movie.qualities?.["2160"] },
     { label: "1080p", value: "1080", url: movie.video_url_1080 || movie.qualities?.["1080"] },
     { label: "720p", value: "720", url: movie.video_url_720 || movie.qualities?.["720"] },
-    { label: "480p", value: "480", url: movie.video_url_480 || movie.qualities?.["480"] },
   ].filter(q=>!!q.url) : []
 
   const qualitySources = rawSources.filter((v,i,a)=> a.findIndex(x=>x.url===v.url)===i)
@@ -303,8 +187,6 @@ const [movie, setMovie] = useState<any>(() => {
 
   useEffect(()=>{
     if(!videoUrl ||!videoRef.current) return
-    if(!activeEp) return
-    if(isPreview) return
     setIsLoading(true)
     if(autoPlayTimerRef.current) clearTimeout(autoPlayTimerRef.current)
     autoPlayTimerRef.current = setTimeout(async () => {
@@ -318,36 +200,16 @@ const [movie, setMovie] = useState<any>(() => {
         setHasStarted(true)
         setIsLoading(false)
         setTimeout(()=> { if(v){ v.muted = false; v.volume = volume } }, 400)
-      } catch (e) {
-        setIsLoading(false)
-      }
+      } catch { setIsLoading(false) }
     }, 0)
     return ()=> clearTimeout(autoPlayTimerRef.current)
-  }, [videoUrl, activeEp?.id, isPreview])
+  }, [videoUrl, activeEp?.id])
 
-  const changeQuality = async (q:any) => {
-    if(!videoRef.current || q.value===quality) return
-    lastTimeRef.current = videoRef.current.currentTime
-    const wasPlaying =!videoRef.current.paused
-    setQuality(q.value)
-    setShowQualityMenu(false)
-    setTimeout(async ()=>{
-      if(!videoRef.current) return
-      videoRef.current.currentTime = lastTimeRef.current
-      if(wasPlaying) try{ await videoRef.current.play() }catch{}
-    }, 80)
-  }
-
-if(!movie) return <div className={`film-root connect-root ${isOverlay ? 'yt-overlay-root' : ''}`} style={{background:"hsl(var(--bg))"}}><div className="film-giant inner-body" style={{display:"flex",alignItems:"center",justifyContent:"center",background:"transparent",color:"hsl(var(--text))"}} /></div>
-
-   if(!movie) {
-    return <div ref={rootRef} className={`film-root connect-root ${isOverlay ? 'yt-overlay-root' : ''} ${isMobile? 'is-mobile-layout' : 'is-desktop-layout'}`} style={{background:"hsl(var(--bg))", minHeight:"100dvh"}} />
-  }
+  if(!movie) return <div className={`film-root connect-root ${isOverlay ? 'yt-overlay-root' : ''}`} style={{background:"hsl(var(--bg))", minHeight:"60vh"}}><div className="film-giant inner-body" style={{display:"flex",alignItems:"center",justifyContent:"center"}}>Loading...</div></div>
 
   return (
     <>
-      <div ref={rootRef} className={`film-root connect-root ${isOverlay ? 'yt-overlay-root' : ''} ${isFullScreen? 'is-shell-full' : ''} ${mounted? 'is-mounted' : 'is-entering'} ${isMobile? 'is-mobile-layout' : 'is-desktop-layout'}`}>
-
+      <div ref={rootRef} className={`film-root connect-root ${isOverlay ? 'yt-overlay-root' : ''} ${isFullScreen? 'is-shell-full' : ''} ${isMobile? 'is-mobile-layout' : 'is-desktop-layout'}`}>
         <div className="film-giant connect-player inner-body" onMouseMove={()=> setShowControls(true)} onMouseLeave={()=> playing && setShowControls(false)} onTouchStart={()=> setShowControls(true)}>
           <div className="film-center">
             <div className="center-cover">
@@ -372,12 +234,9 @@ if(!movie) return <div className={`film-root connect-root ${isOverlay ? 'yt-over
                 onLoadedMetadata={(e)=> {
                   setDuration((e.target as HTMLVideoElement).duration)
                   if(lastTimeRef.current) (e.target as HTMLVideoElement).currentTime = lastTimeRef.current
-                  updateBufferedProgress()
                 }}
-                onEnded={()=> setPlaying(false)}
                 onClick={togglePlay}
                 playsInline
-                webkit-playsinline="true"
                 loop={isPreview}
                 preload="auto"
                 muted
@@ -397,7 +256,8 @@ if(!movie) return <div className={`film-root connect-root ${isOverlay ? 'yt-over
                 onTogglePlay={togglePlay}
                 onToggleFullscreen={toggleFullscreen}
                 onBack={() => {
-                  if(isOverlay) router.back()
+                  if(isOverlay && onClose) onClose()
+                  else if(isOverlay) router.back()
                   else router.push("/movies")
                 }}
               />
@@ -406,32 +266,15 @@ if(!movie) return <div className={`film-root connect-root ${isOverlay ? 'yt-over
         </div>
 
         <div className="connect-under-section" style={{ display: isFullScreen? 'none' : 'flex' }}>
-          <UnderVideoStaBtns movie={movie} paramsId={String(params.id)} isPreview={isPreview} />
+          <UnderVideoStaBtns movie={movie} paramsId={String(effectiveId)} isPreview={isPreview} />
           <VideoMetaInfo movie={movie} descExpanded={descExpanded} setDescExpanded={setDescExpanded} />
         </div>
-
-        {detailsOpen && (
-          <div className="details-panel under-player">
-            <div className="dp-head"><h2>{movie.title}</h2><button className="dp-close" onClick={()=> setDetailsOpen(false)}>✕</button></div>
-            <div className="dp-meta"><span className="c-pill">{movie.genre}</span><span className="c-pill muted">{movie.vj}</span><span className="c-pill muted">{movie.year || "2024"}</span></div>
-            <p className="dp-desc">{movie.description}</p>
-          </div>
-        )}
 
         {!isFullScreen && movie?.seasons?.length > 0 && (
           <EpisodesRow movie={movie} activeEpId={epId} onSelect={(ep)=> router.push(`${pathname}?t=full&ep=${ep.id}`)} />
         )}
-
         <SimilarMovies current={movie} />
       </div>
-
-      {isMobile && (
-        <style>{`
-          @media (max-width: 768px){
-            header,.top-bar,.topbar,.dashboard-header { display:none!important; }
-          }
-        `}</style>
-      )}
     </>
   )
 }

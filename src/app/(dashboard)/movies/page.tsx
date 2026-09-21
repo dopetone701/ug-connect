@@ -20,6 +20,9 @@ import GenreFilter from "./_lib/genre-filter"
 import TvSeriesRow from "./_lib/tv-series-row"
 import MiniSeriesRow from "./_lib/mini-series-row"
 import { useGlobalSearch } from "@/stores/use-global-search"
+import { useWatchDrawer } from "@/stores/use-watch-drawer";
+// replace handlePlay for now
+
 
 type ApiMovie = {
   id: any

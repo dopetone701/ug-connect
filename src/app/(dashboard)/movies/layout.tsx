@@ -1,5 +1,6 @@
 export const runtime = 'edge';
 
+import WatchDrawer from "./_components/watch-drawer";
 
 export default function MoviesLayout({
   children,
@@ -12,6 +13,7 @@ export default function MoviesLayout({
     <div className="movies-shell">
       {children}
       {modal}
+      <WatchDrawer />
     </div>
   );
 }
