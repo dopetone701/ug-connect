@@ -1,15 +1,15 @@
 "use client"
 import { useRef, useEffect } from "react"
-import { useRouter } from "next/navigation"
 import { Movie } from "../_lib/types"
 import MovieCard from "./movie-card"
 import "../latest-movies.css"
 import { useGlobalSearch } from "@/stores/use-global-search"
+import { useWatchDrawer } from "@/stores/use-watch-drawer"
 
 export default function MovieRow({ title, movies, onSeeAll }: { title: string; movies: Movie[]; onSeeAll?: (v: string) => void }) {
   const ref = useRef<HTMLDivElement>(null)
   const isDraggingRef = useRef(false)
-  const router = useRouter()
+  const { openDrawer } = useWatchDrawer()
 
   useEffect(() => {
     const container = ref.current
@@ -93,14 +93,12 @@ export default function MovieRow({ title, movies, onSeeAll }: { title: string; m
   }, [movies])
 
   const handleSeeAll = () => {
-    const clean = title.toLowerCase().trim() // adventure, vj junior, actor name, movie title - all dynamic
+    const clean = title.toLowerCase().trim()
     if(onSeeAll){
       onSeeAll(clean)
       return
     }
-    // fallback if no prop passed
     useGlobalSearch.getState().setQuery(clean)
-    router.push(`/search?q=${encodeURIComponent(clean)}`)
   }
 
   if(!movies?.length) return null
@@ -115,10 +113,16 @@ export default function MovieRow({ title, movies, onSeeAll }: { title: string; m
         <div ref={ref} className="latest-track">
           {movies.map(m => (
             <div
-              key={m.id}
-              onClick={()=>{
+              key={String(m.id)}
+              onClick={(e)=>{
+                e.preventDefault()
+                e.stopPropagation()
                 if(isDraggingRef.current) return
-                router.push(`/movies/watch/${m.id}`)
+                try{
+                  sessionStorage.setItem(`movies_home_scroll_v1`, String(window.scrollY))
+                  sessionStorage.setItem(`movie_preload_${String(m.id)}`, JSON.stringify({id:String(m.id), title:m.title, cover_url:m.cover, video_url:(m as any).video, genre:m.genre, vj:m.vj, description:m.desc}))
+                }catch{}
+                openDrawer(String(m.id), "full")
               }}
             >
               <MovieCard m={m} />

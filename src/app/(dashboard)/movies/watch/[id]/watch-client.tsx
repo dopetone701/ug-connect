@@ -13,7 +13,6 @@ import VideoMetaInfo from "../../_components/vid-meta-info/video-meta-info"
 import UnderVideoStaBtns from "../../_components/under-vid-btns/under-video-sta-btns"
 import { useWatchDrawer } from "@/stores/use-watch-drawer";
 
-
 const API_URL = "https://movie-server-api.connectu89.workers.dev/api/movies"
 
 export default function WatchPage({ isOverlay = false, id: propId, onClose, onExpand, isMini = false, isFullscreen: externalFs, onFsChange }: { isOverlay?: boolean, id?: string, onClose?: () => void, onExpand?: () => void, isMini?: boolean, isFullscreen?: boolean, onFsChange?: (v:boolean)=>void }) {
@@ -23,7 +22,8 @@ export default function WatchPage({ isOverlay = false, id: propId, onClose, onEx
   const pathname = usePathname()
   const effectiveId = propId || (params.id as string)
 
-   const storeType = useWatchDrawer((s) => s.playType);
+  const storeType = useWatchDrawer((s) => s.playType);
+  const { closeDrawer } = useWatchDrawer()
   const type = search.get("t") || storeType || "full"
   const isPreview = type === "preview"
 
@@ -31,7 +31,7 @@ export default function WatchPage({ isOverlay = false, id: propId, onClose, onEx
     if (typeof window === "undefined") return null
     try {
       const cached = sessionStorage.getItem(`movie_preload_${effectiveId}`)
-      return cached ? JSON.parse(cached) : null
+      return cached? JSON.parse(cached) : null
     } catch { return null }
   })
   const [allMovies, setAllMovies] = useState<any[]>([])
@@ -51,7 +51,6 @@ export default function WatchPage({ isOverlay = false, id: propId, onClose, onEx
   const [mounted, setMounted] = useState(false)
   const [detailsOpen, setDetailsOpen] = useState(false)
   const [isFullScreen, setIsFullScreen] = useState(false)
-   // SYNC with drawer drag -> fullscreen btn click
   useEffect(()=>{
     if(externalFs!== undefined) setIsFullScreen(externalFs);
   },[externalFs]);
@@ -65,6 +64,14 @@ export default function WatchPage({ isOverlay = false, id: propId, onClose, onEx
   const [descExpanded, setDescExpanded] = useState(false)
   const maximize = useWatchDrawer((s) => s.maximize);
 
+  // FIX: local ep state for drawer - no router.push
+  const [overlayEpId, setOverlayEpId] = useState<string | null>(() => {
+    try{
+      const cached = typeof window!== "undefined"? sessionStorage.getItem(`movie_preload_${effectiveId}`) : null
+      const parsed = cached? JSON.parse(cached) : null
+      return parsed?.ep || null
+    }catch{ return null }
+  })
 
   const skip = useCallback((sec: number) => {
     if(!videoRef.current) return
@@ -111,13 +118,13 @@ export default function WatchPage({ isOverlay = false, id: propId, onClose, onEx
     }
   }, [])
 
-   const toggleFullscreen = useCallback(async () => {
+  const toggleFullscreen = useCallback(async () => {
     const video = videoRef.current as any;
     const root = rootRef.current as any;
     if (!video ||!root) return;
     if (!isFullScreen) {
       setIsFullScreen(true);
-      onFsChange?.(true); // <-- tell drawer we are in fs
+      onFsChange?.(true);
       document.body.style.overflow = 'hidden';
       try {
         if (video.webkitEnterFullscreen) video.webkitEnterFullscreen();
@@ -125,12 +132,11 @@ export default function WatchPage({ isOverlay = false, id: propId, onClose, onEx
       } catch {}
     } else {
       setIsFullScreen(false);
-      onFsChange?.(false); // <-- tell drawer we exited fs (swipe up close)
+      onFsChange?.(false);
       document.body.style.overflow = '';
       try { if (document.fullscreenElement) await document.exitFullscreen(); } catch {}
     }
   }, [isFullScreen, onFsChange]);
-
 
   const formatTime = useCallback((sec: number) => {
     if(!sec || isNaN(sec)) return "0:00"
@@ -144,8 +150,8 @@ export default function WatchPage({ isOverlay = false, id: propId, onClose, onEx
   useEffect(() => {
     let cancelled = false
     fetch(API_URL, { cache: "no-store" })
-      .then(r => r.json())
-      .then(d => {
+     .then(r => r.json())
+     .then(d => {
         if (cancelled) return
         setAllMovies(d)
         const found = d.find((m: any) => String(m.id) === String(effectiveId))
@@ -154,7 +160,7 @@ export default function WatchPage({ isOverlay = false, id: propId, onClose, onEx
           try { sessionStorage.setItem(`movie_preload_${effectiveId}`, JSON.stringify(found)) } catch {}
         }
       })
-      .catch(() => {})
+     .catch(() => {})
     return () => { cancelled = true }
   }, [effectiveId])
 
@@ -169,7 +175,7 @@ export default function WatchPage({ isOverlay = false, id: propId, onClose, onEx
     if (!movie) return
     setMounted(true)
     const onFs = () => {
-      const fs = !!document.fullscreenElement || !!(document as any).webkitFullscreenElement
+      const fs =!!document.fullscreenElement ||!!(document as any).webkitFullscreenElement
       setIsFullScreen(fs)
     }
     document.addEventListener("fullscreenchange", onFs)
@@ -182,7 +188,8 @@ export default function WatchPage({ isOverlay = false, id: propId, onClose, onEx
     return ()=> clearTimeout(t)
   },[playing, showControls])
 
-  const epId = search.get("ep") || search.get("e")
+  const searchEpId = search.get("ep") || search.get("e")
+  const epId = isOverlay? (overlayEpId || searchEpId) : searchEpId
   const allEps = movie?.seasons?.flatMap((s:any)=>s.episodes||[]) || []
   const activeEp = epId? allEps.find((ep:any)=> String(ep.id)===String(epId)) : null
   const epUrl = activeEp?.video_url || activeEp?.url
@@ -218,11 +225,11 @@ export default function WatchPage({ isOverlay = false, id: propId, onClose, onEx
     return ()=> clearTimeout(autoPlayTimerRef.current)
   }, [videoUrl, activeEp?.id])
 
-  if(!movie) return <div className={`film-root connect-root ${isOverlay ? 'yt-overlay-root' : ''}`} style={{background:"hsl(var(--bg))", minHeight:"60vh"}}><div className="film-giant inner-body" style={{display:"flex",alignItems:"center",justifyContent:"center"}}>Loading...</div></div>
+  if(!movie) return <div className={`film-root connect-root ${isOverlay? 'yt-overlay-root' : ''}`} style={{background:"hsl(var(--bg))", minHeight:"60vh"}}><div className="film-giant inner-body" style={{display:"flex",alignItems:"center",justifyContent:"center"}}>Loading...</div></div>
 
   return (
     <>
-      <div ref={rootRef} className={`film-root connect-root ${isOverlay ? 'yt-overlay-root' : ''} ${isFullScreen? 'is-shell-full' : ''} ${isMobile? 'is-mobile-layout' : 'is-desktop-layout'}`}>
+      <div ref={rootRef} className={`film-root connect-root ${isOverlay? 'yt-overlay-root' : ''} ${isFullScreen? 'is-shell-full' : ''} ${isMobile? 'is-mobile-layout' : 'is-desktop-layout'}`}>
         <div className="film-giant connect-player inner-body" onMouseMove={()=> setShowControls(true)} onMouseLeave={()=> playing && setShowControls(false)} onTouchStart={()=> setShowControls(true)}>
           <div className="film-center">
             <div className="center-cover">
@@ -255,45 +262,57 @@ export default function WatchPage({ isOverlay = false, id: propId, onClose, onEx
                 muted
               />
               <PlayerOverlay
-  movie={movie}
-  showControls={showControls}
-  isLoading={isLoading}
-  playing={playing}
-  progress={progress}
-  bufferedProgress={bufferedProgress}
-  currentTime={currentTime}
-  duration={duration}
-  isFullScreen={isFullScreen}
-  formatTime={formatTime}
-  onSeek={(x: number, r: DOMRect) => seekTo(x, r)}
-  onTogglePlay={togglePlay}
-  onToggleFullscreen={toggleFullscreen}
-  onBack={() => {
-    if(isOverlay && onClose) onClose()
-    else if(isOverlay) router.back()
-    else router.push("/movies")
-  }}
-  isMini={isMini}
-  onClose={onClose}
-  onExpand={maximize}
-/>
-
+                movie={movie}
+                showControls={showControls}
+                isLoading={isLoading}
+                playing={playing}
+                progress={progress}
+                bufferedProgress={bufferedProgress}
+                currentTime={currentTime}
+                duration={duration}
+                isFullScreen={isFullScreen}
+                formatTime={formatTime}
+                onSeek={(x: number, r: DOMRect) => seekTo(x, r)}
+                onTogglePlay={togglePlay}
+                onToggleFullscreen={toggleFullscreen}
+                onBack={() => {
+                  if(isOverlay){
+                    if(onClose) onClose()
+                    else closeDrawer()
+                  }else{
+                    router.push("/movies")
+                  }
+                }}
+                isMini={isMini}
+                onClose={onClose}
+                onExpand={maximize}
+              />
             </div>
           </div>
         </div>
 
-               {!isMini && (
+        {!isMini && (
           <div className="connect-under-section" style={{ display: isFullScreen? 'none' : 'flex' }}>
             <UnderVideoStaBtns movie={movie} paramsId={String(effectiveId)} isPreview={isPreview} />
             <VideoMetaInfo movie={movie} descExpanded={descExpanded} setDescExpanded={setDescExpanded} />
           </div>
         )}
 
-        {!isMini && !isFullScreen && movie?.seasons?.length > 0 && (
-          <EpisodesRow movie={movie} activeEpId={epId} onSelect={(ep)=> router.push(`${pathname}?t=full&ep=${ep.id}`)} />
+        {!isMini &&!isFullScreen && movie?.seasons?.length > 0 && (
+          <EpisodesRow
+            movie={movie}
+            activeEpId={epId}
+            onSelect={(ep:any)=> {
+              // FIXED: no router.push in overlay - stays inside drawer
+              if(isOverlay){
+                setOverlayEpId(String(ep.id))
+              }else{
+                router.push(`${pathname}?t=full&ep=${ep.id}`)
+              }
+            }}
+          />
         )}
         {!isMini && <SimilarMovies current={movie} />}
-
       </div>
     </>
   )

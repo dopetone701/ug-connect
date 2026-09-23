@@ -5,7 +5,7 @@ import WatchClient from "../watch/[id]/watch-client";
 import "./watch-drawer.css";
 
 export default function WatchDrawer(){
-  const { open, minimized, movieId, closeDrawer, minimize, maximize } = useWatchDrawer();
+  const { open, minimized, movieId, closeDrawer, minimize, maximize } = useWatchDrawer() as any;
   const panelRef = useRef<HTMLDivElement>(null);
   const startY = useRef(0);
   const startTime = useRef(0);
@@ -18,7 +18,6 @@ export default function WatchDrawer(){
   const [showControls, setShowControls] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 
-  // ALL HOOKS FIRST - no returns before this
   const triggerFsBtn = useCallback(() => {
     const btn = panelRef.current?.querySelector(".cc-icon.apple-full") as HTMLButtonElement | null;
     if(btn) btn.click();
@@ -37,6 +36,9 @@ export default function WatchDrawer(){
     return ()=> clearTimeout(t);
   }, [showControls]);
 
+  // FIXED: don't clone home - it was creating double visual
+  // REMOVE the whole homeInjectRef effect
+
   useEffect(()=>{
     if(!isMobile || minimized) return;
     const handleOrientation = () => {
@@ -53,15 +55,14 @@ export default function WatchDrawer(){
     };
   }, [isMobile, open, minimized, isFullscreen, triggerFsBtn]);
 
-  // RETURNS ONLY AFTER ALL HOOKS
-  if(!isMobile) return null;
+  // FIXED: allow desktop
   if(!movieId) return null;
   if(!open &&!minimized &&!isClosing) return null;
 
   const handleClose = () => {
     if(isFullscreen){ triggerFsBtn(); return; }
     setIsClosing(true);
-    setTimeout(()=> { closeDrawer(); setIsClosing(false); }, 380);
+    setTimeout(()=> { closeDrawer(); setIsClosing(false); setIsFullscreen(false); document.body.style.overflow = ''; }, 380);
   };
 
   const getIsVideoZone = (clientY: number) => {
@@ -71,6 +72,7 @@ export default function WatchDrawer(){
   };
 
   const onDown = (e: any) => {
+    if(!isMobile) return;
     if(minimized) return;
     if((e.target as HTMLElement).closest("button")) return;
     const y = e.clientY?? e.touches?.[0]?.clientY;
@@ -83,34 +85,25 @@ export default function WatchDrawer(){
   };
 
   const onMove = (e: any) => {
+    if(!isMobile) return;
     if(!dragging) return;
     const y = e.clientY?? e.touches?.[0]?.clientY;
     if(!y) return;
     const dy = y - startY.current;
-    if(dragModeRef.current === "to-mini"){
-      if(dy < 0) return;
-      dragYRef.current = dy; setDragY(dy * 0.7);
-    } else if(dragModeRef.current === "to-fs"){
-      if(dy < 0) return;
-      dragYRef.current = dy; setDragY(dy * 0.2);
-    } else if(dragModeRef.current === "exit-fs"){
-      if(dy > 0) return;
-      dragYRef.current = dy; setDragY(dy * 0.7);
-    }
+    if(dragModeRef.current === "to-mini"){ if(dy < 0) return; dragYRef.current = dy; setDragY(dy * 0.7); }
+    else if(dragModeRef.current === "to-fs"){ if(dy < 0) return; dragYRef.current = dy; setDragY(dy * 0.2); }
+    else if(dragModeRef.current === "exit-fs"){ if(dy > 0) return; dragYRef.current = dy; setDragY(dy * 0.7); }
   };
 
   const onUp = () => {
+    if(!isMobile) return;
     if(!dragging) return;
     setDragging(false);
     const elapsed = Date.now() - startTime.current;
     const dy = dragYRef.current;
-    if(dragModeRef.current === "to-mini"){
-      if(dy > 140 && elapsed > 180) minimize();
-    } else if(dragModeRef.current === "to-fs"){
-      if(dy > 80 && elapsed > 120) triggerFsBtn();
-    } else if(dragModeRef.current === "exit-fs"){
-      if(dy < -90) triggerFsBtn();
-    }
+    if(dragModeRef.current === "to-mini"){ if(dy > 140 && elapsed > 180) minimize(); }
+    else if(dragModeRef.current === "to-fs"){ if(dy > 80 && elapsed > 120) triggerFsBtn(); }
+    else if(dragModeRef.current === "exit-fs"){ if(dy < -90) triggerFsBtn(); }
     setDragY(0); dragModeRef.current = "none";
   };
 
@@ -118,7 +111,13 @@ export default function WatchDrawer(){
 
   return(
     <div className={`watch-drawer-root ${open?"open":""} ${minimized?"is-mini":""} ${dragging?"is-dragging":""} ${isClosing?"closing":""} ${isFullscreen?"is-fullscreen":""} ${showControls?"show-controls":""}`}>
-      <div className="watch-drawer-backdrop" style={dragging && dragModeRef.current==="to-mini"? { opacity: 1 - progress } as any : undefined} onClick={handleClose} />
+      <div className="watch-drawer-backdrop" style={{
+        background: "rgba(0,0,0,0.6)",
+        backdropFilter: "blur(2px)",
+        WebkitBackdropFilter: "blur(2px)",
+        opacity: dragging && dragModeRef.current==="to-mini"? 1 - progress : 1
+      } as any} onClick={handleClose} />
+
       <div ref={panelRef} className="watch-drawer-panel" style={dragging? { transform: `translate3d(0,${dragY}px,0)` } as any : undefined} onPointerDown={onDown} onPointerMove={onMove} onPointerUp={onUp} onTouchStart={onDown} onTouchMove={onMove} onTouchEnd={onUp}>
         <div className="watch-drawer-content" onClick={()=>{
           if(!minimized) return;

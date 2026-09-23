@@ -209,3 +209,12 @@
   transition: all.35s cubic-bezier(0.32,0.72,0,1)!important;
   box-shadow: 0 10px 30px rgba(0,0,0,.5);
 }
+
+.watch-drawer-backdrop{
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.01) !important;
+  backdrop-filter: blur(1px) !important;
+  -webkit-backdrop-filter: blur(1px) !important;
+  border: none !important;
+}

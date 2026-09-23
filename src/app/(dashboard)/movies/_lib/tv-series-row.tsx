@@ -1,6 +1,8 @@
 "use client"
 import { useRef, useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
+import { useWatchDrawer } from "@/stores/use-watch-drawer"
+import { useMovieStore } from "../_lib/use-movie-store"
+
 import "./series-row.css"
 
 // surgical: only render when scrolled into view
@@ -18,22 +20,30 @@ function useVisible(ref: React.RefObject<HTMLDivElement | null>) {
 }
 
 function SeriesCard({ m }: { m: any }) {
-  const router = useRouter()
   const cardRef = useRef<HTMLDivElement>(null)
   const isVisible = useVisible(cardRef)
+  const { openDrawer } = useWatchDrawer()
+  const { addRecent } = useMovieStore() as any
+
   const seasons = m.seasons || []
   const episodes = seasons.flatMap((s: any) => s.episodes || [])
-  const seasonLabel = seasons.length > 1? `S1-S${seasons.length}` : seasons[0]?.name? seasons[0].name.slice(0,4) : "S1"
+  const seasonLabel = seasons.length > 1 ? `S1-S${seasons.length}` : seasons[0]?.name ? seasons[0].name.slice(0,4) : "S1"
 
-  const open = (u:string) => {
-  const p = document.querySelector('.content-panel') as HTMLElement
-  if(p) sessionStorage.setItem('movies-scroll', String(p.scrollTop))
-  router.push(u, { scroll: false })
-}
+  const open = (epId?: string) => {
+    const id = String(m.id)
+    addRecent(id)
+    try{
+      sessionStorage.setItem(`movie_preload_${id}`, JSON.stringify({ id, ep: epId || null }))
+    }catch{}
+    openDrawer(id, "full" as any)
+  }
+
+
 
   return (
     <div className="series-big-card" ref={cardRef}>
-      <div className="series-cover-wrap" role="button" tabIndex={0} onClick={() => open(`/movies/watch/${m.id}`)}
+      <div className="series-cover-wrap" role="button" tabIndex={0} onClick={() => open()}
+
 >
         <img src={m.cover_url || m.cover} alt={m.title} draggable={false} loading="lazy" decoding="async" />
         <div className="series-dark" />
@@ -46,7 +56,8 @@ function SeriesCard({ m }: { m: any }) {
       <div className="s-ep-track">
         {isVisible? (
           episodes.length > 0? episodes.slice(0, 10).map((ep: any, i: number) => (
-<div key={ep.id} className="s-ep-mini-card" role="button" tabIndex={0} onClick={(e) => { e.stopPropagation(); open(`/movies/watch/${m.id}?ep=${ep.id}`) }}
+<div key={ep.id} className="s-ep-mini-card" role="button" tabIndex={0} onClick={(e) => { e.preventDefault(); e.stopPropagation(); open(String(ep.id)) }}
+
 >
               <div className="s-ep-mini-cover">
                 <img src={ep.preview_url || ep.cover_url || m.cover_url || m.cover} alt={ep.title} loading="lazy" decoding="async" draggable={false} />

@@ -1,19 +1,9 @@
-export const runtime = 'edge';
-
-import WatchDrawer from "./_components/watch-drawer";
+"use client";
 
 export default function MoviesLayout({
   children,
-  modal,
 }: {
   children: React.ReactNode;
-  modal: React.ReactNode;
 }) {
-  return (
-    <div className="movies-shell">
-      {children}
-      {modal}
-      <WatchDrawer />
-    </div>
-  );
+  return <div className="movies-shell">{children}</div>;
 }
