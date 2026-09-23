@@ -110,9 +110,26 @@ export default function WatchDrawer(){
     const y = e.clientY?? e.touches?.[0]?.clientY;
     if(!y) return;
     const dy = y - startY.current;
-    if(dragModeRef.current === "to-mini"){ if(dy < 0) return; dragYRef.current = dy; setDragY(dy * 0.7); }
-    else if(dragModeRef.current === "to-fs"){ if(dy < 0) return; dragYRef.current = dy; setDragY(dy * 0.2); }
-    else if(dragModeRef.current === "exit-fs"){ if(dy > 0) return; dragYRef.current = dy; setDragY(dy * 0.7); }
+
+    // deadzone to ignore jitter
+    if(Math.abs(dy) < 12) return;
+
+    if(dragModeRef.current === "to-mini"){
+      if(dy < 0) return;
+      dragYRef.current = dy;
+      setDragY(dy * 0.7);
+    }
+    else if(dragModeRef.current === "to-fs"){
+      if(dy < 0) return;
+      dragYRef.current = dy;
+      // HEAVY RESISTANCE for fullscreen - almost no visual move
+      setDragY(Math.min(dy * 0.08, 32));
+    }
+    else if(dragModeRef.current === "exit-fs"){
+      if(dy > 0) return;
+      dragYRef.current = dy;
+      setDragY(dy * 0.7);
+    }
   };
 
   const onUp = () => {
@@ -121,10 +138,26 @@ export default function WatchDrawer(){
     setDragging(false);
     const elapsed = Date.now() - startTime.current;
     const dy = dragYRef.current;
-    if(dragModeRef.current === "to-mini"){ if(dy > 140 && elapsed > 180) minimize(); }
-    else if(dragModeRef.current === "to-fs"){ if(dy > 80 && elapsed > 120) triggerFsBtn(); }
-    else if(dragModeRef.current === "exit-fs"){ if(dy < -90) triggerFsBtn(); }
-    setDragY(0); dragModeRef.current = "none";
+    const velocity = Math.abs(dy) / Math.max(elapsed, 1);
+
+    if(dragModeRef.current === "to-mini"){
+      if(dy > 140 && elapsed > 180) minimize();
+    }
+    else if(dragModeRef.current === "to-fs"){
+      // REDUCED SENSITIVITY LOGIC:
+      // 1. Ignore sudden fast flicks
+      // 2. Require long + big intentional drag
+      if(velocity > 0.9){
+        // sudden drag - ignore
+      } else if(dy > 180 && elapsed > 250){
+        triggerFsBtn();
+      }
+    }
+    else if(dragModeRef.current === "exit-fs"){
+      if(dy < -90) triggerFsBtn();
+    }
+    setDragY(0);
+    dragModeRef.current = "none";
   };
 
   const progress = Math.min(Math.abs(dragY)/400, 1);
