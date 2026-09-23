@@ -1,11 +1,13 @@
 "use client";
 import { useRef, useState, useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { useWatchDrawer } from "@/stores/use-watch-drawer";
 import WatchClient from "../watch/[id]/watch-client";
 import "./watch-drawer.css";
 
 export default function WatchDrawer(){
-  const { open, minimized, movieId, closeDrawer, minimize, maximize } = useWatchDrawer() as any;
+  const router = useRouter();
+  const { open, minimized, movieId, playType, closeDrawer, minimize, maximize } = useWatchDrawer() as any;
   const panelRef = useRef<HTMLDivElement>(null);
   const startY = useRef(0);
   const startTime = useRef(0);
@@ -30,14 +32,28 @@ export default function WatchDrawer(){
     return () => window.removeEventListener("resize", check);
   },[]);
 
+  // SWITCH TO PC VERSION WHEN RESIZING
+  useEffect(()=>{
+    const handleSwitch = () => {
+      const isPC = window.innerWidth > 768;
+      if(isPC && open &&!minimized && movieId &&!isClosing){
+        const t = playType || 'full';
+        closeDrawer();
+        setIsClosing(false);
+        setIsFullscreen(false);
+        document.body.style.overflow = '';
+        router.push(`/movies/watch/${movieId}?t=${t}`);
+      }
+    };
+    window.addEventListener("resize", handleSwitch);
+    return () => window.removeEventListener("resize", handleSwitch);
+  }, [open, minimized, movieId, playType, isClosing, closeDrawer, router]);
+
   useEffect(()=>{
     if(!showControls) return;
     const t = setTimeout(()=> setShowControls(false), 3000);
     return ()=> clearTimeout(t);
   }, [showControls]);
-
-  // FIXED: don't clone home - it was creating double visual
-  // REMOVE the whole homeInjectRef effect
 
   useEffect(()=>{
     if(!isMobile || minimized) return;
@@ -55,9 +71,13 @@ export default function WatchDrawer(){
     };
   }, [isMobile, open, minimized, isFullscreen, triggerFsBtn]);
 
-  // FIXED: allow desktop
   if(!movieId) return null;
   if(!open &&!minimized &&!isClosing) return null;
+
+  // NEVER show full drawer on PC - only mini allowed
+  if(!isMobile && open &&!minimized){
+    return null;
+  }
 
   const handleClose = () => {
     if(isFullscreen){ triggerFsBtn(); return; }

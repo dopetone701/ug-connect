@@ -1,12 +1,14 @@
 "use client"
 import { useRef } from "react"
+import { useRouter } from "next/navigation"
 import { Movie } from "../_lib/types"
 import { useMovieStore } from "../_lib/use-movie-store"
 import { useWatchDrawer } from "@/stores/use-watch-drawer"
 
 export default function MovieCard({ m }: { m: Movie }) {
+  const router = useRouter()
   const { addRecent } = useMovieStore()
-  const { openDrawer } = useWatchDrawer()
+  const { openDrawer } = useWatchDrawer() as any
 
   const movedRef = useRef(false)
   const startXRef = useRef(0)
@@ -37,6 +39,14 @@ export default function MovieCard({ m }: { m: Movie }) {
         genre: m.genre, vj: m.vj, description: m.desc
       }))
     }catch{}
+
+    // PC = real page direct - NO drawer
+    if (typeof window !== "undefined" && window.innerWidth > 768) {
+      router.push(`/movies/watch/${id}?t=${type}`)
+      return
+    }
+
+    // Mobile = drawer
     openDrawer(id, type as any)
   }
 

@@ -23,7 +23,8 @@ export default function WatchPage({ isOverlay = false, id: propId, onClose, onEx
   const effectiveId = propId || (params.id as string)
 
   const storeType = useWatchDrawer((s) => s.playType);
-  const { closeDrawer } = useWatchDrawer()
+  // PASTE 1: add openDrawer
+  const { closeDrawer, openDrawer } = useWatchDrawer() as any
   const type = search.get("t") || storeType || "full"
   const isPreview = type === "preview"
 
@@ -64,7 +65,6 @@ export default function WatchPage({ isOverlay = false, id: propId, onClose, onEx
   const [descExpanded, setDescExpanded] = useState(false)
   const maximize = useWatchDrawer((s) => s.maximize);
 
-  // FIX: local ep state for drawer - no router.push
   const [overlayEpId, setOverlayEpId] = useState<string | null>(() => {
     try{
       const cached = typeof window!== "undefined"? sessionStorage.getItem(`movie_preload_${effectiveId}`) : null
@@ -72,6 +72,28 @@ export default function WatchPage({ isOverlay = false, id: propId, onClose, onEx
       return parsed?.ep || null
     }catch{ return null }
   })
+
+  // PASTE 2: seamless PC -> mobile switch + restore helper
+  useEffect(()=>{
+    if(isOverlay) return;
+    const onResize = () => {
+      if(window.innerWidth <= 768 && effectiveId){
+        // save before switch
+        try{
+          if(videoRef.current){
+            sessionStorage.setItem(`continue_${effectiveId}`, JSON.stringify({
+              time: videoRef.current.currentTime,
+              playing: !videoRef.current.paused
+            }))
+          }
+        }catch{}
+        openDrawer(effectiveId, type);
+        router.replace("/movies");
+      }
+    };
+    window.addEventListener("resize", onResize);
+    return () => window.removeEventListener("resize", onResize);
+  }, [effectiveId, type, isOverlay, openDrawer, router]);
 
   const skip = useCallback((sec: number) => {
     if(!videoRef.current) return
@@ -205,6 +227,7 @@ export default function WatchPage({ isOverlay = false, id: propId, onClose, onEx
   const currentQualityObj = qualitySources.find(q=>q.value===quality) || qualitySources[0]
   const videoUrl = currentQualityObj?.url
 
+  // PASTE 3: autoplay with seamless resume
   useEffect(()=>{
     if(!videoUrl ||!videoRef.current) return
     setIsLoading(true)
@@ -213,17 +236,32 @@ export default function WatchPage({ isOverlay = false, id: propId, onClose, onEx
       const v = videoRef.current
       if(!v) return
       try {
-        v.muted = true
+        let savedTime = 0;
+        let wasPlaying = false;
+        try{
+          const saved = sessionStorage.getItem(`continue_${effectiveId}`);
+          if(saved){
+            const parsed = JSON.parse(saved);
+            savedTime = parsed.time || 0;
+            wasPlaying = !!parsed.playing;
+            if(savedTime > 1) v.currentTime = savedTime;
+          }
+        }catch{}
+        if(!savedTime && lastTimeRef.current) v.currentTime = lastTimeRef.current;
+
+        v.muted = wasPlaying ? false : true;
         v.volume = volume
         await v.play()
         setPlaying(true)
         setHasStarted(true)
         setIsLoading(false)
-        setTimeout(()=> { if(v){ v.muted = false; v.volume = volume } }, 400)
+        if(v.muted){
+          setTimeout(()=> { if(v){ v.muted = false; v.volume = volume } }, 400)
+        }
       } catch { setIsLoading(false) }
     }, 0)
     return ()=> clearTimeout(autoPlayTimerRef.current)
-  }, [videoUrl, activeEp?.id])
+  }, [videoUrl, activeEp?.id, effectiveId, volume])
 
   if(!movie) return <div className={`film-root connect-root ${isOverlay? 'yt-overlay-root' : ''}`} style={{background:"hsl(var(--bg))", minHeight:"60vh"}}><div className="film-giant inner-body" style={{display:"flex",alignItems:"center",justifyContent:"center"}}>Loading...</div></div>
 
@@ -249,11 +287,30 @@ export default function WatchPage({ isOverlay = false, id: propId, onClose, onEx
                   lastTimeRef.current = v.currentTime
                   if (v.duration) { setProgress((v.currentTime / v.duration) * 100); setDuration(v.duration) }
                   updateBufferedProgress()
+                  // SAVE CONTINUOUSLY FOR SEAMLESS SWITCH
+                  try{
+                    sessionStorage.setItem(`continue_${effectiveId}`, JSON.stringify({
+                      time: v.currentTime,
+                      playing: !v.paused
+                    }))
+                  }catch{}
                 }}
                 onProgress={updateBufferedProgress}
                 onLoadedMetadata={(e)=> {
-                  setDuration((e.target as HTMLVideoElement).duration)
-                  if(lastTimeRef.current) (e.target as HTMLVideoElement).currentTime = lastTimeRef.current
+                  const vid = e.target as HTMLVideoElement;
+                  setDuration(vid.duration)
+                  try{
+                    const saved = sessionStorage.getItem(`continue_${effectiveId}`);
+                    if(saved){
+                      const { time } = JSON.parse(saved);
+                      if(time && time > 1 && time < vid.duration - 1){
+                        vid.currentTime = time;
+                        lastTimeRef.current = time;
+                        return;
+                      }
+                    }
+                  }catch{}
+                  if(lastTimeRef.current) vid.currentTime = lastTimeRef.current
                 }}
                 onClick={togglePlay}
                 playsInline
@@ -303,7 +360,6 @@ export default function WatchPage({ isOverlay = false, id: propId, onClose, onEx
             movie={movie}
             activeEpId={epId}
             onSelect={(ep:any)=> {
-              // FIXED: no router.push in overlay - stays inside drawer
               if(isOverlay){
                 setOverlayEpId(String(ep.id))
               }else{

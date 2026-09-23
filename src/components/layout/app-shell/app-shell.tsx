@@ -1,6 +1,5 @@
 "use client";
-import { useEffect } from "react";
-import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 import TopBar from "../top-bar/top-bar";
 import SideBar from "../side-bar/side-bar";
 import BottomBar from "../bottom-bar/bottom-bar";
@@ -10,37 +9,31 @@ import { useWatchDrawer } from "@/stores/use-watch-drawer";
 import "./app-shell.css";
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname();
-const { isOpen } = useWatchDrawer() as any
-  
+  const { open, minimized } = useWatchDrawer() as any;
+  const [isMobile, setIsMobile] = useState(false);
+
   useEffect(() => { initTheme(); }, []);
-  
-  const isWatch = pathname?.includes("/movies/watch") || isOpen;
+  useEffect(() => {
+    const c = () => setIsMobile(window.innerWidth <= 768);
+    c(); window.addEventListener("resize", c);
+    return () => window.removeEventListener("resize", c);
+  }, []);
+
+  const isSplit = !isMobile && open && !minimized;
 
   return (
-    <div className={isWatch ? "google-shell is-watch" : "google-shell"}>
-      {isWatch && (
-        <style>{`
-          @media(max-width:768px){
-           .google-shell.is-watch .top-bar,
-           .google-shell.is-watch header { display:none!important; }
-           .google-shell.is-watch .content-panel { padding-top:0!important; margin-top:0!important; }
-          }
-        `}</style>
-      )}
-
+    <div className={`google-shell ${isSplit ? "is-split" : ""}`}>
       <div className="giant-panel">
         <TopBar />
         <div className="giant-body">
           <SideBar />
           <main className="content-panel">
-            {children}
+            <div className="content-scroll">{children}</div>
+            <WatchDrawer />
           </main>
         </div>
       </div>
       <BottomBar />
-      {/* SINGLE DRAWER - outside panels = true overlay */}
-      <WatchDrawer />
     </div>
   );
 }
