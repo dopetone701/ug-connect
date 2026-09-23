@@ -16,7 +16,7 @@ import { useWatchDrawer } from "@/stores/use-watch-drawer";
 
 const API_URL = "https://movie-server-api.connectu89.workers.dev/api/movies"
 
-export default function WatchPage({ isOverlay = false, id: propId, onClose, onExpand, isMini = false }: { isOverlay?: boolean, id?: string, onClose?: () => void, onExpand?: () => void, isMini?: boolean }) {
+export default function WatchPage({ isOverlay = false, id: propId, onClose, onExpand, isMini = false, isFullscreen: externalFs, onFsChange }: { isOverlay?: boolean, id?: string, onClose?: () => void, onExpand?: () => void, isMini?: boolean, isFullscreen?: boolean, onFsChange?: (v:boolean)=>void }) {
   const params = useParams()
   const search = useSearchParams()
   const router = useRouter()
@@ -51,6 +51,11 @@ export default function WatchPage({ isOverlay = false, id: propId, onClose, onEx
   const [mounted, setMounted] = useState(false)
   const [detailsOpen, setDetailsOpen] = useState(false)
   const [isFullScreen, setIsFullScreen] = useState(false)
+   // SYNC with drawer drag -> fullscreen btn click
+  useEffect(()=>{
+    if(externalFs!== undefined) setIsFullScreen(externalFs);
+  },[externalFs]);
+
   const [isDraggingVol, setIsDraggingVol] = useState(false)
   const [showQualityMenu, setShowQualityMenu] = useState(false)
   const [quality, setQuality] = useState("auto")
@@ -106,12 +111,13 @@ export default function WatchPage({ isOverlay = false, id: propId, onClose, onEx
     }
   }, [])
 
-  const toggleFullscreen = useCallback(async () => {
+   const toggleFullscreen = useCallback(async () => {
     const video = videoRef.current as any;
     const root = rootRef.current as any;
     if (!video ||!root) return;
     if (!isFullScreen) {
       setIsFullScreen(true);
+      onFsChange?.(true); // <-- tell drawer we are in fs
       document.body.style.overflow = 'hidden';
       try {
         if (video.webkitEnterFullscreen) video.webkitEnterFullscreen();
@@ -119,10 +125,12 @@ export default function WatchPage({ isOverlay = false, id: propId, onClose, onEx
       } catch {}
     } else {
       setIsFullScreen(false);
+      onFsChange?.(false); // <-- tell drawer we exited fs (swipe up close)
       document.body.style.overflow = '';
       try { if (document.fullscreenElement) await document.exitFullscreen(); } catch {}
     }
-  }, [isFullScreen]);
+  }, [isFullScreen, onFsChange]);
+
 
   const formatTime = useCallback((sec: number) => {
     if(!sec || isNaN(sec)) return "0:00"

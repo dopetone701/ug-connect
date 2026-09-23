@@ -34,6 +34,9 @@
 }
 
 .content-panel {
+   position: relative; /* <-- ADD THIS */
+  isolation: isolate; /* <-- ADD THIS */
+
   flex: 1;
   min-height: 0;
   width: 100%;
@@ -68,3 +71,5 @@
     overflow-x: hidden;
   }
 }
+
+
