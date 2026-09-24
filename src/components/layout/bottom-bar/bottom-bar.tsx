@@ -3,6 +3,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import "./bottom-bar.css";
+import { useWatchDrawer } from "@/stores/use-watch-drawer";
+
 
 const items = [
   { href: "/mobile-money", label: "M Money", svg: (
@@ -27,6 +29,11 @@ const items = [
 
 export default function BottomBar(){
   const path = usePathname();
+
+
+  const { open: watchOpen, minimized: watchMinimized } = useWatchDrawer() as any;
+if (watchOpen && !watchMinimized) return null;
+
   return (
     <nav className="bottom-bar-glass">
       <div className="bottom-inner">

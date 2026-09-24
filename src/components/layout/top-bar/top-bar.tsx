@@ -5,6 +5,8 @@ import "./top-bar.css";
 import "./top-bar-dynamics.css";
 import SideBar from "../side-bar/side-bar";
 import AppLogo from "@/components/AppLogo";
+import { useWatchDrawer } from "@/stores/use-watch-drawer";
+
 
 import SearchDrawer from "./search-drawer/search-drawer";
 import { useGlobalSearch } from "../../../stores/use-global-search";
@@ -36,6 +38,8 @@ export default function TopBar() {
 
   const { query: globalQuery, setQuery: setGlobalQuery, openSearch } = useGlobalSearch();
   const isAllMoviesPage = pathname?.startsWith("/movies") || pathname?.startsWith("/all-movies");
+
+ 
 
   // dynamic placeholder based on your real routes
   const placeholder = useMemo(() => {
@@ -83,6 +87,10 @@ export default function TopBar() {
     document.querySelector('.side-bar')?.classList.toggle('collapsed', next);
     window.dispatchEvent(new CustomEvent("ug-toggle-sidebar", { detail: next }));
   };
+
+   const { open: watchOpen, minimized: watchMinimized } = useWatchDrawer() as any;
+if (watchOpen && !watchMinimized) return null;
+
 
   return (
     <>
