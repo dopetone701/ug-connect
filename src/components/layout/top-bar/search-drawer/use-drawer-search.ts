@@ -2,7 +2,7 @@
 import { useMemo } from "react";
 import { useGlobalSearch } from "@/stores/use-global-search";
 import { getSections } from "@/app/(dashboard)/movies/_lib/sections.config";
-import { useMovieStore } from "@/app/(dashboard)/movies/_lib/use-movie-store";
+import { useMovieStore } from "@/stores/use-movie-store";
 
 export function useDrawerSearch() {
   const { allMovies, query, activeSection } = useGlobalSearch();

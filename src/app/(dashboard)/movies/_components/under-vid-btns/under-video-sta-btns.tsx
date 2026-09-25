@@ -1,20 +1,20 @@
 "use client";
 
-import { usePathname, useRouter } from "next/navigation";
-import { useMovieStore } from "../../_lib/use-movie-store";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useMovieStore } from "@/stores/use-movie-store";
 
 export default function UnderVideoStaBtns({
   movie,
   paramsId,
-  isPreview,
+  onPreview,
 }: any) {
   const router = useRouter();
-  const pathname = usePathname();
+  const searchParams = useSearchParams();
 
   const {
     lists,
-    addToList,
-    removeFromList,
+    addToMyList,
+    removeFromMyList,
     createList,
   } = useMovieStore() as any;
 
@@ -24,6 +24,8 @@ export default function UnderVideoStaBtns({
     mainList?.movieIds?.includes(Number(paramsId)) ||
     mainList?.movieIds?.includes(String(paramsId));
 
+  const isPreview = searchParams.get("t") === "preview";
+
   const handleMyList = () => {
     if (!mainList) {
       createList("my-list");
@@ -31,14 +33,57 @@ export default function UnderVideoStaBtns({
     }
 
     if (isInMyList) {
-      removeFromList(mainList.id, movie.id);
+      removeFromMyList(movie.id);
     } else {
-      addToList(mainList.id, movie.id);
+      addToMyList(movie.id);
     }
   };
 
+  const handlePlayToggle = () => {
+    /*
+     * PC / DESKTOP
+     *
+     * Stay inside the Connect player.
+     * NEVER open Reels on desktop.
+     */
+    if (typeof window !== "undefined" && window.innerWidth > 768) {
+      router.push(
+        `/movies/watch/${String(paramsId)}?t=${
+          isPreview ? "full" : "preview"
+        }`
+      );
+
+      return;
+    }
+
+    /*
+     * MOBILE
+     *
+     * Full movie -> Preview
+     * Let the existing mobile preview handler
+     * open the Reels drawer.
+     */
+    if (!isPreview) {
+      if (onPreview) {
+        onPreview();
+      }
+
+      return;
+    }
+
+    /*
+     * MOBILE
+     *
+     * Preview -> Full movie.
+     * Stay on the Connect/watch route.
+     */
+    router.push(
+      `/movies/watch/${String(paramsId)}?t=full`
+    );
+  };
+
   const handleShare = async () => {
-    const url = `${window.location.origin}${pathname}?t=full`;
+    const url = window.location.href;
 
     if (navigator.share) {
       try {
@@ -46,33 +91,22 @@ export default function UnderVideoStaBtns({
           title: movie.title,
           url,
         });
-      } catch {
-        // User cancelled the share sheet.
-      }
+      } catch {}
     } else {
       try {
         await navigator.clipboard.writeText(url);
         alert("Link copied!");
-      } catch {
-        // Clipboard unavailable.
-      }
+      } catch {}
     }
-  };
-
-  const handlePlayPreview = () => {
-    const currentType =
-      new URLSearchParams(window.location.search).get("t");
-
-    const nextType = currentType === "preview" ? "full" : "preview";
-
-    router.push(`${pathname}?t=${nextType}`);
   };
 
   return (
     <div className="connect-action-row">
+      {/* PREVIEW / FULL TOGGLE */}
       <button
+        type="button"
         className="c-action-btn primary"
-        onClick={handlePlayPreview}
+        onClick={handlePlayToggle}
       >
         <svg
           width="16"
@@ -84,11 +118,15 @@ export default function UnderVideoStaBtns({
           <path d="M8 5.14v14l11-7-11-7z" />
         </svg>
 
-        {isPreview ? "Play Full" : "Play Preview"}
+        {isPreview ? "Watch Full Movie" : "Play Preview"}
       </button>
 
+      {/* MY LIST */}
       <button
-        className={`c-action-btn ${isInMyList ? "active" : ""}`}
+        type="button"
+        className={`c-action-btn ${
+          isInMyList ? "active" : ""
+        }`}
         onClick={handleMyList}
       >
         <svg
@@ -108,7 +146,9 @@ export default function UnderVideoStaBtns({
         {isInMyList ? "In My List" : "My List"}
       </button>
 
+      {/* SHARE */}
       <button
+        type="button"
         className="c-action-btn"
         onClick={handleShare}
       >

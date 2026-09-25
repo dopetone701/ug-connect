@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useRef } from "react"
-import { useMovieStore } from "../_lib/use-movie-store"
+import { useMovieStore } from "../../../../stores/use-movie-store"
 import "../latest-movies.css"
 import { useWatchDrawer } from "@/stores/use-watch-drawer"
 

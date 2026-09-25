@@ -2,7 +2,7 @@
 
 import { useRef, useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { useMovieStore } from "./use-movie-store"
+import { useMovieStore } from "../../../../stores/use-movie-store"
 import { useWatchDrawer } from "@/stores/use-watch-drawer"
 import "./series-row.css"
 

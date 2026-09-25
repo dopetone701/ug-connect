@@ -11,7 +11,8 @@ export type ReelMovie = {
 }
 
 export type ReelsFeedProps = {
-  movies: ReelMovie[]
+  movies?: ReelMovie[]
+
   startIndex?: number
   currentMovie?: ReelMovie
   onClose?: () => void

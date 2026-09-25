@@ -4,12 +4,10 @@ import { Movie } from "../_lib/types"
 import MovieCard from "./movie-card"
 import "../latest-movies.css"
 import { useGlobalSearch } from "@/stores/use-global-search"
-import { useWatchDrawer } from "@/stores/use-watch-drawer"
 
 export default function MovieRow({ title, movies, onSeeAll }: { title: string; movies: Movie[]; onSeeAll?: (v: string) => void }) {
   const ref = useRef<HTMLDivElement>(null)
   const isDraggingRef = useRef(false)
-  const { openDrawer } = useWatchDrawer()
 
   useEffect(() => {
     const container = ref.current
@@ -112,21 +110,7 @@ export default function MovieRow({ title, movies, onSeeAll }: { title: string; m
       <div className="latest-track-wrap">
         <div ref={ref} className="latest-track">
           {movies.map(m => (
-            <div
-              key={String(m.id)}
-              onClick={(e)=>{
-                e.preventDefault()
-                e.stopPropagation()
-                if(isDraggingRef.current) return
-                try{
-                  sessionStorage.setItem(`movies_home_scroll_v1`, String(window.scrollY))
-                  sessionStorage.setItem(`movie_preload_${String(m.id)}`, JSON.stringify({id:String(m.id), title:m.title, cover_url:m.cover, video_url:(m as any).video, genre:m.genre, vj:m.vj, description:m.desc}))
-                }catch{}
-                openDrawer(String(m.id), "full")
-              }}
-            >
-              <MovieCard m={m} />
-            </div>
+            <MovieCard key={String(m.id)} m={m} allMovies={movies} />
           ))}
         </div>
       </div>

@@ -1,31 +1,76 @@
 .reel-root{
   position:fixed!important; inset:0!important; z-index:99999!important;
-  width:100vw; height:100dvh; overflow:hidden; display:flex!important; flex-direction:column;
-  background:hsl(var(--bg));
-  color:hsl(var(--text));
+  width:100vw; height:100dvh; overflow:hidden;
+  display:flex!important; flex-direction:column;
+  background:hsl(var(--bg)); color:hsl(var(--text));
 }
+
 .reel-top-bar{
-  position:absolute; top:0; left:0; right:0; height:52px; z-index:100;
+  position:fixed!important; top:0; left:0; right:0; height:52px; z-index:100;
   display:flex; align-items:center; justify-content:space-between;
   padding:0 12px; pointer-events:none;
-  background:transparent; /* <-- ONLY ADD THIS */
+  background:transparent;
 }
+
 .reel-close-v,.reel-search{
   pointer-events:auto; width:36px; height:36px; border-radius:50%;
   display:grid; place-items:center; border:1px solid hsl(var(--border));
   background:hsl(var(--surface)); backdrop-filter:blur(10px);
 }
+
+/* FIXED - was overflow:hidden = no scroll */
 .reel-swiper{
-  position:relative; flex:1; width:100%; 
-  height:100dvh; /* <-- CHANGED from calc(100dvh - 52px) */
-  margin-top:0; /* <-- CHANGED from 52px - this was the black bar */
+  position:relative; flex:1; width:100%;
+  height:100%;
+  margin-top:0!important;
+  overflow:visible!important;
+  display:block!important;
 }
-.reel-video{width:100%!important; height:100%!important; object-fit:cover!important; background:#000}
-.reel-gradient{position:absolute; bottom:0; left:0; right:0; height:62%; background:linear-gradient(to top, hsl(var(--bg)) 0%, transparent 100%); pointer-events:none; opacity:.85}
+
+.reels-tiktok-container{
+  height:calc(100dvh - 56px)!important;
+  width:100vw;
+  overflow-y:scroll!important;
+  overflow-x:hidden;
+  scroll-snap-type:y mandatory;
+  scroll-snap-stop:always;
+  scroll-behavior:smooth;
+  -webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
+}
+
+.reels-tiktok-container::-webkit-scrollbar{ display:none; }
+
+.reels-tiktok-item{
+  height:calc(100dvh - 56px)!important;
+  width:100vw;
+  position:relative;
+  scroll-snap-align:start;
+  scroll-snap-stop:always;
+  background:#000;
+  overflow:hidden;
+  flex-shrink:0;
+}
+
+.reel-video{
+  width:100%!important; height:100%!important;
+  object-fit:cover!important; background:#000;
+  position:absolute; inset:0;
+}
+
+.reel-gradient{
+  position:absolute; bottom:0; left:0; right:0;
+  height:62%;
+  background:linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 100%);
+  pointer-events:none; opacity:.85; z-index:1;
+}
+
 .reel-actions{
-  position:absolute; right:10px; bottom:90px; display:flex; flex-direction:column;
+  position:absolute; right:10px; bottom:90px;
+  display:flex; flex-direction:column;
   gap:18px; align-items:center; z-index:10;
 }
+
 .ra-btn{background:none; border:0; display:flex; flex-direction:column; align-items:center; gap:4px}
 .ra-icon-bg{
   width:48px; height:48px; border-radius:50%;
@@ -33,19 +78,17 @@
   display:grid; place-items:center; box-shadow:0 2px 8px rgba(0,0,0,.15);
 }
 .ra-label{font-size:11px; font-weight:600; color:hsl(var(--text)); text-shadow:0 1px 2px hsl(var(--bg))}
+
 .reel-info{position:absolute; left:12px; right:84px; bottom:16px; z-index:10}
 .reel-info h3{font-size:16px; font-weight:800; margin:0 0 6px; color:hsl(var(--text))}
 .reel-desc{font-size:13px; opacity:.85; margin:0 0 10px; color:hsl(var(--text-muted))}
 .reel-pills{display:flex; gap:6px; margin-bottom:12px}
 .reel-pills span{font-size:10px; padding:4px 10px; border-radius:20px}
 .reel-watch-full{border:0; border-radius:10px; padding:12px 18px; font-weight:800; width:100%; letter-spacing:.2px}
+
 .reel-comment-bar{
-  height:56px!important;
-  min-height:56px!important;
-  flex-shrink:0!important;
-  display:flex!important; 
-  align-items:center!important; 
-  gap:10px!important;
+  height:56px!important; min-height:56px!important; flex-shrink:0!important;
+  display:flex!important; align-items:center!important; gap:10px!important;
   padding:8px 12px calc(8px + env(safe-area-inset-bottom,0px))!important;
   background:hsl(var(--bg))!important;
   border-top:1px solid hsl(var(--border))!important;
@@ -53,82 +96,23 @@
 }
 
 .reel-comment-input{
-  flex:1!important;
-  height:44px!important;
-  min-height:44px!important;
-  border-radius:24px!important;
-  padding:0 16px!important;
-  font-size:16px!important; /* <- stops weird zoom on click */
-  line-height:44px!important;
-  outline:none!important;
+  flex:1!important; height:44px!important; min-height:44px!important;
+  border-radius:24px!important; padding:0 16px!important;
+  font-size:16px!important; line-height:44px!important; outline:none!important;
   border:1px solid hsl(var(--border))!important;
-  background:hsl(var(--surface))!important;
-  color:hsl(var(--text))!important;
+  background:hsl(var(--surface))!important; color:hsl(var(--text))!important;
   -webkit-appearance:none!important;
 }
 
 .reel-comment-send{
-  width:44px!important;
-  height:44px!important;
-  min-width:44px!important;
-  border-radius:50%!important;
-  flex-shrink:0!important;
+  width:44px!important; height:44px!important; min-width:44px!important;
+  border-radius:50%!important; flex-shrink:0!important;
 }
 
-@media(min-width:769px){.reel-root{display:none!important}}
-.apple-play-center{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:20}
-.play-apple-core{width:88px;height:88px;border-radius:50%;background:rgba(255,255,255,.18);backdrop-filter:blur(12px);display:grid;place-items:center}
-.play-apple-tri{width:44px;height:44px}
 .apple-play-pure{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:20;pointer-events:none}
-
-
-.reel-root{
-  position:fixed!important; inset:0!important; z-index:99999!important;
-  width:100vw; height:100dvh; overflow:hidden; display:flex!important; flex-direction:column;
-  background:hsl(var(--bg));
-  color:hsl(var(--text));
-}
-.reel-swiper{
-  position:relative; flex:1; width:100%;
-  height:calc(100dvh - 56px); /* <-- FIX: was 100dvh */
-  margin-top:0;
-  overflow:hidden;
-}
-.reels-tiktok-container{ 
-  height:calc(100dvh - 56px); /* <-- FIX: was 100dvh */
-  width:100vw; 
-  overflow-y:scroll; 
-  scroll-snap-type:y mandatory; 
-  -webkit-overflow-scrolling:touch;
-  flex:1;
-}
-.reels-tiktok-item{ 
-  height:calc(100dvh - 56px); /* <-- FIX: was 100dvh */
-  width:100vw; 
-  position:relative; 
-  scroll-snap-align:start; 
-  scroll-snap-stop:always; 
-  background:#000;
-  overflow:hidden; /* <-- ADD */
-}
-.reel-info{
-  position:absolute; left:12px; right:84px; 
-  bottom:16px; /* keeps it 16px ABOVE the comment bar now */
-  z-index:10
-}
-.reel-comment-bar{
-  height:56px; 
-  min-height:56px; /* <-- ADD */
-  display:flex; align-items:center; gap:8px; padding:0 12px; z-index:101;
-  flex-shrink:0; /* <-- ADD - never let it shrink */
-}
-
-
-/* If you use <img> for cover/poster */
-.mob-cover-img,
-.mob-full-video[poster]{
-  width:100%!important;
-  height:100%!important;
-  object-fit:cover!important;
-  object-position:center!important;
-}
+.reels-backdrop{position:fixed; inset:0; z-index:9999; background:rgba(0,0,0,0.6); display:flex; align-items:flex-end; animation:backdropIn .25s ease;}
+.reels-sheet{width:100%; height:92dvh; background:#000; border-radius:20px 20px 0 0; overflow:hidden; position:relative; animation:sheetUp .35s cubic-bezier(0.32, 0.72, 0, 1); box-shadow:0 -10px 40px rgba(0,0,0,0.6);}
+.reels-handle{width:40px; height:4px; background:rgba(255,255,255,0.3); border-radius:999px; position:absolute; top:10px; left:50%; transform:translateX(-50%); z-index:2;}
+@keyframes sheetUp{from{transform:translateY(100%);}to{transform:translateY(0);}}
+@keyframes backdropIn{from{opacity:0;}to{opacity:1;}}
+@media(min-width:769px){.reel-root{display:none!important}}

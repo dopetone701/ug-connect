@@ -3,7 +3,7 @@ import { useRef, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import "../../latest-movies.css";
 import "./similar-movies.css";
-import { useMovieStore } from "../../_lib/use-movie-store";
+import { useMovieStore } from "../../../../../stores/use-movie-store";
 import { useWatchDrawer } from "@/stores/use-watch-drawer";
 import { useGlobalSearch } from "@/stores/use-global-search";
 
