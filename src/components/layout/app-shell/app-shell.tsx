@@ -16,13 +16,19 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const { isOpen: isReelsOpen, movies, startIndex, currentMovie, closeReels } = useReelsDrawer() as any;
   const [isMobile, setIsMobile] = useState(false);
   const [showIntro, setShowIntro] = useState(false);
+  const [checked, setChecked] = useState(false);
 
   useEffect(() => {
     initTheme();
+    const isMobileCheck = window.innerWidth <= 768;
     const isLanding = window.location.pathname === "/";
     const seen = sessionStorage.getItem("ug-intro-seen");
-    if (isLanding && !seen) setShowIntro(true);
-    
+    // SURGICAL FIX: PC never shows
+    if (isLanding && !seen && isMobileCheck) setShowIntro(true);
+    setChecked(true);
+  }, []);
+
+  useEffect(() => {
     const c = () => setIsMobile(window.innerWidth <= 768);
     c(); window.addEventListener("resize", c);
     return () => window.removeEventListener("resize", c);
@@ -30,10 +36,18 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
   const isSplit = !isMobile && open && !minimized;
 
+  if (!checked) {
+    return <div style={{ background: "#000", width: "100vw", height: "100dvh" }} />;
+  }
+
   return (
     <>
-      {/* Content is rendered instantly behind */}
-      <div className={`google-shell ${isSplit ? "is-split" : ""}`}>
+      {showIntro && <IntroVideo onFinished={() => setShowIntro(false)} />}
+
+      <div
+        className={`google-shell ${isSplit ? "is-split" : ""}`}
+        style={{ opacity: showIntro ? 0 : 1, pointerEvents: showIntro ? "none" : "auto" }}
+      >
         <div className="giant-panel">
           <TopBar />
           <div className="giant-body">
@@ -49,14 +63,16 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           <div className="reels-backdrop" onClick={closeReels}>
             <div className="reels-sheet" onClick={(e) => e.stopPropagation()}>
               <div className="reels-handle" />
-              <MobilePreview movies={movies} startIndex={startIndex} currentMovie={currentMovie} onClose={closeReels} />
+              <MobilePreview
+                movies={movies}
+                startIndex={startIndex}
+                currentMovie={currentMovie}
+                onClose={closeReels}
+              />
             </div>
           </div>
         )}
       </div>
-
-      {/* Intro ON TOP - fades out to reveal content instantly */}
-      {showIntro && <IntroVideo onFinished={() => setShowIntro(false)} />}
     </>
   );
 }

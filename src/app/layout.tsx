@@ -5,7 +5,13 @@ import { CoreEngine } from "@/components/media/engine/core-engine";
 import type { Viewport, Metadata } from "next";
 import PWAInstallPrompt from "@/components/pwa/install-prompt";
 
-
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  viewportFit: "cover", // <-- THIS KILLS TOP BAR
+  themeColor: "#000000",
+}
 
 export const metadata: Metadata = {
   manifest: "/manifest.json",
@@ -22,8 +28,8 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }){
   return (
-    <html lang="en">
-      <body className="bg-black">
+    <html lang="en" style={{ background: "#000" }}>
+      <body className="bg-black" style={{ background: "#000", margin: 0, padding: 0, overscrollBehavior: "none" }}>
         <EngineProvider>
           <CoreEngine />
           <AppShell>{children}</AppShell>
