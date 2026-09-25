@@ -21,7 +21,6 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const [isMobile, setIsMobile] = useState(false);
   const [showIntro, setShowIntro] = useState(false);
   const [checked, setChecked] = useState(false);
-
   const { isOpen: isCastOpen, setOpen: setCastOpen } = useGlobalCast();
 
   useEffect(() => {
@@ -31,6 +30,19 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     const seen = sessionStorage.getItem("ug-intro-seen");
     if (isLanding && !seen && isMobileCheck) setShowIntro(true);
     setChecked(true);
+
+    // lock visual viewport so keyboard doesn't push drawers
+    const setVH = () => {
+      const vh = window.visualViewport?.height || window.innerHeight;
+      document.documentElement.style.setProperty('--app-vh', `${vh}px`);
+    };
+    setVH();
+    window.visualViewport?.addEventListener('resize', setVH);
+    window.visualViewport?.addEventListener('scroll', setVH);
+    return () => {
+      window.visualViewport?.removeEventListener('resize', setVH);
+      window.visualViewport?.removeEventListener('scroll', setVH);
+    }
   }, []);
 
   useEffect(() => {
@@ -41,9 +53,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
   const isSplit = !isMobile && open && !minimized;
 
-  if (!checked) {
-    return <div style={{ background: "#000", width: "100vw", height: "100dvh" }} />;
-  }
+  if (!checked) return <div style={{ background: "#000", width: "100vw", height: "100dvh" }} />;
 
   return (
     <>
@@ -57,24 +67,25 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           <TopBar />
           <div className="giant-body">
             <SideBar />
+            {/* THIS is the only container that should scroll */}
             <main className="content-panel">
-              <div className="content-scroll">{children}</div>
-              <WatchDrawer />
+              <div className="content-scroll">
+                {children}
+                {/* WRAP ALL CONTENT-LEVEL DRAWERS INSIDE HERE */}
+                <WatchDrawer />
+              </div>
             </main>
           </div>
         </div>
+        
         <BottomBar />
 
+        {/* Portaled fixed overlays - MUST be fixed to viewport, not to panel */}
         {isReelsOpen && (
           <div className="reels-backdrop" onClick={closeReels}>
             <div className="reels-sheet" onClick={(e) => e.stopPropagation()}>
               <div className="reels-handle" />
-              <MobilePreview
-                movies={movies}
-                startIndex={startIndex}
-                currentMovie={currentMovie}
-                onClose={closeReels}
-              />
+              <MobilePreview movies={movies} startIndex={startIndex} currentMovie={currentMovie} onClose={closeReels} />
             </div>
           </div>
         )}
