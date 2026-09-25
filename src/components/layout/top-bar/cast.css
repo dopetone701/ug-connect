@@ -161,20 +161,19 @@
 }
 
 
-/* ===== CAST MID SHEET 52VH - RESTORED ===== */
+/* CAST - NO BLUR, 52VH MID, NOT SWALLOWED */
 .cast-backdrop {
   position: fixed !important;
   inset: 0 !important;
-  top: 0 !important;
-  width: 100% !important;
+  width: 100vw !important;
   height: 100dvh !important;
-  background: rgba(0,0,0,0.45) !important;
-  backdrop-filter: blur(2px) !important;
+  background: rgba(0,0,0,0.25) !important; /* dim only, no blur */
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
   display: flex !important;
   align-items: flex-end !important;
   justify-content: center !important;
   z-index: 99999 !important;
-  padding: 0 !important;
 }
 
 .cast-sheet {
@@ -182,21 +181,23 @@
   height: 52vh !important;
   min-height: 52vh !important;
   max-height: 52vh !important;
-  border-radius: 24px 24px 0 0 !important;
   background: hsl(var(--surface)) !important;
+  border-radius: 24px 24px 0 0 !important;
   border-top: 1px solid hsl(var(--border)) !important;
   display: flex !important;
   flex-direction: column !important;
   overflow: hidden !important;
   transform: translateY(100%) !important;
   animation: castSlideToMid 0.38s cubic-bezier(0.32,0.72,0,1) forwards !important;
-  padding-bottom: env(safe-area-inset-bottom) !important;
+  margin: 0 !important;
+  position: relative !important;
+  bottom: 0 !important;
+  padding-bottom: calc(12px + env(safe-area-inset-bottom)) !important;
 }
 
 .cast-sheet .cast-content {
   flex: 1 !important;
   overflow-y: auto !important;
-  -webkit-overflow-scrolling: touch !important;
 }
 
 @keyframes castSlideToMid {
