@@ -9,8 +9,8 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
-  viewportFit: "cover",
   themeColor: "#000000",
+  // REMOVED viewportFit cover - this was killing top bar
 };
 
 export const metadata: Metadata = {
