@@ -141,3 +141,19 @@
   background:transparent; color:hsl(var(--primary));
 }
 .apple-play-pure{ position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); z-index:20; pointer-events:none; }
+
+
+.reel-top-bar{
+  top:0!important;
+  padding-top:env(safe-area-inset-top, 14px)!important;
+  height:calc(52px + env(safe-area-inset-top, 14px))!important;
+  padding-left:12px!important;
+  padding-right:12px!important;
+  box-sizing:border-box!important;
+}
+
+/* Buttons need to sit below notch */
+.reel-close-v,
+.reel-search{
+  margin-top:env(safe-area-inset-top, 0px)!important;
+}
