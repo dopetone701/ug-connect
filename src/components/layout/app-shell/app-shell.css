@@ -69,3 +69,24 @@
   }
 }
 
+/* CAST - mid phone half sheet */
+.cast-backdrop {
+  align-items: flex-end;
+}
+
+.cast-sheet {
+  height: 52vh;
+  max-height: 52vh;
+  min-height: 52vh;
+  border-radius: 24px 24px 0 0;
+  background: hsl(var(--surface));
+  border-top: 1px solid hsl(var(--border));
+  transform: translateY(100%);
+  animation: castSlideToMid 0.38s cubic-bezier(0.32, 0.72, 0, 1) forwards;
+}
+
+@keyframes castSlideToMid {
+  to {
+    transform: translateY(0);
+  }
+}

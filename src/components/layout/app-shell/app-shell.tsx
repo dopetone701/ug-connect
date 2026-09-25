@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import TopBar from "../top-bar/top-bar";
 import SideBar from "../side-bar/side-bar";
 import BottomBar from "../bottom-bar/bottom-bar";
@@ -11,6 +11,10 @@ import MobilePreview from "@/app/(dashboard)/movies/watch/[id]/mobile-preview";
 import IntroVideo from "../../intro/intro-video";
 import "./app-shell.css";
 
+import { useGlobalCast } from "@/stores/use-global-cast";
+import Cast from "../top-bar/cast";
+import CastSwipeClose from "../top-bar/cast-swipe-close";
+
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const { open, minimized } = useWatchDrawer() as any;
   const { isOpen: isReelsOpen, movies, startIndex, currentMovie, closeReels } = useReelsDrawer() as any;
@@ -18,12 +22,13 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const [showIntro, setShowIntro] = useState(false);
   const [checked, setChecked] = useState(false);
 
+  const { isOpen: isCastOpen, setOpen: setCastOpen } = useGlobalCast();
+
   useEffect(() => {
     initTheme();
     const isMobileCheck = window.innerWidth <= 768;
     const isLanding = window.location.pathname === "/";
     const seen = sessionStorage.getItem("ug-intro-seen");
-    // SURGICAL FIX: PC never shows
     if (isLanding && !seen && isMobileCheck) setShowIntro(true);
     setChecked(true);
   }, []);
@@ -59,6 +64,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           </div>
         </div>
         <BottomBar />
+
         {isReelsOpen && (
           <div className="reels-backdrop" onClick={closeReels}>
             <div className="reels-sheet" onClick={(e) => e.stopPropagation()}>
@@ -72,6 +78,10 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             </div>
           </div>
         )}
+
+        <CastSwipeClose isOpen={isCastOpen} onClose={() => setCastOpen(false)}>
+          <Cast />
+        </CastSwipeClose>
       </div>
     </>
   );

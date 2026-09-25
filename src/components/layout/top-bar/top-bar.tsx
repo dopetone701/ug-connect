@@ -6,6 +6,10 @@ import "./top-bar-dynamics.css";
 import SideBar from "../side-bar/side-bar";
 import AppLogo from "@/components/AppLogo";
 import { useWatchDrawer } from "@/stores/use-watch-drawer";
+import CastSheet from "./cast";
+import { useGlobalCast } from "@/stores/use-global-cast";
+
+
 
 
 import SearchDrawer from "./search-drawer/search-drawer";
@@ -38,6 +42,8 @@ export default function TopBar() {
 
   const { query: globalQuery, setQuery: setGlobalQuery, openSearch } = useGlobalSearch();
   const isAllMoviesPage = pathname?.startsWith("/movies") || pathname?.startsWith("/all-movies");
+  const { setOpen } = useGlobalCast();
+
 
  
 
@@ -153,7 +159,7 @@ if (watchOpen && !watchMinimized) return null;
 
 
         <div className="right-actions">
-          <button className="tv-share-btn mob-only" aria-label="Cast">
+<button className="tv-share-btn mob-only" aria-label="Cast" onClick={() => setOpen(true)}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
   <path d="M3 18v3h3c0-1.66-1.34-3-3-3Z"/>
   <path d="M3 13v2c3.31 0 6 2.69 6 6h2c0-4.42-3.58-8-8-8Z"/>
