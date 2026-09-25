@@ -102,3 +102,28 @@
     padding-bottom: calc(80px + env(safe-area-inset-bottom));
   }
 }
+
+
+@media (max-width: 768px) {
+  /* WATCH + REELS - FIT IN SCROLLABLE BODY, NOT TOUCH 6:55 BAR */
+  .content-panel .watch-drawer,
+  .watch-drawer,
+  .watch-drawer-root {
+    position: absolute !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    max-height: 100% !important;
+  }
+  .watch-drawer-panel {
+    height: 100% !important;
+    max-height: 100% !important;
+  }
+  .reels-backdrop {
+    position: absolute !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    max-height: 100% !important;
+  }
+}
