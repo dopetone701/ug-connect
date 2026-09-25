@@ -574,7 +574,7 @@
   bottom:0!important;
 
   width:100%!important;
-  height:56px!important;
+  height:auto!important;
   min-height:56px!important;
 
   display:flex!important;
@@ -636,29 +636,3 @@
 }
 
 
-/* OVERRIDE - FIX BROKEN COMMENT BAR IN APP */
-.reel-root{ display:flex!important; flex-direction:column!important; }
-
-.reel-swiper{
-  flex:1!important;
-  min-height:0!important;
-  height:auto!important;
-  overflow:hidden!important;
-}
-
-.reels-tiktok-container,
-.reels-tiktok-item{
-  height:100%!important;
-  min-height:100%!important;
-  max-height:100%!important;
-}
-
-.reel-comment-bar{
-  position:relative!important;
-  bottom:unset!important; left:unset!important; right:unset!important;
-  width:100%!important;
-  height:56px!important;
-  min-height:56px!important;
-  flex-shrink:0!important;
-  z-index:50!important;
-}
