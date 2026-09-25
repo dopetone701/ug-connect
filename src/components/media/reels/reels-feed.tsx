@@ -144,7 +144,7 @@ export function ReelsFeed({
           <div
             key={`${m.id}-${i}`}
             data-index={i}
-            className="reels-tiktok-item"
+className={`reels-tiktok-item ${isActive ? 'active' : ''}`}
           >
             {/* ==================================================
                 VIDEO

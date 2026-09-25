@@ -635,4 +635,28 @@
   z-index:10000!important;
 }
 
+.reel-root, .reel-swiper, .reels-tiktok-container {
+  height: 100% !important;
+  width: 100% !important;
+  overflow: hidden;
+}
+
+.reels-tiktok-container {
+  overflow-y: scroll !important;
+  scroll-snap-type: y mandatory;
+  -webkit-overflow-scrolling: touch;
+}
+
+.reels-tiktok-item {
+  height: 100% !important;
+  width: 100% !important;
+  scroll-snap-align: start !important;
+  flex-shrink: 0 !important;
+  position: relative;
+  overflow: hidden;
+}
+
+.reel-video {
+  height: 100% !important;
+}
 

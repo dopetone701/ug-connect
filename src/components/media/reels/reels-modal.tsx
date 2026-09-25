@@ -12,11 +12,10 @@ export function ReelsModal({ current, onWatchFull }: any) {
 
   if(!current) return null
 
-  const handleWatchFull = () => {
+  const handleClick = () => {
     const id = String(current.id)
     const preview = (current as any).preview_urls?.[0] || (current as any).preview_url || (current as any).trailer_url
 
-    // Same preload as MovieCard - so drawer has instant cover
     try{
       addRecent?.(id)
       sessionStorage.setItem(`movie_preload_${id}`, JSON.stringify({
@@ -32,21 +31,16 @@ export function ReelsModal({ current, onWatchFull }: any) {
       }))
     }catch{}
 
-    // PC -> push like MovieCard does
+    // PC -> use parent push
     if (typeof window!== "undefined" && window.innerWidth > 768) {
-      if (onWatchFull) {
-        onWatchFull()
-      } else {
-        router.push(`/movies/watch/${id}?t=full`)
-      }
+      if (onWatchFull) onWatchFull()
+      else router.push(`/movies/watch/${id}?t=full`)
       return
     }
 
-    // MOBILE -> open watch drawer like MovieCard does
+    // MOBILE -> open watch drawer like MovieCard
     closeReels?.()
-    setTimeout(() => {
-      openDrawer(id)
-    }, 120)
+    setTimeout(() => openDrawer(id), 120)
   }
 
   return (
@@ -61,7 +55,7 @@ export function ReelsModal({ current, onWatchFull }: any) {
         type="button"
         className="reel-watch-full"
         style={{ background:"hsl(var(--primary))", color:"hsl(var(--primary-text))"}}
-        onClick={handleWatchFull}
+        onClick={handleClick}
       >
         ▶ Watch Full Movie
       </button>

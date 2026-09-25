@@ -68,7 +68,6 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         {isReelsOpen && (
           <div className="reels-backdrop" onClick={closeReels}>
             <div className="reels-sheet" onClick={(e) => e.stopPropagation()}>
-              <div className="reels-handle" />
               <MobilePreview
                 movies={movies}
                 startIndex={startIndex}
