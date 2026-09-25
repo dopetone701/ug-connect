@@ -1,139 +1,636 @@
 .reel-root{
-  position:fixed!important; inset:0!important; z-index:99999!important;
-  width:100vw; height:100dvh; overflow:hidden;
-  display:flex!important; flex-direction:column;
-  background:hsl(var(--bg)); color:hsl(var(--text));
-}
-
-.reel-top-bar{
-  position:fixed!important; top:0; left:0; right:0; height:52px; z-index:100;
-  display:flex; align-items:center; justify-content:space-between;
-  padding:0 12px; pointer-events:none;
-  background:transparent;
-}
-
-.reel-close-v,.reel-search{
-  pointer-events:auto; width:36px; height:36px; border-radius:50%;
-  display:grid; place-items:center; border:1px solid hsl(var(--border));
-  background:hsl(var(--surface)); backdrop-filter:blur(10px);
-}
-
-/* FIXED - was overflow:hidden = no scroll */
-.reel-swiper{
-  position:relative; flex:1; width:100%;
-  height:100%;
-  margin-top:0!important;
-  overflow:visible!important;
-  display:block!important;
-}
-
-.reels-tiktok-container{
-  height:calc(100dvh - 56px)!important;
-  width:100vw;
-  overflow-y:scroll!important;
-  overflow-x:hidden;
-  scroll-snap-type:y mandatory;
-  scroll-snap-stop:always;
-  scroll-behavior:smooth;
-  -webkit-overflow-scrolling:touch;
-  scrollbar-width:none;
-}
-
-.reels-tiktok-container::-webkit-scrollbar{ display:none; }
-
-.reels-tiktok-item{
-  height:calc(100dvh - 56px)!important;
-  width:100vw;
-  position:relative;
-  scroll-snap-align:start;
-  scroll-snap-stop:always;
-  background:#000;
-  overflow:hidden;
-  flex-shrink:0;
-}
-
-.reel-video{
-  width:100%!important; height:100%!important;
-  object-fit:cover!important; background:#000;
-  position:absolute; inset:0;
-}
-
-.reel-gradient{
-  position:absolute; bottom:0; left:0; right:0;
-  height:62%;
-  background:linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 100%);
-  pointer-events:none; opacity:.85; z-index:1;
-}
-
-.reel-actions{
-  position:absolute; right:10px; bottom:90px;
-  display:flex; flex-direction:column;
-  gap:18px; align-items:center; z-index:10;
-}
-
-.ra-btn{background:none; border:0; display:flex; flex-direction:column; align-items:center; gap:4px}
-.ra-icon-bg{
-  width:48px; height:48px; border-radius:50%;
-  background:hsl(var(--surface)); border:1px solid hsl(var(--border));
-  display:grid; place-items:center; box-shadow:0 2px 8px rgba(0,0,0,.15);
-}
-.ra-label{font-size:11px; font-weight:600; color:hsl(var(--text)); text-shadow:0 1px 2px hsl(var(--bg))}
-
-.reel-info{position:absolute; left:12px; right:84px; bottom:16px; z-index:10}
-.reel-info h3{font-size:16px; font-weight:800; margin:0 0 6px; color:hsl(var(--text))}
-.reel-desc{font-size:13px; opacity:.85; margin:0 0 10px; color:hsl(var(--text-muted))}
-.reel-pills{display:flex; gap:6px; margin-bottom:12px}
-.reel-pills span{font-size:10px; padding:4px 10px; border-radius:20px}
-.reel-watch-full{border:0; border-radius:10px; padding:12px 18px; font-weight:800; width:100%; letter-spacing:.2px}
-
-.reel-comment-bar{
-  height:56px!important; min-height:56px!important; flex-shrink:0!important;
-  display:flex!important; align-items:center!important; gap:10px!important;
-  padding:8px 12px calc(8px + env(safe-area-inset-bottom,0px))!important;
-  background:hsl(var(--bg))!important;
-  border-top:1px solid hsl(var(--border))!important;
-  z-index:101!important;
-}
-
-.reel-comment-input{
-  flex:1!important; height:44px!important; min-height:44px!important;
-  border-radius:24px!important; padding:0 16px!important;
-  font-size:16px!important; line-height:44px!important; outline:none!important;
-  border:1px solid hsl(var(--border))!important;
-  background:hsl(var(--surface))!important; color:hsl(var(--text))!important;
-  -webkit-appearance:none!important;
-}
-
-.reel-comment-send{
-  width:44px!important; height:44px!important; min-width:44px!important;
-  border-radius:50%!important; flex-shrink:0!important;
-}
-
-.apple-play-pure{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:20;pointer-events:none}
-
-
-/* REELS ONLY - FIT IN SCROLLABLE BODY */
-.reel-root{
   position:absolute!important;
   inset:0!important;
   width:100%!important;
   height:100%!important;
   max-height:100%!important;
   z-index:50!important;
+  overflow:hidden;
+  display:flex!important;
+  flex-direction:column;
+  background:hsl(var(--bg));
+  color:hsl(var(--text));
 }
 
-@media (max-width: 768px){
+
+/* ============================================================
+   REELS SWIPER
+   ============================================================ */
+
+.reel-swiper{
+  position:relative;
+  flex:1;
+  width:100%;
+  height:100%;
+  margin-top:0!important;
+  overflow:visible!important;
+  display:block!important;
+}
+
+
+/* ============================================================
+   MAIN VERTICAL SCROLL CONTAINER
+   ============================================================ */
+
+.reels-tiktok-container{
+  width:100vw;
+  height:100dvh!important;
+
+  overflow-y:scroll!important;
+  overflow-x:hidden!important;
+
+  scroll-snap-type:y mandatory;
+  scroll-snap-stop:always;
+  scroll-behavior:smooth;
+
+  -webkit-overflow-scrolling:touch;
+
+  scrollbar-width:none;
+  overscroll-behavior-y:contain;
+}
+
+.reels-tiktok-container::-webkit-scrollbar{
+  display:none;
+}
+
+
+/* ============================================================
+   INDIVIDUAL REEL
+   ============================================================ */
+
+.reels-tiktok-item{
+  position:relative;
+
+  width:100vw;
+  height:100dvh!important;
+  min-height:100dvh!important;
+
+  flex-shrink:0;
+
+  scroll-snap-align:start;
+  scroll-snap-stop:always;
+
+  background:hsl(var(--bg));
+
+  overflow:hidden;
+}
+
+
+/* ============================================================
+   VIDEO
+   ============================================================ */
+
+.reel-video{
+  position:absolute;
+  inset:0;
+
+  width:100%!important;
+  height:100%!important;
+
+  object-fit:cover!important;
+
+  background:hsl(var(--bg));
+
+  z-index:0;
+}
+
+
+/* ============================================================
+   REEL GRADIENT
+   ============================================================ */
+
+.reel-gradient{
+  position:absolute;
+
+  bottom:0;
+  left:0;
+  right:0;
+
+  height:62%;
+
+  background:linear-gradient(
+    to top,
+    hsl(var(--bg) / 0.8) 0%,
+    transparent 100%
+  );
+
+  pointer-events:none;
+
+  opacity:.85;
+
+  z-index:1;
+}
+
+
+/* ============================================================
+   TOP BAR
+   Moves with each individual reel
+   ============================================================ */
+
+.reel-top-bar{
+  position:absolute!important;
+
+  top:0;
+  left:0;
+  right:0;
+
+  height:52px;
+
+  z-index:100;
+
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+
+  padding:0 12px;
+
+  pointer-events:none;
+
+  background:transparent;
+}
+
+
+/* ============================================================
+   TOP BAR BUTTONS
+   ============================================================ */
+
+.reel-close-v,
+.reel-search{
+  pointer-events:auto;
+
+  width:36px;
+  height:36px;
+
+  border-radius:50%;
+
+  display:grid;
+  place-items:center;
+
+  border:1px solid hsl(var(--border));
+
+  background:hsl(var(--surface));
+
+  color:hsl(var(--text));
+
+  backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
+
+  padding:0;
+
+  cursor:pointer;
+}
+
+.reel-close-v svg,
+.reel-search svg{
+  display:block;
+}
+
+
+/* ============================================================
+   RIGHT-SIDE REEL ACTIONS
+   ============================================================ */
+
+.reel-actions{
+  position:absolute;
+
+  right:10px;
+  bottom:90px;
+
+  display:flex;
+  flex-direction:column;
+
+  gap:18px;
+
+  align-items:center;
+
+  z-index:10;
+}
+
+
+/* ============================================================
+   ACTION BUTTON
+   ============================================================ */
+
+.ra-btn{
+  background:none;
+  border:0;
+
+  display:flex;
+  flex-direction:column;
+
+  align-items:center;
+
+  gap:4px;
+
+  padding:0;
+
+  color:hsl(var(--text));
+
+  cursor:pointer;
+}
+
+
+/* ============================================================
+   ACTION ICON
+   ============================================================ */
+
+.ra-icon-bg{
+  width:48px;
+  height:48px;
+
+  border-radius:50%;
+
+  background:hsl(var(--surface));
+
+  border:1px solid hsl(var(--border));
+
+  display:grid;
+  place-items:center;
+
+  box-shadow:
+    0 2px 8px hsl(var(--bg) / 0.15);
+}
+
+.ra-icon-bg svg{
+  display:block;
+}
+
+
+/* ============================================================
+   ACTION LABEL
+   ============================================================ */
+
+.ra-label{
+  font-size:11px;
+  font-weight:600;
+
+  color:hsl(var(--text));
+
+  text-shadow:
+    0 1px 2px hsl(var(--bg));
+}
+
+
+/* ============================================================
+   REEL INFORMATION
+   Positioned ABOVE the comment bar
+   ============================================================ */
+
+.reel-info{
+  position:absolute;
+
+  left:12px;
+  right:84px;
+
+  /*
+   * Comment bar is 56px tall.
+   * 72px gives the info/button block:
+   * 56px comment bar
+   * + 16px breathing room
+   */
+  bottom:72px;
+
+  z-index:110;
+}
+
+.reel-info h3{
+  font-size:16px;
+  font-weight:800;
+
+  margin:0 0 6px;
+
+  color:hsl(var(--text));
+}
+
+.reel-desc{
+  font-size:13px;
+
+  opacity:.85;
+
+  margin:0 0 10px;
+
+  color:hsl(var(--text-muted));
+}
+
+.reel-pills{
+  display:flex;
+
+  gap:6px;
+
+  margin-bottom:12px;
+}
+
+.reel-pills span{
+  font-size:10px;
+
+  padding:4px 10px;
+
+  border-radius:20px;
+
+  background:hsl(var(--surface));
+
+  color:hsl(var(--text));
+
+  border:1px solid hsl(var(--border));
+}
+
+
+/* ============================================================
+   WATCH FULL MOVIE
+   Always above the comment input
+   ============================================================ */
+
+.reel-watch-full{
+  display:block;
+
+  position:relative;
+
+  border:0;
+
+  border-radius:10px;
+
+  padding:12px 18px;
+
+  font-weight:800;
+
+  width:100%;
+
+  letter-spacing:.2px;
+
+  background:hsl(var(--primary));
+
+  color:hsl(var(--primary-text));
+
+  cursor:pointer;
+
+  z-index:111;
+}
+
+
+/* ============================================================
+   COMMENT BAR
+   Moves with each individual reel
+   ============================================================ */
+
+.reel-comment-bar{
+  position:absolute!important;
+
+  left:0;
+  right:0;
+  bottom:0;
+
+  height:56px!important;
+  min-height:56px!important;
+
+  display:flex!important;
+
+  align-items:center!important;
+
+  gap:10px!important;
+
+  padding:
+    8px
+    12px
+    calc(8px + env(safe-area-inset-bottom,0px))
+    12px!important;
+
+  box-sizing:border-box;
+
+  flex-shrink:0!important;
+
+  background:hsl(var(--surface))!important;
+
+  border-top:
+    1px solid
+    hsl(var(--border))!important;
+
+  z-index:101!important;
+}
+
+
+/* ============================================================
+   COMMENT INPUT
+   ============================================================ */
+
+.reel-comment-input{
+  flex:1!important;
+
+  height:44px!important;
+  min-height:44px!important;
+
+  border-radius:24px!important;
+
+  padding:0 16px!important;
+
+  font-size:16px!important;
+  line-height:44px!important;
+
+  outline:none!important;
+
+  border:
+    1px solid
+    hsl(var(--border))!important;
+
+  background:hsl(var(--bg))!important;
+
+  color:hsl(var(--text))!important;
+
+  -webkit-appearance:none!important;
+  appearance:none!important;
+
+  box-sizing:border-box;
+}
+
+.reel-comment-input::placeholder{
+  color:hsl(var(--text-muted));
+}
+
+
+/* ============================================================
+   COMMENT SEND BUTTON
+   ============================================================ */
+
+.reel-comment-send{
+  width:44px!important;
+  height:44px!important;
+
+  min-width:44px!important;
+
+  border-radius:50%!important;
+
+  flex-shrink:0!important;
+
+  display:grid!important;
+  place-items:center!important;
+
+  border:0;
+
+  background:transparent;
+
+  color:hsl(var(--primary));
+
+  padding:0;
+
+  cursor:pointer;
+}
+
+.reel-comment-send svg{
+  display:block;
+}
+
+
+/* ============================================================
+   PLAY BUTTON
+   ============================================================ */
+
+.apple-play-pure{
+  position:absolute;
+
+  left:50%;
+  top:50%;
+
+  transform:translate(-50%,-50%);
+
+  z-index:20;
+
+  pointer-events:none;
+}
+
+
+/* ============================================================
+   MOBILE REELS BACKDROP / SHEET
+   ============================================================ */
+
+@media (max-width:768px){
+
   .reels-backdrop{
     position:absolute!important;
+
     inset:0!important;
+
     width:100%!important;
     height:100%!important;
+
     background:hsl(var(--bg))!important;
   }
+
   .reels-sheet{
     width:100%!important;
     height:100%!important;
+
     max-height:100%!important;
+
     border-radius:0!important;
   }
+}
+
+
+/* ============================================================
+   TOUCH / MOBILE BEHAVIOR
+   ============================================================ */
+
+@media (max-width:768px){
+
+  .reels-tiktok-container{
+    touch-action:pan-y;
+
+    overscroll-behavior-y:contain;
+
+    -webkit-user-select:none;
+    user-select:none;
+  }
+
+  .reel-comment-input{
+    -webkit-user-select:text;
+    user-select:text;
+  }
+}
+
+
+/* ============================================================
+   SAFE AREA
+   ============================================================ */
+
+@supports (padding:env(safe-area-inset-top)){
+
+  .reel-top-bar{
+    padding-top:env(safe-area-inset-top);
+
+    height:
+      calc(52px + env(safe-area-inset-top));
+  }
+}
+
+
+
+/* =========================================================
+   REELS — COMMENT INPUT STAYS ABOVE SCROLLING CONTENT
+   ========================================================= */
+
+.reel-comment-bar{
+  position:absolute!important;
+  left:0!important;
+  right:0!important;
+  bottom:0!important;
+
+  width:100%!important;
+  height:56px!important;
+  min-height:56px!important;
+
+  display:flex!important;
+  align-items:center!important;
+  gap:10px!important;
+
+  padding:8px 12px calc(8px + env(safe-area-inset-bottom, 0px)) 12px!important;
+  box-sizing:border-box!important;
+
+  background:hsl(var(--surface))!important;
+  border-top:1px solid hsl(var(--border))!important;
+
+  /* ALWAYS ABOVE THE REEL CONTENT */
+  z-index:9999!important;
+
+  flex-shrink:0!important;
+}
+
+/* Reel content stays underneath the comment bar */
+.reel-info{
+  z-index:10!important;
+}
+
+.reel-watch-full{
+  position:relative!important;
+  z-index:11!important;
+}
+
+/* Video stays at the bottom layer */
+.reel-video{
+  z-index:0!important;
+}
+
+/* Gradient stays below controls */
+.reel-gradient{
+  z-index:1!important;
+}
+
+/* Right-side reel actions */
+.reel-actions{
+  z-index:20!important;
+}
+
+/* Top buttons */
+.reel-top-bar{
+  z-index:30!important;
+}
+
+/* Comment input */
+.reel-comment-input{
+  position:relative!important;
+  z-index:10000!important;
+}
+
+/* Send button */
+.reel-comment-send{
+  position:relative!important;
+  z-index:10000!important;
 }

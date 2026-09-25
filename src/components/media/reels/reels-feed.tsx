@@ -7,21 +7,30 @@ import { ReelsActions } from "./reels-actions"
 import { ReelsModal } from "./reels-modal"
 import "./reels.css"
 
-export function ReelsFeed({ movies, startIndex = 0, currentMovie, onClose }: any) {
+export function ReelsFeed({
+  movies,
+  startIndex = 0,
+  currentMovie,
+  onClose,
+}: any) {
   const router = useRouter()
   const containerRef = useRef<HTMLDivElement>(null)
 
   const [active, setActive] = useState(0)
   const [isPlaying, setIsPlaying] = useState(true)
 
-  // RAW list
+  // ============================================================
+  // RAW LIST
+  // ============================================================
   const rawList = movies?.length
     ? movies
     : currentMovie
       ? [currentMovie]
       : []
 
-  // FILTER: only keep movies that have a preview
+  // ============================================================
+  // FILTER — ONLY MOVIES WITH PREVIEWS
+  // ============================================================
   const list = rawList.filter((m: any) => {
     const preview =
       m.preview_urls?.[0] ||
@@ -32,13 +41,17 @@ export function ReelsFeed({ movies, startIndex = 0, currentMovie, onClose }: any
     return !!preview
   })
 
-  // Fix startIndex if filtered list is smaller
+  // ============================================================
+  // SAFE START INDEX
+  // ============================================================
   const safeStart = Math.min(
     startIndex,
     Math.max(0, list.length - 1)
   )
 
-  // Jump to start
+  // ============================================================
+  // JUMP TO START
+  // ============================================================
   useEffect(() => {
     const c = containerRef.current
     if (!c) return
@@ -53,7 +66,9 @@ export function ReelsFeed({ movies, startIndex = 0, currentMovie, onClose }: any
     return () => clearTimeout(timer)
   }, [safeStart])
 
-  // Active detection
+  // ============================================================
+  // ACTIVE REEL DETECTION
+  // ============================================================
   useEffect(() => {
     const c = containerRef.current
     if (!c) return
@@ -61,7 +76,10 @@ export function ReelsFeed({ movies, startIndex = 0, currentMovie, onClose }: any
     const obs = new IntersectionObserver(
       (entries) => {
         entries.forEach((e) => {
-          if (e.isIntersecting && e.intersectionRatio > 0.75) {
+          if (
+            e.isIntersecting &&
+            e.intersectionRatio > 0.75
+          ) {
             const newActive = Number(
               (e.target as HTMLElement).dataset.index
             )
@@ -86,15 +104,22 @@ export function ReelsFeed({ movies, startIndex = 0, currentMovie, onClose }: any
     return () => obs.disconnect()
   }, [list.length])
 
-  // Toggle play / pause
+  // ============================================================
+  // PLAY / PAUSE
+  // ============================================================
   const handleTogglePlay = useCallback(() => {
     setIsPlaying((prev) => !prev)
   }, [])
 
+  // ============================================================
+  // WATCH FULL MOVIE
+  // ============================================================
   const handleWatchFull = useCallback(
     (m: any) => {
       onClose?.()
-      router.push(`/movies/watch/${m.id}?t=full`)
+      router.push(
+        `/movies/watch/${m.id}?t=full`
+      )
     },
     [onClose, router]
   )
@@ -121,6 +146,9 @@ export function ReelsFeed({ movies, startIndex = 0, currentMovie, onClose }: any
             data-index={i}
             className="reels-tiktok-item"
           >
+            {/* ==================================================
+                VIDEO
+                ================================================== */}
             {isActive ? (
               <ReelsPlayer
                 previewUrl={previewUrl}
@@ -131,7 +159,7 @@ export function ReelsFeed({ movies, startIndex = 0, currentMovie, onClose }: any
                 isActive={true}
               />
             ) : (
-              // SHELL - NO COVER IMAGE, just black placeholder until active
+              // No cover image — black placeholder until active
               <div
                 className="reel-video"
                 style={{
@@ -142,11 +170,24 @@ export function ReelsFeed({ movies, startIndex = 0, currentMovie, onClose }: any
               />
             )}
 
-            <ReelsActions />
+            {/* ==================================================
+                REELS UI
+                Top bar
+                Like / Comment / Share / More
+                Comment input
+                ================================================== */}
+            <ReelsActions
+              onClose={onClose}
+            />
 
+            {/* ==================================================
+                MOVIE MODAL / DETAILS
+                ================================================== */}
             <ReelsModal
               current={m}
-              onWatchFull={() => handleWatchFull(m)}
+              onWatchFull={() =>
+                handleWatchFull(m)
+              }
             />
           </div>
         )
