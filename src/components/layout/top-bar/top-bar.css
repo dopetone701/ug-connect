@@ -683,3 +683,20 @@
   padding: 0 1px !important; /* 1px edge you asked */
 }
 
+
+
+/* MOBILE OVERRIDE - search + menu drawer */
+@media (max-width: 768px) {
+  .wa-mob-panel {
+    top: env(safe-area-inset-top) !important;
+    height: calc(100dvh - env(safe-area-inset-top)) !important;
+    bottom: 0 !important;
+  }
+  .wa-mob-top {
+    height: calc(64px + env(safe-area-inset-top)) !important;
+    padding-top: calc(14px + env(safe-area-inset-top)) !important;
+  }
+  .wa-mob-body {
+    padding-bottom: calc(16px + env(safe-area-inset-bottom)) !important;
+  }
+}
