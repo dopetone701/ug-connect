@@ -3,13 +3,11 @@
   flex-direction: column;
   width: 100%;
   height: 100dvh;
-  min-height: 100dvh;
-  max-height: 100dvh;
   background: hsl(var(--surface));
   overflow: hidden;
   position: fixed;
   inset: 0;
-  padding-top: env(safe-area-inset-top); /* <— FIX 1 */
+  padding-top: env(safe-area-inset-top);
   box-sizing: border-box;
 }
 
@@ -33,47 +31,56 @@
   padding-bottom: 8px;
 }
 
+/* THIS IS THE FIX - content-panel is now the body, not the scroller */
 .content-panel {
   flex: 1;
   min-height: 0;
   width: 100%;
+  position: relative; /* all drawers will be absolute to this */
   background: hsl(var(--bg));
   border-radius: 16px;
-  padding: 0;
-  padding-top: 64px; /* <— FIX 2 space for top-bar */
-  overflow-y: auto;
-  overflow-x: hidden;
-  overscroll-behavior: contain;
-  -webkit-overflow-scrolling: touch;
-  margin-left: 0;
   border: 1px solid hsl(var(--border));
+  overflow: hidden; /* was auto - this was pushing drawers */
   display: flex;
   flex-direction: column;
 }
 
-.content-panel > * { flex-shrink: 0; }
-.content-panel.no-scroll { overflow: hidden; }
-.content-panel::-webkit-scrollbar { display: none; }
-.content-panel { scrollbar-width: none; -ms-overflow-style: none; }
+.content-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+.content-scroll::-webkit-scrollbar { display: none; }
+
+/* All drawers sit inside content-panel now - no notch trespass */
+.reels-backdrop,
+.cast-backdrop,
+.watch-drawer,
+.watch-drawer-backdrop {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  z-index: 50;
+}
 
 @media (max-width: 768px) {
-  .giant-body { padding: 0; min-height: 0; }
+  .giant-body { padding: 0; }
   .content-panel {
     border-radius: 0;
     border: none;
-    padding: 0;
-    padding-top: calc(56px + env(safe-area-inset-top)); /* <— FIX 3 mobile */
+    padding: 0; /* remove 64px + safe-area hack - TopBar is flex sibling, not fixed */
+  }
+  .content-scroll {
     padding-bottom: calc(80px + env(safe-area-inset-bottom));
-    overflow-y: auto;
-    overflow-x: hidden;
   }
 }
 
-/* CAST - mid phone half sheet */
-.cast-backdrop {
-  align-items: flex-end;
-}
-
+/* CAST - mid phone half sheet - stays inside content-panel */
+.cast-backdrop { align-items: flex-end; }
 .cast-sheet {
   height: 52vh;
   max-height: 52vh;
@@ -84,10 +91,4 @@
   transform: translateY(100%);
   animation: castSlideToMid 0.38s cubic-bezier(0.32, 0.72, 0, 1) forwards;
 }
-
-@keyframes castSlideToMid {
-  to {
-    transform: translateY(0);
-  }
-}
-
+@keyframes castSlideToMid { to { transform: translateY(0); } }
