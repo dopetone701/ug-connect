@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
-import { createPortal } from "react-dom"
 import "./reels.css"
 
 export function ReelsShell({
@@ -78,7 +77,7 @@ export function ReelsShell({
 
   if (typeof document === "undefined") return null
 
-  return createPortal(
+  return (
     <div className="reel-root">
       <div className="reel-top-bar">
         <button
@@ -196,7 +195,6 @@ export function ReelsShell({
           </svg>
         </button>
       </div>
-    </div>,
-    document.body
+    </div>
   )
 }
