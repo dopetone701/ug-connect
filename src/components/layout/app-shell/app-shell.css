@@ -91,17 +91,3 @@
   }
 }
 
-/* Top bar respects notch - logo + back btn same level */
-.giant-panel > .top-bar {
-  padding-top: env(safe-area-inset-top) !important;
-  height: calc(56px + env(safe-area-inset-top)) !important;
-}
-
-
-.top-bar {
-  background: #000;
-  padding-top: env(safe-area-inset-top) !important;
-  height: calc(56px + env(safe-area-inset-top)) !important;
-  align-items: flex-end !important;
-  padding-bottom: 10px !important;
-}
