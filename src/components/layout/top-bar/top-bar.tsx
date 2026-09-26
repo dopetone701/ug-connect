@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { useState, useEffect, useMemo } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import "./top-bar.css";
@@ -8,6 +8,7 @@ import AppLogo from "@/components/AppLogo";
 import { useWatchDrawer } from "@/stores/use-watch-drawer";
 import CastSheet from "./cast";
 import { useGlobalCast } from "@/stores/use-global-cast";
+import { useFadersDrawer } from "../../../stores/use-faders-drawer";
 
 
 
@@ -43,6 +44,7 @@ export default function TopBar() {
   const { query: globalQuery, setQuery: setGlobalQuery, openSearch } = useGlobalSearch();
   const isAllMoviesPage = pathname?.startsWith("/movies") || pathname?.startsWith("/all-movies");
   const { setOpen } = useGlobalCast();
+
 
 
  
@@ -96,6 +98,8 @@ export default function TopBar() {
 
    const { open: watchOpen, minimized: watchMinimized } = useWatchDrawer() as any;
 if (watchOpen && !watchMinimized) return null;
+
+const { open: openFaders } = useFadersDrawer() as any;
 
 
   return (
@@ -178,7 +182,7 @@ if (watchOpen && !watchMinimized) return null;
             <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="3" width="4" height="4" rx="1"/><rect x="10" y="3" width="4" height="4" rx="1"/><rect x="17" y="3" width="4" height="4" rx="1"/><rect x="3" y="10" width="4" height="4" rx="1"/><rect x="10" y="10" width="4" height="4" rx="1"/><rect x="17" y="10" width="4" height="4" rx="1"/><rect x="3" y="17" width="4" height="4" rx="1"/><rect x="10" y="17" width="4" height="4" rx="1"/><rect x="17" y="17" width="4" height="4" rx="1"/></svg>
           </button>
 
-          <button className="sliders-btn" aria-label="Settings">
+         <button className="mobile-search-settings" aria-label="Search filters" onClick={() => openFaders()} type="button">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M4 7H20" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/><circle cx="10" cy="7" r="3" fill="currentColor"/><path d="M4 17H20" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/><circle cx="15" cy="17" r="3" fill="currentColor"/></svg>
           </button>
 
