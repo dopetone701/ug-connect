@@ -18,3 +18,26 @@
     padding: 20px;
   }
 }
+
+.year-section-label {
+  display:block;
+  white-space:nowrap;
+  font-size:12px;
+  font-weight:800;
+  text-transform:uppercase;
+  letter-spacing:.5px;
+  opacity:.65;
+  padding:18px 4px 8px;
+}
+.year-no-data {
+  font-size:12px;
+  opacity:.6;
+  padding:0 4px 12px;
+}
+.card-year-label {
+  text-align:center;
+  font-size:11px;
+  font-weight:700;
+  opacity:.7;
+  margin-top:6px;
+}

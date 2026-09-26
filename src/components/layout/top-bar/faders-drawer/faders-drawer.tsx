@@ -4,6 +4,8 @@ import { useGlobalSearch } from "../../../../stores/use-global-search";
 import { useFadersDrawer } from "../../../../stores/use-faders-drawer";
 import "./faders-drawer.css";
 import FadersCloseBtn from "./faders-close-btn";
+import FilteredContent from "../search-drawer/filtered-content";
+
 
 
 const getYear = (m: any) => {
@@ -156,6 +158,8 @@ export default function FadersDrawer() {
         </div>
       </div>
       <FadersCloseBtn />
+      <FilteredContent />
+
 
     </div>
     
