@@ -6,6 +6,8 @@ import MovieCard from "../../../../app/(dashboard)/movies/_components/movie-card
 import FadersDrawer from "../faders-drawer/faders-drawer";
 import "./search-drawer.css";
 import "../../../../app/(dashboard)/movies/latest-movies.css";
+import FadersCloseBtn from "../faders-drawer/faders-close-btn";
+
 
 const getYear = (m: any) => {
   const raw = m.year || m.releaseYear || m.release_year || m.Year || m.release_date || m.created_at;
@@ -116,6 +118,8 @@ export default function SearchDrawer() {
       )}
 
       <FadersDrawer />
+      <FadersCloseBtn />
+
     </div>
   );
 }

@@ -3,6 +3,8 @@ import { useMemo, useState } from "react";
 import { useGlobalSearch } from "../../../../stores/use-global-search";
 import { useFadersDrawer } from "../../../../stores/use-faders-drawer";
 import "./faders-drawer.css";
+import FadersCloseBtn from "./faders-close-btn";
+
 
 const getYear = (m: any) => {
   const raw = m.year || m.releaseYear || m.release_year || m.Year || m.release_date || m.created_at;
@@ -153,6 +155,9 @@ export default function FadersDrawer() {
 
         </div>
       </div>
+      <FadersCloseBtn />
+
     </div>
+    
   );
 }

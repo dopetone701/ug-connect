@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { useState, useEffect, useMemo } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import "./top-bar.css";
@@ -95,10 +95,13 @@ export default function TopBar() {
     window.dispatchEvent(new CustomEvent("ug-toggle-sidebar", { detail: next }));
   };
 
+
+  const { open: openFaders } = useFadersDrawer() as any;
+
+
    const { open: watchOpen, minimized: watchMinimized } = useWatchDrawer() as any;
 if (watchOpen && !watchMinimized) return null;
 
-const { open: openFaders } = useFadersDrawer() as any;
 
 
 
