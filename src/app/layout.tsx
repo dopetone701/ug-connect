@@ -10,7 +10,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   viewportFit: "cover",
-  themeColor: "#0a0a0a", // same as your --bg, not #000
+  themeColor: "#0a0a0a",
 };
 
 export const metadata: Metadata = {
@@ -32,14 +32,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <AppShell>{children}</AppShell>
         </EngineProvider>
         <PWAInstallPrompt />
-        <script dangerouslySetInnerHTML={{ __html: `
-          // kill pull to refresh + rubber band
-          document.addEventListener('touchmove', function(e){
-            const target = e.target;
-            const isScroll = target.closest('.content-scroll, .faders-scroll, .search-drawer-scroll, .watch-drawer, .reels-sheet');
-            if(!isScroll) e.preventDefault();
-          }, { passive: false });
-        `}} />
       </body>
     </html>
   );
