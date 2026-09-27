@@ -223,3 +223,26 @@ html, body { overflow-x: hidden; }
   }
 }
 
+/* HIDE SCROLLBAR ON PC - keep scroll */
+@media (min-width: 769px) {
+    * {
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+  }
+  *::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+    background: transparent !important;
+  }
+  
+  html::-webkit-scrollbar,
+  body::-webkit-scrollbar,
+  .content-scroll::-webkit-scrollbar,
+  .giant-body::-webkit-scrollbar,
+  .giant-panel::-webkit-scrollbar,
+  .pc-faders-page-content::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+  }
+}

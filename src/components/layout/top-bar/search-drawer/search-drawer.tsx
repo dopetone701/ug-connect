@@ -120,7 +120,7 @@ export default function SearchDrawer() {
       {showFilterRow && (
         <div className="search-filter-row">
           <div className="filter-chips">
-            <button className={!filterType?"chip active":"chip"} onClick={()=>clear()} type="button">All</button>
+<button className={!filterValue?"chip active":"chip"} onClick={()=>{ const fd:any=(useFadersDrawer as any).getState?.(); fd?.select?.(filterType, ""); }} type="button">All</button>
             {chipConfig.list.map((g:string)=>(
               <button key={g} className={filterValue===g?"chip active":"chip"} onClick={()=>chipConfig.action(g)} type="button">{g}</button>
             ))}

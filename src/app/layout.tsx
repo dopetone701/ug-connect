@@ -9,8 +9,8 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 1,
-  viewportFit: "cover", // <-- NEEDED for TopBar to go to top
-  themeColor: "#000000",
+  viewportFit: "cover",
+  themeColor: "#0a0a0a", // same as your --bg, not #000
 };
 
 export const metadata: Metadata = {
@@ -19,19 +19,27 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     title: "UG Connect",
-    statusBarStyle: "black-translucent", // <-- NEEDED to fill safe area
+    statusBarStyle: "black-translucent",
   },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" style={{ background: "#000" }}>
-      <body className="bg-black" style={{ background: "#000", margin: 0, padding: 0, overscrollBehavior: "none" }}>
+    <html lang="en" style={{ background: "hsl(var(--bg))" }}>
+      <body style={{ background: "hsl(var(--bg))", margin: 0, padding: 0 }}>
         <EngineProvider>
           <CoreEngine />
           <AppShell>{children}</AppShell>
         </EngineProvider>
         <PWAInstallPrompt />
+        <script dangerouslySetInnerHTML={{ __html: `
+          // kill pull to refresh + rubber band
+          document.addEventListener('touchmove', function(e){
+            const target = e.target;
+            const isScroll = target.closest('.content-scroll, .faders-scroll, .search-drawer-scroll, .watch-drawer, .reels-sheet');
+            if(!isScroll) e.preventDefault();
+          }, { passive: false });
+        `}} />
       </body>
     </html>
   );

@@ -15,14 +15,17 @@ import { useGlobalCast } from "@/stores/use-global-cast";
 import Cast from "../top-bar/cast";
 import CastSwipeClose from "../top-bar/cast-swipe-close";
 
+import { usePcFadersDrawer } from "@/stores/use-pc-faders-drawer";
+import PcFaders from "../top-bar/faders-drawer/pc-faders";
+
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const { open, minimized } = useWatchDrawer() as any;
   const { isOpen: isReelsOpen, movies, startIndex, currentMovie, closeReels } = useReelsDrawer() as any;
   const [isMobile, setIsMobile] = useState(false);
   const [showIntro, setShowIntro] = useState(false);
   const [checked, setChecked] = useState(false);
-
   const { isOpen: isCastOpen, setOpen: setCastOpen } = useGlobalCast();
+  const { isOpen: isPcOpen } = usePcFadersDrawer() as any;
 
   useEffect(() => {
     initTheme();
@@ -40,47 +43,34 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   }, []);
 
   const isSplit = !isMobile && open && !minimized;
-
-  if (!checked) {
-    return <div style={{ background: "#000", width: "100vw", height: "100dvh" }} />;
-  }
+// AFTER - no flash, same bg
+if (!checked) return null;
 
   return (
     <>
       {showIntro && <IntroVideo onFinished={() => setShowIntro(false)} />}
-
-      <div
-        className={`google-shell ${isSplit ? "is-split" : ""}`}
-        style={{ opacity: showIntro ? 0 : 1, pointerEvents: showIntro ? "none" : "auto" }}
-      >
+      <div className={`google-shell ${isSplit ? "is-split" : ""}`} style={{ opacity: showIntro ? 0 : 1, pointerEvents: showIntro ? "none" : "auto" }}>
         <div className="giant-panel">
           <TopBar />
           <div className="giant-body">
             <SideBar />
             <main className="content-panel">
-              <div className="content-scroll">{children}</div>
+              <div className="content-scroll">
+                {isPcOpen && !isMobile ? <PcFaders /> : children}
+              </div>
               <WatchDrawer />
             </main>
           </div>
         </div>
         <BottomBar />
-
         {isReelsOpen && (
           <div className="reels-backdrop" onClick={closeReels}>
             <div className="reels-sheet" onClick={(e) => e.stopPropagation()}>
-              <MobilePreview
-                movies={movies}
-                startIndex={startIndex}
-                currentMovie={currentMovie}
-                onClose={closeReels}
-              />
+              <MobilePreview movies={movies} startIndex={startIndex} currentMovie={currentMovie} onClose={closeReels} />
             </div>
           </div>
         )}
-
-        <CastSwipeClose isOpen={isCastOpen} onClose={() => setCastOpen(false)}>
-          <Cast />
-        </CastSwipeClose>
+        <CastSwipeClose isOpen={isCastOpen} onClose={() => setCastOpen(false)}><Cast /></CastSwipeClose>
       </div>
     </>
   );
