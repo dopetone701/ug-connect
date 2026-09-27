@@ -1,15 +1,13 @@
-/* ===== FADERS DRAWER ROOT - CLIPS TO TOP BAR ===== */
+/* ===== FADERS DRAWER ROOT - COVERS SEARCH BAR WHEN OPEN ===== */
 .faders-drawer-root{
   position: fixed;
-  /* TOP BAR = 56px header + 56px search = 112px - sits FLUSH under search */
-  top: 104px; 
+  top: 0; /* start from very top, covers topbar + search */
   left: 0;
   right: 0;
   bottom: 0;
-  z-index: 25;
+  z-index: 9999; /* higher than top-bar (30) + search */
   pointer-events: none;
   overflow: hidden;
-  background: transparent;
 }
 
 .faders-drawer-root.open{
@@ -37,10 +35,8 @@
   bottom: 0;
   top: 0;
   background: hsl(var(--bg));
-  /* KILL ALL BORDER + RADIUS - clips to top bar */
-  border: 0 !important;
-  border-top: 0 !important;
-  border-radius: 0 !important;
+  border: 0;
+  border-radius: 0; /* flush, no radius */
   transform: translateY(100%);
   transition: transform 0.32s cubic-bezier(0.16,1,0.3,1);
   display: flex;
@@ -49,7 +45,8 @@
   will-change: transform;
   height: 100%;
   min-height: 0;
-  box-shadow: none !important;
+  /* add safe area + topbar space inside sheet so genres not under notch */
+  padding-top: calc(12px + env(safe-area-inset-top));
 }
 
 .faders-drawer-root.open .faders-sheet{
@@ -57,7 +54,12 @@
 }
 
 .faders-handle{
-  display: none; /* hide handle so it clips perfectly */
+  width: 36px;
+  height: 4px;
+  background: hsl(var(--border));
+  border-radius: 999px;
+  margin: 10px auto 8px;
+  flex-shrink: 0;
 }
 
 .faders-scroll{
@@ -67,7 +69,7 @@
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
-  padding: 12px 12px 120px 12px;
+  padding: 8px 12px 120px 12px;
   display: flex;
   flex-direction: column;
   gap: 18px;
