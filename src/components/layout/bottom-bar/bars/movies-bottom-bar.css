@@ -1,0 +1,55 @@
+.movies-bar .bottom-item {
+  opacity: 0.72;
+  color: hsl(var(--text));
+  transition:
+    opacity 0.2s ease,
+    color 0.2s ease,
+    transform 0.2s ease,
+    filter 0.2s ease;
+}
+
+.movies-bar .bottom-item.active {
+  opacity: 1;
+  color: hsl(var(--primary));
+  filter:
+    drop-shadow(0 0 6px hsl(var(--primary) / 0.45))
+    drop-shadow(0 0 14px hsl(var(--primary) / 0.2));
+}
+
+.movies-bar .bottom-item.active .bottom-icon,
+.movies-bar .bottom-item.active .bottom-label {
+  color: hsl(var(--primary));
+}
+
+.movies-bar .bottom-center-image {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  object-fit: cover;
+  box-shadow:
+    0 4px 20px rgba(0, 0, 0, 0.4),
+    0 0 16px hsl(var(--primary) / 0.25);
+}
+
+.movies-bar .icon-text {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: hsl(var(--text) / 0.12);
+  color: hsl(var(--text));
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.movies-bar .active .icon-text {
+  background: hsl(var(--primary));
+  color: hsl(var(--primary-text));
+  box-shadow:
+    0 0 8px hsl(var(--primary) / 0.5),
+    0 0 18px hsl(var(--primary) / 0.25);
+}

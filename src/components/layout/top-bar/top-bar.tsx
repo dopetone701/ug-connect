@@ -9,7 +9,6 @@ import { useWatchDrawer } from "@/stores/use-watch-drawer";
 import CastSheet from "./cast";
 import { useGlobalCast } from "@/stores/use-global-cast";
 import { useFadersDrawer } from "../../../stores/use-faders-drawer";
-import PcFaders from "./faders-drawer/pc-faders";
 import { usePcFadersDrawer } from "../../../stores/use-pc-faders-drawer";
 
 
@@ -88,6 +87,16 @@ export default function TopBar() {
     setWaOpen(false);
     document.body.classList.remove("wa-pushed");
   }, [pathname]);
+
+  useEffect(() => {
+  const handler = () => {
+    setDrawerMode("search");
+    setWaOpen(true);
+  };
+  window.addEventListener("ug-open-search-panel", handler);
+  return () => window.removeEventListener("ug-open-search-panel", handler);
+}, []);
+
 
   const filtered = PLACES.filter(p => p.toLowerCase().includes(query.toLowerCase())).slice(0, 2);
 
