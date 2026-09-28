@@ -16,6 +16,8 @@ import UnderVideoStaBtns from "../../_components/under-vid-btns/under-video-sta-
 
 import { useWatchDrawer } from "@/stores/use-watch-drawer"
 import { useReelsDrawer } from "@/stores/use-reels-drawer"
+import FooterFree from "@/components/layout/curvy-pro-room/get-started-email/footer/footer"
+
 
 const API_URL = "https://movie-server-api.connectu89.workers.dev/api/movies"
 
@@ -298,6 +300,11 @@ export default function WatchPage({
           <EpisodesRow movie={movie} activeEpId={epId} onSelect={(ep:any)=>{ if(isOverlay){ setOverlayEpId(String(ep.id)) }else{ router.push(`${pathname}?t=full&ep=${ep.id}`) } }} />
         )}
         {!isMini && <SimilarMovies current={movie} />}
+
+
+        <div style={{ height: "32px" }} />
+                  <FooterFree />
+
       </div>
     </>
   )
