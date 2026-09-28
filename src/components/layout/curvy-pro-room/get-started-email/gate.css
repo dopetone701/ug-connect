@@ -1,0 +1,67 @@
+.gte-root {
+  width: 100%;
+  padding: 24px 16px 120px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  background: hsl(var(--bg));
+}
+
+.gte-form {
+  width: 100%;
+  max-width: 600px;
+  display: flex;
+  gap: 12px;
+}
+
+.gte-input {
+  flex: 1;
+  width: 100%;
+  min-height: 62px;
+  height: 62px;
+  border-radius: 10px;
+  background: hsl(var(--surface));
+  border: 2px solid hsl(var(--border));
+  padding: 0 18px;
+  color: hsl(var(--text));
+  font-size: 17px;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.gte-input::placeholder { color: hsl(var(--text-muted)); }
+.gte-input:focus { border-color: hsl(var(--text)); }
+
+.gte-btn {
+  min-height: 62px;
+  height: 62px;
+  padding: 0 28px;
+  border-radius: 10px;
+  background: hsl(var(--primary));
+  color: hsl(var(--primary-text));
+  font-weight: 800;
+  font-size: 17px;
+  border: 0;
+  cursor: pointer;
+  white-space: nowrap;
+  box-sizing: border-box;
+}
+
+.gte-foot {
+  font-size: 12px;
+  color: hsl(var(--text-muted));
+  text-align: center;
+}
+
+@media (max-width: 600px) {
+  .gte-form { 
+    flex-direction: column; 
+    width: 100%;
+  }
+  .gte-input, .gte-btn {
+    width: 100%;
+    min-height: 60px;
+    height: 60px;
+  }
+}

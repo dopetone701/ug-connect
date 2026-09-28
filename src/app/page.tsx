@@ -2,6 +2,13 @@
 import "./page.css";
 import "../components/ui/service-card/service-card.css";
 import { useEffect, useState } from "react";
+import TheHallShell from "@/components/layout/curvy-pro-room/the-hall-shell";
+import GetStartedInputGate from "@/components/layout/curvy-pro-room/get-started-email/get-started-input-gate"
+import FooterFree from "@/components/layout/curvy-pro-room/get-started-email/footer/footer"
+
+
+
+
 
 const top = [
   {id:"movies", l:"Movies", custom:true, icon: (
@@ -151,6 +158,7 @@ export default function Page(){
   },[]);
 
   return(
+  <>
     <div className="landing-root">
       <h1 className="landing-title">Choose your service</h1>
      
@@ -229,7 +237,21 @@ export default function Page(){
         ))}
       </div>
 
-      <div className="cta-wrap"><button className="cta-btn">Sign up for full experience</button></div>
+      <div className="cta-wrap">
+  <button className="cta-btn">Sign up for full experience</button>
+</div>
+<TheHallShell>
+  <></>
+</TheHallShell>
+<GetStartedInputGate />
+<FooterFree />
+
+
+
+
     </div>
-  );
+
+    
+  </>
+);
 }

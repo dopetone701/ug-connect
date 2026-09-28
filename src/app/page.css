@@ -978,3 +978,83 @@
 @media (max-width: 1100px){
   .cta-wrap{ padding-bottom: 20px; }
 }
+
+
+/* =========================
+   CTA → HALL — TIGHT
+   ========================= */
+
+.cta-wrap {
+  margin-top: auto;
+  padding-bottom: 0;
+}
+
+/* Pull the Hall directly under the CTA */
+.hall-shell-root {
+  margin-top: -10px !important;
+}
+
+/* Don't let the landing flex gap create extra space */
+.cta-wrap + .hall-shell-root {
+  margin-top: -10px !important;
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .cta-wrap {
+    margin-top: 0;
+    padding-bottom: 0;
+  }
+
+  .cta-wrap + .hall-shell-root {
+    margin-top: -8px !important;
+  }
+}
+
+/* Tablet / smaller desktop */
+@media (max-width: 1100px) and (min-width: 769px) {
+  .cta-wrap {
+    padding-bottom: 0;
+  }
+
+  .cta-wrap + .hall-shell-root {
+    margin-top: -8px !important;
+  }
+}
+
+
+/* ================================
+   LANDING BOTTOM SPACING
+   ================================ */
+
+.landing-root {
+  padding-bottom: 0 !important;
+}
+
+/* Keep the hall close to the CTA */
+.landing-root .hall-shell-root {
+  margin-top: 8px !important;
+  margin-bottom: 0 !important;
+}
+
+/* Pull the get-started section closer */
+.landing-root .get-started-input-gate {
+  margin-top: 8px !important;
+  margin-bottom: 0 !important;
+}
+
+/* Footer sits directly after the content */
+.landing-root .ft-root {
+  margin-top: 4px !important;
+}
+
+
+/* Tighten the space between email section and footer */
+.landing-root .ft-root {
+  margin-top: -20px !important;
+  padding-top: 0 !important;
+}
+
+.landing-root .ft-root .ft-links {
+  margin-top: 0 !important;
+}

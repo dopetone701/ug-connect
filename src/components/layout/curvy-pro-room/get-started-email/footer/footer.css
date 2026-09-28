@@ -1,0 +1,67 @@
+.ft-root {
+  width: 100%;
+  background: hsl(var(--bg));
+  padding: 0px 16px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ft-links {
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px 24px;
+  justify-content: flex-start;
+}
+
+.ft-link {
+  color: hsl(var(--text-muted));
+  font-size: 13px;
+  text-decoration: none;
+  text-transform: capitalize;
+  opacity: 0.9;
+}
+
+.ft-link:hover {
+  color: hsl(var(--text));
+  text-decoration: underline;
+}
+
+.ft-bottom {
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ft-social {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.ft-icon {
+  width: 20px;
+  height: 20px;
+  color: hsl(var(--text-muted));
+  display: grid;
+  place-items: center;
+}
+
+.ft-icon svg { width: 18px; height: 18px; }
+.ft-icon:hover { color: hsl(var(--text)); }
+
+.ft-powered {
+  color: hsl(var(--text-muted));
+  font-size: 12px;
+}
+
+.ft-powered span {
+  color: hsl(var(--text));
+  font-weight: 700;
+}
