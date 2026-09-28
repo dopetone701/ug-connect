@@ -301,7 +301,6 @@ export default function WatchPage({
         )}
         {!isMini && !isFullScreen && <SimilarMovies current={movie} />}
 
-        <div style={{ height: "32px" }} />
 
 
 {!isMini && !isFullScreen && <FooterFree />}
