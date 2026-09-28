@@ -299,11 +299,13 @@ export default function WatchPage({
         {!isMini &&!isFullScreen && movie?.seasons?.length>0 && (
           <EpisodesRow movie={movie} activeEpId={epId} onSelect={(ep:any)=>{ if(isOverlay){ setOverlayEpId(String(ep.id)) }else{ router.push(`${pathname}?t=full&ep=${ep.id}`) } }} />
         )}
-        {!isMini && <SimilarMovies current={movie} />}
-
+        {!isMini && !isFullScreen && <SimilarMovies current={movie} />}
 
         <div style={{ height: "32px" }} />
-                  <FooterFree />
+
+
+{!isMini && !isFullScreen && <FooterFree />}
+
 
       </div>
     </>

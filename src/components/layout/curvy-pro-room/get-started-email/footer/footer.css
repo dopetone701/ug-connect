@@ -65,3 +65,10 @@
   color: hsl(var(--text));
   font-weight: 700;
 }
+
+/* HARD HIDE FOOTER IN FULLSCREEN */
+.is-shell-full .ft-root,
+:fullscreen .ft-root,
+:-webkit-full-screen .ft-root {
+  display: none !important;
+}
