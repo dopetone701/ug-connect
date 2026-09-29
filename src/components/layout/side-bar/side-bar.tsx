@@ -28,8 +28,6 @@ const icons: any = {
 
 export default function SideBar() {
   const [active, setActive] = useState<string | null>(null);
-  const [phase, setPhase] = useState<"list" | "shutting">("list");
-  const [selected, setSelected] = useState<string | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [curTheme, setCurTheme] = useState("");
   const [showSettings, setShowSettings] = useState(false);
@@ -39,35 +37,14 @@ export default function SideBar() {
     setCurTheme(localStorage.getItem("ug-theme") || "dark");
   }, []);
 
-  const openSheet = (e: React.MouseEvent, id: string) => {
-    const card = (e.currentTarget as HTMLElement).closest(".wa-card") as HTMLElement;
-    const cardRect = card?.getBoundingClientRect();
-    const y = cardRect ? e.clientY - cardRect.top : 0;
-    const yPct = cardRect ? (y / cardRect.height) * 100 : 50;
-
-    setSelected(id);
-    setPhase("shutting");
-    
-    // send click Y to TopBar CRT
-    window.dispatchEvent(new CustomEvent("ug-crt", { detail: { action: "shut", y: y, yPct } }));
-
-    setTimeout(() => {
-      setActive(id);
-      setPhase("list");
-    }, 260); // swap while shutters closed
+  const openSheet = (id: string) => {
+    window.dispatchEvent(new CustomEvent("ug-bubble", { detail: { action: "shrink", id } }));
+    setTimeout(() => setActive(id), 200);
   };
 
-  const closeSheet = (e?: React.MouseEvent) => {
-    const card = document.querySelector(".wa-card") as HTMLElement;
-    const y = card ? card.offsetHeight / 2 : 0;
-    const yPct = 50;
-    
-    window.dispatchEvent(new CustomEvent("ug-crt", { detail: { action: "shut", y, yPct } }));
-    
-    setTimeout(() => {
-      setActive(null);
-      setSelected(null);
-    }, 220);
+  const closeSheet = () => {
+    window.dispatchEvent(new CustomEvent("ug-bubble", { detail: { action: "shrink" } }));
+    setTimeout(() => setActive(null), 200);
   };
 
   const renderSheet = () => {
@@ -99,7 +76,7 @@ export default function SideBar() {
   }
 
   return (
-    <aside className={`side-bar morph-list ${phase}`}>
+    <aside className="side-bar morph-list">
       <nav className="side-nav">
         <Link href="/movies" className="nav-item live">
           <span className="nav-left">
@@ -110,11 +87,8 @@ export default function SideBar() {
         </Link>
         <div className="nav-divider" />
         {SIDEBAR_ITEMS.filter((i: any) => !(i as any).admin || isAdmin).map((i) => (
-          <button key={i.id} onClick={(e) => openSheet(e, i.id)} className={`nav-item as-btn ${selected===i.id ? "is-selected" : ""}`}>
-            <span className="nav-left">
-              {icons[i.id] || icons.account}
-              <span className="nav-label">{i.label}</span>
-            </span>
+          <button key={i.id} onClick={() => openSheet(i.id)} className="nav-item as-btn">
+            <span className="nav-left">{icons[i.id] || icons.account}<span className="nav-label">{i.label}</span></span>
           </button>
         ))}
       </nav>
@@ -137,4 +111,4 @@ export default function SideBar() {
       <div className="side-footer"><a>Privacy</a><a>Terms</a><a>Help</a></div>
     </aside>
   );
-} 
+}
