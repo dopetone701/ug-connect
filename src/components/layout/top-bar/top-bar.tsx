@@ -4,6 +4,7 @@ import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 import "./top-bar.css";
 import "./top-bar-dynamics.css";
+import "./side-sheet.css";
 import SideBar from "../side-bar/side-bar";
 import { useSideSheet } from "@/stores/use-side-sheet";
 import AppLogo from "@/components/AppLogo";
@@ -46,10 +47,8 @@ export default function TopBar() {
   const [collapsed, setCollapsed] = useState(false);
   const [waOpen, setWaOpen] = useState(false);
   const [drawerMode, setDrawerMode] = useState<"menu" | "search">("menu");
-  
-  // INNER CARD ONLY ANIMATION
   const [activeChild, setActiveChild] = useState<string | null>(null);
-  const [phase, setPhase] = useState<"idle"|"card-dip"|"card-launch"|"card-enter"|"card-dip-back"|"card-launch-back"|"card-enter-back">("idle");
+  const [phase, setPhase] = useState<"idle"|"dip"|"launch"|"enter"|"dip-back"|"launch-back"|"enter-back">("idle");
 
   const { query: globalQuery, setQuery: setGlobalQuery, openSearch } = useGlobalSearch();
   const isAllMoviesPage = pathname?.startsWith("/movies") || pathname?.startsWith("/all-movies");
@@ -111,27 +110,26 @@ export default function TopBar() {
   const { open: openPcFaders } = usePcFadersDrawer() as any;
   if (watchOpen && !watchMinimized) return null;
 
-  // ONLY CARD MOVES - logo + > stay fixed
   const handleOpenChild = (id: string) => {
-    setPhase("card-dip");
+    setPhase("dip");
     setTimeout(() => {
-      setPhase("card-launch");
+      setPhase("launch");
       setActiveChild(id);
-      setTimeout(() => setPhase("card-enter"), 120);
+      setTimeout(() => setPhase("enter"), 130);
     }, 130);
   };
 
   const handleBack = () => {
-    setPhase("card-dip-back");
+    setPhase("dip-back");
     setTimeout(() => {
-      setPhase("card-launch-back");
+      setPhase("launch-back");
       setTimeout(() => {
-        setPhase("card-enter-back");
+        setPhase("enter-back");
         setTimeout(() => {
           setActiveChild(null);
           setPhase("idle");
-        }, 400);
-      }, 340);
+        }, 420);
+      }, 320);
     }, 110);
   };
 
@@ -147,23 +145,6 @@ export default function TopBar() {
       case "control": return <ControlSheet />;
       default: return <div style={{padding: "20px", opacity: 0.6}}>Empty sheet for {activeChild}</div>;
     }
-  };
-
-  const getListCardClass = () => {
-    if (phase === "card-dip") return "is-dipping";
-    if (phase === "card-launch") return "is-launching";
-    if (phase === "card-enter-back") return "is-entering";
-    if (activeChild) return "is-launching";
-    return "";
-  };
-
-  const getDetailCardClass = () => {
-    if (phase === "card-enter") return "is-entering";
-    if (phase === "card-dip-back") return "is-dipping";
-    if (phase === "card-launch-back") return "is-launching";
-    if (!activeChild) return "";
-    if (phase === "idle" && activeChild) return "is-entering";
-    return "";
   };
 
   return (
@@ -216,10 +197,10 @@ export default function TopBar() {
             <button className="wa-v" onClick={closeAll} aria-label="Close"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6" /></svg></button>
           </div>
           <div className="wa-mob-body">
-            {/* LIST CARD - red panel from screenshot */}
-            <div className={`wa-card list-card ${getListCardClass()}`}>
+            {/* LIST - same size premium */}
+            <div className={`wa-card list-card ${phase === "dip" ? "is-dipping" : ""} ${phase === "launch" ? "is-launching" : ""} ${phase === "enter-back" ? "is-entering" : ""} ${activeChild && phase === "enter" ? "is-launching" : ""} ${activeChild && phase === "idle" ? "is-launching" : ""}`}>
               {drawerMode === "menu" ? (
-                <div className="wa-scroll-wrap"><SideBar onOpen={handleOpenChild} /></div>
+                <SideBar onOpen={handleOpenChild} />
               ) : (
                 <div className="mobile-search-panel is-search-mode">
                   <div className="mobile-search-input-wrap sticky-search">
@@ -227,27 +208,26 @@ export default function TopBar() {
                     <input autoFocus className="mobile-drawer-search" placeholder={placeholder} value={globalQuery} onChange={(e) => setGlobalQuery(e.target.value)} />
                     <button className="mobile-search-settings" onClick={openFaders} type="button"><svg width="21" height="21" viewBox="0 0 24 24" fill="none"><path d="M4 7H20" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/><circle cx="10" cy="7" r="3" fill="currentColor"/><path d="M4 17H20" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/><circle cx="15" cy="17" r="3" fill="currentColor"/></svg></button>
                   </div>
-                  <div className="wa-scroll-wrap search-results-scroll"><div style={{marginTop: "16px"}}><SearchDrawer /></div></div>
+                  <div className="search-results-scroll"><div style={{marginTop: "12px"}}><SearchDrawer /></div></div>
                 </div>
               )}
             </div>
 
-            {/* DETAIL CARD - same container, slides from bottom inside wa drawer */}
-            <div className={`wa-card detail-card ${getDetailCardClass()}`}>
-              <div className="wa-scroll-wrap">
-                <div className="side-bar">
-                  <div className="morph-header">
-                    <button className="morph-back" onClick={handleBack}>
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M15 18l-6-6 6-6"/></svg>
-                      <span>{SIDEBAR_ITEMS.find(x=>x.id===activeChild)?.label || activeChild}</span>
-                    </button>
-                  </div>
-                  <div style={{padding: "0 16px 16px"}}>{activeChild ? renderChild() : null}</div>
+            {/* DETAIL - same size, premium, not full screen */}
+            {activeChild && (
+              <div className={`wa-card detail-card ${phase === "enter" ? "is-entering" : ""} ${phase === "dip-back" ? "is-dipping" : ""} ${phase === "launch-back" ? "is-launching" : ""} ${phase === "idle" ? "is-entering" : ""}`}>
+                <div className="morph-header">
+                  <button className="morph-back" onClick={handleBack}>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M15 18l-6-6 6-6"/></svg>
+                    <span>{SIDEBAR_ITEMS.find(x=>x.id===activeChild)?.label || activeChild}</span>
+                  </button>
                 </div>
+                <div className="morph-body">{renderChild()}</div>
               </div>
-            </div>
+            )}
           </div>
         </div>
       )}
     </>
   );
+}
