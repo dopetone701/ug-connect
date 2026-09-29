@@ -4,7 +4,6 @@ import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 import "./top-bar.css";
 import "./top-bar-dynamics.css";
-import "./side-sheet.css";
 import SideBar from "../side-bar/side-bar";
 import { useSideSheet } from "@/stores/use-side-sheet";
 import AppLogo from "@/components/AppLogo";
@@ -143,7 +142,7 @@ export default function TopBar() {
       case "privacy": return <PrivacySheet />;
       case "cast": return <CastSheet />;
       case "control": return <ControlSheet />;
-      default: return <div style={{padding: "20px", opacity: 0.6}}>Empty sheet for {activeChild}</div>;
+      default: return <div style={{padding: 20, opacity: 0.6}}>Sheet: {activeChild}</div>;
     }
   };
 
@@ -197,23 +196,18 @@ export default function TopBar() {
             <button className="wa-v" onClick={closeAll} aria-label="Close"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6" /></svg></button>
           </div>
           <div className="wa-mob-body">
-            {/* LIST - same size premium */}
-            <div className={`wa-card list-card ${phase === "dip" ? "is-dipping" : ""} ${phase === "launch" ? "is-launching" : ""} ${phase === "enter-back" ? "is-entering" : ""} ${activeChild && phase === "enter" ? "is-launching" : ""} ${activeChild && phase === "idle" ? "is-launching" : ""}`}>
-              {drawerMode === "menu" ? (
-                <SideBar onOpen={handleOpenChild} />
-              ) : (
+            <div className={`wa-card list-card ${phase === "dip" ? "is-dipping" : ""} ${phase === "launch" ? "is-launching" : ""} ${phase === "enter-back" ? "is-entering" : ""} ${activeChild && (phase === "enter" || phase === "idle") ? "is-launching" : ""}`}>
+              {drawerMode === "menu" ? <SideBar onOpen={handleOpenChild} /> : (
                 <div className="mobile-search-panel is-search-mode">
                   <div className="mobile-search-input-wrap sticky-search">
                     <svg className="mobile-search-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="6" /><path d="M21 21l-4.3-4.3" /></svg>
                     <input autoFocus className="mobile-drawer-search" placeholder={placeholder} value={globalQuery} onChange={(e) => setGlobalQuery(e.target.value)} />
                     <button className="mobile-search-settings" onClick={openFaders} type="button"><svg width="21" height="21" viewBox="0 0 24 24" fill="none"><path d="M4 7H20" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/><circle cx="10" cy="7" r="3" fill="currentColor"/><path d="M4 17H20" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/><circle cx="15" cy="17" r="3" fill="currentColor"/></svg></button>
                   </div>
-                  <div className="search-results-scroll"><div style={{marginTop: "12px"}}><SearchDrawer /></div></div>
+                  <div className="search-results-scroll"><div style={{marginTop: 12}}><SearchDrawer /></div></div>
                 </div>
               )}
             </div>
-
-            {/* DETAIL - same size, premium, not full screen */}
             {activeChild && (
               <div className={`wa-card detail-card ${phase === "enter" ? "is-entering" : ""} ${phase === "dip-back" ? "is-dipping" : ""} ${phase === "launch-back" ? "is-launching" : ""} ${phase === "idle" ? "is-entering" : ""}`}>
                 <div className="morph-header">
