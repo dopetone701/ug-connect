@@ -1,11 +1,12 @@
 /* ===== FADERS DRAWER ROOT - COVERS SEARCH BAR WHEN OPEN ===== */
+/* ===== FADERS DRAWER ROOT - COVERS SEARCH BAR, NOT TOPBAR ===== */
 .faders-drawer-root{
   position: fixed;
-  top: 0; /* start from very top, covers topbar + search */
+  top: 56px; /* below topbar - was 0, that's why it covered topbar */
   left: 0;
   right: 0;
   bottom: 0;
-  z-index: 9999; /* higher than top-bar (30) + search */
+  z-index: 9999; /* higher than wa-mob-panel (100) + search */
   pointer-events: none;
   overflow: hidden;
 }
@@ -36,7 +37,7 @@
   top: 0;
   background: hsl(var(--bg));
   border: 0;
-  border-radius: 0; /* flush, no radius */
+  border-radius: 20px 20px 0 0; /* keep radius so it feels like sheet below topbar */
   transform: translateY(100%);
   transition: transform 0.32s cubic-bezier(0.16,1,0.3,1);
   display: flex;
@@ -45,8 +46,7 @@
   will-change: transform;
   height: 100%;
   min-height: 0;
-  /* add safe area + topbar space inside sheet so genres not under notch */
-  padding-top: calc(12px + env(safe-area-inset-top));
+  padding-top: calc(8px + env(safe-area-inset-top));
 }
 
 .faders-drawer-root.open .faders-sheet{
@@ -75,6 +75,12 @@
   gap: 18px;
 }
 
+/* KEEP TOPBAR ALWAYS ON TOP */
+.top-bar{
+  position: sticky;
+  top: 0;
+  z-index: 10000 !important; /* higher than faders 9999 */
+}
 
 
 /* ===== SECTION TITLES ===== */

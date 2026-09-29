@@ -46,29 +46,23 @@ export default function TopBar() {
   const [collapsed, setCollapsed] = useState(false);
   const [waOpen, setWaOpen] = useState(false);
   const [drawerMode, setDrawerMode] = useState<"menu" | "search">("menu");
- 
-  // INNER CARD ONLY ANIMATION
   const [activeChild, setActiveChild] = useState<string | null>(null);
   const [phase, setPhase] = useState<"idle"|"card-dip"|"card-launch"|"card-enter"|"card-dip-back"|"card-launch-back"|"card-enter-back">("idle");
-
   const { query: globalQuery, setQuery: setGlobalQuery, openSearch } = useGlobalSearch();
   const isAllMoviesPage = pathname?.startsWith("/movies") || pathname?.startsWith("/all-movies");
   const isServicesPage = pathname === "/" || pathname === "/dashboard";
   const { setOpen } = useGlobalCast();
   const { close: closeSideSheet } = useSideSheet();
-
   const placeholder = useMemo(() => {
     if (!pathname) return "Search...";
     for (const key in PLACEHOLDER_MAP) if (pathname.includes(key)) return PLACEHOLDER_MAP[key];
     return "Search...";
   }, [pathname]);
-
   const chips = useMemo(() => {
     if (!globalQuery?.trim()) return [];
     return globalQuery.trim().toLowerCase().split(" ").filter((w: string) => w.length >= 1).slice(0, 2).map((label: string) => ({ label }));
   }, [globalQuery]);
   const isIslandActive = globalQuery?.length > 1;
-
   useEffect(() => {
     setLoc(localStorage.getItem("ug-loc") || "Dubai");
     setCollapsed(localStorage.getItem("ug-sidebar-collapsed") === "true");
@@ -83,13 +77,11 @@ export default function TopBar() {
     setPhase("idle");
     document.body.classList.remove("wa-pushed");
   }, [pathname]);
-
   useEffect(() => {
     const handler = () => { setDrawerMode("search"); setWaOpen(true); };
     window.addEventListener("ug-open-search-panel", handler);
     return () => window.removeEventListener("ug-open-search-panel", handler);
   }, []);
-
   const filtered = PLACES.filter(p => p.toLowerCase().includes(query.toLowerCase())).slice(0, 2);
   const closeAll = () => {
     setWaOpen(false);
@@ -97,7 +89,6 @@ export default function TopBar() {
     setPhase("idle");
     closeSideSheet();
   };
-
   const toggleSidebar = () => {
     const next = !collapsed;
     setCollapsed(next);
@@ -105,13 +96,10 @@ export default function TopBar() {
     document.querySelector('.side-bar')?.classList.toggle('collapsed', next);
     window.dispatchEvent(new CustomEvent("ug-toggle-sidebar", { detail: next }));
   };
-
   const { open: openFaders } = useFadersDrawer() as any;
   const { open: watchOpen, minimized: watchMinimized } = useWatchDrawer() as any;
   const { open: openPcFaders } = usePcFadersDrawer() as any;
   if (watchOpen && !watchMinimized) return null;
-
-  // ONLY CARD MOVES - logo + > stay fixed
   const handleOpenChild = (id: string) => {
     setPhase("card-dip");
     setTimeout(() => {
@@ -120,7 +108,6 @@ export default function TopBar() {
       setTimeout(() => setPhase("card-enter"), 120);
     }, 130);
   };
-
   const handleBack = () => {
     setPhase("card-dip-back");
     setTimeout(() => {
@@ -134,7 +121,6 @@ export default function TopBar() {
       }, 340);
     }, 110);
   };
-
   const renderChild = () => {
     switch (activeChild) {
       case "account": return <AccountSheet />;
@@ -148,7 +134,6 @@ export default function TopBar() {
       default: return <div style={{padding: "20px", opacity: 0.6}}>Empty sheet for {activeChild}</div>;
     }
   };
-
   const getListCardClass = () => {
     if (phase === "card-dip") return "is-dipping";
     if (phase === "card-launch") return "is-launching";
@@ -156,8 +141,8 @@ export default function TopBar() {
     if (activeChild) return "is-launching";
     return "";
   };
-
   const getDetailCardClass = () => {
+    if (drawerMode === "search") return "";
     if (phase === "card-enter") return "is-entering";
     if (phase === "card-dip-back") return "is-dipping";
     if (phase === "card-launch-back") return "is-launching";
@@ -165,7 +150,6 @@ export default function TopBar() {
     if (phase === "idle" && activeChild) return "is-entering";
     return "";
   };
-
   return (
     <>
       <header className={`top-bar ${isAllMoviesPage ? 'all-movies-page' : ''}`}>
@@ -216,7 +200,6 @@ export default function TopBar() {
             <button className="wa-v" onClick={closeAll} aria-label="Close"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6" /></svg></button>
           </div>
           <div className="wa-mob-body">
-            {/* LIST CARD - red panel from screenshot */}
             <div className={`wa-card list-card ${getListCardClass()}`}>
               {drawerMode === "menu" ? (
                 <div className="wa-scroll-wrap"><SideBar onOpen={handleOpenChild} /></div>
@@ -231,19 +214,19 @@ export default function TopBar() {
                 </div>
               )}
             </div>
-
-            {/* DETAIL CARD - FIXED: line separates header from content, same position as wa panel */}
-            <div className={`wa-card detail-card ${getDetailCardClass()}`}>
-              <div className="morph-header">
-                <button className="morph-back" onClick={handleBack}>
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M15 18l-6-6 6-6"/></svg>
-                  <span>{SIDEBAR_ITEMS.find(x=>x.id===activeChild)?.label || activeChild}</span>
-                </button>
+            {drawerMode === "menu" && activeChild && (
+              <div className={`wa-card detail-card ${getDetailCardClass()}`}>
+                <div className="morph-header">
+                  <button className="morph-back" onClick={handleBack}>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M15 18l-6-6 6-6"/></svg>
+                    <span>{SIDEBAR_ITEMS.find(x=>x.id===activeChild)?.label || activeChild}</span>
+                  </button>
+                </div>
+                <div className="morph-body">
+                  {renderChild()}
+                </div>
               </div>
-              <div className="morph-body">
-                {activeChild ? renderChild() : null}
-              </div>
-            </div>
+            )}
           </div>
         </div>
       )}
