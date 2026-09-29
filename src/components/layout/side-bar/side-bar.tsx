@@ -18,7 +18,7 @@ const icons: any = {
   control: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 3l7 3v6c0 5-3.5 8-7 9-3.5-1-7-4-7-9V6l7-3z"/></svg>,
 };
 
-export default function SideBar({ onOpen }: { onOpen?: (id: string) => void }) {
+export default function SideBar({ onOpen }: { onOpen: (id: string) => void }) {
   const [isAdmin, setIsAdmin] = useState(false);
   const [curTheme, setCurTheme] = useState("");
   const [showSettings, setShowSettings] = useState(false);
@@ -28,12 +28,8 @@ export default function SideBar({ onOpen }: { onOpen?: (id: string) => void }) {
     setCurTheme(localStorage.getItem("ug-theme") || "dark");
   }, []);
 
-  const handleOpen = (id: string) => {
-    if (onOpen) onOpen(id);
-  };
-
   return (
-    <div className="side-bar-inner">
+    <aside className="side-bar">
       <nav className="side-nav">
         <Link href="/movies" className="nav-item live">
           <span className="nav-left">
@@ -44,7 +40,7 @@ export default function SideBar({ onOpen }: { onOpen?: (id: string) => void }) {
         </Link>
         <div className="nav-divider" />
         {SIDEBAR_ITEMS.filter((i: any) => !(i as any).admin || isAdmin).map((i) => (
-          <button key={i.id} onClick={() => handleOpen(i.id)} className="nav-item as-btn">
+          <button key={i.id} onClick={() => onOpen(i.id)} className="nav-item as-btn">
             <span className="nav-left">{icons[i.id] || icons.account}<span className="nav-label">{i.label}</span></span>
           </button>
         ))}
@@ -66,6 +62,6 @@ export default function SideBar({ onOpen }: { onOpen?: (id: string) => void }) {
         )}
       </div>
       <div className="side-footer"><a>Privacy</a><a>Terms</a><a>Help</a></div>
-    </div>
+    </aside>
   );
 }
