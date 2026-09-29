@@ -37,7 +37,7 @@ export default function TopBar() {
   const [collapsed, setCollapsed] = useState(false);
   const [waOpen, setWaOpen] = useState(false);
   const [drawerMode, setDrawerMode] = useState<"menu" | "search">("menu");
-  const [crt, setCrt] = useState<{phase: "idle"|"shutting"|"flashing"|"expanding", yPct: number}>({phase: "idle", yPct: 50});
+  const [bubble, setBubble] = useState<"idle"|"shrinking"|"flashing"|"expanding">("idle");
 
   const { query: globalQuery, setQuery: setGlobalQuery, openSearch } = useGlobalSearch();
   const isAllMoviesPage = pathname?.startsWith("/movies") || pathname?.startsWith("/all-movies");
@@ -47,9 +47,7 @@ export default function TopBar() {
 
   const placeholder = useMemo(() => {
     if (!pathname) return "Search...";
-    for (const key in PLACEHOLDER_MAP) {
-      if (pathname.includes(key)) return PLACEHOLDER_MAP[key];
-    }
+    for (const key in PLACEHOLDER_MAP) if (pathname.includes(key)) return PLACEHOLDER_MAP[key];
     return "Search...";
   }, [pathname]);
 
@@ -57,53 +55,36 @@ export default function TopBar() {
     if (!globalQuery?.trim()) return [];
     return globalQuery.trim().toLowerCase().split(" ").filter((w: string) => w.length >= 1).slice(0, 2).map((label: string) => ({ label }));
   }, [globalQuery]);
-
   const isIslandActive = globalQuery?.length > 1;
 
   useEffect(() => {
     setLoc(localStorage.getItem("ug-loc") || "Dubai");
     setCollapsed(localStorage.getItem("ug-sidebar-collapsed") === "true");
   }, []);
-
   useEffect(() => {
     if (waOpen) document.body.classList.add("wa-pushed");
     else document.body.classList.remove("wa-pushed");
   }, [waOpen]);
-
-  useEffect(() => {
-    setWaOpen(false);
-    document.body.classList.remove("wa-pushed");
-  }, [pathname]);
+  useEffect(() => { setWaOpen(false); document.body.classList.remove("wa-pushed"); }, [pathname]);
 
   useEffect(() => {
     const handler = () => { setDrawerMode("search"); setWaOpen(true); };
     window.addEventListener("ug-open-search-panel", handler);
-    
-    const crtHandler = (e: any) => {
-      const { yPct } = e.detail;
-      setCrt({ phase: "shutting", yPct });
-      // FAST close 180ms, then flash
-      setTimeout(() => {
-        setCrt({ phase: "flashing", yPct });
-      }, 170);
-      // then bounce open smooth
-      setTimeout(() => {
-        setCrt({ phase: "expanding", yPct });
-      }, 250);
-      setTimeout(() => {
-        setCrt({ phase: "idle", yPct: 50 });
-      }, 650);
+    const bubbleHandler = () => {
+      setBubble("shrinking");
+      setTimeout(() => setBubble("flashing"), 160);
+      setTimeout(() => setBubble("expanding"), 300);
+      setTimeout(() => setBubble("idle"), 820);
     };
-    window.addEventListener("ug-crt", crtHandler);
+    window.addEventListener("ug-bubble", bubbleHandler as any);
     return () => {
       window.removeEventListener("ug-open-search-panel", handler);
-      window.removeEventListener("ug-crt", crtHandler);
+      window.removeEventListener("ug-bubble", bubbleHandler as any);
     };
   }, []);
 
   const filtered = PLACES.filter(p => p.toLowerCase().includes(query.toLowerCase())).slice(0, 2);
   const closeAll = () => { setWaOpen(false); closeSideSheet(); };
-
   const toggleSidebar = () => {
     const next = !collapsed;
     setCollapsed(next);
@@ -111,11 +92,9 @@ export default function TopBar() {
     document.querySelector('.side-bar')?.classList.toggle('collapsed', next);
     window.dispatchEvent(new CustomEvent("ug-toggle-sidebar", { detail: next }));
   };
-
   const { open: openFaders } = useFadersDrawer() as any;
   const { open: watchOpen, minimized: watchMinimized } = useWatchDrawer() as any;
   const { open: openPcFaders } = usePcFadersDrawer() as any;
-
   if (watchOpen && !watchMinimized) return null;
 
   return (
@@ -167,13 +146,8 @@ export default function TopBar() {
             {drawerMode === "search" && <div className="wa-filtered-title">Filtered Content</div>}
             <button className="wa-v" onClick={closeAll} aria-label="Close"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6" /></svg></button>
           </div>
-          <div className={`wa-mob-body ${crt.phase === "shutting" ? "is-shutting" : ""} ${crt.phase === "flashing" ? "is-shutting is-flashing" : ""} ${crt.phase === "expanding" ? "is-expanding" : ""}`} style={{"--y": `${crt.yPct}%`} as any}>
-            {/* CRT shutters - top/bottom slam to click Y */}
-            <div className="crt-shutters" style={{"--y": `${crt.yPct}%`} as any}>
-              <div className="crt-shutter top" />
-              <div className="crt-shutter bottom" />
-              <div className="crt-flash" />
-            </div>
+          <div className={`wa-mob-body ${bubble === "shrinking" ? "is-shrinking" : ""} ${bubble === "flashing" ? "is-shrinking is-flashing" : ""} ${bubble === "expanding" ? "is-expanding" : ""}`}>
+            <div className="crt-line" />
             <div className="wa-card">
               {drawerMode === "menu" ? (
                 <div className="wa-scroll-wrap"><SideBar /></div>
@@ -193,4 +167,4 @@ export default function TopBar() {
       )}
     </>
   );
-} 
+}
