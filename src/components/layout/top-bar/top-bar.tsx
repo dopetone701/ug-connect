@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import { useState, useEffect, useMemo } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
@@ -46,7 +46,7 @@ export default function TopBar() {
   const [collapsed, setCollapsed] = useState(false);
   const [waOpen, setWaOpen] = useState(false);
   const [drawerMode, setDrawerMode] = useState<"menu" | "search">("menu");
-  
+ 
   // INNER CARD ONLY ANIMATION
   const [activeChild, setActiveChild] = useState<string | null>(null);
   const [phase, setPhase] = useState<"idle"|"card-dip"|"card-launch"|"card-enter"|"card-dip-back"|"card-launch-back"|"card-enter-back">("idle");
@@ -77,11 +77,11 @@ export default function TopBar() {
     if (waOpen) document.body.classList.add("wa-pushed");
     else document.body.classList.remove("wa-pushed");
   }, [waOpen]);
-  useEffect(() => { 
-    setWaOpen(false); 
+  useEffect(() => {
+    setWaOpen(false);
     setActiveChild(null);
     setPhase("idle");
-    document.body.classList.remove("wa-pushed"); 
+    document.body.classList.remove("wa-pushed");
   }, [pathname]);
 
   useEffect(() => {
@@ -91,11 +91,11 @@ export default function TopBar() {
   }, []);
 
   const filtered = PLACES.filter(p => p.toLowerCase().includes(query.toLowerCase())).slice(0, 2);
-  const closeAll = () => { 
-    setWaOpen(false); 
+  const closeAll = () => {
+    setWaOpen(false);
     setActiveChild(null);
     setPhase("idle");
-    closeSideSheet(); 
+    closeSideSheet();
   };
 
   const toggleSidebar = () => {
@@ -232,18 +232,16 @@ export default function TopBar() {
               )}
             </div>
 
-            {/* DETAIL CARD - same container, slides from bottom inside wa drawer */}
+            {/* DETAIL CARD - FIXED: line separates header from content, same position as wa panel */}
             <div className={`wa-card detail-card ${getDetailCardClass()}`}>
-              <div className="wa-scroll-wrap">
-                <div className="side-bar">
-                  <div className="morph-header">
-                    <button className="morph-back" onClick={handleBack}>
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M15 18l-6-6 6-6"/></svg>
-                      <span>{SIDEBAR_ITEMS.find(x=>x.id===activeChild)?.label || activeChild}</span>
-                    </button>
-                  </div>
-                  <div style={{padding: "0 16px 16px"}}>{activeChild ? renderChild() : null}</div>
-                </div>
+              <div className="morph-header">
+                <button className="morph-back" onClick={handleBack}>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M15 18l-6-6 6-6"/></svg>
+                  <span>{SIDEBAR_ITEMS.find(x=>x.id===activeChild)?.label || activeChild}</span>
+                </button>
+              </div>
+              <div className="morph-body">
+                {activeChild ? renderChild() : null}
               </div>
             </div>
           </div>
@@ -252,3 +250,4 @@ export default function TopBar() {
     </>
   );
 }
+

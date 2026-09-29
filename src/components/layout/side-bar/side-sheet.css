@@ -1,87 +1,131 @@
-/* INNER CARD ONLY - logo + back btn stay fixed, only card moves */
-.wa-mob-top {
+/* side-sheet.css - HEIGHT CONTROLLED BY CONTENT - safe import in side-bar.tsx */
+.wa-mob-panel {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  background: hsl(var(--bg) / 0.92);
+  backdrop-filter: blur(12px);
+  display: block;
+  overflow-y: auto;
+  padding-bottom: 24px;
+}
+
+.wa-mob-panel .wa-mob-top {
   position: relative;
   z-index: 10;
-  /* NEVER animates */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: hsl(var(--bg));
+  border-bottom: 1.5px solid hsl(var(--border));
 }
 
-.wa-mob-body {
+.wa-mob-panel .wa-mob-body {
   position: relative;
-  overflow: hidden;
+  height: auto !important;
+  min-height: 0 !important;
+  overflow: visible !important;
   isolation: isolate;
+  padding: 12px;
+  display: block !important;
+  background: transparent;
 }
 
-.wa-card {
+/* CARDS HUG CONTENT */
+.wa-mob-panel .wa-card {
   will-change: transform, opacity;
   backface-visibility: hidden;
+  border-radius: 24px;
+  background: hsl(var(--surface));
+  border: 1px solid hsl(var(--border));
+  box-shadow: 0 8px 24px rgba(0,0,0,0.28);
+  height: auto !important;
+  min-height: 0 !important;
 }
 
-/* LIST CARD - the red card from screenshot */
-.wa-card.list-card.is-dipping {
-  animation: cardDip 0.14s cubic-bezier(0.4,0,1,1) forwards;
-}
-.wa-card.detail-card.is-dipping {
-  animation: cardDip 0.12s ease-in forwards;
-}
-
-@keyframes cardDip {
-  from { transform: translateY(0) scale(1); }
-  to { transform: translateY(14px) scale(0.97); }
+.wa-mob-panel .wa-card.list-card {
+  position: relative;
+  width: auto;
+  max-height: none !important;
+  overflow: visible !important;
 }
 
-/* LAUNCH UP - only card launches, not shell */
-.wa-card.list-card.is-launching {
-  animation: cardLaunchUp 0.38s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-}
-.wa-card.detail-card.is-launching {
-  animation: cardLaunchUp 0.36s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-}
-
-@keyframes cardLaunchUp {
-  0% { transform: translateY(14px) scale(0.97); opacity: 1; }
-  100% { transform: translateY(-110%); opacity: 0; }
+.wa-mob-panel .wa-card.list-card .wa-scroll-wrap,
+.wa-mob-panel .wa-card.list-card .wa-scroll-wrap.search-results-scroll {
+  height: auto !important;
+  max-height: none !important;
+  overflow: visible !important;
+  padding-bottom: 0 !important;
 }
 
-/* DETAIL CARD - slides from bottom inside same wa panel */
-.wa-card.detail-card {
+/* DETAIL CARD - also hugs content, sits at same spot as list */
+.wa-mob-panel .wa-card.detail-card {
   position: absolute;
-  inset: 0;
+  top: 12px;
+  left: 12px;
+  right: 12px;
+  bottom: auto !important;
+  width: auto;
+  height: auto !important;
+  max-height: calc(100dvh - 80px);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   transform: translateY(110%);
   opacity: 0;
   pointer-events: none;
+  z-index: 2;
+  display: block;
 }
 
-.wa-card.detail-card.is-entering {
-  animation: cardEnterBottom 0.44s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+/* Animations - only card moves */
+.wa-mob-panel .wa-card.list-card.is-dipping,
+.wa-mob-panel .wa-card.detail-card.is-dipping {
+  animation: cardDip 0.14s cubic-bezier(0.4,0,1,1) forwards;
+}
+@keyframes cardDip { from{transform:translateY(0) scale(1)} to{transform:translateY(14px) scale(0.97)} }
+
+.wa-mob-panel .wa-card.list-card.is-launching,
+.wa-mob-panel .wa-card.detail-card.is-launching {
+  animation: cardLaunchUp 0.38s cubic-bezier(0.4,0,0.2,1) forwards;
+}
+@keyframes cardLaunchUp { 0%{transform:translateY(14px) scale(0.97);opacity:1} 100%{transform:translateY(-110%);opacity:0} }
+
+.wa-mob-panel .wa-card.detail-card.is-entering {
+  animation: cardEnterBottom 0.44s cubic-bezier(0.16,1,0.3,1) forwards;
   pointer-events: auto;
+  opacity: 1;
 }
-.wa-card.list-card.is-entering {
-  animation: cardEnterBottom 0.42s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+.wa-mob-panel .wa-card.list-card.is-entering {
+  animation: cardEnterBottom 0.42s cubic-bezier(0.16,1,0.3,1) forwards;
 }
+@keyframes cardEnterBottom { 0%{transform:translateY(110%);opacity:0} 100%{transform:translateY(0);opacity:1} }
 
-@keyframes cardEnterBottom {
-  0% { transform: translateY(110%); opacity: 0; }
-  100% { transform: translateY(0); opacity: 1; }
-}
-
-.morph-header {
+.wa-mob-panel .morph-header {
   display: flex;
   align-items: center;
-  padding: 12px 4px 14px;
-  border-bottom: 1px solid hsl(var(--border) / 0.5);
-  margin-bottom: 14px;
+  gap: 10px;
+  padding: 16px;
+  background: hsl(var(--surface));
+  border-bottom: 1.5px solid hsl(var(--border));
 }
-.morph-back {
+
+.wa-mob-panel .morph-back {
   display: flex;
   align-items: center;
   gap: 8px;
-  background: none;
-  border: none;
-  color: hsl(var(--foreground));
-  font-weight: 600;
-  font-size: 16px;
-  cursor: pointer;
-  padding: 6px 10px;
-  border-radius: 10px;
+  background: hsl(var(--surface-hover));
+  border: 1px solid hsl(var(--border));
+  color: hsl(var(--text));
+  font-weight: 700;
+  font-size: 16.5px;
+  padding: 8px 14px 8px 10px;
+  border-radius: 999px;
 }
-.morph-back:hover { background: hsl(var(--muted)); }
+
+.wa-mob-panel .morph-body {
+  padding: 16px;
+  color: hsl(var(--text));
+  height: auto !important;
+  overflow: visible !important;
+}
