@@ -5,6 +5,7 @@ import { THEMES } from "@/lib/theme/dna";
 import { setTheme } from "@/lib/theme/theme-controller";
 import { SIDEBAR_ITEMS } from "./config";
 import "./side-bar.css";
+import "./side-sheet.css";
 
 const icons: any = {
   account: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M20 21a8 8 0 0 0-16 0"/><circle cx="12" cy="7" r="4"/></svg>,
@@ -17,7 +18,7 @@ const icons: any = {
   control: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 3l7 3v6c0 5-3.5 8-7 9-3.5-1-7-4-7-9V6l7-3z"/></svg>,
 };
 
-export default function SideBar({ onOpen }: { onOpen: (id: string) => void }) {
+export default function SideBar({ onOpen }: { onOpen?: (id: string) => void }) {
   const [isAdmin, setIsAdmin] = useState(false);
   const [curTheme, setCurTheme] = useState("");
   const [showSettings, setShowSettings] = useState(false);
@@ -26,6 +27,10 @@ export default function SideBar({ onOpen }: { onOpen: (id: string) => void }) {
     setIsAdmin(localStorage.getItem("ug-admin") === "true");
     setCurTheme(localStorage.getItem("ug-theme") || "dark");
   }, []);
+
+  const handleOpen = (id: string) => {
+    if (onOpen) onOpen(id);
+  };
 
   return (
     <div className="side-bar-inner">
@@ -39,7 +44,7 @@ export default function SideBar({ onOpen }: { onOpen: (id: string) => void }) {
         </Link>
         <div className="nav-divider" />
         {SIDEBAR_ITEMS.filter((i: any) => !(i as any).admin || isAdmin).map((i) => (
-          <button key={i.id} onClick={() => onOpen(i.id)} className="nav-item as-btn">
+          <button key={i.id} onClick={() => handleOpen(i.id)} className="nav-item as-btn">
             <span className="nav-left">{icons[i.id] || icons.account}<span className="nav-label">{i.label}</span></span>
           </button>
         ))}
