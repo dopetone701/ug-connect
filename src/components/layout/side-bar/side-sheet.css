@@ -1,4 +1,4 @@
-/* WRAPPED CORRECTLY - CHILD SAME AS WA PANEL */
+/* side-sheet.css - FINAL BUILD SAFE - child same size as wa panel */
 .wa-mob-body{
   position:relative!important;
   overflow:hidden!important;
@@ -7,24 +7,23 @@
   flex-direction:column!important;
   flex:1!important;
   min-height:0!important;
+  gap:0!important;
 }
-
 .wa-card{
   border-radius:24px!important;
   background:hsl(var(--surface))!important;
   border:1px solid hsl(var(--border))!important;
   width:100%!important;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.28)!important;
+  box-shadow:0 8px 24px rgba(0,0,0,0.28)!important;
   overflow:hidden!important;
   will-change:transform,opacity!important;
 }
-
 .wa-card.list-card{
   position:relative!important;
   max-height:62vh!important;
   overflow-y:auto!important;
+  -webkit-overflow-scrolling:touch!important;
 }
-
 .wa-card.detail-card{
   position:absolute!important;
   top:0!important;
@@ -40,7 +39,6 @@
   overflow-y:auto!important;
   z-index:2!important;
 }
-
 .wa-card.detail-card.is-entering{
   transform:translateY(0)!important;
   opacity:1!important;
@@ -52,18 +50,9 @@
 }
 .wa-card.is-dipping{ animation:cardDip 0.13s ease-in forwards!important; }
 .wa-card.is-launching{ animation:cardLaunch 0.32s cubic-bezier(0.4,0,0.2,1) forwards!important; }
-
 @keyframes cardDip{ from{transform:translateY(0) scale(1)} to{transform:translateY(10px) scale(0.97)} }
 @keyframes cardLaunch{ from{transform:translateY(10px) scale(0.97); opacity:1} to{transform:translateY(-120%); opacity:0} }
 @keyframes cardEnter{ from{transform:translateY(120%); opacity:0} to{transform:translateY(0); opacity:1} }
-
-.side-bar-inner{
-  display:flex!important;
-  flex-direction:column!important;
-  gap:0!important;
-  padding:8px!important;
-}
-
 .morph-header{
   position:sticky!important;
   top:0!important;
@@ -71,6 +60,8 @@
   padding:14px 16px 12px!important;
   border-bottom:1px solid hsl(var(--border) / 0.1)!important;
   z-index:2!important;
+  display:flex!important;
+  align-items:center!important;
 }
 .morph-back{
   display:flex!important;
@@ -82,5 +73,6 @@
   font-weight:600!important;
   font-size:14px!important;
   border:1px solid hsl(var(--border) / 0.1)!important;
+  cursor:pointer!important;
 }
 .morph-body{ padding:16px!important; }
