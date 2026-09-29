@@ -1,122 +1,78 @@
-/* CRT SHUT - top/bottom meet at click Y */
+/* CLEAN CENTER SHRINK + BUBBLE UNFOLD - like video */
 .wa-mob-body {
   position: relative;
   overflow: hidden;
   isolation: isolate;
+  transform-origin: center center;
+  will-change: transform, border-radius;
+  border-radius: 18px;
 }
 
-.crt-shutters {
-  position: absolute;
-  inset: 0;
-  z-index: 20;
-  pointer-events: none;
-  --y: 50%;
-}
-
-.crt-shutter {
-  position: absolute;
-  left: 0;
-  right: 0;
+.wa-card {
   background: hsl(var(--card));
-  border: 1px solid hsl(var(--border));
+  border-radius: 18px;
+  overflow: hidden;
   will-change: transform;
 }
 
-.crt-shutter.top {
-  top: 0;
-  height: var(--y);
-  transform: translateY(-101%);
-  border-bottom: 1px solid hsl(var(--border));
-  border-radius: 18px 18px 0 0;
+/* FAST SHRINK TO CENTER - whole inner body */
+.wa-mob-body.is-shrinking {
+  animation: shrinkCenter 0.18s cubic-bezier(0.7, 0, 1, 0.5) forwards;
+}
+@keyframes shrinkCenter {
+  0% { transform: scaleY(1) scaleX(1); border-radius: 18px; filter: blur(0); }
+  100% { transform: scaleY(0.07) scaleX(0.88); border-radius: 40px; filter: blur(0.8px); opacity: 0.9; }
 }
 
-.crt-shutter.bottom {
-  bottom: 0;
-  height: calc(100% - var(--y));
-  transform: translateY(101%);
-  border-top: 1px solid hsl(var(--border));
-  border-radius: 0 0 18px 18px;
-}
-
-/* FAST CLOSE - like TV shutting */
-.wa-mob-body.is-shutting .crt-shutter.top {
-  animation: shutTop 0.18s cubic-bezier(0.8, 0, 1, 1) forwards;
-}
-.wa-mob-body.is-shutting .crt-shutter.bottom {
-  animation: shutBottom 0.18s cubic-bezier(0.8, 0, 1, 1) forwards;
-}
-
-@keyframes shutTop {
-  from { transform: translateY(-101%); }
-  to { transform: translateY(0); }
-}
-@keyframes shutBottom {
-  from { transform: translateY(101%); }
-  to { transform: translateY(0); }
-}
-
-/* BRIGHT FLASH when they hit */
-.crt-flash {
+/* BRIGHT LINE - ONLY when meets at center, before opening child */
+.crt-line {
   position: absolute;
-  left: 6%;
-  right: 6%;
+  left: 8%;
+  right: 8%;
+  top: 50%;
   height: 2px;
-  top: var(--y);
   background: white;
-  box-shadow: 0 0 8px 2px white, 0 0 18px 6px hsl(var(--primary) / 0.8), 0 0 32px 12px hsl(var(--primary) / 0.4);
-  opacity: 0;
-  transform: translateY(-50%) scaleX(0.2);
-  z-index: 21;
+  box-shadow: 0 0 10px 2px white, 0 0 20px 8px hsl(var(--primary) / 0.7);
   border-radius: 999px;
+  opacity: 0;
+  transform: translateY(-50%) scaleX(0.1);
+  z-index: 20;
+  pointer-events: none;
+}
+.wa-mob-body.is-flashing .crt-line {
+  animation: lineFlash 0.22s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+@keyframes lineFlash {
+  0% { opacity: 0; transform: translateY(-50%) scaleX(0.1); }
+  40% { opacity: 1; transform: translateY(-50%) scaleX(1.15); }
+  100% { opacity: 0; transform: translateY(-50%) scaleX(1.4); filter: blur(2px); }
 }
 
-.wa-mob-body.is-flashing .crt-flash {
-  animation: crtFlash 0.16s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+/* BUBBLE WATER BOUNCE UNFOLD - smooth reveal with child sheet */
+.wa-mob-body.is-expanding {
+  animation: bubbleUnfold 0.52s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+@keyframes bubbleUnfold {
+  0% { transform: scaleY(0.07) scaleX(0.88); border-radius: 40px; }
+  35% { transform: scaleY(1.12) scaleX(0.92); border-radius: 22px; } /* overshoot stretch */
+  60% { transform: scaleY(0.94) scaleX(1.04); border-radius: 18px; } /* squeeze back */
+  80% { transform: scaleY(1.04) scaleX(0.98); border-radius: 18px; } /* small bounce */
+  100% { transform: scaleY(1) scaleX(1); border-radius: 18px; opacity: 1; filter: blur(0); }
 }
 
-@keyframes crtFlash {
-  0% { opacity: 0; transform: translateY(-50%) scaleX(0.2); }
-  35% { opacity: 1; transform: translateY(-50%) scaleX(1.1); }
-  100% { opacity: 0; transform: translateY(-50%) scaleX(1.3); filter: blur(2px); }
+/* Child sheet fade smooth */
+.morph-detail {
+  animation: detailSmooth 0.46s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
-
-/* BOUNCE BACK - smooth reveal */
-.wa-mob-body.is-expanding .crt-shutter.top {
-  animation: expandTop 0.38s cubic-bezier(0.32, 0.72, 0, 1) forwards;
-}
-.wa-mob-body.is-expanding .crt-shutter.bottom {
-  animation: expandBottom 0.38s cubic-bezier(0.32, 0.72, 0, 1) forwards;
-}
-
-@keyframes expandTop {
-  0% { transform: translateY(0); }
-  45% { transform: translateY(-8%); } /* bounce */
-  100% { transform: translateY(-101%); }
-}
-@keyframes expandBottom {
-  0% { transform: translateY(0); }
-  45% { transform: translateY(8%); } /* bounce */
-  100% { transform: translateY(101%); }
-}
-
-/* Inner content morph - fast close, smooth open */
-.side-bar.morph-list.shutting {
-  transform: scale(0.98);
-  filter: blur(0.5px);
-  transition: transform 0.14s ease-in, filter 0.14s ease-in;
-}
-.side-bar.morph-detail {
-  animation: detailReveal 0.42s cubic-bezier(0.16, 1, 0.3, 1) both;
-}
-@keyframes detailReveal {
-  0% { opacity: 0; transform: translateY(10px) scale(0.98); filter: blur(6px); }
+@keyframes detailSmooth {
+  0% { opacity: 0; transform: translateY(12px) scale(0.96); filter: blur(8px); }
   100% { opacity: 1; transform: translateY(0) scale(1); filter: blur(0); }
 }
 
 .morph-header {
   display: flex;
   align-items: center;
-  padding: 6px 4px 14px;
+  padding: 8px 4px 14px;
   border-bottom: 1px solid hsl(var(--border) / 0.5);
   margin-bottom: 14px;
 }
@@ -129,9 +85,8 @@
   color: hsl(var(--foreground));
   font-weight: 600;
   font-size: 16px;
-  cursor: pointer; 
+  cursor: pointer;
   padding: 6px 10px;
   border-radius: 10px;
 }
 .morph-back:hover { background: hsl(var(--muted)); }
-.morph-body { min-height: 120px; }
