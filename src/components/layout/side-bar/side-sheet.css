@@ -1,108 +1,57 @@
-/* PAPER PLANE LAUNCH AURA */
-.wa-mob-body {
-  position: relative;
-  overflow: hidden;
-  border-radius: 18px;
-  isolation: isolate;
-}
-
-.paper-stage {
-  position: relative;
-  width: 100%;
-  min-height: 100%;
-}
-
-.paper-layer {
-  width: 100%;
-  will-change: transform, opacity;
+/* WHOLE SHELL LAUNCH - simple swipe up, whole red panel */
+.wa-mob-panel {
+  will-change: transform;
   backface-visibility: hidden;
 }
 
-.paper-layer.list {
-  position: relative;
-  z-index: 1;
+/* DIP slightly lower like loading paper plane */
+.wa-mob-panel.list-panel.is-dipping {
+  animation: shellDip 0.14s cubic-bezier(0.4,0,1,1) forwards;
+}
+.wa-mob-panel.detail-panel.is-dipping {
+  animation: shellDip 0.12s ease-in forwards;
+}
+@keyframes shellDip {
+  from { transform: translateY(0) scale(1); }
+  to { transform: translateY(14px) scale(0.97); }
 }
 
-.paper-layer.detail {
-  position: absolute;
-  inset: 0;
-  z-index: 2;
-  background: hsl(var(--card));
-  border-radius: 18px;
-  transform: translateY(105%);
+/* LAUNCH UP - whole shell */
+.wa-mob-panel.list-panel.is-launching {
+  animation: shellLaunchUp 0.38s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+.wa-mob-panel.detail-panel.is-launching {
+  animation: shellLaunchUp 0.36s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+@keyframes shellLaunchUp {
+  0% { transform: translateY(14px) scale(0.97); opacity: 1; }
+  100% { transform: translateY(-110%); opacity: 0; }
+}
+
+/* ENTER FROM BOTTOM - takes over */
+.wa-mob-panel.detail-panel {
+  transform: translateY(110%);
   opacity: 0;
   pointer-events: none;
 }
-
-/* DIP - slight lower like launching */
-.wa-mob-body.is-dipping .paper-layer.list {
-  animation: dipLower 0.14s cubic-bezier(0.4, 0, 1, 1) forwards;
-}
-@keyframes dipLower {
-  0% { transform: translateY(0) scale(1); }
-  100% { transform: translateY(14px) scale(0.97); }
+.wa-mob-panel.list-panel {
+  transform: translateY(0);
 }
 
-/* LAUNCH UP - wa panel slides up like paper plane */
-.wa-mob-body.is-launching .paper-layer.list {
-  animation: planeLaunchUp 0.38s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-}
-.wa-mob-body.is-launching .paper-layer.detail {
-  animation: detailTakeOver 0.46s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+.wa-mob-panel.detail-panel.is-entering {
+  animation: shellEnterBottom 0.44s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   pointer-events: auto;
 }
-
-@keyframes planeLaunchUp {
-  0% { transform: translateY(14px) scale(0.97); opacity: 1; }
-  30% { transform: translateY(8px) scale(0.98) rotate(-0.5deg); opacity: 1; }
-  100% { transform: translateY(-110%) scale(0.92) rotate(-3deg); opacity: 0; filter: blur(4px); }
+.wa-mob-panel.list-panel.is-entering {
+  animation: shellEnterBottom 0.42s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-@keyframes detailTakeOver {
-  0% { transform: translateY(105%); opacity: 0; }
-  15% { transform: translateY(105%); opacity: 0; }
+@keyframes shellEnterBottom {
+  0% { transform: translateY(110%); opacity: 0; }
   100% { transform: translateY(0); opacity: 1; }
 }
 
-/* BACK - child launches, list comes from bottom */
-.wa-mob-body.is-dipping-back .paper-layer.detail {
-  animation: dipLowerBack 0.12s ease-in forwards;
+/* Keep top logo untouched but whole panel moves - top moves with shell */
+.wa-mob-top {
+  flex-shrink: 0;
 }
-.wa-mob-body.is-launching-back .paper-layer.detail {
-  animation: planeLaunchUp 0.36s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-}
-.wa-mob-body.is-launching-back .paper-layer.list {
-  animation: listReturn 0.44s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-@keyframes dipLowerBack {
-  0% { transform: translateY(0) scale(1); }
-  100% { transform: translateY(14px) scale(0.97); }
-}
-@keyframes listReturn {
-  0% { transform: translateY(105%); opacity: 0; }
-  100% { transform: translateY(0); opacity: 1; }
-}
-
-/* Detail internals smooth */
-.morph-header {
-  display: flex;
-  align-items: center;
-  padding: 8px 4px 14px;
-  border-bottom: 1px solid hsl(var(--border) / 0.5);
-  margin-bottom: 14px;
-}
-.morph-back {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  background: none;
-  border: none;
-  color: hsl(var(--foreground));
-  font-weight: 600;
-  font-size: 16px;
-  cursor: pointer;
-  padding: 6px 10px;
-  border-radius: 10px;
-}
-.morph-back:hover { background: hsl(var(--muted)); }
