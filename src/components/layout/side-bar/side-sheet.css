@@ -84,4 +84,4 @@
   padding: 6px 10px;
   border-radius: 10px;
 }
-.morph-back:hover { background: hsl(var(--muted));
+.morph-back:hover { background: hsl(var(--muted)); }
