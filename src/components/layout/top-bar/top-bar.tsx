@@ -37,7 +37,7 @@ export default function TopBar() {
   const [collapsed, setCollapsed] = useState(false);
   const [waOpen, setWaOpen] = useState(false);
   const [drawerMode, setDrawerMode] = useState<"menu" | "search">("menu");
-  const [waMorph, setWaMorph] = useState<"idle" | "folding" | "expanding">("idle");
+  const [crt, setCrt] = useState<{phase: "idle"|"shutting"|"flashing"|"expanding", yPct: number}>({phase: "idle", yPct: 50});
 
   const { query: globalQuery, setQuery: setGlobalQuery, openSearch } = useGlobalSearch();
   const isAllMoviesPage = pathname?.startsWith("/movies") || pathname?.startsWith("/all-movies");
@@ -78,16 +78,26 @@ export default function TopBar() {
   useEffect(() => {
     const handler = () => { setDrawerMode("search"); setWaOpen(true); };
     window.addEventListener("ug-open-search-panel", handler);
-    const morphHandler = (e: any) => {
-      setWaMorph(e.detail);
-      if (e.detail === "expanding") {
-        setTimeout(() => setWaMorph("idle"), 380);
-      }
+    
+    const crtHandler = (e: any) => {
+      const { yPct } = e.detail;
+      setCrt({ phase: "shutting", yPct });
+      // FAST close 180ms, then flash
+      setTimeout(() => {
+        setCrt({ phase: "flashing", yPct });
+      }, 170);
+      // then bounce open smooth
+      setTimeout(() => {
+        setCrt({ phase: "expanding", yPct });
+      }, 250);
+      setTimeout(() => {
+        setCrt({ phase: "idle", yPct: 50 });
+      }, 650);
     };
-    window.addEventListener("ug-wa-morph", morphHandler);
+    window.addEventListener("ug-crt", crtHandler);
     return () => {
       window.removeEventListener("ug-open-search-panel", handler);
-      window.removeEventListener("ug-wa-morph", morphHandler);
+      window.removeEventListener("ug-crt", crtHandler);
     };
   }, []);
 
@@ -157,8 +167,13 @@ export default function TopBar() {
             {drawerMode === "search" && <div className="wa-filtered-title">Filtered Content</div>}
             <button className="wa-v" onClick={closeAll} aria-label="Close"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6" /></svg></button>
           </div>
-          {/* ONLY THIS INNER WRAPPER MORPHS - logo/top stays untouched */}
-          <div className={`wa-mob-body ${waMorph === "folding" ? "is-folding" : ""} ${waMorph === "expanding" ? "is-expanding" : ""}`}>
+          <div className={`wa-mob-body ${crt.phase === "shutting" ? "is-shutting" : ""} ${crt.phase === "flashing" ? "is-shutting is-flashing" : ""} ${crt.phase === "expanding" ? "is-expanding" : ""}`} style={{"--y": `${crt.yPct}%`} as any}>
+            {/* CRT shutters - top/bottom slam to click Y */}
+            <div className="crt-shutters" style={{"--y": `${crt.yPct}%`} as any}>
+              <div className="crt-shutter top" />
+              <div className="crt-shutter bottom" />
+              <div className="crt-flash" />
+            </div>
             <div className="wa-card">
               {drawerMode === "menu" ? (
                 <div className="wa-scroll-wrap"><SideBar /></div>
