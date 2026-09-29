@@ -81,7 +81,7 @@ export default function TopBar() {
     const morphHandler = (e: any) => {
       setWaMorph(e.detail);
       if (e.detail === "expanding") {
-        setTimeout(() => setWaMorph("idle"), 400);
+        setTimeout(() => setWaMorph("idle"), 380);
       }
     };
     window.addEventListener("ug-wa-morph", morphHandler);
@@ -151,13 +151,14 @@ export default function TopBar() {
         </div>
       </header>
       {waOpen && (
-        <div className={`wa-mob-panel ${drawerMode === "search" ? "is-search" : "is-menu"} ${waMorph === "folding" ? "is-folding" : ""} ${waMorph === "expanding" ? "is-expanding" : ""}`}>
+        <div className={`wa-mob-panel ${drawerMode === "search" ? "is-search" : "is-menu"}`}>
           <div className="wa-mob-top">
             <AppLogo className="wa-panel-logo" />
             {drawerMode === "search" && <div className="wa-filtered-title">Filtered Content</div>}
             <button className="wa-v" onClick={closeAll} aria-label="Close"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6" /></svg></button>
           </div>
-          <div className="wa-mob-body">
+          {/* ONLY THIS INNER WRAPPER MORPHS - logo/top stays untouched */}
+          <div className={`wa-mob-body ${waMorph === "folding" ? "is-folding" : ""} ${waMorph === "expanding" ? "is-expanding" : ""}`}>
             <div className="wa-card">
               {drawerMode === "menu" ? (
                 <div className="wa-scroll-wrap"><SideBar /></div>
