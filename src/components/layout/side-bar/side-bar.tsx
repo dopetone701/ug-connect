@@ -5,7 +5,6 @@ import { THEMES } from "@/lib/theme/dna";
 import { setTheme } from "@/lib/theme/theme-controller";
 import { SIDEBAR_ITEMS } from "./config";
 import "./side-bar.css";
-import "./side-sheet.css";
 
 const icons: any = {
   account: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M20 21a8 8 0 0 0-16 0"/><circle cx="12" cy="7" r="4"/></svg>,
@@ -29,7 +28,7 @@ export default function SideBar({ onOpen }: { onOpen: (id: string) => void }) {
   }, []);
 
   return (
-    <aside className="side-bar">
+    <div className="side-bar-inner">
       <nav className="side-nav">
         <Link href="/movies" className="nav-item live">
           <span className="nav-left">
@@ -62,6 +61,6 @@ export default function SideBar({ onOpen }: { onOpen: (id: string) => void }) {
         )}
       </div>
       <div className="side-footer"><a>Privacy</a><a>Terms</a><a>Help</a></div>
-    </aside>
+    </div>
   );
 }
