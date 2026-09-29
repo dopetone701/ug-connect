@@ -66,14 +66,41 @@ export function useFaderData() {
 
 export default function FadersTiles({ select, selectTime, filterType, filterValue, onSeeAll }: any) {
   const { genres, vjs, actors, oldRanges, newRanges, genreImageMap } = useFaderData();
+
+  // KILL KEYBOARD ON EVERY SELECT - THIS FIXES YOUR BUG
+  const killKeyboard = () => {
+    (document.activeElement as HTMLElement)?.blur();
+    const searchInput = document.querySelector(".mobile-drawer-search") as HTMLElement;
+    if(searchInput) searchInput.blur();
+  };
+
+  const handleSelect = (type: string, value: string) => {
+    killKeyboard();
+    // prevent keyboard from ever opening on filter
+    setTimeout(() => killKeyboard(), 50);
+    select(type, value);
+  };
+
+  const handleSelectTime = (start: number, end: number) => {
+    killKeyboard();
+    setTimeout(() => killKeyboard(), 50);
+    selectTime(start, end);
+  };
+
   const openSearchAll = (type: "genre" | "vj" | "actor" | "time") => {
+    killKeyboard();
     const fd: any = (useFadersDrawer as any).getState?.();
     const gs: any = (useGlobalSearch as any).getState?.();
     fd.setShowFilterRow?.(true);
     fd.select?.(type, "");
-    gs?.setQuery?.(""); gs?.setSection?.(type); gs?.setOpen?.(true); gs?.setIsOpen?.(true); gs?.openDrawer?.(); gs?.setShowSearch?.(true);
+    gs?.setQuery?.("");
+    gs?.setSection?.(type);
+    gs?.setOpen?.(true);
+    // don't auto-focus search bar when coming from faders
+    setTimeout(() => killKeyboard(), 100);
     if (onSeeAll) onSeeAll();
   };
+
   return (
     <>
       <div className="f-section">
@@ -82,7 +109,7 @@ export default function FadersTiles({ select, selectTime, filterType, filterValu
           {genres.slice(0, 6).map((g: string) => {
             const key = g.toLowerCase().trim(); const imgSrc = genreImageMap[key] || "";
             return (
-              <button key={g} className={`f-circle-item ${filterType === "genre" && filterValue === g? "active" : ""}`} onClick={() => select("genre", g)} type="button">
+              <button key={g} className={`f-circle-item ${filterType === "genre" && filterValue === g? "active" : ""}`} onClick={() => handleSelect("genre", g)} type="button">
                 <div className="f-circle has-img">
                   {imgSrc? <img src={imgSrc} alt={g} loading="lazy" onError={(e) => { (e.currentTarget as any).style.display = "none"; const fb = e.currentTarget.nextElementSibling as HTMLElement; if (fb) fb.style.display = "flex"; }} /> : null}
                   <span className="f-circle-fallback" style={{ display: imgSrc? "none" : "flex" }}>{g[0]?.toUpperCase()}</span>
@@ -98,7 +125,7 @@ export default function FadersTiles({ select, selectTime, filterType, filterValu
         <div className="f-section-title">Filter by VJ</div>
         <div className="f-pills-grid">
           {vjs.slice(0, 6).map((v: string) => (
-            <button key={v} className={`f-pill ${filterType === "vj" && filterValue === v? "active" : ""}`} onClick={() => select("vj", v)} type="button">{v}</button>
+            <button key={v} className={`f-pill ${filterType === "vj" && filterValue === v? "active" : ""}`} onClick={() => handleSelect("vj", v)} type="button">{v}</button>
           ))}
         </div>
         {vjs.length > 6 && <button className="f-showall" onClick={() => openSearchAll("vj")} type="button">See all ({vjs.length})</button>}
@@ -107,7 +134,7 @@ export default function FadersTiles({ select, selectTime, filterType, filterValu
         <div className="f-section-title">Filter by actor</div>
         <div className="f-circles-grid">
           {actors.slice(0, 6).map((a: string) => (
-            <button key={a} className={`f-circle-item ${filterType === "actor" && filterValue === a? "active" : ""}`} onClick={() => select("actor", a)} type="button">
+            <button key={a} className={`f-circle-item ${filterType === "actor" && filterValue === a? "active" : ""}`} onClick={() => handleSelect("actor", a)} type="button">
               <div className="f-circle actor">★</div><span className="f-circle-label">{a}</span>
             </button>
           ))}
@@ -119,13 +146,13 @@ export default function FadersTiles({ select, selectTime, filterType, filterValu
         <div className="wa-card">
           <div className="wa-subhead">Latest & Current</div>
           {newRanges.slice(0, 3).map((t: any) => (
-            <button key={t.label} className={`wa-row ${filterType === "time" && filterValue === t.label? "active" : ""}`} onClick={() => selectTime(t.start, t.end)} type="button">
+            <button key={t.label} className={`wa-row ${filterType === "time" && filterValue === t.label? "active" : ""}`} onClick={() => handleSelectTime(t.start, t.end)} type="button">
               <div className="wa-row-icon">◉</div><div className="wa-row-label">{t.label}</div><div className="wa-row-chev">›</div>
             </button>
           ))}
           <div className="wa-subhead">Old is Gold ( Below 2005 )</div>
           {oldRanges.slice(0, 2).map((t: any) => (
-            <button key={t.label} className={`wa-row ${filterType === "time" && filterValue === t.label? "active" : ""}`} onClick={() => selectTime(t.start, t.end)} type="button">
+            <button key={t.label} className={`wa-row ${filterType === "time" && filterValue === t.label? "active" : ""}`} onClick={() => handleSelectTime(t.start, t.end)} type="button">
               <div className="wa-row-icon">◷</div><div className="wa-row-label">{t.label}</div><div className="wa-row-chev">›</div>
             </button>
           ))}
