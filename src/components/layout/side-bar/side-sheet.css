@@ -1,74 +1,70 @@
-/* MORPH WA PANEL - fold to child then expand with sheet */
-.wa-mob-panel {
-  transition: transform 0.32s cubic-bezier(0.32, 0.72, 0, 1), opacity 0.28s ease, border-radius 0.32s ease;
+/* FIXED MORPH - only inner panel, outer shell untouched */
+.wa-mob-top {
+  position: relative;
+  z-index: 5;
+  /* NEVER morphs */
+}
+
+.wa-mob-body {
+  transition: transform 0.32s cubic-bezier(0.32, 0.72, 0, 1), opacity 0.28s ease;
   transform-origin: top center;
   will-change: transform, opacity;
 }
-.wa-mob-panel.is-folding {
-  transform: scaleX(0.88) scaleY(0.62);
-  opacity: 0.6;
-  border-radius: 28px;
+.wa-mob-body.is-folding {
+  transform: scaleX(0.92) scaleY(0.72);
+  opacity: 0.55;
 }
-.wa-mob-panel.is-expanding {
-  animation: waExpand 0.36s cubic-bezier(0.32, 0.72, 0, 1) forwards;
+.wa-mob-body.is-expanding {
+  animation: waBodyExpand 0.36s cubic-bezier(0.32, 0.72, 0, 1) forwards;
 }
-@keyframes waExpand {
-  0% { transform: scaleX(0.88) scaleY(0.62); opacity: 0.6; }
-  60% { transform: scaleX(1.02) scaleY(1.06); opacity: 1; }
+@keyframes waBodyExpand {
+  0% { transform: scaleX(0.92) scaleY(0.72); opacity: 0.55; }
+  60% { transform: scaleX(1.02) scaleY(1.04); opacity: 1; }
   100% { transform: scaleX(1) scaleY(1); opacity: 1; }
 }
 
-/* SIDE BAR LIST -> DETAIL morph */
-.side-bar.morph-list {
-  transition: all 0.28s cubic-bezier(0.32,0.72,0,1);
-}
-.side-bar.morph-list.folding {
-  transform: scale(0.96);
-  filter: blur(6px);
-  opacity: 0.4;
-}
+/* Inner list items folding to selected */
 .side-bar.morph-list.folding .nav-item {
-  transform: translateX(-8px);
+  transition: all 0.22s cubic-bezier(0.32,0.72,0,1);
   opacity: 0;
-  transition: all 0.22s ease;
+  transform: translateX(-12px);
+  height: 0;
+  margin: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  overflow: hidden;
+  pointer-events: none;
 }
-.side-bar.morph-list.folding .nav-item.as-btn:active {
+.side-bar.morph-list.folding .nav-item.is-selected {
   opacity: 1;
+  height: auto;
+  padding: 12px 14px;
   transform: scale(0.92);
   background: hsl(var(--muted));
+  border-radius: 12px;
 }
 
+/* Detail view inside same card - no outer reload */
 .side-bar.morph-detail {
   display: flex;
   flex-direction: column;
-  gap: 0;
   animation: detailIn 0.34s cubic-bezier(0.32,0.72,0,1);
-  background: hsl(var(--card));
-  border-radius: 18px;
   min-height: 100%;
 }
-
-.side-bar.morph-detail.folding {
-  animation: detailOut 0.26s ease forwards;
-}
-
 @keyframes detailIn {
-  0% { transform: scaleY(0.7) translateY(12px); opacity: 0; filter: blur(8px); }
-  100% { transform: scaleY(1) translateY(0); opacity: 1; filter: blur(0); }
+  0% { opacity: 0; transform: translateY(14px) scaleY(0.88); filter: blur(8px); }
+  100% { opacity: 1; transform: translateY(0) scaleY(1); filter: blur(0); }
 }
-@keyframes detailOut {
-  0% { transform: scaleY(1); opacity: 1; }
-  100% { transform: scaleY(0.72) translateY(-10px); opacity: 0; filter: blur(6px); }
-}
-
 .morph-header {
+  display: flex;
+  align-items: center;
+  padding: 4px 4px 12px;
+  border-bottom: 1px solid hsl(var(--border) / 0.5);
+  margin-bottom: 12px;
   position: sticky;
   top: 0;
-  z-index: 2;
-  padding: 14px 14px 10px;
-  border-bottom: 1px solid hsl(var(--border) / 0.6);
   background: hsl(var(--card));
-  backdrop-filter: blur(12px);
+  z-index: 2;
 }
 .morph-back {
   display: flex;
@@ -77,32 +73,17 @@
   background: none;
   border: none;
   color: hsl(var(--foreground));
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 600;
   cursor: pointer;
-  padding: 6px 8px;
+  padding: 6px 10px;
   border-radius: 10px;
-  transition: background 0.2s;
 }
 .morph-back:hover { background: hsl(var(--muted)); }
-.morph-back svg { opacity: 0.7; }
-
 .morph-body {
-  padding: 16px;
-  animation: bodyFade 0.32s 0.08s both;
+  animation: bodyFade 0.3s 0.06s both;
 }
 @keyframes bodyFade {
-  from { opacity: 0; transform: translateY(10px); }
+  from { opacity: 0; transform: translateY(8px); }
   to { opacity: 1; transform: translateY(0); }
-}
-
-/* hide other children during fold */
-.wa-scroll-wrap:has(.morph-detail) .wa-card { overflow: hidden; }
-
-/* PC same morph but without wa-panel wrapper */
-@media (min-width: 769px) {
-  .side-bar.morph-detail {
-    width: 100%;
-    border-right: 1px solid hsl(var(--border));
-  }
 }
