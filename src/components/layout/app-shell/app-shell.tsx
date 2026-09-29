@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
+import { usePathname } from "next/navigation";
 import TopBar from "../top-bar/top-bar";
 import SideBar from "../side-bar/side-bar";
 import BottomBar from "../bottom-bar/bottom-bar";
@@ -19,6 +20,7 @@ import { usePcFadersDrawer } from "@/stores/use-pc-faders-drawer";
 import PcFaders from "../top-bar/faders-drawer/pc-faders";
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
   const { open, minimized } = useWatchDrawer() as any;
   const { isOpen: isReelsOpen, movies, startIndex, currentMovie, closeReels } = useReelsDrawer() as any;
   const [isMobile, setIsMobile] = useState(false);
@@ -26,6 +28,8 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const [checked, setChecked] = useState(false);
   const { isOpen: isCastOpen, setOpen: setCastOpen } = useGlobalCast();
   const { isOpen: isPcOpen } = usePcFadersDrawer() as any;
+
+  const isServicesPage = pathname === "/" || pathname === "/dashboard";
 
   useEffect(() => {
     initTheme();
@@ -43,17 +47,17 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   }, []);
 
   const isSplit = !isMobile && open && !minimized;
-// AFTER - no flash, same bg
-if (!checked) return null;
+  if (!checked) return null;
 
   return (
     <>
       {showIntro && <IntroVideo onFinished={() => setShowIntro(false)} />}
-      <div className={`google-shell ${isSplit ? "is-split" : ""}`} style={{ opacity: showIntro ? 0 : 1, pointerEvents: showIntro ? "none" : "auto" }}>
+      <div className={`google-shell ${isSplit ? "is-split" : ""} ${isServicesPage ? "is-services" : ""}`} style={{ opacity: showIntro ? 0 : 1, pointerEvents: showIntro ? "none" : "auto" }}>
         <div className="giant-panel">
           <TopBar />
           <div className="giant-body">
-            <SideBar />
+            {/* >>> FIX: hide SideBar on services page */}
+            {!isServicesPage && <SideBar />}
             <main className="content-panel">
               <div className="content-scroll">
                 {isPcOpen && !isMobile ? <PcFaders /> : children}
@@ -75,3 +79,4 @@ if (!checked) return null;
     </>
   );
 }
+

@@ -1,9 +1,12 @@
 ﻿"use client";
 import { useState, useEffect, useMemo } from "react";
 import { usePathname, useRouter } from "next/navigation";
+import Link from "next/link";
 import "./top-bar.css";
 import "./top-bar-dynamics.css";
 import SideBar from "../side-bar/side-bar";
+import { useSideSheet } from "@/stores/use-side-sheet";
+
 import AppLogo from "@/components/AppLogo";
 import { useWatchDrawer } from "@/stores/use-watch-drawer";
 import CastSheet from "./cast";
@@ -46,7 +49,10 @@ export default function TopBar() {
 
   const { query: globalQuery, setQuery: setGlobalQuery, openSearch } = useGlobalSearch();
   const isAllMoviesPage = pathname?.startsWith("/movies") || pathname?.startsWith("/all-movies");
+  const isServicesPage = pathname === "/" || pathname === "/dashboard";
   const { setOpen } = useGlobalCast();
+  const { close: closeSideSheet } = useSideSheet();
+
 
 
  
@@ -99,6 +105,9 @@ export default function TopBar() {
 
 
   const filtered = PLACES.filter(p => p.toLowerCase().includes(query.toLowerCase())).slice(0, 2);
+
+   const closeAll = () => { setWaOpen(false); closeSideSheet(); };
+
 
   const toggleSidebar = () => {
     const next =!collapsed;
@@ -206,12 +215,19 @@ if (watchOpen && !watchMinimized) return null;
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M4 7H20" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/><circle cx="10" cy="7" r="3" fill="currentColor"/><path d="M4 17H20" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/><circle cx="15" cy="17" r="3" fill="currentColor"/></svg>
           </button>
 
-          <div className="profile">E</div>
-
-          <button className="apple-burger" aria-label="menu" onClick={() => { setDrawerMode("menu"); setWaOpen(true); }}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="16" height="8" rx="2" stroke="currentColor" strokeWidth="2"/><path d="M4 16H20" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/><path d="M4 20H20" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
-          </button>
+          {isServicesPage ? (
+            <Link href="/profile" className="profile you-btn">E</Link>
+          ) : (
+            <>
+              <div className="profile">E</div>
+              <button className="apple-burger" aria-label="menu" onClick={() => { setDrawerMode("menu"); setWaOpen(true); }}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="16" height="8" rx="2" stroke="currentColor" strokeWidth="2"/><path d="M4 16H20" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/><path d="M4 20H20" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
+              </button>
+            </>
+          )}
         </div>
+
+
       </header>
 
       {waOpen && (
@@ -219,7 +235,7 @@ if (watchOpen && !watchMinimized) return null;
           <div className="wa-mob-top">
 <AppLogo className="wa-panel-logo" />
             {drawerMode === "search" && <div className="wa-filtered-title">Filtered Content</div>}
-            <button className="wa-v" onClick={() => setWaOpen(false)} aria-label="Close">
+           <button className="wa-v" onClick={closeAll} aria-label="Close">
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6" /></svg>
             </button>
           </div>
