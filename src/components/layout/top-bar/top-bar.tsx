@@ -47,9 +47,9 @@ export default function TopBar() {
   const [waOpen, setWaOpen] = useState(false);
   const [drawerMode, setDrawerMode] = useState<"menu" | "search">("menu");
   
-  // WHOLE SHELL LAUNCH STATE
+  // INNER CARD ONLY ANIMATION
   const [activeChild, setActiveChild] = useState<string | null>(null);
-  const [phase, setPhase] = useState<"idle"|"list-dip"|"list-launch"|"detail-enter"|"detail-dip"|"detail-launch"|"list-enter">("idle");
+  const [phase, setPhase] = useState<"idle"|"card-dip"|"card-launch"|"card-enter"|"card-dip-back"|"card-launch-back"|"card-enter-back">("idle");
 
   const { query: globalQuery, setQuery: setGlobalQuery, openSearch } = useGlobalSearch();
   const isAllMoviesPage = pathname?.startsWith("/movies") || pathname?.startsWith("/all-movies");
@@ -111,27 +111,28 @@ export default function TopBar() {
   const { open: openPcFaders } = usePcFadersDrawer() as any;
   if (watchOpen && !watchMinimized) return null;
 
-  // OPEN CHILD: whole wa-mob-panel dips slightly lower, then launch up, child slides from bottom
+  // ONLY CARD MOVES - logo + > stay fixed
   const handleOpenChild = (id: string) => {
-    setPhase("list-dip");
+    setPhase("card-dip");
     setTimeout(() => {
-      setPhase("list-launch");
+      setPhase("card-launch");
       setActiveChild(id);
-      setTimeout(() => setPhase("detail-enter"), 100);
-    }, 140);
+      setTimeout(() => setPhase("card-enter"), 120);
+    }, 130);
   };
 
-  // BACK: child dips then launches up, list slides from bottom and takes over
   const handleBack = () => {
-    setPhase("detail-dip");
+    setPhase("card-dip-back");
     setTimeout(() => {
-      setPhase("detail-launch");
+      setPhase("card-launch-back");
       setTimeout(() => {
-        setPhase("list-enter");
-        setActiveChild(null);
-        setTimeout(() => setPhase("idle"), 420);
-      }, 320);
-    }, 120);
+        setPhase("card-enter-back");
+        setTimeout(() => {
+          setActiveChild(null);
+          setPhase("idle");
+        }, 400);
+      }, 340);
+    }, 110);
   };
 
   const renderChild = () => {
@@ -144,20 +145,26 @@ export default function TopBar() {
       case "privacy": return <PrivacySheet />;
       case "cast": return <CastSheet />;
       case "control": return <ControlSheet />;
-      default: return null;
+      default: return <div style={{padding: "20px", opacity: 0.6}}>Empty sheet for {activeChild}</div>;
     }
   };
 
-  const listPanelClass = 
-    phase === "list-dip" ? "is-dipping" :
-    phase === "list-launch" ? "is-launching" :
-    phase === "list-enter" ? "is-entering" : "";
+  const getListCardClass = () => {
+    if (phase === "card-dip") return "is-dipping";
+    if (phase === "card-launch") return "is-launching";
+    if (phase === "card-enter-back") return "is-entering";
+    if (activeChild) return "is-launching";
+    return "";
+  };
 
-  const detailPanelClass =
-    phase === "detail-enter" ? "is-entering" :
-    phase === "detail-dip" ? "is-dipping" :
-    phase === "detail-launch" ? "is-launching" :
-    activeChild && phase === "idle" ? "is-entering" : "";
+  const getDetailCardClass = () => {
+    if (phase === "card-enter") return "is-entering";
+    if (phase === "card-dip-back") return "is-dipping";
+    if (phase === "card-launch-back") return "is-launching";
+    if (!activeChild) return "";
+    if (phase === "idle" && activeChild) return "is-entering";
+    return "";
+  };
 
   return (
     <>
@@ -202,60 +209,45 @@ export default function TopBar() {
         </div>
       </header>
       {waOpen && (
-        <>
-          {/* LIST PANEL - whole red panel from your screenshot */}
-          <div className={`wa-mob-panel list-panel ${listPanelClass} ${drawerMode === "search" ? "is-search" : "is-menu"}`} style={{ display: activeChild && phase !== "list-enter" && phase !== "list-dip" && phase !== "list-launch" && phase !== "idle" ? "none" : "" }}>
-            <div className="wa-mob-top">
-              <AppLogo className="wa-panel-logo" />
-              {drawerMode === "search" && <div className="wa-filtered-title">Filtered Content</div>}
-              <button className="wa-v" onClick={closeAll} aria-label="Close"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6" /></svg></button>
-            </div>
-            <div className="wa-mob-body">
-              <div className="wa-card">
-                {drawerMode === "menu" ? (
-                  <div className="wa-scroll-wrap"><SideBar onOpen={handleOpenChild} /></div>
-                ) : (
-                  <div className="mobile-search-panel is-search-mode">
-                    <div className="mobile-search-input-wrap sticky-search">
-                      <svg className="mobile-search-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="6" /><path d="M21 21l-4.3-4.3" /></svg>
-                      <input autoFocus className="mobile-drawer-search" placeholder={placeholder} value={globalQuery} onChange={(e) => setGlobalQuery(e.target.value)} />
-                      <button className="mobile-search-settings" onClick={openFaders} type="button"><svg width="21" height="21" viewBox="0 0 24 24" fill="none"><path d="M4 7H20" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/><circle cx="10" cy="7" r="3" fill="currentColor"/><path d="M4 17H20" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/><circle cx="15" cy="17" r="3" fill="currentColor"/></svg></button>
-                    </div>
-                    <div className="wa-scroll-wrap search-results-scroll"><div style={{marginTop: "16px"}}><SearchDrawer /></div></div>
-                  </div>
-                )}
-              </div>
-            </div>
+        <div className={`wa-mob-panel ${drawerMode === "search" ? "is-search" : "is-menu"}`}>
+          <div className="wa-mob-top">
+            <AppLogo className="wa-panel-logo" />
+            {drawerMode === "search" && <div className="wa-filtered-title">Filtered Content</div>}
+            <button className="wa-v" onClick={closeAll} aria-label="Close"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6" /></svg></button>
           </div>
-
-          {/* DETAIL PANEL - child sheet, same whole shell, slides from bottom */}
-          {activeChild && (
-            <div className={`wa-mob-panel detail-panel ${detailPanelClass}`}>
-              <div className="wa-mob-top">
-                <AppLogo className="wa-panel-logo" />
-                <button className="wa-v" onClick={handleBack} aria-label="Back">
-                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6" /></svg>
-                </button>
-              </div>
-              <div className="wa-mob-body">
-                <div className="wa-card">
-                  <div className="wa-scroll-wrap">
-                    <div className="side-bar">
-                      <div className="morph-header" style={{padding: "12px 4px"}}>
-                        <button className="morph-back" onClick={handleBack} style={{display: "flex", alignItems: "center", gap: "8px", background: "none", border: "none", color: "hsl(var(--foreground))", fontWeight: 600, fontSize: "16px", cursor: "pointer"}}>
-                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M15 18l-6-6 6-6"/></svg>
-                          <span>{SIDEBAR_ITEMS.find(x=>x.id===activeChild)?.label || activeChild}</span>
-                        </button>
-                      </div>
-                      <div style={{padding: "0 16px 16px"}}>{renderChild()}</div>
-                    </div>
+          <div className="wa-mob-body">
+            {/* LIST CARD - red panel from screenshot */}
+            <div className={`wa-card list-card ${getListCardClass()}`}>
+              {drawerMode === "menu" ? (
+                <div className="wa-scroll-wrap"><SideBar onOpen={handleOpenChild} /></div>
+              ) : (
+                <div className="mobile-search-panel is-search-mode">
+                  <div className="mobile-search-input-wrap sticky-search">
+                    <svg className="mobile-search-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="6" /><path d="M21 21l-4.3-4.3" /></svg>
+                    <input autoFocus className="mobile-drawer-search" placeholder={placeholder} value={globalQuery} onChange={(e) => setGlobalQuery(e.target.value)} />
+                    <button className="mobile-search-settings" onClick={openFaders} type="button"><svg width="21" height="21" viewBox="0 0 24 24" fill="none"><path d="M4 7H20" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/><circle cx="10" cy="7" r="3" fill="currentColor"/><path d="M4 17H20" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/><circle cx="15" cy="17" r="3" fill="currentColor"/></svg></button>
                   </div>
+                  <div className="wa-scroll-wrap search-results-scroll"><div style={{marginTop: "16px"}}><SearchDrawer /></div></div>
+                </div>
+              )}
+            </div>
+
+            {/* DETAIL CARD - same container, slides from bottom inside wa drawer */}
+            <div className={`wa-card detail-card ${getDetailCardClass()}`}>
+              <div className="wa-scroll-wrap">
+                <div className="side-bar">
+                  <div className="morph-header">
+                    <button className="morph-back" onClick={handleBack}>
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M15 18l-6-6 6-6"/></svg>
+                      <span>{SIDEBAR_ITEMS.find(x=>x.id===activeChild)?.label || activeChild}</span>
+                    </button>
+                  </div>
+                  <div style={{padding: "0 16px 16px"}}>{activeChild ? renderChild() : null}</div>
                 </div>
               </div>
             </div>
-          )}
-        </>
+          </div>
+        </div>
       )}
     </>
   );
-}
