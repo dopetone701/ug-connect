@@ -1,78 +1,87 @@
-/* side-sheet.css - FINAL BUILD SAFE - child same size as wa panel */
-.wa-mob-body{
-  position:relative!important;
-  overflow:hidden!important;
-  padding:0 12px 12px 12px!important;
-  display:flex!important;
-  flex-direction:column!important;
-  flex:1!important;
-  min-height:0!important;
-  gap:0!important;
+/* INNER CARD ONLY - logo + back btn stay fixed, only card moves */
+.wa-mob-top {
+  position: relative;
+  z-index: 10;
+  /* NEVER animates */
 }
-.wa-card{
-  border-radius:24px!important;
-  background:hsl(var(--surface))!important;
-  border:1px solid hsl(var(--border))!important;
-  width:100%!important;
-  box-shadow:0 8px 24px rgba(0,0,0,0.28)!important;
-  overflow:hidden!important;
-  will-change:transform,opacity!important;
+
+.wa-mob-body {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
 }
-.wa-card.list-card{
-  position:relative!important;
-  max-height:62vh!important;
-  overflow-y:auto!important;
-  -webkit-overflow-scrolling:touch!important;
+
+.wa-card {
+  will-change: transform, opacity;
+  backface-visibility: hidden;
 }
-.wa-card.detail-card{
-  position:absolute!important;
-  top:0!important;
-  left:0!important;
-  right:0!important;
-  max-height:62vh!important;
-  min-height:360px!important;
-  background:hsl(var(--surface))!important;
-  border-radius:24px!important;
-  transform:translateY(120%)!important;
-  opacity:0!important;
-  pointer-events:none!important;
-  overflow-y:auto!important;
-  z-index:2!important;
+
+/* LIST CARD - the red card from screenshot */
+.wa-card.list-card.is-dipping {
+  animation: cardDip 0.14s cubic-bezier(0.4,0,1,1) forwards;
 }
-.wa-card.detail-card.is-entering{
-  transform:translateY(0)!important;
-  opacity:1!important;
-  pointer-events:auto!important;
-  animation:cardEnter 0.42s cubic-bezier(0.16,1,0.3,1) forwards!important;
+.wa-card.detail-card.is-dipping {
+  animation: cardDip 0.12s ease-in forwards;
 }
-.wa-card.list-card.is-entering{
-  animation:cardEnter 0.42s cubic-bezier(0.16,1,0.3,1) forwards!important;
+
+@keyframes cardDip {
+  from { transform: translateY(0) scale(1); }
+  to { transform: translateY(14px) scale(0.97); }
 }
-.wa-card.is-dipping{ animation:cardDip 0.13s ease-in forwards!important; }
-.wa-card.is-launching{ animation:cardLaunch 0.32s cubic-bezier(0.4,0,0.2,1) forwards!important; }
-@keyframes cardDip{ from{transform:translateY(0) scale(1)} to{transform:translateY(10px) scale(0.97)} }
-@keyframes cardLaunch{ from{transform:translateY(10px) scale(0.97); opacity:1} to{transform:translateY(-120%); opacity:0} }
-@keyframes cardEnter{ from{transform:translateY(120%); opacity:0} to{transform:translateY(0); opacity:1} }
-.morph-header{
-  position:sticky!important;
-  top:0!important;
-  background:hsl(var(--surface))!important;
-  padding:14px 16px 12px!important;
-  border-bottom:1px solid hsl(var(--border) / 0.1)!important;
-  z-index:2!important;
-  display:flex!important;
-  align-items:center!important;
+
+/* LAUNCH UP - only card launches, not shell */
+.wa-card.list-card.is-launching {
+  animation: cardLaunchUp 0.38s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
-.morph-back{
-  display:flex!important;
-  align-items:center!important;
-  gap:8px!important;
-  background:hsl(var(--muted) / 0.7)!important;
-  border-radius:999px!important;
-  padding:6px 12px 6px 8px!important;
-  font-weight:600!important;
-  font-size:14px!important;
-  border:1px solid hsl(var(--border) / 0.1)!important;
-  cursor:pointer!important;
+.wa-card.detail-card.is-launching {
+  animation: cardLaunchUp 0.36s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
-.morph-body{ padding:16px!important; }
+
+@keyframes cardLaunchUp {
+  0% { transform: translateY(14px) scale(0.97); opacity: 1; }
+  100% { transform: translateY(-110%); opacity: 0; }
+}
+
+/* DETAIL CARD - slides from bottom inside same wa panel */
+.wa-card.detail-card {
+  position: absolute;
+  inset: 0;
+  transform: translateY(110%);
+  opacity: 0;
+  pointer-events: none;
+}
+
+.wa-card.detail-card.is-entering {
+  animation: cardEnterBottom 0.44s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  pointer-events: auto;
+}
+.wa-card.list-card.is-entering {
+  animation: cardEnterBottom 0.42s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes cardEnterBottom {
+  0% { transform: translateY(110%); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+
+.morph-header {
+  display: flex;
+  align-items: center;
+  padding: 12px 4px 14px;
+  border-bottom: 1px solid hsl(var(--border) / 0.5);
+  margin-bottom: 14px;
+}
+.morph-back {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: none;
+  border: none;
+  color: hsl(var(--foreground));
+  font-weight: 600;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 6px 10px;
+  border-radius: 10px;
+}
+.morph-back:hover { background: hsl(var(--muted));
