@@ -728,3 +728,8 @@
     margin-top: calc(env(safe-area-inset-top) / 2) !important;
   }
 }
+
+.mobile-search-input-wrap.sticky-search.hidden-by-faders,
+.wa-mob-panel.is-search.faders-open.mobile-search-input-wrap.sticky-search {
+  display: none!important;
+}
