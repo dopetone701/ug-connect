@@ -37,7 +37,7 @@ export default function TopBar() {
   const [collapsed, setCollapsed] = useState(false);
   const [waOpen, setWaOpen] = useState(false);
   const [drawerMode, setDrawerMode] = useState<"menu" | "search">("menu");
-  const [bubble, setBubble] = useState<"idle"|"shrinking"|"flashing"|"expanding">("idle");
+  const [paper, setPaper] = useState<"idle"|"dipping"|"launching"|"dipping-back"|"launching-back">("idle");
 
   const { query: globalQuery, setQuery: setGlobalQuery, openSearch } = useGlobalSearch();
   const isAllMoviesPage = pathname?.startsWith("/movies") || pathname?.startsWith("/all-movies");
@@ -70,16 +70,26 @@ export default function TopBar() {
   useEffect(() => {
     const handler = () => { setDrawerMode("search"); setWaOpen(true); };
     window.addEventListener("ug-open-search-panel", handler);
-    const bubbleHandler = () => {
-      setBubble("shrinking");
-      setTimeout(() => setBubble("flashing"), 160);
-      setTimeout(() => setBubble("expanding"), 300);
-      setTimeout(() => setBubble("idle"), 820);
+    
+    const paperHandler = (e: any) => {
+      const action = e.detail?.action;
+      if (action === "open") {
+        setPaper("dipping");
+        setTimeout(() => setPaper("launching"), 140);
+        setTimeout(() => setPaper("idle"), 600);
+      } else if (action === "close") {
+        setPaper("dipping-back");
+        setTimeout(() => setPaper("launching-back"), 130);
+        setTimeout(() => {
+          setPaper("idle");
+          window.dispatchEvent(new CustomEvent("ug-paper-reset"));
+        }, 560);
+      }
     };
-    window.addEventListener("ug-bubble", bubbleHandler as any);
+    window.addEventListener("ug-paper", paperHandler as any);
     return () => {
       window.removeEventListener("ug-open-search-panel", handler);
-      window.removeEventListener("ug-bubble", bubbleHandler as any);
+      window.removeEventListener("ug-paper", paperHandler as any);
     };
   }, []);
 
@@ -96,6 +106,12 @@ export default function TopBar() {
   const { open: watchOpen, minimized: watchMinimized } = useWatchDrawer() as any;
   const { open: openPcFaders } = usePcFadersDrawer() as any;
   if (watchOpen && !watchMinimized) return null;
+
+  const paperClass = 
+    paper === "dipping" ? "is-dipping" :
+    paper === "launching" ? "is-launching" :
+    paper === "dipping-back" ? "is-dipping-back" :
+    paper === "launching-back" ? "is-launching-back" : "";
 
   return (
     <>
@@ -146,21 +162,22 @@ export default function TopBar() {
             {drawerMode === "search" && <div className="wa-filtered-title">Filtered Content</div>}
             <button className="wa-v" onClick={closeAll} aria-label="Close"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6" /></svg></button>
           </div>
-          <div className={`wa-mob-body ${bubble === "shrinking" ? "is-shrinking" : ""} ${bubble === "flashing" ? "is-shrinking is-flashing" : ""} ${bubble === "expanding" ? "is-expanding" : ""}`}>
-            <div className="crt-line" />
+          <div className={`wa-mob-body ${paperClass}`}>
             <div className="wa-card">
-              {drawerMode === "menu" ? (
-                <div className="wa-scroll-wrap"><SideBar /></div>
-              ) : (
-                <div className="mobile-search-panel is-search-mode">
-                  <div className="mobile-search-input-wrap sticky-search">
-                    <svg className="mobile-search-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="6" /><path d="M21 21l-4.3-4.3" /></svg>
-                    <input autoFocus className="mobile-drawer-search" placeholder={placeholder} value={globalQuery} onChange={(e) => setGlobalQuery(e.target.value)} />
-                    <button className="mobile-search-settings" onClick={openFaders} type="button"><svg width="21" height="21" viewBox="0 0 24 24" fill="none"><path d="M4 7H20" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/><circle cx="10" cy="7" r="3" fill="currentColor"/><path d="M4 17H20" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/><circle cx="15" cy="17" r="3" fill="currentColor"/></svg></button>
+              <div className="paper-stage">
+                {drawerMode === "menu" ? (
+                  <div className="wa-scroll-wrap"><SideBar /></div>
+                ) : (
+                  <div className="mobile-search-panel is-search-mode">
+                    <div className="mobile-search-input-wrap sticky-search">
+                      <svg className="mobile-search-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="6" /><path d="M21 21l-4.3-4.3" /></svg>
+                      <input autoFocus className="mobile-drawer-search" placeholder={placeholder} value={globalQuery} onChange={(e) => setGlobalQuery(e.target.value)} />
+                      <button className="mobile-search-settings" onClick={openFaders} type="button"><svg width="21" height="21" viewBox="0 0 24 24" fill="none"><path d="M4 7H20" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/><circle cx="10" cy="7" r="3" fill="currentColor"/><path d="M4 17H20" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/><circle cx="15" cy="17" r="3" fill="currentColor"/></svg></button>
+                    </div>
+                    <div className="wa-scroll-wrap search-results-scroll"><div style={{marginTop: "16px"}}><SearchDrawer /></div></div>
                   </div>
-                  <div className="wa-scroll-wrap search-results-scroll"><div style={{marginTop: "16px"}}><SearchDrawer /></div></div>
-                </div>
-              )}
+                )}
+              </div>
             </div>
           </div>
         </div>
