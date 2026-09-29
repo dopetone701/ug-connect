@@ -13,6 +13,15 @@ import { useFadersDrawer } from "../../../stores/use-faders-drawer";
 import { usePcFadersDrawer } from "../../../stores/use-pc-faders-drawer";
 import SearchDrawer from "./search-drawer/search-drawer";
 import { useGlobalSearch } from "../../../stores/use-global-search";
+import { SIDEBAR_ITEMS } from "../side-bar/config";
+import AccountSheet from "../side-bar/sheets/account-sheet";
+import ListsSheet from "../side-bar/sheets/lists-sheet";
+import SubscriptionSheet from "../side-bar/sheets/subscription-sheet";
+import TipsSheet from "../side-bar/sheets/tips-sheet";
+import InviteSheet from "../side-bar/sheets/invite-sheet";
+import PrivacySheet from "../side-bar/sheets/privacy-sheet";
+import CastSheet from "../side-bar/sheets/cast-sheet";
+import ControlSheet from "../side-bar/sheets/control-sheet";
 
 const PLACES = ["Dubai", "Kampala", "London", "New York", "Nairobi", "Toronto", "Doha", "Johannesburg"];
 const PLACEHOLDER_MAP: any = {
@@ -37,7 +46,10 @@ export default function TopBar() {
   const [collapsed, setCollapsed] = useState(false);
   const [waOpen, setWaOpen] = useState(false);
   const [drawerMode, setDrawerMode] = useState<"menu" | "search">("menu");
-  const [paper, setPaper] = useState<"idle"|"dipping"|"launching"|"dipping-back"|"launching-back">("idle");
+  
+  // WHOLE SHELL LAUNCH STATE
+  const [activeChild, setActiveChild] = useState<string | null>(null);
+  const [phase, setPhase] = useState<"idle"|"list-dip"|"list-launch"|"detail-enter"|"detail-dip"|"detail-launch"|"list-enter">("idle");
 
   const { query: globalQuery, setQuery: setGlobalQuery, openSearch } = useGlobalSearch();
   const isAllMoviesPage = pathname?.startsWith("/movies") || pathname?.startsWith("/all-movies");
@@ -65,36 +77,27 @@ export default function TopBar() {
     if (waOpen) document.body.classList.add("wa-pushed");
     else document.body.classList.remove("wa-pushed");
   }, [waOpen]);
-  useEffect(() => { setWaOpen(false); document.body.classList.remove("wa-pushed"); }, [pathname]);
+  useEffect(() => { 
+    setWaOpen(false); 
+    setActiveChild(null);
+    setPhase("idle");
+    document.body.classList.remove("wa-pushed"); 
+  }, [pathname]);
 
   useEffect(() => {
     const handler = () => { setDrawerMode("search"); setWaOpen(true); };
     window.addEventListener("ug-open-search-panel", handler);
-    
-    const paperHandler = (e: any) => {
-      const action = e.detail?.action;
-      if (action === "open") {
-        setPaper("dipping");
-        setTimeout(() => setPaper("launching"), 140);
-        setTimeout(() => setPaper("idle"), 600);
-      } else if (action === "close") {
-        setPaper("dipping-back");
-        setTimeout(() => setPaper("launching-back"), 130);
-        setTimeout(() => {
-          setPaper("idle");
-          window.dispatchEvent(new CustomEvent("ug-paper-reset"));
-        }, 560);
-      }
-    };
-    window.addEventListener("ug-paper", paperHandler as any);
-    return () => {
-      window.removeEventListener("ug-open-search-panel", handler);
-      window.removeEventListener("ug-paper", paperHandler as any);
-    };
+    return () => window.removeEventListener("ug-open-search-panel", handler);
   }, []);
 
   const filtered = PLACES.filter(p => p.toLowerCase().includes(query.toLowerCase())).slice(0, 2);
-  const closeAll = () => { setWaOpen(false); closeSideSheet(); };
+  const closeAll = () => { 
+    setWaOpen(false); 
+    setActiveChild(null);
+    setPhase("idle");
+    closeSideSheet(); 
+  };
+
   const toggleSidebar = () => {
     const next = !collapsed;
     setCollapsed(next);
@@ -102,16 +105,59 @@ export default function TopBar() {
     document.querySelector('.side-bar')?.classList.toggle('collapsed', next);
     window.dispatchEvent(new CustomEvent("ug-toggle-sidebar", { detail: next }));
   };
+
   const { open: openFaders } = useFadersDrawer() as any;
   const { open: watchOpen, minimized: watchMinimized } = useWatchDrawer() as any;
   const { open: openPcFaders } = usePcFadersDrawer() as any;
   if (watchOpen && !watchMinimized) return null;
 
-  const paperClass = 
-    paper === "dipping" ? "is-dipping" :
-    paper === "launching" ? "is-launching" :
-    paper === "dipping-back" ? "is-dipping-back" :
-    paper === "launching-back" ? "is-launching-back" : "";
+  // OPEN CHILD: whole wa-mob-panel dips slightly lower, then launch up, child slides from bottom
+  const handleOpenChild = (id: string) => {
+    setPhase("list-dip");
+    setTimeout(() => {
+      setPhase("list-launch");
+      setActiveChild(id);
+      setTimeout(() => setPhase("detail-enter"), 100);
+    }, 140);
+  };
+
+  // BACK: child dips then launches up, list slides from bottom and takes over
+  const handleBack = () => {
+    setPhase("detail-dip");
+    setTimeout(() => {
+      setPhase("detail-launch");
+      setTimeout(() => {
+        setPhase("list-enter");
+        setActiveChild(null);
+        setTimeout(() => setPhase("idle"), 420);
+      }, 320);
+    }, 120);
+  };
+
+  const renderChild = () => {
+    switch (activeChild) {
+      case "account": return <AccountSheet />;
+      case "lists": return <ListsSheet />;
+      case "subscription": return <SubscriptionSheet />;
+      case "tips": return <TipsSheet />;
+      case "invite": return <InviteSheet />;
+      case "privacy": return <PrivacySheet />;
+      case "cast": return <CastSheet />;
+      case "control": return <ControlSheet />;
+      default: return null;
+    }
+  };
+
+  const listPanelClass = 
+    phase === "list-dip" ? "is-dipping" :
+    phase === "list-launch" ? "is-launching" :
+    phase === "list-enter" ? "is-entering" : "";
+
+  const detailPanelClass =
+    phase === "detail-enter" ? "is-entering" :
+    phase === "detail-dip" ? "is-dipping" :
+    phase === "detail-launch" ? "is-launching" :
+    activeChild && phase === "idle" ? "is-entering" : "";
 
   return (
     <>
@@ -156,17 +202,18 @@ export default function TopBar() {
         </div>
       </header>
       {waOpen && (
-        <div className={`wa-mob-panel ${drawerMode === "search" ? "is-search" : "is-menu"}`}>
-          <div className="wa-mob-top">
-            <AppLogo className="wa-panel-logo" />
-            {drawerMode === "search" && <div className="wa-filtered-title">Filtered Content</div>}
-            <button className="wa-v" onClick={closeAll} aria-label="Close"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6" /></svg></button>
-          </div>
-          <div className={`wa-mob-body ${paperClass}`}>
-            <div className="wa-card">
-              <div className="paper-stage">
+        <>
+          {/* LIST PANEL - whole red panel from your screenshot */}
+          <div className={`wa-mob-panel list-panel ${listPanelClass} ${drawerMode === "search" ? "is-search" : "is-menu"}`} style={{ display: activeChild && phase !== "list-enter" && phase !== "list-dip" && phase !== "list-launch" && phase !== "idle" ? "none" : "" }}>
+            <div className="wa-mob-top">
+              <AppLogo className="wa-panel-logo" />
+              {drawerMode === "search" && <div className="wa-filtered-title">Filtered Content</div>}
+              <button className="wa-v" onClick={closeAll} aria-label="Close"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6" /></svg></button>
+            </div>
+            <div className="wa-mob-body">
+              <div className="wa-card">
                 {drawerMode === "menu" ? (
-                  <div className="wa-scroll-wrap"><SideBar /></div>
+                  <div className="wa-scroll-wrap"><SideBar onOpen={handleOpenChild} /></div>
                 ) : (
                   <div className="mobile-search-panel is-search-mode">
                     <div className="mobile-search-input-wrap sticky-search">
@@ -180,7 +227,34 @@ export default function TopBar() {
               </div>
             </div>
           </div>
-        </div>
+
+          {/* DETAIL PANEL - child sheet, same whole shell, slides from bottom */}
+          {activeChild && (
+            <div className={`wa-mob-panel detail-panel ${detailPanelClass}`}>
+              <div className="wa-mob-top">
+                <AppLogo className="wa-panel-logo" />
+                <button className="wa-v" onClick={handleBack} aria-label="Back">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6" /></svg>
+                </button>
+              </div>
+              <div className="wa-mob-body">
+                <div className="wa-card">
+                  <div className="wa-scroll-wrap">
+                    <div className="side-bar">
+                      <div className="morph-header" style={{padding: "12px 4px"}}>
+                        <button className="morph-back" onClick={handleBack} style={{display: "flex", alignItems: "center", gap: "8px", background: "none", border: "none", color: "hsl(var(--foreground))", fontWeight: 600, fontSize: "16px", cursor: "pointer"}}>
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M15 18l-6-6 6-6"/></svg>
+                          <span>{SIDEBAR_ITEMS.find(x=>x.id===activeChild)?.label || activeChild}</span>
+                        </button>
+                      </div>
+                      <div style={{padding: "0 16px 16px"}}>{renderChild()}</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </>
       )}
     </>
   );
