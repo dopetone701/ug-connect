@@ -1,57 +1,87 @@
-/* WHOLE SHELL LAUNCH - simple swipe up, whole red panel */
-.wa-mob-panel {
-  will-change: transform;
+/* INNER CARD ONLY - logo + back btn stay fixed, only card moves */
+.wa-mob-top {
+  position: relative;
+  z-index: 10;
+  /* NEVER animates */
+}
+
+.wa-mob-body {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.wa-card {
+  will-change: transform, opacity;
   backface-visibility: hidden;
 }
 
-/* DIP slightly lower like loading paper plane */
-.wa-mob-panel.list-panel.is-dipping {
-  animation: shellDip 0.14s cubic-bezier(0.4,0,1,1) forwards;
+/* LIST CARD - the red card from screenshot */
+.wa-card.list-card.is-dipping {
+  animation: cardDip 0.14s cubic-bezier(0.4,0,1,1) forwards;
 }
-.wa-mob-panel.detail-panel.is-dipping {
-  animation: shellDip 0.12s ease-in forwards;
+.wa-card.detail-card.is-dipping {
+  animation: cardDip 0.12s ease-in forwards;
 }
-@keyframes shellDip {
+
+@keyframes cardDip {
   from { transform: translateY(0) scale(1); }
   to { transform: translateY(14px) scale(0.97); }
 }
 
-/* LAUNCH UP - whole shell */
-.wa-mob-panel.list-panel.is-launching {
-  animation: shellLaunchUp 0.38s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+/* LAUNCH UP - only card launches, not shell */
+.wa-card.list-card.is-launching {
+  animation: cardLaunchUp 0.38s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
-.wa-mob-panel.detail-panel.is-launching {
-  animation: shellLaunchUp 0.36s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+.wa-card.detail-card.is-launching {
+  animation: cardLaunchUp 0.36s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
-@keyframes shellLaunchUp {
+
+@keyframes cardLaunchUp {
   0% { transform: translateY(14px) scale(0.97); opacity: 1; }
   100% { transform: translateY(-110%); opacity: 0; }
 }
 
-/* ENTER FROM BOTTOM - takes over */
-.wa-mob-panel.detail-panel {
+/* DETAIL CARD - slides from bottom inside same wa panel */
+.wa-card.detail-card {
+  position: absolute;
+  inset: 0;
   transform: translateY(110%);
   opacity: 0;
   pointer-events: none;
 }
-.wa-mob-panel.list-panel {
-  transform: translateY(0);
-}
 
-.wa-mob-panel.detail-panel.is-entering {
-  animation: shellEnterBottom 0.44s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+.wa-card.detail-card.is-entering {
+  animation: cardEnterBottom 0.44s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   pointer-events: auto;
 }
-.wa-mob-panel.list-panel.is-entering {
-  animation: shellEnterBottom 0.42s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+.wa-card.list-card.is-entering {
+  animation: cardEnterBottom 0.42s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-@keyframes shellEnterBottom {
+@keyframes cardEnterBottom {
   0% { transform: translateY(110%); opacity: 0; }
   100% { transform: translateY(0); opacity: 1; }
 }
 
-/* Keep top logo untouched but whole panel moves - top moves with shell */
-.wa-mob-top {
-  flex-shrink: 0;
+.morph-header {
+  display: flex;
+  align-items: center;
+  padding: 12px 4px 14px;
+  border-bottom: 1px solid hsl(var(--border) / 0.5);
+  margin-bottom: 14px;
 }
+.morph-back {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: none;
+  border: none;
+  color: hsl(var(--foreground));
+  font-weight: 600;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 6px 10px;
+  border-radius: 10px;
+}
+.morph-back:hover { background: hsl(var(--muted)); }
