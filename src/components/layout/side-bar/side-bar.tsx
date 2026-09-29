@@ -137,4 +137,4 @@ export default function SideBar() {
       <div className="side-footer"><a>Privacy</a><a>Terms</a><a>Help</a></div>
     </aside>
   );
-}
+} 
