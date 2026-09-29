@@ -1,87 +1,131 @@
-/* INNER CARD ONLY - logo + back btn stay fixed, only card moves */
+/* PREMIUM CHILD SHEET - like wa panel, not full screen */
 .wa-mob-top {
   position: relative;
   z-index: 10;
-  /* NEVER animates */
 }
 
 .wa-mob-body {
   position: relative;
   overflow: hidden;
   isolation: isolate;
+  padding: 0 12px 12px 12px; /* gap like wa panel from screenshot */
 }
 
 .wa-card {
   will-change: transform, opacity;
   backface-visibility: hidden;
+  border-radius: 24px;
+  background: hsl(var(--card));
+  border: 1px solid hsl(var(--border) / 0.18);
+  box-shadow: 
+    0 0 0 1px hsl(var(--border) / 0.08) inset,
+    0 12px 32px rgba(0,0,0,0.35),
+    0 2px 8px rgba(0,0,0,0.2);
+  overflow: hidden;
 }
 
-/* LIST CARD - the red card from screenshot */
-.wa-card.list-card.is-dipping {
+/* LIST CARD - premium wa panel from your first screenshot */
+.wa-card.list-card {
+  position: relative;
+  min-height: 420px;
+}
+
+/* DETAIL CHILD CARD - SAME premium look, not full screen, with gaps */
+.wa-card.detail-card {
+  position: absolute;
+  inset: 0 0 12px 0; /* not touching bottom, sides have body padding */
+  border-radius: 24px;
+  background: hsl(var(--card));
+  border: 1px solid hsl(var(--border) / 0.18);
+  box-shadow: 
+    0 0 0 1px hsl(var(--border) / 0.08) inset,
+    0 12px 40px rgba(0,0,0,0.45),
+    0 4px 12px rgba(0,0,0,0.25);
+  transform: translateY(110%);
+  opacity: 0;
+  pointer-events: none;
+  overflow: hidden;
+  /* premium gradient subtle like wa */
+  background: linear-gradient(180deg, hsl(var(--card)) 0%, hsl(var(--card) / 0.98) 100%);
+}
+
+/* CARD ANIMATIONS - only card moves, logo stays */
+.wa-card.list-card.is-dipping,
+.wa-card.detail-card.is-dipping {
   animation: cardDip 0.14s cubic-bezier(0.4,0,1,1) forwards;
 }
-.wa-card.detail-card.is-dipping {
-  animation: cardDip 0.12s ease-in forwards;
-}
-
 @keyframes cardDip {
   from { transform: translateY(0) scale(1); }
   to { transform: translateY(14px) scale(0.97); }
 }
 
-/* LAUNCH UP - only card launches, not shell */
-.wa-card.list-card.is-launching {
+.wa-card.list-card.is-launching,
+.wa-card.detail-card.is-launching {
   animation: cardLaunchUp 0.38s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
-.wa-card.detail-card.is-launching {
-  animation: cardLaunchUp 0.36s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-}
-
 @keyframes cardLaunchUp {
   0% { transform: translateY(14px) scale(0.97); opacity: 1; }
-  100% { transform: translateY(-110%); opacity: 0; }
+  100% { transform: translateY(-110%); opacity: 0; filter: blur(2px); }
 }
 
-/* DETAIL CARD - slides from bottom inside same wa panel */
-.wa-card.detail-card {
-  position: absolute;
-  inset: 0;
-  transform: translateY(110%);
-  opacity: 0;
-  pointer-events: none;
-}
-
-.wa-card.detail-card.is-entering {
-  animation: cardEnterBottom 0.44s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+.wa-card.detail-card.is-entering,
+.wa-card.list-card.is-entering {
+  animation: cardEnterBottom 0.46s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   pointer-events: auto;
 }
-.wa-card.list-card.is-entering {
-  animation: cardEnterBottom 0.42s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
 @keyframes cardEnterBottom {
   0% { transform: translateY(110%); opacity: 0; }
   100% { transform: translateY(0); opacity: 1; }
 }
 
+/* PREMIUM HEADER - like wa panel */
 .morph-header {
   display: flex;
   align-items: center;
-  padding: 12px 4px 14px;
-  border-bottom: 1px solid hsl(var(--border) / 0.5);
-  margin-bottom: 14px;
+  padding: 16px 18px 14px;
+  border-bottom: 1px solid hsl(var(--border) / 0.12);
+  background: linear-gradient(180deg, hsl(var(--card)) 0%, hsl(var(--card) / 0.85) 100%);
+  backdrop-filter: blur(16px);
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  margin: 0;
 }
+
 .morph-back {
   display: flex;
   align-items: center;
-  gap: 8px;
-  background: none;
-  border: none;
+  gap: 10px;
+  background: hsl(var(--muted) / 0.6);
+  border: 1px solid hsl(var(--border) / 0.12);
   color: hsl(var(--foreground));
   font-weight: 600;
-  font-size: 16px;
+  font-size: 15px;
+  letter-spacing: -0.01em;
   cursor: pointer;
-  padding: 6px 10px;
-  border-radius: 10px;
+  padding: 8px 14px 8px 10px;
+  border-radius: 999px;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.08);
 }
-.morph-back:hover { background: hsl(var(--muted)); }
+.morph-back:hover { 
+  background: hsl(var(--muted)); 
+  transform: scale(0.98);
+}
+.morph-back svg {
+  opacity: 0.8;
+  background: hsl(var(--background));
+  border-radius: 999px;
+  padding: 2px;
+  width: 22px;
+  height: 22px;
+}
+
+.morph-body {
+  padding: 18px;
+}
+
+/* Make injected sheets look premium inside */
+.morph-body > * {
+  border-radius: 16px;
+}
