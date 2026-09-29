@@ -28,7 +28,7 @@ const icons: any = {
 
 export default function SideBar() {
   const [active, setActive] = useState<string | null>(null);
-  const [phase, setPhase] = useState<"list" | "folding" | "detail">("list");
+  const [phase, setPhase] = useState<"list" | "shutting">("list");
   const [selected, setSelected] = useState<string | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [curTheme, setCurTheme] = useState("");
@@ -39,26 +39,35 @@ export default function SideBar() {
     setCurTheme(localStorage.getItem("ug-theme") || "dark");
   }, []);
 
-  const openSheet = (id: string) => {
+  const openSheet = (e: React.MouseEvent, id: string) => {
+    const card = (e.currentTarget as HTMLElement).closest(".wa-card") as HTMLElement;
+    const cardRect = card?.getBoundingClientRect();
+    const y = cardRect ? e.clientY - cardRect.top : 0;
+    const yPct = cardRect ? (y / cardRect.height) * 100 : 50;
+
     setSelected(id);
-    setPhase("folding");
-    window.dispatchEvent(new CustomEvent("ug-wa-morph", { detail: "folding" }));
+    setPhase("shutting");
+    
+    // send click Y to TopBar CRT
+    window.dispatchEvent(new CustomEvent("ug-crt", { detail: { action: "shut", y: y, yPct } }));
+
     setTimeout(() => {
       setActive(id);
-      setPhase("detail");
-      window.dispatchEvent(new CustomEvent("ug-wa-morph", { detail: "expanding" }));
-    }, 260);
+      setPhase("list");
+    }, 260); // swap while shutters closed
   };
 
-  const closeSheet = () => {
-    setPhase("folding");
-    window.dispatchEvent(new CustomEvent("ug-wa-morph", { detail: "folding" }));
+  const closeSheet = (e?: React.MouseEvent) => {
+    const card = document.querySelector(".wa-card") as HTMLElement;
+    const y = card ? card.offsetHeight / 2 : 0;
+    const yPct = 50;
+    
+    window.dispatchEvent(new CustomEvent("ug-crt", { detail: { action: "shut", y, yPct } }));
+    
     setTimeout(() => {
       setActive(null);
       setSelected(null);
-      setPhase("list");
-      window.dispatchEvent(new CustomEvent("ug-wa-morph", { detail: "expanding" }));
-    }, 240);
+    }, 220);
   };
 
   const renderSheet = () => {
@@ -75,57 +84,57 @@ export default function SideBar() {
     }
   };
 
+  if (active) {
+    return (
+      <aside className="side-bar morph-detail">
+        <div className="morph-header">
+          <button className="morph-back" onClick={closeSheet}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M15 18l-6-6 6-6"/></svg>
+            <span>{SIDEBAR_ITEMS.find(x=>x.id===active)?.label || active}</span>
+          </button>
+        </div>
+        <div className="morph-body">{renderSheet()}</div>
+      </aside>
+    );
+  }
+
   return (
-    <aside className={`side-bar morph-${phase} ${phase}`}>
-      {phase === "detail" && active ? (
-        <>
-          <div className="morph-header">
-            <button className="morph-back" onClick={closeSheet}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M15 18l-6-6 6-6"/></svg>
-              <span>{SIDEBAR_ITEMS.find(x=>x.id===active)?.label || active}</span>
-            </button>
+    <aside className={`side-bar morph-list ${phase}`}>
+      <nav className="side-nav">
+        <Link href="/movies" className="nav-item live">
+          <span className="nav-left">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="2" y="2" width="20" height="20" rx="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/></svg>
+            <span className="nav-label">Movies</span>
+          </span>
+          <span className="live-dot">live</span>
+        </Link>
+        <div className="nav-divider" />
+        {SIDEBAR_ITEMS.filter((i: any) => !(i as any).admin || isAdmin).map((i) => (
+          <button key={i.id} onClick={(e) => openSheet(e, i.id)} className={`nav-item as-btn ${selected===i.id ? "is-selected" : ""}`}>
+            <span className="nav-left">
+              {icons[i.id] || icons.account}
+              <span className="nav-label">{i.label}</span>
+            </span>
+          </button>
+        ))}
+      </nav>
+      <div className="settings-section">
+        <button className="settings-toggle" onClick={() => setShowSettings(v => !v)}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.88-.34 1.7 1.7 0 0 0-1.03 1.56V21a2 2 0 1 1-4 0v-.09a1.7 1.7 0 0 0-1.03-1.56 1.7 1.7 0 0 0-1.88.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.56-1.03H3a2 2 0 1 1 0-4h.04A1.7 1.7 0 0 0 4.6 8.94a1.7 1.7 0 0 0-.34-1.88L4.2 7a2 2 0 1 1 2.83-2.83l.06.06a1.7 1.7 0 0 0 1.88.34H9a1.7 1.7 0 0 0 1-1.56V3a2 2 0 1 1 4 0v.01a1.7 1.7 0 0 0 1.03 1.56 1.7 1.7 0 0 0 1.88-.34l.06-.06A2 2 0 1 1 19.8 7l-.06.06a1.7 1.7 0 0 0-.34 1.88 1.7 1.7 0 0 0 1.56 1.03H21a2 2 0 1 1 0 4h-.04A1.7 1.7 0 0 0 19.4 15Z"/></svg>
+          Settings
+        </button>
+        {showSettings && (
+          <div className="settings-panel">
+            <div className="setting-row">Change Theme</div>
+            <div className="theme-grid-mini">
+              {THEMES.map(t=>(
+                <button key={t.id} className={`theme-dot ${curTheme===t.id?'is-active':''}`} data-theme-dot={t.id} onClick={()=>{setTheme(t.id); setCurTheme(t.id);}} title={t.label}></button>
+              ))}
+            </div>
           </div>
-          <div className="morph-body">{renderSheet()}</div>
-        </>
-      ) : (
-        <>
-          <nav className="side-nav">
-            <Link href="/movies" className="nav-item live">
-              <span className="nav-left">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="2" y="2" width="20" height="20" rx="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/></svg>
-                <span className="nav-label">Movies</span>
-              </span>
-              <span className="live-dot">live</span>
-            </Link>
-            <div className="nav-divider" />
-            {SIDEBAR_ITEMS.filter((i: any) => !(i as any).admin || isAdmin).map((i) => (
-              <button key={i.id} onClick={() => openSheet(i.id)} className={`nav-item as-btn ${selected===i.id ? "is-selected" : ""}`}>
-                <span className="nav-left">
-                  {icons[i.id] || icons.account}
-                  <span className="nav-label">{i.label}</span>
-                </span>
-              </button>
-            ))}
-          </nav>
-          <div className="settings-section">
-            <button className="settings-toggle" onClick={() => setShowSettings(v => !v)}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.88-.34 1.7 1.7 0 0 0-1.03 1.56V21a2 2 0 1 1-4 0v-.09a1.7 1.7 0 0 0-1.03-1.56 1.7 1.7 0 0 0-1.88.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-1.56-1.03H3a2 2 0 1 1 0-4h.04A1.7 1.7 0 0 0 4.6 8.94a1.7 1.7 0 0 0-.34-1.88L4.2 7a2 2 0 1 1 2.83-2.83l.06.06a1.7 1.7 0 0 0 1.88.34H9a1.7 1.7 0 0 0 1-1.56V3a2 2 0 1 1 4 0v.01a1.7 1.7 0 0 0 1.03 1.56 1.7 1.7 0 0 0 1.88-.34l.06-.06A2 2 0 1 1 19.8 7l-.06.06a1.7 1.7 0 0 0-.34 1.88 1.7 1.7 0 0 0 1.56 1.03H21a2 2 0 1 1 0 4h-.04A1.7 1.7 0 0 0 19.4 15Z"/></svg>
-              Settings
-            </button>
-            {showSettings && (
-              <div className="settings-panel">
-                <div className="setting-row">Change Theme</div>
-                <div className="theme-grid-mini">
-                  {THEMES.map(t=>(
-                    <button key={t.id} className={`theme-dot ${curTheme===t.id?'is-active':''}`} data-theme-dot={t.id} onClick={()=>{setTheme(t.id); setCurTheme(t.id);}} title={t.label}></button>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-          <div className="side-footer"><a>Privacy</a><a>Terms</a><a>Help</a></div>
-        </>
-      )}
+        )}
+      </div>
+      <div className="side-footer"><a>Privacy</a><a>Terms</a><a>Help</a></div>
     </aside>
   );
 }
