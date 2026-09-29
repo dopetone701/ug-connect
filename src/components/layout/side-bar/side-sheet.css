@@ -214,16 +214,14 @@
   opacity: 0 !important;
 }
 
-/* Search drawer should never show Faders close N button */
-.wa-mob-panel.is-search ~ .faders-drawer-root,
-.wa-mob-panel.is-search .faders-close-btn,
-.wa-mob-panel.is-search ~ * .faders-close-btn {
+/* SEARCH BAR HIDE WHEN FADERS OPEN - COMES BACK WHEN CLOSED */
+.wa-mob-panel.is-search:has(.faders-drawer-root.open) .mobile-search-input-wrap.sticky-search {
   display: none !important;
+  height: 0 !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
 }
 
-/* That tiny < arrow you see in screenshot is the morph-back fixed at bottom due to old absolute */
-.wa-mob-panel.is-menu .wa-card.detail-card .morph-back {
-  position: relative;
-  bottom: auto;
-  left: auto;
+.wa-mob-panel.is-search .mobile-search-input-wrap.sticky-search {
+  transition: all 0.2s ease;
 }

@@ -22,6 +22,8 @@ import InviteSheet from "../side-bar/sheets/invite-sheet";
 import PrivacySheet from "../side-bar/sheets/privacy-sheet";
 import CastSheet from "../side-bar/sheets/cast-sheet";
 import ControlSheet from "../side-bar/sheets/control-sheet";
+import { useFadersDrawer as useFadersDrawerForTopBar } from "../../../stores/use-faders-drawer";
+
 
 const PLACES = ["Dubai", "Kampala", "London", "New York", "Nairobi", "Toronto", "Doha", "Johannesburg"];
 const PLACEHOLDER_MAP: any = {
@@ -150,6 +152,9 @@ export default function TopBar() {
     if (phase === "idle" && activeChild) return "is-entering";
     return "";
   };
+
+  const { isOpen: isFadersOpen } = useFadersDrawerForTopBar() as any;
+
   return (
     <>
       <header className={`top-bar ${isAllMoviesPage ? 'all-movies-page' : ''}`}>
@@ -205,11 +210,13 @@ export default function TopBar() {
                 <div className="wa-scroll-wrap"><SideBar onOpen={handleOpenChild} /></div>
               ) : (
                 <div className="mobile-search-panel is-search-mode">
+                   {isFadersOpen ? null : (
                   <div className="mobile-search-input-wrap sticky-search">
                     <svg className="mobile-search-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="6" /><path d="M21 21l-4.3-4.3" /></svg>
                     <input autoFocus className="mobile-drawer-search" placeholder={placeholder} value={globalQuery} onChange={(e) => setGlobalQuery(e.target.value)} />
                     <button className="mobile-search-settings" onClick={openFaders} type="button"><svg width="21" height="21" viewBox="0 0 24 24" fill="none"><path d="M4 7H20" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/><circle cx="10" cy="7" r="3" fill="currentColor"/><path d="M4 17H20" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/><circle cx="15" cy="17" r="3" fill="currentColor"/></svg></button>
                   </div>
+                    )}
                   <div className="wa-scroll-wrap search-results-scroll"><div style={{marginTop: "16px"}}><SearchDrawer /></div></div>
                 </div>
               )}
