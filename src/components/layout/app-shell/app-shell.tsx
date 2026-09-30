@@ -30,6 +30,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const { isOpen: isPcOpen } = usePcFadersDrawer() as any;
 
   const isServicesPage = pathname === "/" || pathname === "/dashboard";
+  const isReelsPage = pathname?.startsWith("/reels") || pathname?.startsWith("/reel");
 
   useEffect(() => {
     initTheme();
@@ -42,22 +43,27 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const c = () => setIsMobile(window.innerWidth <= 768);
-    c(); window.addEventListener("resize", c);
+    c();
+    window.addEventListener("resize", c);
     return () => window.removeEventListener("resize", c);
   }, []);
 
   const isSplit = !isMobile && open && !minimized;
   if (!checked) return null;
 
+  const showTopBar = !isReelsPage && !isReelsOpen;
+
   return (
     <>
       {showIntro && <IntroVideo onFinished={() => setShowIntro(false)} />}
-      <div className={`google-shell ${isSplit ? "is-split" : ""} ${isServicesPage ? "is-services" : ""}`} style={{ opacity: showIntro ? 0 : 1, pointerEvents: showIntro ? "none" : "auto" }}>
+      <div
+        className={`google-shell ${isSplit ? "is-split" : ""} ${isServicesPage ? "is-services" : ""}`}
+        style={{ opacity: showIntro ? 0 : 1, pointerEvents: showIntro ? "none" : "auto" }}
+      >
         <div className="giant-panel">
-          <TopBar />
+          {showTopBar ? <TopBar /> : null}
           <div className="giant-body">
-            {/* >>> FIX: hide SideBar on services page */}
-            {!isServicesPage && <SideBar />}
+            <SideBar />
             <main className="content-panel">
               <div className="content-scroll">
                 {isPcOpen && !isMobile ? <PcFaders /> : children}
@@ -67,16 +73,22 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           </div>
         </div>
         <BottomBar />
-        {isReelsOpen && (
+        {isReelsOpen ? (
           <div className="reels-backdrop" onClick={closeReels}>
             <div className="reels-sheet" onClick={(e) => e.stopPropagation()}>
-              <MobilePreview movies={movies} startIndex={startIndex} currentMovie={currentMovie} onClose={closeReels} />
+              <MobilePreview
+                movies={movies}
+                startIndex={startIndex}
+                currentMovie={currentMovie}
+                onClose={closeReels}
+              />
             </div>
           </div>
-        )}
-        <CastSwipeClose isOpen={isCastOpen} onClose={() => setCastOpen(false)}><Cast /></CastSwipeClose>
+        ) : null}
+        <CastSwipeClose isOpen={isCastOpen} onClose={() => setCastOpen(false)}>
+          <Cast />
+        </CastSwipeClose>
       </div>
     </>
   );
 }
-

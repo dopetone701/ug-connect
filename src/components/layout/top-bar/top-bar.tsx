@@ -22,8 +22,6 @@ import InviteSheet from "../side-bar/sheets/invite-sheet";
 import PrivacySheet from "../side-bar/sheets/privacy-sheet";
 import CastSheet from "../side-bar/sheets/cast-sheet";
 import ControlSheet from "../side-bar/sheets/control-sheet";
-import { useFadersDrawer as useFadersDrawerForTopBar } from "../../../stores/use-faders-drawer";
-
 
 const PLACES = ["Dubai", "Kampala", "London", "New York", "Nairobi", "Toronto", "Doha", "Johannesburg"];
 const PLACEHOLDER_MAP: any = {
@@ -49,12 +47,16 @@ export default function TopBar() {
   const [waOpen, setWaOpen] = useState(false);
   const [drawerMode, setDrawerMode] = useState<"menu" | "search">("menu");
   const [activeChild, setActiveChild] = useState<string | null>(null);
+  const [isDirectAccount, setIsDirectAccount] = useState(false);
   const [phase, setPhase] = useState<"idle"|"card-dip"|"card-launch"|"card-enter"|"card-dip-back"|"card-launch-back"|"card-enter-back">("idle");
   const { query: globalQuery, setQuery: setGlobalQuery, openSearch } = useGlobalSearch();
   const isAllMoviesPage = pathname?.startsWith("/movies") || pathname?.startsWith("/all-movies");
+  const isReelsPage = pathname?.startsWith("/reels") || pathname?.startsWith("/reel");
+
   const isServicesPage = pathname === "/" || pathname === "/dashboard";
   const { setOpen } = useGlobalCast();
   const { close: closeSideSheet } = useSideSheet();
+ 
   const placeholder = useMemo(() => {
     if (!pathname) return "Search...";
     for (const key in PLACEHOLDER_MAP) if (pathname.includes(key)) return PLACEHOLDER_MAP[key];
@@ -76,6 +78,7 @@ export default function TopBar() {
   useEffect(() => {
     setWaOpen(false);
     setActiveChild(null);
+    setIsDirectAccount(false);
     setPhase("idle");
     document.body.classList.remove("wa-pushed");
   }, [pathname]);
@@ -84,10 +87,36 @@ export default function TopBar() {
     window.addEventListener("ug-open-search-panel", handler);
     return () => window.removeEventListener("ug-open-search-panel", handler);
   }, []);
+  useEffect(() => {
+    const openAccountHandler = () => {
+      setDrawerMode("menu");
+      setWaOpen(true);
+      setIsDirectAccount(true);
+      setActiveChild("account");
+      setPhase("card-enter");
+    };
+    window.addEventListener("ug-open-account-sheet", openAccountHandler);
+    return () => window.removeEventListener("ug-open-account-sheet", openAccountHandler);
+  }, []);
+  // NEW: close menu panel from sidebar cast
+  useEffect(() => {
+    const closeHandler = () => {
+      setWaOpen(false);
+      setActiveChild(null);
+      setIsDirectAccount(false);
+      setPhase("idle");
+      closeSideSheet();
+      document.body.classList.remove("wa-pushed");
+    };
+    window.addEventListener("ug-close-menu-panel", closeHandler);
+    return () => window.removeEventListener("ug-close-menu-panel", closeHandler);
+  }, []);
+
   const filtered = PLACES.filter(p => p.toLowerCase().includes(query.toLowerCase())).slice(0, 2);
   const closeAll = () => {
     setWaOpen(false);
     setActiveChild(null);
+    setIsDirectAccount(false);
     setPhase("idle");
     closeSideSheet();
   };
@@ -101,8 +130,11 @@ export default function TopBar() {
   const { open: openFaders } = useFadersDrawer() as any;
   const { open: watchOpen, minimized: watchMinimized } = useWatchDrawer() as any;
   const { open: openPcFaders } = usePcFadersDrawer() as any;
+  if (isReelsPage) return null;
+
   if (watchOpen && !watchMinimized) return null;
   const handleOpenChild = (id: string) => {
+    setIsDirectAccount(false);
     setPhase("card-dip");
     setTimeout(() => {
       setPhase("card-launch");
@@ -111,6 +143,10 @@ export default function TopBar() {
     }, 130);
   };
   const handleBack = () => {
+    if (isDirectAccount) {
+      closeAll();
+      return;
+    }
     setPhase("card-dip-back");
     setTimeout(() => {
       setPhase("card-launch-back");
@@ -137,6 +173,7 @@ export default function TopBar() {
     }
   };
   const getListCardClass = () => {
+    if (isDirectAccount) return "is-hidden";
     if (phase === "card-dip") return "is-dipping";
     if (phase === "card-launch") return "is-launching";
     if (phase === "card-enter-back") return "is-entering";
@@ -145,6 +182,7 @@ export default function TopBar() {
   };
   const getDetailCardClass = () => {
     if (drawerMode === "search") return "";
+    if (isDirectAccount) return "is-entering is-direct";
     if (phase === "card-enter") return "is-entering";
     if (phase === "card-dip-back") return "is-dipping";
     if (phase === "card-launch-back") return "is-launching";
@@ -152,9 +190,6 @@ export default function TopBar() {
     if (phase === "idle" && activeChild) return "is-entering";
     return "";
   };
-
-  const { isOpen: isFadersOpen } = useFadersDrawerForTopBar() as any;
-
   return (
     <>
       <header className={`top-bar ${isAllMoviesPage ? 'all-movies-page' : ''}`}>
@@ -198,37 +233,40 @@ export default function TopBar() {
         </div>
       </header>
       {waOpen && (
-        <div className={`wa-mob-panel ${drawerMode === "search" ? "is-search" : "is-menu"}`}>
+        <div className={`wa-mob-panel ${drawerMode === "search" ? "is-search" : "is-menu"} ${isDirectAccount ? "is-direct-account" : ""}`}>
           <div className="wa-mob-top">
             <AppLogo className="wa-panel-logo" />
             {drawerMode === "search" && <div className="wa-filtered-title">Filtered Content</div>}
+            {isDirectAccount && <div className="wa-filtered-title">Account</div>}
             <button className="wa-v" onClick={closeAll} aria-label="Close"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6" /></svg></button>
           </div>
           <div className="wa-mob-body">
-            <div className={`wa-card list-card ${getListCardClass()}`}>
-              {drawerMode === "menu" ? (
-                <div className="wa-scroll-wrap"><SideBar onOpen={handleOpenChild} /></div>
-              ) : (
-                <div className="mobile-search-panel is-search-mode">
-                   {isFadersOpen ? null : (
-                  <div className="mobile-search-input-wrap sticky-search">
-                    <svg className="mobile-search-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="6" /><path d="M21 21l-4.3-4.3" /></svg>
-                    <input autoFocus className="mobile-drawer-search" placeholder={placeholder} value={globalQuery} onChange={(e) => setGlobalQuery(e.target.value)} />
-                    <button className="mobile-search-settings" onClick={openFaders} type="button"><svg width="21" height="21" viewBox="0 0 24 24" fill="none"><path d="M4 7H20" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/><circle cx="10" cy="7" r="3" fill="currentColor"/><path d="M4 17H20" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/><circle cx="15" cy="17" r="3" fill="currentColor"/></svg></button>
+            {!isDirectAccount && (
+              <div className={`wa-card list-card ${getListCardClass()}`}>
+                {drawerMode === "menu" ? (
+                  <div className="wa-scroll-wrap"><SideBar onOpen={handleOpenChild} /></div>
+                ) : (
+                  <div className="mobile-search-panel is-search-mode">
+                    <div className="mobile-search-input-wrap sticky-search">
+                      <svg className="mobile-search-icon" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="6" /><path d="M21 21l-4.3-4.3" /></svg>
+                      <input autoFocus className="mobile-drawer-search" placeholder={placeholder} value={globalQuery} onChange={(e) => setGlobalQuery(e.target.value)} />
+                      <button className="mobile-search-settings" onClick={openFaders} type="button"><svg width="21" height="21" viewBox="0 0 24 24" fill="none"><path d="M4 7H20" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/><circle cx="10" cy="7" r="3" fill="currentColor"/><path d="M4 17H20" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/><circle cx="15" cy="17" r="3" fill="currentColor"/></svg></button>
+                    </div>
+                    <div className="wa-scroll-wrap search-results-scroll"><div style={{marginTop: "16px"}}><SearchDrawer /></div></div>
                   </div>
-                    )}
-                  <div className="wa-scroll-wrap search-results-scroll"><div style={{marginTop: "16px"}}><SearchDrawer /></div></div>
-                </div>
-              )}
-            </div>
-            {drawerMode === "menu" && activeChild && (
+                )}
+              </div>
+            )}
+            {(activeChild || isDirectAccount) && drawerMode === "menu" && (
               <div className={`wa-card detail-card ${getDetailCardClass()}`}>
-                <div className="morph-header">
-                  <button className="morph-back" onClick={handleBack}>
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M15 18l-6-6 6-6"/></svg>
-                    <span>{SIDEBAR_ITEMS.find(x=>x.id===activeChild)?.label || activeChild}</span>
-                  </button>
-                </div>
+                {!isDirectAccount && (
+                  <div className="morph-header">
+                    <button className="morph-back" onClick={handleBack}>
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2"><path d="M15 18l-6-6 6-6"/></svg>
+                      <span>{SIDEBAR_ITEMS.find(x=>x.id===activeChild)?.label || activeChild}</span>
+                    </button>
+                  </div>
+                )}
                 <div className="morph-body">
                   {renderChild()}
                 </div>

@@ -127,3 +127,17 @@
     max-height: 100% !important;
   }
 }
+
+
+/* FIX: service page should have no sidebar space / red */
+.google-shell.is-services .giant-body {
+  grid-template-columns: 1fr !important;
+  margin-left: 0 !important;
+  background: hsl(var(--background)) !important;
+}
+
+.google-shell.is-services .side-bar,
+.google-shell.is-services .sidebar {
+  display: none !important;
+  width: 0 !important;
+}

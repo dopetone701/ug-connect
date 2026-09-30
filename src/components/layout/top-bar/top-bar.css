@@ -733,3 +733,7 @@
 .wa-mob-panel.is-search.faders-open.mobile-search-input-wrap.sticky-search {
   display: none!important;
 }
+
+body.reels-open.top-bar {
+  display: none!important;
+}

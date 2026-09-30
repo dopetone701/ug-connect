@@ -28,6 +28,11 @@ export default function MoviesBottomBar() {
     if (feed.length) openReels(feed, 0);
   };
 
+  const openAccountSheet = () => {
+    // same as clicking Account in sidebar - opens via TopBar listener
+    window.dispatchEvent(new CustomEvent("ug-open-account-sheet"));
+  };
+
   return (
     <nav className="bottom-bar-glass movies-bar">
       <div className="bottom-inner">
@@ -52,11 +57,12 @@ export default function MoviesBottomBar() {
           <span className="bottom-label">Previews</span>
         </button>
 
-        <Link href="/profile" className={`bottom-item ${path === "/profile"? "active" : ""}`}>
+        <button type="button" onClick={openAccountSheet} className={`bottom-item ${path === "/profile"? "active" : ""}`}>
           <span className="bottom-icon"><YouIcon size={24} className="you-svg" /></span>
           <span className="bottom-label">You</span>
-        </Link>
+        </button>
       </div>
     </nav>
   );
 }
+

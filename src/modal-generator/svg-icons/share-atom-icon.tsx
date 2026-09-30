@@ -1,5 +1,4 @@
 "use client";
-
 import React from "react";
 
 export default function ShareIcon() {
@@ -43,7 +42,6 @@ export default function ShareIcon() {
           strokeWidth="5.5"
           strokeLinecap="round"
         />
-
         <line
           x1="40.7"
           y1="58.8"
@@ -53,7 +51,6 @@ export default function ShareIcon() {
           strokeWidth="5.5"
           strokeLinecap="round"
         />
-
         {/* 3 circles - drawn on top */}
         <circle
           cx="25"
@@ -63,7 +60,6 @@ export default function ShareIcon() {
           stroke="#2a2e8a"
           strokeWidth="5.5"
         />
-
         <circle
           cx="75"
           cy="22"
@@ -72,7 +68,6 @@ export default function ShareIcon() {
           stroke="#2a2e8a"
           strokeWidth="5.5"
         />
-
         <circle
           cx="75"
           cy="78"
@@ -85,3 +80,4 @@ export default function ShareIcon() {
     </button>
   );
 }
+

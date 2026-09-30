@@ -1,5 +1,6 @@
 "use client"
 import { useRef, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { Movie } from "../_lib/types"
 import MovieCard from "./movie-card"
 import "../latest-movies.css"
@@ -8,6 +9,7 @@ import { useGlobalSearch } from "@/stores/use-global-search"
 export default function MovieRow({ title, movies, onSeeAll }: { title: string; movies: Movie[]; onSeeAll?: (v: string) => void }) {
   const ref = useRef<HTMLDivElement>(null)
   const isDraggingRef = useRef(false)
+  const router = useRouter()
 
   useEffect(() => {
     const container = ref.current
@@ -92,11 +94,22 @@ export default function MovieRow({ title, movies, onSeeAll }: { title: string; m
 
   const handleSeeAll = () => {
     const clean = title.toLowerCase().trim()
+    const cleanParam = encodeURIComponent(clean)
+
+    // 1. if parent wants to handle (mobile drawer)
     if(onSeeAll){
       onSeeAll(clean)
-      return
     }
-    useGlobalSearch.getState().setQuery(clean)
+
+    // 2. set global search state so search page is filtered instantly
+    const gs = useGlobalSearch.getState() as any
+    gs.setQuery(clean)
+    gs.setSection?.(clean) // your useDrawerSearch uses this
+    gs.setOpen?.(true)
+    gs.setIsOpen?.(true)
+
+    // 3. push to search page with filter
+    router.push(`/search?q=${cleanParam}&filter=${cleanParam}&section=${cleanParam}`)
   }
 
   if(!movies?.length) return null

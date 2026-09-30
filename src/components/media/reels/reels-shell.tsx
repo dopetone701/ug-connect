@@ -24,6 +24,12 @@ export function ReelsShell({
     return () => { delete (window as any).__UG_REELS_READY_FOR_DESKTOP__ }
   }, [])
 
+  // ADD THIS - hides top bar whenever reels is open
+  useEffect(() => {
+    document.body.classList.add("reels-open");
+    return () => document.body.classList.remove("reels-open");
+  }, [])
+
   return (
     <div className="reel-root">
       <div className="reel-swiper">{children}</div>

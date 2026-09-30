@@ -6,27 +6,66 @@ import { setTheme } from "@/lib/theme/theme-controller";
 import { SIDEBAR_ITEMS } from "./config";
 import "./side-bar.css";
 import "./side-sheet.css";
+import AppTipsIcon from "@/modal-generator/svg-icons/app-tips-icon";
+import { useGlobalCast } from "@/stores/use-global-cast";
+
+const customOrder = ['cast', 'lists', 'privacy', 'account', 'tips', 'subscription', 'invite'];
 
 const icons: any = {
   account: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M20 21a8 8 0 0 0-16 0"/><circle cx="12" cy="7" r="4"/></svg>,
   subscription: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 3l7 3v6c0 5-3.5 8-7 9-3.5-1-7-4-7-9V6l7-3z"/></svg>,
   lists: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>,
-  cast: <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M3 18v3h3c0-1.66-1.34-3-3-3Z"/><path d="M3 13v2c3.31 0 6 2.69 6 6h2c0-4.42-3.58-8-8-8Z"/></svg>,
-  tips: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>,
-  invite: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><path d="M20 8v6M23 11v2M17 11v2"/></svg>,
+  cast: <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M3 18v3h3c0-1.66-1.34-3-3-3Z"/><path d="M3 13v2c3.31 0 6 2.69 6 6h2c0-4.42-3.58-8-8-8Z"/><path d="M3 8v2c5.52 0 10 4.48 10 10h2C15 13.37 9.63 8 3 8Z"/><path d="M5 4h14c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2h-4v-2h4V6H5v3H3V6c0-1.1.9-2 2-2Z"/></svg>,
+  tips: <span style={{ width: 20, height: 20, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}><span style={{ width: 20, height: 20, display: 'flex' }}><AppTipsIcon /></span></span>,
+  invite: (
+    <span style={{ width: 20, height: 20, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
+      <span style={{ width: 20, height: 20, display: 'block' }}>
+        <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" style={{ display: "block", overflow: "visible" }}>
+          <line x1="40.7" y1="41.2" x2="59.3" y2="30.8" stroke="currentColor" strokeWidth="5.5" strokeLinecap="round" />
+          <line x1="40.7" y1="58.8" x2="59.3" y2="69.2" stroke="currentColor" strokeWidth="5.5" strokeLinecap="round" />
+          <circle cx="25" cy="50" r="18" fill="none" stroke="currentColor" strokeWidth="5.5" />
+          <circle cx="75" cy="22" r="18" fill="none" stroke="currentColor" strokeWidth="5.5" />
+          <circle cx="75" cy="78" r="18" fill="none" stroke="currentColor" strokeWidth="5.5" />
+        </svg>
+      </span>
+    </span>
+  ),
   privacy: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>,
   control: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 3l7 3v6c0 5-3.5 8-7 9-3.5-1-7-4-7-9V6l7-3z"/></svg>,
 };
 
-export default function SideBar({ onOpen }: { onOpen: (id: string) => void }) {
+export default function SideBar({ onOpen }: { onOpen?: (id: string) => void }) {
   const [isAdmin, setIsAdmin] = useState(false);
   const [curTheme, setCurTheme] = useState("");
   const [showSettings, setShowSettings] = useState(false);
+  const { setOpen: setCastOpen } = useGlobalCast();
 
   useEffect(() => {
     setIsAdmin(localStorage.getItem("ug-admin") === "true");
     setCurTheme(localStorage.getItem("ug-theme") || "dark");
   }, []);
+
+  const sortedItems = [...SIDEBAR_ITEMS.filter((i: any) => !(i as any).admin || isAdmin)].sort((a: any, b: any) => {
+    const indexA = customOrder.indexOf(a.id);
+    const indexB = customOrder.indexOf(b.id);
+    if (indexA === -1 && indexB === -1) return 0;
+    if (indexA === -1) return 1;
+    if (indexB === -1) return -1;
+    return indexA - indexB;
+  });
+
+  const handleItemClick = (id: string) => {
+    if (id === 'cast') {
+      // 1. close slide bar first
+      window.dispatchEvent(new CustomEvent("ug-close-menu-panel"));
+      // 2. open cast drawer after close animation (280ms = wa panel exit)
+      setTimeout(() => {
+        setCastOpen(true);
+      }, 320);
+      return;
+    }
+    onOpen?.(id);
+  };
 
   return (
     <aside className="side-bar">
@@ -39,9 +78,17 @@ export default function SideBar({ onOpen }: { onOpen: (id: string) => void }) {
           <span className="live-dot">live</span>
         </Link>
         <div className="nav-divider" />
-        {SIDEBAR_ITEMS.filter((i: any) => !(i as any).admin || isAdmin).map((i) => (
-          <button key={i.id} onClick={() => onOpen(i.id)} className="nav-item as-btn">
-            <span className="nav-left">{icons[i.id] || icons.account}<span className="nav-label">{i.label}</span></span>
+        {sortedItems.map((i) => (
+          <button key={i.id} onClick={() => handleItemClick(i.id)} className="nav-item as-btn" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+            <span className="nav-left" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              {icons[i.id] || icons.account}
+              <span className="nav-label">{i.label}</span>
+            </span>
+            <span className="nav-right" style={{ opacity: 0.6 }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M9 18l6-6-6-6" />
+              </svg>
+            </span>
           </button>
         ))}
       </nav>
@@ -65,3 +112,4 @@ export default function SideBar({ onOpen }: { onOpen: (id: string) => void }) {
     </aside>
   );
 }
+
