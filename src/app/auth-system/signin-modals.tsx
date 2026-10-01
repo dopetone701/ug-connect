@@ -110,7 +110,7 @@ export default function SigninModals({ isOpen, mode, onClose, onSuccess, onSwitc
           <button className="ug-modal-close" onClick={onClose}>✕</button>
 
           <h2 className="ug-modal-title">
-            {mode === "signin"? "Welcome back" : "Create account"}
+            {mode === "signin"? "Sign In to continue" : "Create account"}
           </h2>
           {mode === "signup" ? (
             <>
@@ -118,10 +118,9 @@ export default function SigninModals({ isOpen, mode, onClose, onSuccess, onSwitc
               <p className="ug-modal-sub sales"></p>
             </>
           ) : (
-            <p className="ug-modal-sub">
-              Welcome back — restore you preferences.
-            </p>
-          )}
+  <p className="ug-modal-sub"></p>
+)}
+
 
           <form onSubmit={handleSubmit} className="ug-modal-form">
             {mode === "signup" && (
@@ -161,13 +160,32 @@ export default function SigninModals({ isOpen, mode, onClose, onSuccess, onSwitc
               className="ug-input"
               required
             />
-            <PasswordInput value={password} onChange={e=>setPassword(e.target.value)} />
+                       <PasswordInput value={password} onChange={e=>setPassword(e.target.value)} />
+
+            {mode === "signin" && (
+              <div style={{ textAlign: "right", marginTop: "8px" }}>
+                <span 
+                  onClick={() => setError("Password reset - check your email link coming soon")}
+                  style={{ fontSize: "13px", textDecoration: "underline", cursor: "pointer" }}
+                >
+                  Forgot password?
+                </span>
+              </div>
+            )}
 
             {error && <div className="ug-error">{error}</div>}
 
             <button type="submit" disabled={loading} className="ug-btn-primary">
               {loading? "Please wait..." : mode === "signin"? "Sign In" : "Sign Up & Continue"}
             </button>
+
+            <p style={{ fontSize: "11px", textAlign: "center", marginTop: "12px", lineHeight: "1.4", opacity: 0.75 }}>
+              By continuing you agree to UG-Connect's{" "}
+              <a href="/terms" style={{ textDecoration: "underline" }}>Terms</a>,{" "}
+              <a href="/privacy" style={{ textDecoration: "underline" }}>Privacy Policy</a> and{" "}
+              <a href="/cookies" style={{ textDecoration: "underline" }}>Cookie Policy</a>
+            </p>
+
 
             <div className="ug-divider"><span>or</span></div>
 

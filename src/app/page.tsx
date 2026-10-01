@@ -110,14 +110,15 @@ export default function Page(){
   };
 
   const handleServiceClick = (e: React.MouseEvent, href: string) => {
-    if (!user) {
-      e.preventDefault();
-      setModalMode("signup");
-      setModalOpen(true);
-      return;
-    }
-    window.location.href = href;
-  };
+  if (!user) {
+    e.preventDefault();
+    setModalMode("signin");
+    setModalOpen(true);
+    return;
+  }
+  window.location.href = href;
+};
+
 
   return(
   <>
