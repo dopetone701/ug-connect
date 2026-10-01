@@ -70,22 +70,33 @@ export default function TopBar() {
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    setLoc(localStorage.getItem("ug-loc") || "Dubai");
-    setCollapsed(localStorage.getItem("ug-sidebar-collapsed") === "true");
     const syncUser = () => {
       try {
         const saved = localStorage.getItem("ug_user");
         setUser(saved ? JSON.parse(saved) : null);
-      } catch { setUser(null); }
+      } catch {
+        setUser(null);
+      }
     };
+    // Initial user
     syncUser();
+    // Other tabs/windows
     window.addEventListener("storage", syncUser);
-    const handler = () => syncUser();
-    window.addEventListener("ug_auth_changed" as any, handler);
+    // Existing auth updates
+    window.addEventListener("ug_auth_changed", syncUser);
+    // Profile/avatar updates
+    window.addEventListener("ug_profile_updated", syncUser);
     return () => {
       window.removeEventListener("storage", syncUser);
-      window.removeEventListener("ug_auth_changed" as any, handler);
+      window.removeEventListener("ug_auth_changed", syncUser);
+      window.removeEventListener("ug_profile_updated", syncUser);
     };
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    setLoc(localStorage.getItem("ug-loc") || "Dubai");
+    setCollapsed(localStorage.getItem("ug-sidebar-collapsed") === "true");
   }, []);
 
   useEffect(() => {
@@ -209,7 +220,12 @@ export default function TopBar() {
     if (user.email) return user.email.charAt(0).toUpperCase();
     return "U";
   };
-  const avatarUrl = user?.avatar?.url || user?.avatarUrl || user?.avatar || null;
+  const avatarUrl =
+    user?.avatar?.url ||
+    user?.avatarUrl ||
+    user?.avatar ||
+    user?.profilePicture ||
+    null;
 
   return (
     <>
@@ -266,11 +282,9 @@ export default function TopBar() {
           <button className="grid-btn"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="3" width="4" height="4" rx="1"/><rect x="10" y="3" width="4" height="4" rx="1"/><rect x="17" y="3" width="4" height="4" rx="1"/><rect x="3" y="10" width="4" height="4" rx="1"/><rect x="10" y="10" width="4" height="4" rx="1"/><rect x="17" y="10" width="4" height="4" rx="1"/><rect x="3" y="17" width="4" height="4" rx="1"/><rect x="10" y="17" width="4" height="4" rx="1"/><rect x="17" y="17" width="4" height="4" rx="1"/></svg></button>
           <button className="sliders-btn" onClick={openPcFaders}><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M4 7H20" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/><circle cx="10" cy="7" r="3" fill="currentColor"/><path d="M4 17H20" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/><circle cx="15" cy="17" r="3" fill="currentColor"/></svg></button>
           {!isServicesPage && (
-            <>
-              <button className="apple-burger" aria-label="menu" onClick={() => { setDrawerMode("menu"); setWaOpen(true); }}>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="16" height="8" rx="2" stroke="currentColor" strokeWidth="2"/><path d="M4 16H20" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/><path d="M4 20H20" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
-              </button>
-            </>
+            <button className="apple-burger" aria-label="menu" onClick={() => { setDrawerMode("menu"); setWaOpen(true); }}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="16" height="8" rx="2" stroke="currentColor" strokeWidth="2"/><path d="M4 16H20" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/><path d="M4 20H20" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
+            </button>
           )}
         </div>
       </header>
