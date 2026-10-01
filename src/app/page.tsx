@@ -109,6 +109,16 @@ export default function Page(){
     window.dispatchEvent(new Event("ug_auth_changed"));
   };
 
+  const handleServiceClick = (e: React.MouseEvent, href: string) => {
+    if (!user) {
+      e.preventDefault();
+      setModalMode("signup");
+      setModalOpen(true);
+      return;
+    }
+    window.location.href = href;
+  };
+
   return(
   <>
     <div className="landing-root">
@@ -118,12 +128,12 @@ export default function Page(){
           <div key={s.id} className="card-wrapper">
             <CardLabel l={s.l} icon={s.icon} />
             {s.custom ? (
-              <a href={`/${s.id}`} className="service-card movies-card"><div className="movies-left"></div><div className="movies-right"><div className="scroller-track"><img src="/scroller.jpg" alt="" /><img src="/scroller.jpg" alt="" /><img src="/scroller.jpg" alt="" /><img src="/scroller.jpg" alt="" /></div></div></a>
+              <a href={`/${s.id}`} onClick={(e)=>handleServiceClick(e, `/${s.id}`)} className="service-card movies-card"><div className="movies-left"></div><div className="movies-right"><div className="scroller-track"><img src="/scroller.jpg" alt="" /><img src="/scroller.jpg" alt="" /><img src="/scroller.jpg" alt="" /><img src="/scroller.jpg" alt="" /></div></div></a>
             ) : (s as any).customFood ? (
-              <a href={`/${s.id}`} className="service-card ug-foods-card"><div className="ug-foods-left"></div><div className="ug-foods-right"><div className="foods-stack"><img src="/matooke.jpg" className="stack-img stack-1" alt="" /><img src="/matooke.jpg" className="stack-img stack-2" alt="" /><img src="/matooke.jpg" className="stack-img stack-3" alt="" /></div></div><div className="foods-label"><p>UG Foods</p></div></a>
+              <a href={`/${s.id}`} onClick={(e)=>handleServiceClick(e, `/${s.id}`)} className="service-card ug-foods-card"><div className="ug-foods-left"></div><div className="ug-foods-right"><div className="foods-stack"><img src="/matooke.jpg" className="stack-img stack-1" alt="" /><img src="/matooke.jpg" className="stack-img stack-2" alt="" /><img src="/matooke.jpg" className="stack-img stack-3" alt="" /></div></div><div className="foods-label"><p>UG Foods</p></div></a>
             ) : (s as any).customMoney ? (
-              <a href={`/${s.id}`} className="service-card mobile-money-card"><div className="money-bg"></div><div className="money-live-widget"><div className="live-row"><p className="live-label-aed">AED</p><span className="live-arrow">→</span><p className="live-label-ugx">UGX</p></div><h2 className="live-rate">1 AED = {rate.toLocaleString()} UGX</h2><p className="live-sub">Live</p></div></a>
-            ) : (<a href={`/${s.id}`} className="service-card"><span> </span></a>)}
+              <a href={`/${s.id}`} onClick={(e)=>handleServiceClick(e, `/${s.id}`)} className="service-card mobile-money-card"><div className="money-bg"></div><div className="money-live-widget"><div className="live-row"><p className="live-label-aed">AED</p><span className="live-arrow">→</span><p className="live-label-ugx">UGX</p></div><h2 className="live-rate">1 AED = {rate.toLocaleString()} UGX</h2><p className="live-sub">Live</p></div></a>
+            ) : (<a href={`/${s.id}`} onClick={(e)=>handleServiceClick(e, `/${s.id}`)} className="service-card"><span> </span></a>)}
           </div>
         ))}
       </div>
@@ -132,7 +142,7 @@ export default function Page(){
         {bottom.map(s=> (
           <div key={s.id} className="card-wrapper">
             <CardLabel l={s.l} icon={s.icon} />
-            {(s as any).customSalon ? (<a href={`/${s.id}`} className="service-card salon-card"><div className="salon-bg"></div></a>) : (s as any).customJobs ? (<a href={`/${s.id}`} className="service-card jobs-card"><div className="jobs-bg"></div></a>) : (s as any).customCago ? (<a href={`/${s.id}`} className="service-card cago-card"><div className="cago-bg"></div></a>) : (s as any).customBeds ? (<a href={`/${s.id}`} className="service-card beds-card"><div className="beds-bg"></div></a>) : (<a href={`/${s.id}`} className="service-card"><span> </span></a>)}
+            {(s as any).customSalon ? (<a href={`/${s.id}`} onClick={(e)=>handleServiceClick(e, `/${s.id}`)} className="service-card salon-card"><div className="salon-bg"></div></a>) : (s as any).customJobs ? (<a href={`/${s.id}`} onClick={(e)=>handleServiceClick(e, `/${s.id}`)} className="service-card jobs-card"><div className="jobs-bg"></div></a>) : (s as any).customCago ? (<a href={`/${s.id}`} onClick={(e)=>handleServiceClick(e, `/${s.id}`)} className="service-card cago-card"><div className="cago-bg"></div></a>) : (s as any).customBeds ? (<a href={`/${s.id}`} onClick={(e)=>handleServiceClick(e, `/${s.id}`)} className="service-card beds-card"><div className="beds-bg"></div></a>) : (<a href={`/${s.id}`} onClick={(e)=>handleServiceClick(e, `/${s.id}`)} className="service-card"><span> </span></a>)}
           </div>
         ))}
       </div>
