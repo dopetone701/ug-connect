@@ -5,8 +5,10 @@ import { useEffect, useState } from "react";
 import TheHallShell from "@/components/layout/curvy-pro-room/the-hall-shell";
 import GetStartedInputGate from "@/components/layout/curvy-pro-room/get-started-email/get-started-input-gate"
 import FooterFree from "@/components/layout/curvy-pro-room/get-started-email/footer/footer"
-// ADD THIS:
 import SigninModals from "./auth-system/signin-modals";
+import LogoutModal from "./auth-system/logout-modal";
+
+const WORKER_URL = "https://user-account-server-api.336acaca-a917-436b-b499-ba76c68f7e91.workers.dev";
 
 const top = [
   {id:"movies", l:"Movies", custom:true, icon: (
@@ -49,11 +51,14 @@ function CardLabel({l, icon}: any){
   )
 }
 
+type User = { id:string; email:string; name:string };
+
 export default function Page(){
   const [rate, setRate] = useState(1008);
-  // ADD MODAL STATE:
   const [modalOpen, setModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState<"signin"|"signup">("signup");
+  const [user, setUser] = useState<User|null>(null);
+  const [logoutOpen, setLogoutOpen] = useState(false);
 
   useEffect(()=>{
     async function load(){
@@ -65,8 +70,38 @@ export default function Page(){
     }
     load();
     const id = setInterval(load, 60000);
+
+    try {
+      const saved = localStorage.getItem("ug_user");
+      if(saved) setUser(JSON.parse(saved) as User);
+    } catch {}
+
+    const token = localStorage.getItem("ug_token");
+    if(token){
+      fetch(`${WORKER_URL}/api/user/me`, { headers: { Authorization: `Bearer ${token}` }})
+        .then(r=>r.json())
+        .then(d=>{
+          if(d.user){
+            setUser(d.user);
+            localStorage.setItem("ug_user", JSON.stringify(d.user));
+          }
+        }).catch(()=>{});
+    }
+
     return ()=>clearInterval(id);
   },[]);
+
+  const handleLogout = () => {
+    setLogoutOpen(true);
+  };
+
+  const confirmLogout = () => {
+    localStorage.removeItem("ug_token");
+    localStorage.removeItem("ug_user");
+    localStorage.removeItem("ug_guest");
+    setUser(null);
+    setLogoutOpen(false);
+  };
 
   return(
   <>
@@ -141,25 +176,48 @@ export default function Page(){
       </div>
 
       <div className="cta-wrap">
-        {/* SURGICAL FIX HERE */}
-        <button className="cta-btn" onClick={() => { setModalMode("signup"); setModalOpen(true); }}>
-          Sign up for full experience
-        </button>
+        {user ? (
+          <div className="cta-stack">
+            <button className="cta-btn cta-btn-connected">
+              ✓ Connected — {user.name} • {user.email}
+            </button>
+            <button className="cta-logout" onClick={handleLogout}>
+              Logout
+            </button>
+          </div>
+        ) : (
+          <button className="cta-btn" onClick={() => { setModalMode("signup"); setModalOpen(true); }}>
+            Sign up for full experience
+          </button>
+        )}
       </div>
 
       <TheHallShell><></></TheHallShell>
       <GetStartedInputGate />
       <FooterFree />
 
-      {/* MODAL MOUNT - ADD AT BOTTOM */}
-      <SigninModals 
+      <SigninModals
         isOpen={modalOpen}
         mode={modalMode}
         onClose={() => setModalOpen(false)}
         onSwitchMode={(m) => setModalMode(m)}
-        onSuccess={(u) => { setModalOpen(false); }}
+        onSuccess={(u:any) => {
+          const newUser = u?.user || u;
+          setUser(newUser);
+          if(newUser) localStorage.setItem("ug_user", JSON.stringify(newUser));
+          if(u?.token) localStorage.setItem("ug_token", u.token);
+          setModalOpen(false);
+        }}
+      />
+
+      <LogoutModal
+        isOpen={logoutOpen}
+        onClose={() => setLogoutOpen(false)}
+        onConfirm={confirmLogout}
+        user={user}
       />
     </div>
   </>
 );
 }
+

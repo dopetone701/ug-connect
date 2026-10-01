@@ -1,0 +1,30 @@
+.logout-modal-inner {
+  text-align: center;
+}
+
+.logout-modal-inner .ug-modal-title {
+  margin-bottom: 8px;
+}
+
+.logout-modal-inner .ug-modal-sub {
+  margin-bottom: 24px;
+}
+
+.logout-modal-inner .ug-modal-sub strong {
+  color: hsl(var(--text));
+}
+
+.logout-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.logout-actions .ug-btn-primary {
+  background: hsl(var(--primary));
+  color: hsl(var(--primary-text));
+}
+
+.logout-actions .ug-btn-guest {
+  border: 1px solid hsl(var(--border));
+}

@@ -1058,3 +1058,75 @@
 .landing-root .ft-root .ft-links {
   margin-top: 0 !important;
 }
+
+/* --- ADD TO YOUR EXISTING page.css --- */
+
+/* Root uses your DNA */
+.landing-root {
+  background: hsl(var(--bg));
+  color: hsl(var(--text));
+}
+
+/* CTA wrapper stack */
+.cta-wrap {
+  display: flex;
+  justify-content: center;
+  margin-top: 24px;
+}
+
+.cta-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Base button - uses DNA */
+.cta-btn {
+  background: hsl(var(--primary));
+  color: hsl(var(--primary-text));
+  border: 1px solid hsl(var(--border));
+  padding: 14px 28px;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cta-btn:hover {
+  background: hsl(var(--surface-hover));
+  transform: translateY(-1px);
+}
+
+/* Connected state - still uses DNA primary, but indicates success */
+.cta-btn-connected {
+  background: hsl(var(--primary));
+  color: hsl(var(--primary-text));
+  border: 1px solid hsl(var(--border));
+  cursor: default;
+}
+
+/* For green/red themes where you want success to be green, uncomment: */
+/*
+.cta-btn-connected {
+  background: hsl(var(--success));
+  color: hsl(var(--success-text));
+}
+*/
+
+.cta-logout {
+  background: hsl(var(--surface));
+  border: 1px solid hsl(var(--border));
+  color: hsl(var(--text-muted));
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.cta-logout:hover {
+  background: hsl(var(--surface-hover));
+  color: hsl(var(--text));
+}
+
