@@ -78,13 +78,9 @@ export default function TopBar() {
         setUser(null);
       }
     };
-    // Initial user
     syncUser();
-    // Other tabs/windows
     window.addEventListener("storage", syncUser);
-    // Existing auth updates
     window.addEventListener("ug_auth_changed", syncUser);
-    // Profile/avatar updates
     window.addEventListener("ug_profile_updated", syncUser);
     return () => {
       window.removeEventListener("storage", syncUser);
