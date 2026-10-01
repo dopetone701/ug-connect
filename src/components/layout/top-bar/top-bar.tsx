@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 import { useState, useEffect, useMemo } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
@@ -54,8 +54,11 @@ export default function TopBar() {
   const { query: globalQuery, setQuery: setGlobalQuery, openSearch } = useGlobalSearch();
   const isAllMoviesPage = pathname?.startsWith("/movies") || pathname?.startsWith("/all-movies");
   const isReelsPage = pathname?.startsWith("/reels") || pathname?.startsWith("/reel");
+<<<<<<< HEAD
 
 
+=======
+>>>>>>> 0d487e7ac0e4165aaea5dfa29b72de643127a479
   const isServicesPage = pathname === "/" || pathname === "/dashboard";
 
 
@@ -82,6 +85,7 @@ export default function TopBar() {
 
   const { setOpen } = useGlobalCast();
   const { close: closeSideSheet } = useSideSheet();
+  const [user, setUser] = useState<any>(null);
  
   const placeholder = useMemo(() => {
     if (!pathname) return "Search...";
@@ -93,10 +97,34 @@ export default function TopBar() {
     return globalQuery.trim().toLowerCase().split(" ").filter((w: string) => w.length >= 1).slice(0, 2).map((label: string) => ({ label }));
   }, [globalQuery]);
   const isIslandActive = globalQuery?.length > 1;
+
   useEffect(() => {
+    if (typeof window === "undefined") return;
+    const syncUser = () => {
+      try {
+        const saved = localStorage.getItem("ug_user");
+        setUser(saved ? JSON.parse(saved) : null);
+      } catch {
+        setUser(null);
+      }
+    };
+    syncUser();
+    window.addEventListener("storage", syncUser);
+    window.addEventListener("ug_auth_changed", syncUser);
+    window.addEventListener("ug_profile_updated", syncUser);
+    return () => {
+      window.removeEventListener("storage", syncUser);
+      window.removeEventListener("ug_auth_changed", syncUser);
+      window.removeEventListener("ug_profile_updated", syncUser);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
     setLoc(localStorage.getItem("ug-loc") || "Dubai");
     setCollapsed(localStorage.getItem("ug-sidebar-collapsed") === "true");
   }, []);
+
   useEffect(() => {
     if (waOpen) document.body.classList.add("wa-pushed");
     else document.body.classList.remove("wa-pushed");
@@ -124,7 +152,6 @@ export default function TopBar() {
     window.addEventListener("ug-open-account-sheet", openAccountHandler);
     return () => window.removeEventListener("ug-open-account-sheet", openAccountHandler);
   }, []);
-  // NEW: close menu panel from sidebar cast
   useEffect(() => {
     const closeHandler = () => {
       setWaOpen(false);
@@ -150,17 +177,23 @@ export default function TopBar() {
   const toggleSidebar = () => {
     const next = !collapsed;
     setCollapsed(next);
-    localStorage.setItem("ug-sidebar-collapsed", String(next));
-    document.querySelector('.side-bar')?.classList.toggle('collapsed', next);
-    window.dispatchEvent(new CustomEvent("ug-toggle-sidebar", { detail: next }));
+    if (typeof window !== "undefined") {
+      localStorage.setItem("ug-sidebar-collapsed", String(next));
+      document.querySelector('.side-bar')?.classList.toggle('collapsed', next);
+      window.dispatchEvent(new CustomEvent("ug-toggle-sidebar", { detail: next }));
+    }
   };
   const { open: openFaders } = useFadersDrawer() as any;
   const { open: watchOpen, minimized: watchMinimized } = useWatchDrawer() as any;
   const { open: openPcFaders } = usePcFadersDrawer() as any;
   if (isReelsPage) return null;
+<<<<<<< HEAD
 
 
+=======
+>>>>>>> 0d487e7ac0e4165aaea5dfa29b72de643127a479
   if (watchOpen && !watchMinimized) return null;
+
   const handleOpenChild = (id: string) => {
     setIsDirectAccount(false);
     setPhase("card-dip");
@@ -171,19 +204,13 @@ export default function TopBar() {
     }, 130);
   };
   const handleBack = () => {
-    if (isDirectAccount) {
-      closeAll();
-      return;
-    }
+    if (isDirectAccount) { closeAll(); return; }
     setPhase("card-dip-back");
     setTimeout(() => {
       setPhase("card-launch-back");
       setTimeout(() => {
         setPhase("card-enter-back");
-        setTimeout(() => {
-          setActiveChild(null);
-          setPhase("idle");
-        }, 400);
+        setTimeout(() => { setActiveChild(null); setPhase("idle"); }, 400);
       }, 340);
     }, 110);
   };
@@ -218,6 +245,20 @@ export default function TopBar() {
     if (phase === "idle" && activeChild) return "is-entering";
     return "";
   };
+
+  const getInitial = () => {
+    if (!user) return "E";
+    if (user.name) return user.name.charAt(0).toUpperCase();
+    if (user.email) return user.email.charAt(0).toUpperCase();
+    return "U";
+  };
+  const avatarUrl =
+    user?.avatar?.url ||
+    user?.avatarUrl ||
+    user?.avatar ||
+    user?.profilePicture ||
+    null;
+
   return (
     <>
       <header className={`top-bar ${isAllMoviesPage ? 'all-movies-page' : ''}`}>
@@ -233,7 +274,7 @@ export default function TopBar() {
           {locOpen && (
             <div className="loc-dropdown">
               <input className="loc-search" placeholder="Search place..." value={query} onChange={e=>setQuery(e.target.value)} autoFocus />
-              {filtered.map(p=>(<button key={p} className="loc-item" onClick={()=>{setLoc(p); setLocOpen(false); setQuery(""); localStorage.setItem("ug-loc", p)}}>{p}</button>))}
+              {filtered.map(p=>(<button key={p} className="loc-item" onClick={()=>{setLoc(p); setLocOpen(false); setQuery(""); if(typeof window!=="undefined") localStorage.setItem("ug-loc", p)}}>{p}</button>))}
               {filtered.length===0 && <div className="loc-empty">No match</div>}
             </div>
           )}
@@ -251,12 +292,28 @@ export default function TopBar() {
           </div>
         </div>
         <div className="right-actions">
-          <button className="tv-share-btn mob-only" aria-label="Cast" onClick={() => setOpen(true)}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M3 18v3h3c0-1.66-1.34-3-3-3Z"/><path d="M3 13v2c3.31 0 6 2.69 6 6h2c0-4.42-3.58-8-8-8Z"/><path d="M3 8v2c5.52 0 10 4.48 10 10h2C15 13.37 9.63 8 3 8Z"/><path d="M5 4h14c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2h-4v-2h4V6H5v3H3V6c0-1.1.9-2 2-2Z"/></svg>
-          </button>
-          {isAllMoviesPage && (<button className="mobile-search-icon" aria-label="Search" onClick={() => { setDrawerMode("search"); setWaOpen(true); }}><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="6"/><path d="M21 21l-4.3-4.3"/></svg></button>)}
+          {isServicesPage && (
+            <button className="tv-share-btn mob-only" aria-label="Cast" onClick={() => setOpen(true)}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M3 18v3h3c0-1.66-1.34-3-3-3Z"/><path d="M3 13v2c3.31 0 6 2.69 6 6h2c0-4.42-3.58-8-8-8Z"/><path d="M3 8v2c5.52 0 10 4.48 10 10h2C15 13.37 9.63 8 3 8Z"/><path d="M5 4h14c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2h-4v-2h4V6H5v3H3V6c0-1.1.9-2 2-2Z"/></svg>
+            </button>
+          )}
+          {isServicesPage && (
+            <Link href="/profile" className="profile you-btn mob-only" style={{overflow:"hidden", display:"flex", alignItems:"center", justifyContent:"center"}}>
+              {avatarUrl ? <img src={avatarUrl} alt="avatar" style={{width:"100%", height:"100%", objectFit:"cover", borderRadius:"50%"}} /> : <span>{getInitial()}</span>}
+            </Link>
+          )}
+          <div className="pc-only" style={{display:"flex", alignItems:"center", gap:"8px"}}>
+            <button className="tv-share-btn" aria-label="Cast" onClick={() => setOpen(true)} style={{display:"flex"}}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M3 18v3h3c0-1.66-1.34-3-3-3Z"/><path d="M3 13v2c3.31 0 6 2.69 6 6h2c0-4.42-3.58-8-8-8Z"/><path d="M3 8v2c5.52 0 10 4.48 10 10h2C15 13.37 9.63 8 3 8Z"/><path d="M5 4h14c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2h-4v-2h4V6H5v3H3V6c0-1.1.9-2 2-2Z"/></svg>
+            </button>
+            <Link href="/profile" className="profile you-btn" style={{overflow:"hidden", display:"flex", alignItems:"center", justifyContent:"center"}}>
+              {avatarUrl ? <img src={avatarUrl} alt="avatar" style={{width:"100%", height:"100%", objectFit:"cover", borderRadius:"50%"}} /> : <span>{getInitial()}</span>}
+            </Link>
+          </div>
+
           <button className="grid-btn"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="3" width="4" height="4" rx="1"/><rect x="10" y="3" width="4" height="4" rx="1"/><rect x="17" y="3" width="4" height="4" rx="1"/><rect x="3" y="10" width="4" height="4" rx="1"/><rect x="10" y="10" width="4" height="4" rx="1"/><rect x="17" y="10" width="4" height="4" rx="1"/><rect x="3" y="17" width="4" height="4" rx="1"/><rect x="10" y="17" width="4" height="4" rx="1"/><rect x="17" y="17" width="4" height="4" rx="1"/></svg></button>
           <button className="sliders-btn" onClick={openPcFaders}><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M4 7H20" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/><circle cx="10" cy="7" r="3" fill="currentColor"/><path d="M4 17H20" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/><circle cx="15" cy="17" r="3" fill="currentColor"/></svg></button>
+<<<<<<< HEAD
           {isServicesPage ? (
             user ? (
               <Link href="/profile" className="profile you-btn has-avatar" style={{ overflow: "hidden", padding: 0 }}>
@@ -282,6 +339,12 @@ export default function TopBar() {
               )}
               <button className="apple-burger" aria-label="menu" onClick={() => { setDrawerMode("menu"); setWaOpen(true); }}><svg width="20" height="20" viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="16" height="8" rx="2" stroke="currentColor" strokeWidth="2"/><path d="M4 16H20" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/><path d="M4 20H20" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg></button>
             </>
+=======
+          {!isServicesPage && (
+            <button className="apple-burger" aria-label="menu" onClick={() => { setDrawerMode("menu"); setWaOpen(true); }}>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="16" height="8" rx="2" stroke="currentColor" strokeWidth="2"/><path d="M4 16H20" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/><path d="M4 20H20" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
+            </button>
+>>>>>>> 0d487e7ac0e4165aaea5dfa29b72de643127a479
           )}
         </div>
       </header>
@@ -320,9 +383,7 @@ export default function TopBar() {
                     </button>
                   </div>
                 )}
-                <div className="morph-body">
-                  {renderChild()}
-                </div>
+                <div className="morph-body">{renderChild()}</div>
               </div>
             )}
           </div>
@@ -331,4 +392,3 @@ export default function TopBar() {
     </>
   );
 }
-
