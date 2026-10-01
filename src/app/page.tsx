@@ -8,7 +8,7 @@ import FooterFree from "@/components/layout/curvy-pro-room/get-started-email/foo
 import SigninModals from "./auth-system/signin-modals";
 import LogoutModal from "./auth-system/logout-modal";
 
-const WORKER_URL = "https://user-account-server-api.336acaca-a917-436b-b499-ba76c68f7e91.workers.dev";
+const WORKER_URL = "https://user-account-server-api.connectu89.workers.dev";
 
 const top = [
   {id:"movies", l:"Movies", custom:true, icon: (
@@ -71,29 +71,34 @@ export default function Page(){
     load();
     const id = setInterval(load, 60000);
 
-    try {
-      const saved = localStorage.getItem("ug_user");
-      if(saved) setUser(JSON.parse(saved) as User);
-    } catch {}
+    const syncUser = () => {
+      try {
+        const saved = localStorage.getItem("ug_user");
+        setUser(saved ? JSON.parse(saved) as User : null);
+      } catch { setUser(null); }
+    };
+    syncUser();
+    window.addEventListener("storage", syncUser);
+    window.addEventListener("ug_auth_changed" as any, syncUser);
 
     const token = localStorage.getItem("ug_token");
     if(token){
       fetch(`${WORKER_URL}/api/user/me`, { headers: { Authorization: `Bearer ${token}` }})
-        .then(r=>r.json())
+        .then(r=> r.ok ? r.json().catch(()=>null) : null)
         .then(d=>{
-          if(d.user){
+          if(d?.user){
             setUser(d.user);
             localStorage.setItem("ug_user", JSON.stringify(d.user));
           }
         }).catch(()=>{});
     }
 
-    return ()=>clearInterval(id);
+    return ()=>{
+      clearInterval(id);
+      window.removeEventListener("storage", syncUser);
+      window.removeEventListener("ug_auth_changed" as any, syncUser);
+    };
   },[]);
-
-  const handleLogout = () => {
-    setLogoutOpen(true);
-  };
 
   const confirmLogout = () => {
     localStorage.removeItem("ug_token");
@@ -101,57 +106,24 @@ export default function Page(){
     localStorage.removeItem("ug_guest");
     setUser(null);
     setLogoutOpen(false);
+    window.dispatchEvent(new Event("ug_auth_changed"));
   };
 
   return(
   <>
     <div className="landing-root">
       <h1 className="landing-title">Choose your service</h1>
-     
       <div className="grid top-grid">
         {top.map(s=> (
           <div key={s.id} className="card-wrapper">
             <CardLabel l={s.l} icon={s.icon} />
             {s.custom ? (
-              <a href={`/${s.id}`} className="service-card movies-card">
-                <div className="movies-left"></div>
-                <div className="movies-right">
-                  <div className="scroller-track">
-                    <img src="/scroller.jpg" alt="" />
-                    <img src="/scroller.jpg" alt="" />
-                    <img src="/scroller.jpg" alt="" />
-                    <img src="/scroller.jpg" alt="" />
-                  </div>
-                </div>
-              </a>
+              <a href={`/${s.id}`} className="service-card movies-card"><div className="movies-left"></div><div className="movies-right"><div className="scroller-track"><img src="/scroller.jpg" alt="" /><img src="/scroller.jpg" alt="" /><img src="/scroller.jpg" alt="" /><img src="/scroller.jpg" alt="" /></div></div></a>
             ) : (s as any).customFood ? (
-              <a href={`/${s.id}`} className="service-card ug-foods-card">
-                <div className="ug-foods-left"></div>
-                <div className="ug-foods-right">
-                  <div className="foods-stack">
-                    <img src="/matooke.jpg" className="stack-img stack-1" alt="" />
-                    <img src="/matooke.jpg" className="stack-img stack-2" alt="" />
-                    <img src="/matooke.jpg" className="stack-img stack-3" alt="" />
-                  </div>
-                </div>
-                <div className="foods-label"><p>UG Foods</p></div>
-              </a>
+              <a href={`/${s.id}`} className="service-card ug-foods-card"><div className="ug-foods-left"></div><div className="ug-foods-right"><div className="foods-stack"><img src="/matooke.jpg" className="stack-img stack-1" alt="" /><img src="/matooke.jpg" className="stack-img stack-2" alt="" /><img src="/matooke.jpg" className="stack-img stack-3" alt="" /></div></div><div className="foods-label"><p>UG Foods</p></div></a>
             ) : (s as any).customMoney ? (
-              <a href={`/${s.id}`} className="service-card mobile-money-card">
-                <div className="money-bg"></div>
-                <div className="money-live-widget">
-                  <div className="live-row">
-                    <p className="live-label-aed">AED</p>
-                    <span className="live-arrow">→</span>
-                    <p className="live-label-ugx">UGX</p>
-                  </div>
-                  <h2 className="live-rate">1 AED = {rate.toLocaleString()} UGX</h2>
-                  <p className="live-sub">Live</p>
-                </div>
-              </a>
-            ) : (
-              <a href={`/${s.id}`} className="service-card"><span> </span></a>
-            )}
+              <a href={`/${s.id}`} className="service-card mobile-money-card"><div className="money-bg"></div><div className="money-live-widget"><div className="live-row"><p className="live-label-aed">AED</p><span className="live-arrow">→</span><p className="live-label-ugx">UGX</p></div><h2 className="live-rate">1 AED = {rate.toLocaleString()} UGX</h2><p className="live-sub">Live</p></div></a>
+            ) : (<a href={`/${s.id}`} className="service-card"><span> </span></a>)}
           </div>
         ))}
       </div>
@@ -160,36 +132,9 @@ export default function Page(){
         {bottom.map(s=> (
           <div key={s.id} className="card-wrapper">
             <CardLabel l={s.l} icon={s.icon} />
-            {(s as any).customSalon ? (
-              <a href={`/${s.id}`} className="service-card salon-card"><div className="salon-bg"></div></a>
-            ) : (s as any).customJobs ? (
-              <a href={`/${s.id}`} className="service-card jobs-card"><div className="jobs-bg"></div></a>
-            ) : (s as any).customCago ? (
-              <a href={`/${s.id}`} className="service-card cago-card"><div className="cago-bg"></div></a>
-            ) : (s as any).customBeds ? (
-              <a href={`/${s.id}`} className="service-card beds-card"><div className="beds-bg"></div></a>
-            ) : (
-              <a href={`/${s.id}`} className="service-card"><span> </span></a>
-            )}
+            {(s as any).customSalon ? (<a href={`/${s.id}`} className="service-card salon-card"><div className="salon-bg"></div></a>) : (s as any).customJobs ? (<a href={`/${s.id}`} className="service-card jobs-card"><div className="jobs-bg"></div></a>) : (s as any).customCago ? (<a href={`/${s.id}`} className="service-card cago-card"><div className="cago-bg"></div></a>) : (s as any).customBeds ? (<a href={`/${s.id}`} className="service-card beds-card"><div className="beds-bg"></div></a>) : (<a href={`/${s.id}`} className="service-card"><span> </span></a>)}
           </div>
         ))}
-      </div>
-
-      <div className="cta-wrap">
-        {user ? (
-          <div className="cta-stack">
-            <button className="cta-btn cta-btn-connected">
-              ✓ Connected — {user.name} • {user.email}
-            </button>
-            <button className="cta-logout" onClick={handleLogout}>
-              Logout
-            </button>
-          </div>
-        ) : (
-          <button className="cta-btn" onClick={() => { setModalMode("signup"); setModalOpen(true); }}>
-            Sign up for full experience
-          </button>
-        )}
       </div>
 
       <TheHallShell><></></TheHallShell>
@@ -206,6 +151,7 @@ export default function Page(){
           setUser(newUser);
           if(newUser) localStorage.setItem("ug_user", JSON.stringify(newUser));
           if(u?.token) localStorage.setItem("ug_token", u.token);
+          window.dispatchEvent(new Event("ug_auth_changed"));
           setModalOpen(false);
         }}
       />
@@ -220,4 +166,3 @@ export default function Page(){
   </>
 );
 }
-
