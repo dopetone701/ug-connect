@@ -51,7 +51,14 @@ function CardLabel({l, icon}: any){
   )
 }
 
-type User = { id:string; email:string; name:string };
+type User = { 
+  id:string; 
+  email:string; 
+  name:string;
+  avatar?: any;
+  avatarUrl?: string;
+  profilePicture?: string;
+};
 
 export default function Page(){
   const [rate, setRate] = useState(1008);
@@ -59,6 +66,7 @@ export default function Page(){
   const [modalMode, setModalMode] = useState<"signin"|"signup">("signup");
   const [user, setUser] = useState<User|null>(null);
   const [logoutOpen, setLogoutOpen] = useState(false);
+  const [pendingHref, setPendingHref] = useState<string | null>(null);
 
   useEffect(()=>{
     async function load(){
@@ -78,10 +86,13 @@ export default function Page(){
       } catch { setUser(null); }
     };
     syncUser();
-    window.addEventListener("storage", syncUser);
-    window.addEventListener("ug_auth_changed" as any, syncUser);
+    if (typeof window !== "undefined") {
+      window.addEventListener("storage", syncUser);
+      window.addEventListener("ug_auth_changed" as any, syncUser);
+      window.addEventListener("ug_profile_updated" as any, syncUser);
+    }
 
-    const token = localStorage.getItem("ug_token");
+    const token = typeof window !== "undefined" ? localStorage.getItem("ug_token") : null;
     if(token){
       fetch(`${WORKER_URL}/api/user/me`, { headers: { Authorization: `Bearer ${token}` }})
         .then(r=> r.ok ? r.json().catch(()=>null) : null)
@@ -89,14 +100,20 @@ export default function Page(){
           if(d?.user){
             setUser(d.user);
             localStorage.setItem("ug_user", JSON.stringify(d.user));
+            if (typeof window !== "undefined") {
+              window.dispatchEvent(new CustomEvent("ug_profile_updated"));
+            }
           }
         }).catch(()=>{});
     }
 
     return ()=>{
       clearInterval(id);
-      window.removeEventListener("storage", syncUser);
-      window.removeEventListener("ug_auth_changed" as any, syncUser);
+      if (typeof window !== "undefined") {
+        window.removeEventListener("storage", syncUser);
+        window.removeEventListener("ug_auth_changed" as any, syncUser);
+        window.removeEventListener("ug_profile_updated" as any, syncUser);
+      }
     };
   },[]);
 
@@ -106,17 +123,38 @@ export default function Page(){
     localStorage.removeItem("ug_guest");
     setUser(null);
     setLogoutOpen(false);
+    setPendingHref(null);
     window.dispatchEvent(new Event("ug_auth_changed"));
+    window.dispatchEvent(new CustomEvent("ug_profile_updated"));
   };
 
   const handleServiceClick = (e: React.MouseEvent, href: string) => {
     if (!user) {
       e.preventDefault();
+      setPendingHref(href);
       setModalMode("signup");
       setModalOpen(true);
       return;
     }
     window.location.href = href;
+  };
+
+  const handleAuthSuccess = (u:any) => {
+    const newUser = u?.user || u;
+    setUser(newUser);
+    if(newUser) localStorage.setItem("ug_user", JSON.stringify(newUser));
+    if(u?.token) localStorage.setItem("ug_token", u.token);
+    window.dispatchEvent(new Event("ug_auth_changed"));
+    window.dispatchEvent(new CustomEvent("ug_profile_updated"));
+    setModalOpen(false);
+    
+    if (pendingHref) {
+      const dest = pendingHref;
+      setPendingHref(null);
+      setTimeout(() => {
+        window.location.href = dest;
+      }, 300);
+    }
   };
 
   return(
@@ -154,16 +192,9 @@ export default function Page(){
       <SigninModals
         isOpen={modalOpen}
         mode={modalMode}
-        onClose={() => setModalOpen(false)}
+        onClose={() => { setModalOpen(false); setPendingHref(null); }}
         onSwitchMode={(m) => setModalMode(m)}
-        onSuccess={(u:any) => {
-          const newUser = u?.user || u;
-          setUser(newUser);
-          if(newUser) localStorage.setItem("ug_user", JSON.stringify(newUser));
-          if(u?.token) localStorage.setItem("ug_token", u.token);
-          window.dispatchEvent(new Event("ug_auth_changed"));
-          setModalOpen(false);
-        }}
+        onSuccess={handleAuthSuccess}
       />
 
       <LogoutModal
