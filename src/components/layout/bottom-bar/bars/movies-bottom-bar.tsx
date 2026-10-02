@@ -82,19 +82,19 @@ export default function MoviesBottomBar() {
 
         <button type="button" onClick={openAccountSheet} className={`bottom-item ${path === "/profile"? "active" : ""}`}>
           <span className="bottom-icon">
-            {isLoggedIn && avatarUrl? (
-              <img
-                src={avatarUrl}
-                alt={currentUser?.name || "You"}
-                style={{ width: 28, height: 28, borderRadius: '50%', objectFit: 'cover', border: '2px solid #fff' }}
-              />
-            ) : isLoggedIn? (
-              <div style={{ width: 28, height: 28, borderRadius: '50%', background: '#6366f1', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700 }}>
-                {(currentUser?.name?.[0] || currentUser?.email?.[0] || "U").toUpperCase()}
-              </div>
-            ) : (
-              <YouIcon size={24} className="you-svg" />
-            )}
+           {isLoggedIn && avatarUrl? (
+  <img
+    src={avatarUrl}
+    alt={currentUser?.name || "You"}
+    style={{ width: 28, height: 28, borderRadius: '50%', objectFit: 'cover', border: '2px solid hsl(var(--border))' }}
+  />
+) : isLoggedIn? (
+  <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'hsl(var(--primary))', color: 'hsl(var(--primary-text))', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700 }}>
+    {(currentUser?.name?.[0] || currentUser?.email?.[0] || "U").toUpperCase()}
+  </div>
+) : (
+  <YouIcon size={24} className="you-svg" />
+)}
           </span>
           <span className="bottom-label">{isLoggedIn? (currentUser?.name?.split(" ")[0] || "You") : "You"}</span>
         </button>
