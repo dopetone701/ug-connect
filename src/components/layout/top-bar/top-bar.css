@@ -684,3 +684,123 @@ body.reels-open.top-bar {
   display: none!important;
 }
 
+/* FIX: hide mobile profile from PC */
+@media (min-width: 769px) {
+  .mob-only {
+    display: none !important;
+  }
+  .top-bar .right-actions .profile.mob-only,
+  .top-bar .right-actions .tv-share-btn.mob-only {
+    display: none !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .pc-only {
+    display: none !important;
+  }
+}
+
+
+/* =====================================================
+   PC TOP CONTROLS — SLIDERS / GRID / PROFILE
+   ===================================================== */
+
+@media (min-width: 769px) {
+
+  .pc-top-controls {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    height: 46px;
+    flex-shrink: 0;
+  }
+
+  .pc-top-controls > button,
+  .pc-top-controls > a {
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+    min-height: 40px;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    place-items: center;
+    border: 0;
+    background: transparent;
+    color: hsl(var(--text));
+    border-radius: 50%;
+    cursor: pointer;
+    text-decoration: none;
+    box-sizing: border-box;
+  }
+
+  .pc-top-controls > button:hover,
+  .pc-top-controls > a:hover {
+    background: hsl(var(--bg));
+  }
+
+  .pc-top-controls > button:active,
+  .pc-top-controls > a:active {
+    background: hsl(var(--surface-hover));
+  }
+
+  .pc-top-controls svg {
+    width: 20px;
+    height: 20px;
+    display: block;
+    flex-shrink: 0;
+  }
+
+  /* Profile */
+  .pc-top-controls .pc-profile-btn {
+    overflow: hidden;
+    border-radius: 50%;
+    background: hsl(var(--primary));
+    color: hsl(var(--primary-text));
+  }
+
+  .pc-top-controls .pc-profile-btn:hover {
+    background: hsl(var(--primary));
+    opacity: 0.9;
+  }
+
+  .pc-top-controls .pc-profile-btn img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    border-radius: 50%;
+  }
+
+  .pc-top-controls .pc-profile-btn span {
+    display: grid;
+    place-items: center;
+    width: 100%;
+    height: 100%;
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  /* Keep the whole PC action group balanced against the search */
+  .top-bar > .right-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-left: auto;
+    padding-right: 8px;
+  }
+
+  .top-bar .pc-top-controls {
+    margin: 0;
+  }
+}
+
+
+/* Never let the new PC controls appear on mobile */
+@media (max-width: 768px) {
+  .pc-top-controls {
+    display: none !important;
+  }
+}

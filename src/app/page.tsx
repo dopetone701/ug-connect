@@ -1,7 +1,7 @@
 "use client";
 import "./page.css";
 import "../components/ui/service-card/service-card.css";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import TheHallShell from "@/components/layout/curvy-pro-room/the-hall-shell";
 import GetStartedInputGate from "@/components/layout/curvy-pro-room/get-started-email/get-started-input-gate"
 import FooterFree from "@/components/layout/curvy-pro-room/get-started-email/footer/footer"
@@ -9,6 +9,15 @@ import SigninModals from "./auth-system/signin-modals";
 import LogoutModal from "./auth-system/logout-modal";
 
 const WORKER_URL = "https://user-account-server-api.connectu89.workers.dev";
+
+// --- ADMIN CONFIG - SINGLE FILE FLEXIBILITY ---
+const ADMIN_EMAIL = "connectu89@gmail.com";
+const LIVE_SERVICES = ["movies"] as const; // PUBLIC SEES ONLY THIS - add more when ready to release
+
+function isAdminUser(user: any): boolean {
+  if (!user?.email) return false;
+  return user.email.toLowerCase() === ADMIN_EMAIL.toLowerCase();
+}
 
 const top = [
   {id:"movies", l:"Movies", custom:true, icon: (
@@ -51,9 +60,9 @@ function CardLabel({l, icon}: any){
   )
 }
 
-type User = { 
-  id:string; 
-  email:string; 
+type User = {
+  id:string;
+  email:string;
   name:string;
   avatar?: any;
   avatarUrl?: string;
@@ -67,6 +76,17 @@ export default function Page(){
   const [user, setUser] = useState<User|null>(null);
   const [logoutOpen, setLogoutOpen] = useState(false);
   const [pendingHref, setPendingHref] = useState<string | null>(null);
+
+  // --- ADMIN + LIVE FILTER LOGIC ---
+  const isAdmin = useMemo(() => isAdminUser(user), [user]);
+  const visibleTop = useMemo(() => {
+    if (isAdmin) return top; // admin sees all for background editing
+    return top.filter(s => (LIVE_SERVICES as readonly string[]).includes(s.id));
+  }, [isAdmin]);
+  const visibleBottom = useMemo(() => {
+    if (isAdmin) return bottom; // admin sees all
+    return bottom.filter(s => (LIVE_SERVICES as readonly string[]).includes(s.id));
+  }, [isAdmin]);
 
   useEffect(()=>{
     async function load(){
@@ -147,7 +167,7 @@ export default function Page(){
     window.dispatchEvent(new Event("ug_auth_changed"));
     window.dispatchEvent(new CustomEvent("ug_profile_updated"));
     setModalOpen(false);
-    
+   
     if (pendingHref) {
       const dest = pendingHref;
       setPendingHref(null);
@@ -160,9 +180,9 @@ export default function Page(){
   return(
   <>
     <div className="landing-root">
-      <h1 className="landing-title">Choose your service</h1>
+      <h1 className="landing-title">Choose your service {isAdmin && <span style={{fontSize:12, background:"#000", color:"#fff", padding:"2px 8px", borderRadius:12, marginLeft:8}}>ADMIN - All Services Visible</span>}</h1>
       <div className="grid top-grid">
-        {top.map(s=> (
+        {visibleTop.map(s=> (
           <div key={s.id} className="card-wrapper">
             <CardLabel l={s.l} icon={s.icon} />
             {s.custom ? (
@@ -176,14 +196,16 @@ export default function Page(){
         ))}
       </div>
 
+      {visibleBottom.length > 0 && (
       <div className="grid bottom-grid">
-        {bottom.map(s=> (
+        {visibleBottom.map(s=> (
           <div key={s.id} className="card-wrapper">
             <CardLabel l={s.l} icon={s.icon} />
             {(s as any).customSalon ? (<a href={`/${s.id}`} onClick={(e)=>handleServiceClick(e, `/${s.id}`)} className="service-card salon-card"><div className="salon-bg"></div></a>) : (s as any).customJobs ? (<a href={`/${s.id}`} onClick={(e)=>handleServiceClick(e, `/${s.id}`)} className="service-card jobs-card"><div className="jobs-bg"></div></a>) : (s as any).customCago ? (<a href={`/${s.id}`} onClick={(e)=>handleServiceClick(e, `/${s.id}`)} className="service-card cago-card"><div className="cago-bg"></div></a>) : (s as any).customBeds ? (<a href={`/${s.id}`} onClick={(e)=>handleServiceClick(e, `/${s.id}`)} className="service-card beds-card"><div className="beds-bg"></div></a>) : (<a href={`/${s.id}`} onClick={(e)=>handleServiceClick(e, `/${s.id}`)} className="service-card"><span> </span></a>)}
           </div>
         ))}
       </div>
+      )}
 
       <TheHallShell><></></TheHallShell>
       <GetStartedInputGate />
@@ -207,3 +229,4 @@ export default function Page(){
   </>
 );
 }
+
