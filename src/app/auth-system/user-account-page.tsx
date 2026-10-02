@@ -63,13 +63,19 @@ export default function UserAccountPage() {
     user?.avatar;
 
   /*
+   * =========================================================
    * MAIN LIST
+   * =========================================================
    */
+
   const mainList = lists?.[0];
 
   /*
+   * =========================================================
    * MY LIST MOVIES
+   * =========================================================
    */
+
   const myMovies = (allMovies || []).filter(
     (m: any) =>
       mainList?.movieIds?.includes(String(m.id)) ||
@@ -77,8 +83,11 @@ export default function UserAccountPage() {
   );
 
   /*
+   * =========================================================
    * LIKED MOVIES
+   * =========================================================
    */
+
   const favMovies = (allMovies || []).filter(
     (m: any) =>
       favIds?.includes(String(m.id)) ||
@@ -86,8 +95,11 @@ export default function UserAccountPage() {
   );
 
   /*
+   * =========================================================
    * RECENT MOVIES
+   * =========================================================
    */
+
   const recentMovies = (allMovies || []).filter(
     (m: any) =>
       recentIds?.includes(String(m.id)) ||
@@ -98,182 +110,225 @@ export default function UserAccountPage() {
     <div className="account-sheet-root">
 
       {/* =====================================================
-          FIXED SHEET
-          The sheet itself does NOT scroll.
+          BACK BUTTON
+          Lives inside the account sheet.
           ===================================================== */}
 
-      <div className="account-sheet-scroll">
+      <button
+        type="button"
+        className="account-back-btn"
+        onClick={() =>
+          window.dispatchEvent(
+            new CustomEvent("ug-close-account-sheet")
+          )
+        }
+        aria-label="Back"
+      >
+        <svg
+          width="22"
+          height="22"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden="true"
+        >
+          <path d="M19 12H5" />
+          <path d="M12 19l-7-7 7-7" />
+        </svg>
 
-        {/* ===================================================
-            EDIT
-            =================================================== */}
+        <span>Back</span>
+      </button>
 
-        <div className="account-top-edit-wrap">
-          <button
-            type="button"
-            className="account-edit-btn"
-            onClick={() =>
-              window.dispatchEvent(
-                new CustomEvent("ug-open-edit-profile")
-              )
-            }
-          >
-            Edit
-          </button>
-        </div>
+      {/* =====================================================
+          EDIT
+          Fixed / non-scrolling
+          ===================================================== */}
 
-        {/* ===================================================
-            PROFILE
-            =================================================== */}
+      <div className="account-top-edit-wrap">
 
-        <div className="account-avatar-wrap">
+        <button
+          type="button"
+          className="account-edit-btn"
+          onClick={() =>
+            window.dispatchEvent(
+              new CustomEvent("ug-open-edit-profile")
+            )
+          }
+        >
+          Edit
+        </button>
 
-          <div className="account-avatar">
-            {avatar ? (
-              <img
-                src={avatar}
-                alt={name}
-                draggable={false}
-              />
-            ) : (
-              initial
-            )}
-          </div>
+      </div>
 
-          <h2 className="account-name">
-            {name}
-          </h2>
+      {/* =====================================================
+          PROFILE
+          Fixed / non-scrolling
+          ===================================================== */}
 
-          <p className="account-sub">
-            {typeof email === "string" &&
-            email.includes("@")
-              ? email
-              : "last seen 24/09/26"}
-          </p>
+      <div className="account-avatar-wrap">
 
-        </div>
+        <div className="account-avatar">
 
-        {/* ===================================================
-            ACTION CUBES
-            =================================================== */}
-
-        <div className="account-cubes">
-
-          <Cube
-            icon={<PlusIcon />}
-            label="add"
-            onClick={() =>
-              window.dispatchEvent(
-                new CustomEvent("ug-open-lists-sheet")
-              )
-            }
-          />
-
-          <Cube
-            icon={<BellIcon />}
-            label="mute"
-          />
-
-          <Cube
-            icon={<HeartIcon />}
-            label="liked"
-            onClick={() => {
-              const target =
-                document.getElementById("fav-row");
-
-              target?.scrollIntoView({
-                behavior: "smooth",
-                block: "start",
-              });
-            }}
-          />
-
-          <Cube
-            icon={<DownloadIcon />}
-            label="saved"
-          />
-
-          <Cube
-            icon={<MoreIcon />}
-            label="more"
-          />
+          {avatar ? (
+            <img
+              src={avatar}
+              alt={name}
+              draggable={false}
+            />
+          ) : (
+            initial
+          )}
 
         </div>
 
-        {/* ===================================================
-            MOBILE / ACCOUNT INFO
-            =================================================== */}
+        <h2 className="account-name">
+          {name}
+        </h2>
 
-        <div className="account-mobile-card">
+        <p className="account-sub">
 
-          <div className="account-mobile-label">
-            mobile
-          </div>
+          {typeof email === "string" &&
+          email.includes("@")
+            ? email
+            : "last seen 24/09/26"}
 
-          <div className="account-mobile-value">
-            {user?.email || "+971 52 767 5021"}
-          </div>
+        </p>
 
+      </div>
+
+      {/* =====================================================
+          ACTION CUBES
+          Fixed / non-scrolling
+          ===================================================== */}
+
+      <div className="account-cubes">
+
+        <Cube
+          icon={<PlusIcon />}
+          label="add"
+          onClick={() =>
+            window.dispatchEvent(
+              new CustomEvent("ug-open-lists-sheet")
+            )
+          }
+        />
+
+        <Cube
+          icon={<BellIcon />}
+          label="mute"
+        />
+
+        <Cube
+          icon={<HeartIcon />}
+          label="liked"
+          onClick={() => {
+            const target =
+              document.getElementById("fav-row");
+
+            target?.scrollIntoView({
+              behavior: "smooth",
+              block: "start",
+            });
+          }}
+        />
+
+        <Cube
+          icon={<DownloadIcon />}
+          label="saved"
+        />
+
+        <Cube
+          icon={<MoreIcon />}
+          label="more"
+        />
+
+      </div>
+
+      {/* =====================================================
+          MOBILE / ACCOUNT INFO
+          Fixed / non-scrolling
+          ===================================================== */}
+
+      <div className="account-mobile-card">
+
+        <div className="account-mobile-label">
+          mobile
         </div>
 
+        <div className="account-mobile-value">
+          {user?.email || "+971 52 767 5021"}
+        </div>
+
+      </div>
+
+      {/* =====================================================
+          SCROLLING AREA
+          ONLY THIS SECTION SCROLLS VERTICALLY
+          ===================================================== */}
+
+      <div className="account-lists-wrap">
+
         {/* ===================================================
-            MOVIE LISTS
+            MY LIST
             =================================================== */}
 
-        <div className="account-lists-wrap">
-
-          {/* MY LIST */}
-
-          <MovieRowPrivate
-            title="my list"
-            count={mainList?.movieIds?.length || 0}
-            movies={myMovies}
-            leading={
-              <EmptyListCard
-                onClick={() =>
-                  window.dispatchEvent(
-                    new CustomEvent(
-                      "ug-open-lists-sheet"
-                    )
+        <MovieRowPrivate
+          title="my list"
+          count={mainList?.movieIds?.length || 0}
+          movies={myMovies}
+          leading={
+            <EmptyListCard
+              onClick={() =>
+                window.dispatchEvent(
+                  new CustomEvent(
+                    "ug-open-lists-sheet"
                   )
-                }
-              />
-            }
+                )
+              }
+            />
+          }
+        />
+
+        {/* ===================================================
+            LIKED
+            =================================================== */}
+
+        {favMovies.length > 0 && (
+          <MovieRowPrivate
+            id="fav-row"
+            title="liked"
+            count={favMovies.length}
+            movies={favMovies}
           />
+        )}
 
-          {/* LIKED */}
+        {/* ===================================================
+            RECENT
+            =================================================== */}
 
-          {favMovies.length > 0 && (
-            <MovieRowPrivate
-              id="fav-row"
-              title="liked"
-              count={favMovies.length}
-              movies={favMovies}
-            />
+        {recentMovies.length > 0 && (
+          <MovieRowPrivate
+            title="recent"
+            count={recentMovies.length}
+            movies={recentMovies}
+          />
+        )}
+
+        {/* ===================================================
+            EMPTY STATE
+            =================================================== */}
+
+        {myMovies.length === 0 &&
+          favMovies.length === 0 &&
+          recentMovies.length === 0 && (
+            <div className="account-empty-hint">
+              Your private lists will appear
+              here. Tap + to create.
+            </div>
           )}
-
-          {/* RECENT */}
-
-          {recentMovies.length > 0 && (
-            <MovieRowPrivate
-              title="recent"
-              count={recentMovies.length}
-              movies={recentMovies}
-            />
-          )}
-
-          {/* EMPTY STATE */}
-
-          {myMovies.length === 0 &&
-            favMovies.length === 0 &&
-            recentMovies.length === 0 && (
-              <div className="account-empty-hint">
-                Your private lists will appear
-                here. Tap + to create.
-              </div>
-            )}
-
-        </div>
 
       </div>
     </div>
@@ -355,7 +410,8 @@ function MovieCardPrivate({
   m: any;
   allMovies: any[];
 }) {
-  const { addRecent } = useMovieStore() as any;
+  const { addRecent } =
+    useMovieStore() as any;
 
   const { openDrawer } =
     useWatchDrawer() as any;
@@ -368,16 +424,19 @@ function MovieCardPrivate({
   const openMovie = (
     type: "full" | "preview" = "full"
   ) => {
+
     const id = String(m.id);
 
     /*
      * Record recent movie
      */
+
     addRecent(id);
 
     /*
      * Preserve home scroll position
      */
+
     try {
       sessionStorage.setItem(
         "movies_home_scroll_v1",
@@ -390,7 +449,9 @@ function MovieCardPrivate({
     /*
      * Desktop
      */
+
     if (window.innerWidth > 768) {
+
       router.push(
         `/movies/watch/${id}?t=${type}`
       );
@@ -401,7 +462,9 @@ function MovieCardPrivate({
     /*
      * Mobile preview
      */
+
     if (type === "preview") {
+
       openReels(
         allMovies?.map((x: any) => ({
           ...x,
@@ -419,6 +482,7 @@ function MovieCardPrivate({
     /*
      * Mobile full movie
      */
+
     openDrawer(id);
   };
 
@@ -504,6 +568,7 @@ function EmptyListCard({
             opacity: 0.7,
           }}
         >
+
           <line
             x1="12"
             y1="5"
@@ -517,6 +582,7 @@ function EmptyListCard({
             x2="19"
             y2="12"
           />
+
         </svg>
 
       </div>
@@ -549,11 +615,13 @@ function Cube({
       className="account-cube"
       onClick={onClick}
     >
+
       {icon}
 
       <span>
         {label}
       </span>
+
     </button>
   );
 }
@@ -574,8 +642,10 @@ function PlusIcon() {
       strokeWidth="2.2"
       aria-hidden="true"
     >
+
       <path d="M12 5v14" />
       <path d="M5 12h14" />
+
     </svg>
   );
 }
@@ -590,7 +660,9 @@ function BellIcon() {
       fill="currentColor"
       aria-hidden="true"
     >
+
       <path d="M12 2a7 7 0 0 0-7 7v4.5l-1.5 1.5V16h17v-1L19 13.5V9a7 7 0 0 0-7-7Z" />
+
     </svg>
   );
 }
@@ -605,7 +677,9 @@ function HeartIcon() {
       fill="currentColor"
       aria-hidden="true"
     >
+
       <path d="M12 21s-6.5-4.35-8.5-8.5A5 5 0 0 1 12 6a5 5 0 0 1 8.5 6.5C18.5 16.65 12 21 12 21Z" />
+
     </svg>
   );
 }
@@ -622,9 +696,11 @@ function DownloadIcon() {
       strokeWidth="2"
       aria-hidden="true"
     >
+
       <path d="M12 3v13" />
       <path d="M5 16l7 5 7-5" />
       <path d="M3 21h18" />
+
     </svg>
   );
 }
@@ -639,6 +715,7 @@ function MoreIcon() {
       fill="currentColor"
       aria-hidden="true"
     >
+
       <circle
         cx="5"
         cy="12"
@@ -656,6 +733,7 @@ function MoreIcon() {
         cy="12"
         r="2"
       />
+
     </svg>
   );
 }
