@@ -1,89 +1,48 @@
 /* =========================================================
    USER ACCOUNT PAGE
-   DNA THEME AWARE
-   Fixed sheet + independently scrolling content
+   FULL-WIDTH / BORDERLESS / THEME AWARE
+
+   Profile + actions stay fixed.
+   Movie content below scrolls.
+   ========================================================= */
+
+
+/* =========================================================
+   MAIN ACCOUNT CANVAS
    ========================================================= */
 
 .account-sheet-root {
-  width: calc(100% - 12px);
-  max-width: 760px;
+  width: 100%;
+  height: 100%;
 
-  height: min(90dvh, 900px);
-  max-height: 90dvh;
-
-  margin: 0 auto;
-
-  background: hsl(var(--bg));
-  color: hsl(var(--text));
-
-  border: 1px solid hsl(var(--border));
-
-  border-radius: 20px;
+  min-width: 0;
+  min-height: 0;
 
   display: flex;
   flex-direction: column;
 
-  min-width: 0;
-  min-height: 0;
+  box-sizing: border-box;
+
+  background: transparent;
+  color: hsl(var(--text));
 
   overflow: hidden;
-
-  box-sizing: border-box;
 }
 
 
 /* =========================================================
-   ONLY THE CONTENT SCROLLS
-   ========================================================= */
-
-.account-sheet-scroll {
-  width: 100%;
-  height: 100%;
-
-  flex: 1 1 auto;
-
-  min-width: 0;
-  min-height: 0;
-
-  overflow-y: auto;
-  overflow-x: hidden;
-
-  box-sizing: border-box;
-
-  padding: 8px 10px 28px;
-
-  -webkit-overflow-scrolling: touch;
-  overscroll-behavior: contain;
-
-  scrollbar-width: none;
-}
-
-.account-sheet-scroll::-webkit-scrollbar {
-  display: none;
-}
-
-
-/* =========================================================
-   GLOBAL BOX SIZING
-   ========================================================= */
-
-.account-sheet-root *,
-.account-sheet-scroll * {
-  box-sizing: border-box;
-}
-
-
-/* =========================================================
-   EDIT
+   FIXED ACCOUNT HEADER CONTENT
    ========================================================= */
 
 .account-top-edit-wrap {
   width: 100%;
 
+  flex: 0 0 auto;
+
   display: flex;
   justify-content: flex-end;
 
-  padding: 4px 2px 0;
+  padding: 4px 4px 0;
 }
 
 .account-edit-btn {
@@ -108,41 +67,44 @@
 
 /* =========================================================
    PROFILE
+   FIXED — DOES NOT SCROLL
    ========================================================= */
 
 .account-avatar-wrap {
   width: 100%;
 
+  flex: 0 0 auto;
+
   display: flex;
   flex-direction: column;
   align-items: center;
 
-  margin-top: 8px;
+  margin-top: 5px;
 
-  padding: 0 4px 12px;
+  padding: 0 2px 8px;
 }
 
 .account-avatar {
-  width: 150px;
-  height: 150px;
+  width: 140px;
+  height: 140px;
 
-  max-width: 44vw;
-  max-height: 44vw;
+  max-width: 40vw;
+  max-height: 40vw;
 
   border-radius: 50%;
 
   display: grid;
   place-items: center;
 
-  font-size: 54px;
+  font-size: 50px;
   font-weight: 800;
 
   /*
-   * THEME AWARE
+   * THEME AWARE.
    * No hardcoded green.
    */
-  color: hsl(var(--primary-foreground));
   background: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
 
   border: 1px solid hsl(var(--border));
 
@@ -161,9 +123,9 @@
 }
 
 .account-name {
-  margin: 10px 0 0;
+  margin: 8px 0 0;
 
-  font-size: 25px;
+  font-size: 24px;
   line-height: 1.15;
 
   font-weight: 800;
@@ -180,12 +142,12 @@
 }
 
 .account-sub {
-  margin: 3px 0 0;
+  margin: 2px 0 0;
 
   max-width: 100%;
 
   font-size: 14px;
-  line-height: 1.3;
+  line-height: 1.25;
 
   color: hsl(var(--text-muted));
 
@@ -199,19 +161,22 @@
 
 /* =========================================================
    ACTION CUBES
+   FIXED — DOES NOT SCROLL
    ========================================================= */
 
 .account-cubes {
   width: 100%;
+
+  flex: 0 0 auto;
 
   display: grid;
 
   grid-template-columns:
     repeat(5, minmax(0, 1fr));
 
-  gap: 7px;
+  gap: 6px;
 
-  padding: 4px 2px 0;
+  padding: 2px 0 0;
 
   min-width: 0;
 }
@@ -220,9 +185,9 @@
   width: 100%;
   min-width: 0;
 
-  height: 70px;
+  height: 64px;
 
-  padding: 6px 2px;
+  padding: 5px 2px;
 
   display: flex;
   flex-direction: column;
@@ -235,7 +200,7 @@
 
   border: 1px solid hsl(var(--border));
 
-  border-radius: 14px;
+  border-radius: 13px;
 
   color: hsl(var(--primary));
 
@@ -247,8 +212,8 @@
 }
 
 .account-cube svg {
-  width: 21px;
-  height: 21px;
+  width: 20px;
+  height: 20px;
 
   flex-shrink: 0;
 
@@ -258,7 +223,7 @@
 .account-cube span {
   max-width: 100%;
 
-  font-size: 11px;
+  font-size: 10px;
   line-height: 1;
 
   color: hsl(var(--primary));
@@ -274,27 +239,30 @@
 
 
 /* =========================================================
-   MOBILE / INFO CARD
+   MOBILE CARD
+   ALSO FIXED ABOVE MOVIE CONTENT
    ========================================================= */
 
 .account-mobile-card {
   width: 100%;
 
-  margin: 14px 0 0;
+  flex: 0 0 auto;
 
-  padding: 13px 16px;
+  margin: 9px 0 0;
+
+  padding: 11px 14px;
 
   background: hsl(var(--surface));
 
   border: 1px solid hsl(var(--border));
 
-  border-radius: 17px;
+  border-radius: 15px;
 
   min-width: 0;
 }
 
 .account-mobile-label {
-  font-size: 12px;
+  font-size: 11px;
   line-height: 1.2;
 
   color: hsl(var(--text-muted));
@@ -305,8 +273,8 @@
 
   margin-top: 3px;
 
-  font-size: 16px;
-  line-height: 1.3;
+  font-size: 15px;
+  line-height: 1.25;
 
   color: hsl(var(--primary));
 
@@ -319,20 +287,38 @@
 
 
 /* =========================================================
-   PRIVATE LISTS
+   ONLY THIS AREA SCROLLS
    ========================================================= */
 
 .account-lists-wrap {
   width: 100%;
 
-  min-width: 0;
+  flex: 1 1 auto;
 
-  margin-top: 14px;
+  min-width: 0;
+  min-height: 0;
+
+  margin-top: 8px;
+
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  padding: 0 0 22px;
+
+  scrollbar-width: none;
+
+  -webkit-overflow-scrolling: touch;
+
+  overscroll-behavior: contain;
+}
+
+.account-lists-wrap::-webkit-scrollbar {
+  display: none;
 }
 
 
 /* =========================================================
-   MOVIE ROW
+   LIST ROWS
    ========================================================= */
 
 .latest-root {
@@ -340,7 +326,7 @@
 
   min-width: 0;
 
-  padding: 10px 0 0;
+  padding: 8px 0 0;
 
   margin: 0;
 }
@@ -356,7 +342,7 @@
 
   gap: 10px;
 
-  padding: 0 2px 8px;
+  padding: 0 1px 7px;
 }
 
 .latest-title {
@@ -422,9 +408,9 @@
 
   display: flex;
 
-  gap: 10px;
+  gap: 9px;
 
-  padding: 0 2px 8px;
+  padding: 0 1px 8px;
 
   overflow: visible;
 }
@@ -451,7 +437,7 @@
 
   overflow: hidden;
 
-  border-radius: 11px;
+  border-radius: 10px;
 
   background: hsl(var(--surface));
 
@@ -534,7 +520,7 @@
 
 
 /* =========================================================
-   CREATE LIST CARD
+   CREATE LIST
    ========================================================= */
 
 .l-card-cover.dashed {
@@ -561,7 +547,7 @@
 .account-empty-hint {
   width: 100%;
 
-  margin: 10px 0;
+  margin: 8px 0;
 
   padding: 18px;
 
@@ -583,54 +569,38 @@
 
 @media (max-width: 600px) {
 
-  .account-sheet-root {
-    width: calc(100% - 8px);
-
-    max-width: none;
-
-    height: min(92dvh, 900px);
-
-    max-height: 92dvh;
-
-    border-radius: 18px;
-  }
-
-  .account-sheet-scroll {
-    padding: 6px 8px 24px;
-  }
-
   .account-avatar {
-    width: 140px;
-    height: 140px;
+    width: 130px;
+    height: 130px;
 
-    max-width: 42vw;
-    max-height: 42vw;
+    max-width: 38vw;
+    max-height: 38vw;
 
-    font-size: 48px;
+    font-size: 46px;
   }
 
   .account-avatar-wrap {
-    margin-top: 6px;
-    padding-bottom: 10px;
+    margin-top: 3px;
+    padding-bottom: 7px;
   }
 
   .account-name {
-    font-size: 23px;
+    font-size: 22px;
   }
 
   .account-cubes {
-    gap: 6px;
+    gap: 5px;
   }
 
   .account-cube {
-    height: 66px;
+    height: 62px;
 
-    border-radius: 13px;
+    border-radius: 12px;
   }
 
   .account-cube svg {
-    width: 20px;
-    height: 20px;
+    width: 19px;
+    height: 19px;
   }
 
   .account-cube span {
@@ -638,19 +608,19 @@
   }
 
   .account-mobile-card {
-    margin-top: 12px;
+    margin-top: 8px;
 
-    padding: 12px 14px;
+    padding: 10px 13px;
 
-    border-radius: 16px;
+    border-radius: 14px;
   }
 
   .account-lists-wrap {
-    margin-top: 12px;
+    margin-top: 6px;
   }
 
   .latest-root {
-    padding-top: 9px;
+    padding-top: 7px;
   }
 
   .latest-card {
@@ -666,43 +636,23 @@
 
 
 /* =========================================================
-   SMALL PHONES
+   VERY SMALL PHONES
    ========================================================= */
 
 @media (max-width: 380px) {
 
-  .account-sheet-root {
-    width: calc(100% - 6px);
-
-    border-radius: 16px;
-  }
-
-  .account-sheet-scroll {
-    padding-inline: 6px;
-  }
-
   .account-avatar {
-    width: 125px;
-    height: 125px;
+    width: 118px;
+    height: 118px;
 
-    max-width: 40vw;
-    max-height: 40vw;
+    max-width: 36vw;
+    max-height: 36vw;
 
-    font-size: 42px;
-  }
-
-  .account-name {
-    font-size: 21px;
-  }
-
-  .account-cubes {
-    gap: 4px;
+    font-size: 40px;
   }
 
   .account-cube {
-    height: 62px;
-
-    border-radius: 12px;
+    height: 59px;
   }
 
   .account-cube span {
@@ -722,19 +672,18 @@
 
 
 /* =========================================================
-   PREVENT HORIZONTAL PAGE ESCAPE
+   HARD STOP — NO ACCOUNT HORIZONTAL ESCAPE
    ========================================================= */
+
+.account-sheet-root,
+.account-sheet-root * {
+  box-sizing: border-box;
+}
 
 .account-sheet-root {
   contain: layout paint;
 }
 
-.account-sheet-scroll {
-  overscroll-behavior-x: none;
-}
-
-.account-sheet-root img,
-.account-sheet-root svg,
-.account-sheet-root button {
+.account-sheet-root img {
   max-width: 100%;
 }
