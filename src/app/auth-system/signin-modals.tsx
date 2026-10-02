@@ -62,6 +62,7 @@ export default function SigninModals({ isOpen, mode, onClose, onSuccess, onSwitc
 
       localStorage.setItem("ug_token", data.token);
       localStorage.setItem("ug_user", JSON.stringify(data.user));
+window.dispatchEvent(new CustomEvent("ug-auth-changed"));
 
       if (avatarFile) {
         await uploadAvatar(data.token).catch(()=>{});
@@ -80,6 +81,7 @@ export default function SigninModals({ isOpen, mode, onClose, onSuccess, onSwitc
     const guestUser = { id: "guest_"+Date.now(), name: "Guest", email: "guest@ug.local", isGuest: true };
     localStorage.setItem("ug_user", JSON.stringify(guestUser));
     localStorage.setItem("ug_guest", "1");
+window.dispatchEvent(new CustomEvent("ug-auth-changed"));
     onSuccess?.(guestUser);
     onClose();
   };
