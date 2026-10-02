@@ -282,3 +282,72 @@
  * Do NOT touch .is-entering / .is-launching / .is-dipping.
  * Their existing transform animations remain active.
  */
+
+
+
+
+/* =========================================================
+   ACCOUNT SHEET — TRUE FULL SCREEN
+   Back button belongs to the account sheet
+   ========================================================= */
+
+.wa-mob-panel.is-menu:has(.account-sheet-root) {
+  inset: 0 !important;
+
+  width: 100vw !important;
+  height: 100dvh !important;
+
+  max-width: none !important;
+  max-height: none !important;
+
+  padding: 0 !important;
+  margin: 0 !important;
+
+  overflow: hidden !important;
+
+  border-radius: 0 !important;
+}
+
+
+/* Remove the generic topbar ONLY for Account */
+.wa-mob-panel.is-menu:has(.account-sheet-root) > .wa-mob-top {
+  display: none !important;
+}
+
+
+/* Account body becomes the entire screen */
+.wa-mob-panel.is-menu:has(.account-sheet-root) .wa-mob-body {
+  width: 100% !important;
+  height: 100dvh !important;
+
+  min-height: 0 !important;
+
+  margin: 0 !important;
+  padding: 0 !important;
+
+  overflow: hidden !important;
+
+  background: transparent !important;
+}
+
+
+/* Account card is now just an invisible full-screen container */
+.wa-mob-panel.is-menu:has(.account-sheet-root) .wa-card.list-card {
+  position: relative !important;
+
+  width: 100% !important;
+  height: 100dvh !important;
+
+  min-height: 0 !important;
+  max-height: none !important;
+
+  margin: 0 !important;
+
+  border: 0 !important;
+  border-radius: 0 !important;
+
+  background: transparent !important;
+  box-shadow: none !important;
+
+  overflow: hidden !important;
+}
