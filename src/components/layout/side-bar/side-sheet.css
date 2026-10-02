@@ -225,3 +225,60 @@
 .wa-mob-panel.is-search .mobile-search-input-wrap.sticky-search {
   transition: all 0.2s ease;
 }
+
+
+
+/* =========================================================
+   ACCOUNT SHEET — BORDERLESS / FULL-WIDTH CONTENT
+   Keeps existing sheet animations intact
+   ========================================================= */
+
+/*
+ * When Account is inside the menu sheet:
+ * remove the "card inside a sheet" appearance.
+ */
+.wa-mob-panel.is-menu:has(.account-sheet-root) {
+  overflow: hidden !important;
+  padding-bottom: 0 !important;
+}
+
+
+/* The body becomes the full available canvas */
+.wa-mob-panel.is-menu:has(.account-sheet-root) .wa-mob-body {
+  height: 100dvh !important;
+  min-height: 0 !important;
+
+  padding: 5px !important;
+
+  overflow: hidden !important;
+
+  background: transparent !important;
+}
+
+
+/* Remove the centered-card appearance */
+.wa-mob-panel.is-menu:has(.account-sheet-root) .wa-card.list-card {
+  width: 100% !important;
+  max-width: none !important;
+
+  height: 100% !important;
+  min-height: 0 !important;
+
+  margin: 0 !important;
+
+  border: none !important;
+  border-radius: 0 !important;
+
+  background: transparent !important;
+
+  box-shadow: none !important;
+
+  overflow: hidden !important;
+}
+
+
+/*
+ * IMPORTANT:
+ * Do NOT touch .is-entering / .is-launching / .is-dipping.
+ * Their existing transform animations remain active.
+ */
