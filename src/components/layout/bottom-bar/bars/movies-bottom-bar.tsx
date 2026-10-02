@@ -11,12 +11,33 @@ import { PreviewIcon } from "@/modal-generator/svg-icons/pre-play-icon";
 import { ServicesIcon } from "@/modal-generator/svg-icons/pro-services-icon";
 import { FilterIcon } from "@/modal-generator/svg-icons/fadders-icon";
 import { YouIcon } from "@/modal-generator/svg-icons/profile-avatar";
+import { useState, useEffect } from "react";
 
 export default function MoviesBottomBar() {
   const path = usePathname();
   const { openFilters } = useBottomBarActions();
   const { openReels } = useReelsDrawer() as any;
   const { allMovies } = useGlobalSearch() as any;
+  const [currentUser, setCurrentUser] = useState<any>(null);
+
+  useEffect(() => {
+    const loadUser = () => {
+      try {
+        const raw = localStorage.getItem("ug_user");
+        setCurrentUser(raw? JSON.parse(raw) : null);
+      } catch {
+        setCurrentUser(null);
+      }
+    };
+    loadUser();
+    // listen for login/logout from anywhere
+    window.addEventListener("storage", loadUser);
+    window.addEventListener("ug-auth-changed", loadUser as EventListener);
+    return () => {
+      window.removeEventListener("storage", loadUser);
+      window.removeEventListener("ug-auth-changed", loadUser as EventListener);
+    };
+  }, []);
 
   const openPreviewsReels = () => {
     const normalize = (x: any) => {
@@ -29,9 +50,11 @@ export default function MoviesBottomBar() {
   };
 
   const openAccountSheet = () => {
-    // same as clicking Account in sidebar - opens via TopBar listener
     window.dispatchEvent(new CustomEvent("ug-open-account-sheet"));
   };
+
+  const avatarUrl = currentUser?.avatarUrl || currentUser?.avatar_url || currentUser?.avatar || currentUser?.photo || currentUser?.image;
+  const isLoggedIn =!!currentUser &&!currentUser?.isGuest;
 
   return (
     <nav className="bottom-bar-glass movies-bar">
@@ -58,11 +81,24 @@ export default function MoviesBottomBar() {
         </button>
 
         <button type="button" onClick={openAccountSheet} className={`bottom-item ${path === "/profile"? "active" : ""}`}>
-          <span className="bottom-icon"><YouIcon size={24} className="you-svg" /></span>
-          <span className="bottom-label">You</span>
+          <span className="bottom-icon">
+            {isLoggedIn && avatarUrl? (
+              <img
+                src={avatarUrl}
+                alt={currentUser?.name || "You"}
+                style={{ width: 28, height: 28, borderRadius: '50%', objectFit: 'cover', border: '2px solid #fff' }}
+              />
+            ) : isLoggedIn? (
+              <div style={{ width: 28, height: 28, borderRadius: '50%', background: '#6366f1', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700 }}>
+                {(currentUser?.name?.[0] || currentUser?.email?.[0] || "U").toUpperCase()}
+              </div>
+            ) : (
+              <YouIcon size={24} className="you-svg" />
+            )}
+          </span>
+          <span className="bottom-label">{isLoggedIn? (currentUser?.name?.split(" ")[0] || "You") : "You"}</span>
         </button>
       </div>
     </nav>
   );
 }
-
