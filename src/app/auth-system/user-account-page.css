@@ -1,773 +1,160 @@
-/* =========================================================
-   USER ACCOUNT PAGE
-   FULL-WIDTH / BORDERLESS / THEME AWARE
-
-   Profile + actions stay fixed.
-   Movie content below scrolls.
-   ========================================================= */
-
-
-/* =========================================================
-   MAIN ACCOUNT CANVAS
-   ========================================================= */
-
-.account-sheet-root {
+.page {
   width: 100%;
-  height: 100dvh;
-  min-height: 0;
-  min-width: 0;
-
+  padding: 24px 16px 32px 16px;
   display: flex;
   flex-direction: column;
-
-  box-sizing: border-box;
-
+  gap: 28px;
+  color: hsl(var(--text));
   background: transparent;
-  color: hsl(var(--text));
-
-  overflow: hidden;
+  position: relative;
+  box-sizing: border-box;
 }
 
-
-/* =========================================================
-   BACK BUTTON
-   FIXED INSIDE ACCOUNT SHEET
-   ========================================================= */
-
-.account-back-btn {
-  width: fit-content;
-
-  flex: 0 0 auto;
-
-  display: inline-flex;
-  align-items: center;
-
-  gap: 7px;
-
-  margin: 8px 5px 0;
-  padding: 8px 13px 8px 9px;
-
-  border: 1px solid hsl(var(--border));
-  border-radius: 999px;
-
+/* EDIT BUTTON TOP RIGHT */
+.editBtn {
+  position: absolute;
+  top: 14px;
+  right: 14px;
   background: hsl(var(--surface));
-  color: hsl(var(--text));
-
-  font-size: 14px;
-  line-height: 1;
-  font-weight: 700;
-
-  cursor: pointer;
-
-  z-index: 20;
-
-  -webkit-tap-highlight-color: transparent;
-}
-
-.account-back-btn svg {
-  width: 22px;
-  height: 22px;
-
-  flex: 0 0 auto;
-
-  color: hsl(var(--text));
-}
-
-.account-back-btn span {
-  line-height: 1;
-}
-
-
-/* =========================================================
-   FIXED ACCOUNT HEADER CONTENT
-   ========================================================= */
-
-.account-top-edit-wrap {
-  width: 100%;
-
-  flex: 0 0 auto;
-
-  display: flex;
-  justify-content: flex-end;
-
-  padding: 4px 4px 0;
-}
-
-.account-edit-btn {
-  background: hsl(var(--surface));
-
   border: 1px solid hsl(var(--border));
-
-  border-radius: 14px;
-
-  padding: 8px 17px;
-
-  font-size: 14px;
-  font-weight: 600;
-
-  color: hsl(var(--text));
-
-  cursor: pointer;
-
-  white-space: nowrap;
-
-  -webkit-tap-highlight-color: transparent;
-}
-
-
-/* =========================================================
-   PROFILE
-   FIXED — DOES NOT SCROLL
-   ========================================================= */
-
-.account-avatar-wrap {
-  width: 100%;
-
-  flex: 0 0 auto;
-
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-
-  margin-top: 5px;
-
-  padding: 0 2px 8px;
-}
-
-.account-avatar {
-  width: 140px;
-  height: 140px;
-
-  max-width: 40vw;
-  max-height: 40vw;
-
-  border-radius: 50%;
-
-  display: grid;
-  place-items: center;
-
-  font-size: 50px;
-  font-weight: 800;
-
-  /*
-   * THEME AWARE.
-   * No hardcoded green.
-   */
-  background: hsl(var(--primary));
-  color: hsl(var(--primary-foreground));
-
-  border: 1px solid hsl(var(--border));
-
-  overflow: hidden;
-
-  flex-shrink: 0;
-}
-
-.account-avatar img {
-  width: 100%;
-  height: 100%;
-
-  display: block;
-
-  object-fit: cover;
-}
-
-.account-name {
-  margin: 8px 0 0;
-
-  font-size: 24px;
-  line-height: 1.15;
-
-  font-weight: 800;
-
-  letter-spacing: -0.5px;
-
-  color: hsl(var(--text));
-
-  text-align: center;
-
-  max-width: 100%;
-
-  overflow-wrap: anywhere;
-}
-
-.account-sub {
-  margin: 2px 0 0;
-
-  max-width: 100%;
-
-  font-size: 14px;
-  line-height: 1.25;
-
   color: hsl(var(--text-muted));
-
-  text-align: center;
-
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 14px;
+  border-radius: 20px;
+  cursor: pointer;
+  z-index: 10;
+  transition: all 0.2s;
 }
 
-
-/* =========================================================
-   ACTION CUBES
-   FIXED — DOES NOT SCROLL
-   ========================================================= */
-
-.account-cubes {
-  width: 100%;
-
-  flex: 0 0 auto;
-
-  display: grid;
-
-  grid-template-columns:
-    repeat(5, minmax(0, 1fr));
-
-  gap: 6px;
-
-  padding: 2px 0 0;
-
-  min-width: 0;
+.editBtn:hover {
+  background: hsl(var(--surface-hover));
+  color: hsl(var(--text));
+  border-color: hsl(var(--border));
+  filter: brightness(1.1);
 }
 
-.account-cube {
-  width: 100%;
-  min-width: 0;
-
-  height: 64px;
-
-  padding: 5px 2px;
-
+.header {
   display: flex;
   flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 12px;
+  width: 100%;
+  margin-top: 12px;
+}
+
+/* FLAME CIRCLE - keeps flame but glow uses primary */
+.avatarWrap {
+  width: 88px;
+  height: 88px;
+  border-radius: 50%;
+  padding: 3px;
+  display: flex;
   align-items: center;
   justify-content: center;
-
-  gap: 5px;
-
-  background: hsl(var(--surface));
-
-  border: 1px solid hsl(var(--border));
-
-  border-radius: 13px;
-
-  color: hsl(var(--primary));
-
-  cursor: pointer;
-
-  overflow: hidden;
-
-  -webkit-tap-highlight-color: transparent;
 }
 
-.account-cube svg {
-  width: 20px;
-  height: 20px;
-
-  flex-shrink: 0;
-
-  color: hsl(var(--primary));
+.avatarWrap.flame {
+  background: conic-gradient(
+    from 0deg,
+    hsl(var(--primary)),
+    hsl(var(--border)),
+    hsl(var(--primary)),
+    hsl(var(--surface-hover)),
+    hsl(var(--primary))
+  );
+  box-shadow: 0 0 18px hsla(var(--primary), 0.5);
 }
 
-.account-cube span {
-  max-width: 100%;
-
-  font-size: 10px;
-  line-height: 1;
-
-  color: hsl(var(--primary));
-
-  font-weight: 600;
-
-  text-transform: lowercase;
-
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-
-/* =========================================================
-   MOBILE CARD
-   ALSO FIXED ABOVE MOVIE CONTENT
-   ========================================================= */
-
-.account-mobile-card {
-  width: 100%;
-
-  flex: 0 0 auto;
-
-  margin: 9px 0 0;
-
-  padding: 11px 14px;
-
-  background: hsl(var(--surface));
-
-  border: 1px solid hsl(var(--border));
-
-  border-radius: 15px;
-
-  min-width: 0;
-}
-
-.account-mobile-label {
-  font-size: 11px;
-  line-height: 1.2;
-
-  color: hsl(var(--text-muted));
-}
-
-.account-mobile-value {
-  width: 100%;
-
-  margin-top: 3px;
-
-  font-size: 15px;
-  line-height: 1.25;
-
-  color: hsl(var(--primary));
-
-  font-weight: 500;
-
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-
-/* =========================================================
-   ONLY THIS AREA SCROLLS
-   ========================================================= */
-
-.account-lists-wrap {
-  width: 100%;
-
-  flex: 1 1 auto;
-
-  min-width: 0;
-  min-height: 0;
-
-  margin-top: 8px;
-
-  overflow-y: auto;
-  overflow-x: hidden;
-
-  padding: 0 0 22px;
-
-  scrollbar-width: none;
-
-  -webkit-overflow-scrolling: touch;
-
-  overscroll-behavior: contain;
-}
-
-.account-lists-wrap::-webkit-scrollbar {
-  display: none;
-}
-
-
-/* =========================================================
-   LIST ROWS
-   ========================================================= */
-
-.latest-root {
-  width: 100%;
-
-  min-width: 0;
-
-  padding: 8px 0 0;
-
-  margin: 0;
-}
-
-.latest-head {
-  width: 100%;
-
-  min-width: 0;
-
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-
-  gap: 10px;
-
-  padding: 0 1px 7px;
-}
-
-.latest-title {
-  min-width: 0;
-
-  margin: 0;
-
-  font-size: 18px;
-  line-height: 1.2;
-
-  font-weight: 800;
-
-  text-transform: lowercase;
-
-  color: hsl(var(--text));
-
-  cursor: pointer;
-
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.latest-see {
-  flex: 0 0 auto;
-
-  font-size: 12px;
-  line-height: 1;
-
-  color: hsl(var(--text));
-
-  opacity: 0.6;
-
-  white-space: nowrap;
-}
-
-
-/* =========================================================
-   HORIZONTAL MOVIE SCROLLER
-   ========================================================= */
-
-.latest-track-wrap {
-  width: 100%;
-
-  min-width: 0;
-
-  overflow-x: auto;
-  overflow-y: hidden;
-
-  scrollbar-width: none;
-
-  -webkit-overflow-scrolling: touch;
-
-  overscroll-behavior-x: contain;
-}
-
-.latest-track-wrap::-webkit-scrollbar {
-  display: none;
-}
-
-.latest-track {
-  width: max-content;
-
-  min-width: 100%;
-
-  display: flex;
-
-  gap: 9px;
-
-  padding: 0 1px 8px;
-
-  overflow: visible;
-}
-
-
-/* =========================================================
-   MOVIE CARD
-   ========================================================= */
-
-.latest-card {
-  width: 118px;
-  min-width: 118px;
-
-  flex: 0 0 118px;
-
-  cursor: pointer;
-
-  -webkit-tap-highlight-color: transparent;
-}
-
-.l-card-cover {
-  width: 100%;
-  height: 168px;
-
-  position: relative;
-
-  overflow: hidden;
-
-  border-radius: 10px;
-
-  background: hsl(var(--surface));
-
-  border: 1px solid hsl(var(--border));
-}
-
-.l-card-cover img {
+.avatarInner {
   width: 100%;
   height: 100%;
-
-  display: block;
-
-  object-fit: cover;
-}
-
-.l-card-fade {
-  position: absolute;
-
-  inset: 0;
-
-  background:
-    linear-gradient(
-      to top,
-      rgba(0, 0, 0, 0.7),
-      transparent 50%
-    );
-
-  pointer-events: none;
-}
-
-.l-card-actions {
-  position: absolute;
-
-  left: 0;
-  right: 0;
-  bottom: 0;
-
+  border-radius: 50%;
+  background: hsl(var(--bg));
   display: flex;
-
-  z-index: 2;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border: 3px solid hsl(var(--bg));
 }
 
-.l-a-btn {
-  flex: 1;
+.avatar {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
 
-  min-width: 0;
-
-  border: none;
-
-  padding: 7px 0;
-
-  font-size: 11px;
-  line-height: 1;
-
+.fallback {
+  font-size: 34px;
   font-weight: 800;
-
-  background: rgba(0, 0, 0, 0.7);
-
-  color: #fff;
-
-  cursor: pointer;
-
-  -webkit-tap-highlight-color: transparent;
+  color: hsl(var(--text));
+  text-transform: uppercase;
+  line-height: 1;
 }
 
-.l-card-title.centered {
-  width: 100%;
-
-  margin-top: 5px;
-
-  text-align: center;
-
-  font-size: 12px;
-  line-height: 1.2;
-
+.name {
+  font-size: 18px;
   font-weight: 700;
-
-  color: hsl(var(--text));
-
-  opacity: 0.8;
-}
-
-
-/* =========================================================
-   CREATE LIST
-   ========================================================= */
-
-.l-card-cover.dashed {
-  border-style: dashed;
-
-  border-width: 1px;
-
-  border-color: hsl(var(--border));
-
-  display: grid;
-
-  place-items: center;
-
-  background: hsl(var(--surface) / 0.5);
-
+  margin: 0;
   color: hsl(var(--text));
 }
 
-
-/* =========================================================
-   EMPTY STATE
-   ========================================================= */
-
-.account-empty-hint {
-  width: 100%;
-
-  margin: 8px 0;
-
-  padding: 18px;
-
-  text-align: center;
-
+.email {
+  font-size: 13px;
+  margin: 0;
   color: hsl(var(--text-muted));
+}
 
+/* CUBES ROW */
+.cubesRow {
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
+  width: 100%;
+  justify-content: space-between;
+}
+
+.cubeItem {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.cube {
+  width: 100%;
+  aspect-ratio: 1 / 1;
   background: hsl(var(--surface));
-
-  border: 1px dashed hsl(var(--border));
-
-  border-radius: 14px;
+  border: 1px solid hsl(var(--border));
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: hsl(var(--text));
 }
 
-
-/* =========================================================
-   MOBILE
-   ========================================================= */
-
-@media (max-width: 600px) {
-
-  .account-back-btn {
-    margin-top: 6px;
-    margin-left: 4px;
-
-    padding: 7px 12px 7px 8px;
-
-    font-size: 13px;
-  }
-
-  .account-back-btn svg {
-    width: 20px;
-    height: 20px;
-  }
-
-  .account-avatar {
-    width: 130px;
-    height: 130px;
-
-    max-width: 38vw;
-    max-height: 38vw;
-
-    font-size: 46px;
-  }
-
-  .account-avatar-wrap {
-    margin-top: 3px;
-    padding-bottom: 7px;
-  }
-
-  .account-name {
-    font-size: 22px;
-  }
-
-  .account-cubes {
-    gap: 5px;
-  }
-
-  .account-cube {
-    height: 62px;
-
-    border-radius: 12px;
-  }
-
-  .account-cube svg {
-    width: 19px;
-    height: 19px;
-  }
-
-  .account-cube span {
-    font-size: 10px;
-  }
-
-  .account-mobile-card {
-    margin-top: 8px;
-
-    padding: 10px 13px;
-
-    border-radius: 14px;
-  }
-
-  .account-lists-wrap {
-    margin-top: 6px;
-  }
-
-  .latest-root {
-    padding-top: 7px;
-  }
-
-  .latest-card {
-    width: 112px;
-    min-width: 112px;
-    flex-basis: 112px;
-  }
-
-  .l-card-cover {
-    height: 160px;
-  }
+.cube:hover {
+  background: hsl(var(--surface-hover));
+  border-color: hsl(var(--border));
+  transform: translateY(-2px);
+  filter: brightness(1.05);
 }
 
-
-/* =========================================================
-   VERY SMALL PHONES
-   ========================================================= */
-
-@media (max-width: 380px) {
-
-  .account-back-btn {
-    margin-top: 5px;
-    margin-left: 3px;
-
-    padding: 6px 10px 6px 7px;
-
-    font-size: 12px;
-  }
-
-  .account-back-btn svg {
-    width: 19px;
-    height: 19px;
-  }
-
-  .account-avatar {
-    width: 118px;
-    height: 118px;
-
-    max-width: 36vw;
-    max-height: 36vw;
-
-    font-size: 40px;
-  }
-
-  .account-cube {
-    height: 59px;
-  }
-
-  .account-cube span {
-    font-size: 9px;
-  }
-
-  .latest-card {
-    width: 108px;
-    min-width: 108px;
-    flex-basis: 108px;
-  }
-
-  .l-card-cover {
-    height: 154px;
-  }
+.cubeIcon {
+  font-size: 22px;
+  line-height: 1;
 }
 
-
-/* =========================================================
-   HARD STOP — NO ACCOUNT HORIZONTAL ESCAPE
-   ========================================================= */
-
-.account-sheet-root,
-.account-sheet-root * {
-  box-sizing: border-box;
-}
-
-.account-sheet-root {
-  contain: layout paint;
-}
-
-.account-sheet-root img {
-  max-width: 100%;
+.cubeLabelOutside {
+  font-size: 10px;
+  font-weight: 500;
+  color: hsl(var(--text-muted));
+  text-align: center;
+  white-space: nowrap;
 }
