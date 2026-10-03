@@ -3,8 +3,8 @@ import { useEffect, useState, useMemo } from "react";
 import { useMovieStore } from "@/stores/use-movie-store";
 import "./favorites-sheet.css";
 
-// reuse your real card
-import MovieCard from "@/app/movies/_components/movie-card/movie-card";
+// FIXED PATH - must include (dashboard)
+import MovieCard from "@/app/(dashboard)/movies/_components/movie-card";
 
 const WORKER_URL = "https://user-account-server-api.connectu89.workers.dev";
 
@@ -17,18 +17,20 @@ export default function FavoritesSheet() {
     if (!hydrated) _hydrate();
   }, [hydrated, _hydrate]);
 
-  // fetch all movies once to resolve IDs -> real movie objects
   useEffect(() => {
-    const cached = localStorage.getItem("ug-all-movies");
-    if (cached) {
-      try { setAllMovies(JSON.parse(cached)); return; } catch {}
-    }
+    try {
+      const cached = localStorage.getItem("ug-all-movies");
+      if (cached) {
+        setAllMovies(JSON.parse(cached));
+        return;
+      }
+    } catch {}
     fetch(`${WORKER_URL}/api/movies`)
       .then(r => r.json())
       .then(d => {
         const list = d.movies || d.data || d || [];
         setAllMovies(list);
-        localStorage.setItem("ug-all-movies", JSON.stringify(list.slice(0,200)));
+        try { localStorage.setItem("ug-all-movies", JSON.stringify(list.slice(0,200))); } catch {}
       })
       .catch(()=>{});
   }, []);
@@ -49,7 +51,6 @@ export default function FavoritesSheet() {
 
   return (
     <div className="vault-root">
-      {/* TABS */}
       <div className="vault-tabs">
         <button className={`v-tab ${activeListId==="recent"?"on":""}`} onClick={()=>setActiveListId("recent")}>
           History • {recentIds.length}
@@ -64,7 +65,6 @@ export default function FavoritesSheet() {
         ))}
       </div>
 
-      {/* RENDER REAL CARDS */}
       <div className="vault-track">
         {activeListId==="recent" ? (
           historyMovies.length===0 ? <div className="vault-empty">No watch history yet</div> :
@@ -75,16 +75,6 @@ export default function FavoritesSheet() {
           activeListMovies.map((m:any)=><MovieCard key={String(m.id)} m={m} allMovies={allMovies} />)
         )}
       </div>
-
-      {/* QUICK ROW - My List + History always visible below */}
-      {activeListId!=="my-list" && myListMovies.length>0 && (
-        <div className="vault-section">
-          <h4 className="vault-h">My List</h4>
-          <div className="vault-row">
-            {myListMovies.slice(0,8).map((m:any)=><MovieCard key={String(m.id)} m={m} allMovies={allMovies} />)}
-          </div>
-        </div>
-      )}
     </div>
   );
 }
