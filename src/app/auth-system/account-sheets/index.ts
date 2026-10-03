@@ -10,7 +10,7 @@ export type SheetId = "edit" | "create" | "favorites" | "downloads" | "alerts" |
 export const SHEET_REGISTRY: Record<SheetId, { label: string; component: React.ComponentType }> = {
   edit: { label: "Edit", component: EditSheet },
   create: { label: "Create", component: CreateSheet },
-favorites: { label: "Vault", component: FavoritesSheet },
+favorites: { label: "Library", component: FavoritesSheet },
   downloads: { label: "Downloads", component: DownloadsSheet },
   alerts: { label: "Alerts", component: AlertsSheet },
   more: { label: "More", component: MoreSheet },
