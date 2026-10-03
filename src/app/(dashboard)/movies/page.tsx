@@ -207,6 +207,8 @@ export default function MoviesPage() {
   const [anchor, setAnchor] = useState<"full" | "preview">("full")
   const [clicking, setClicking] = useState(false)
   const [justAdded, setJustAdded] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
+
 
   const pauseRef = useRef<number>(0)
   const playTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -274,8 +276,12 @@ export default function MoviesPage() {
      the API before showing the previous home content.
      ------------------------------------------------------- */
 
-  useEffect(() => {
+   useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
     let cancelled = false
+
 
     /*
      * 1. INSTANT CACHE
@@ -359,10 +365,12 @@ export default function MoviesPage() {
 
     load()
 
-    return () => {
+       return () => {
       cancelled = true
+      window.removeEventListener("resize", checkMobile);
     }
   }, [mapMovies])
+
 
   /* -------------------------------------------------------
      RESTORE EXACT HOME SCROLL POSITION
@@ -1178,8 +1186,16 @@ export default function MoviesPage() {
         )
       })}
 
-      <UserListsRow movies={allMovies} />
+           {(() => {
+        const threshold = isMobile? 5 : 10;
+        const myCount = lists?.[0]?.movieIds?.length || favIds?.length || 0;
+        const contCount = recentIds?.length || 0;
+        const show = myCount >= threshold || contCount >= threshold;
+        if(!show) return null;
+        return <UserListsRow movies={allMovies} />;
+      })()}
       <ExploreMore movies={allMovies} />
+
 
     </div>
   )
