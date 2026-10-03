@@ -31,10 +31,8 @@ export default function UserAccountPage({ onEdit, onSelect }: Props) {
         const parsed = JSON.parse(raw);
         setUser(parsed);
       }
-
       const token = localStorage.getItem("ug_token");
       if (!token) return;
-
       const res = await fetch(`${WORKER_URL}/api/user/me`, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -76,7 +74,7 @@ export default function UserAccountPage({ onEdit, onSelect }: Props) {
 
   return (
     <div className="page">
-<button className="editBtn" onClick={() => { onEdit?.(); onSelect?.("edit"); }}>
+      <button className="editBtn" onClick={() => { onEdit?.(); onSelect?.("edit"); }}>
         Edit
       </button>
 
@@ -100,8 +98,8 @@ export default function UserAccountPage({ onEdit, onSelect }: Props) {
           <span className="cubeLabelOutside">Create</span>
         </div>
         <div className="cubeItem">
-          <button className="cube" onClick={() => onSelect?.("Library")}><span className="cubeIcon">♡</span></button>
-          <span className="cubeLabelOutside">Favorites</span>
+          <button className="cube" onClick={() => onSelect?.("favorites")}><span className="cubeIcon">♡</span></button>
+          <span className="cubeLabelOutside">Library</span>
         </div>
         <div className="cubeItem">
           <button className="cube" onClick={() => onSelect?.("downloads")}><span className="cubeIcon">↓</span></button>
