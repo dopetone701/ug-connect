@@ -7,6 +7,8 @@ import GetStartedInputGate from "@/components/layout/curvy-pro-room/get-started-
 import FooterFree from "@/components/layout/curvy-pro-room/get-started-email/footer/footer"
 import SigninModals from "./auth-system/signin-modals";
 import LogoutModal from "./auth-system/logout-modal";
+import { useMovieStore } from "@/stores/use-movie-store";
+
 
 const WORKER_URL = "https://user-account-server-api.connectu89.workers.dev";
 
@@ -137,16 +139,23 @@ export default function Page(){
     };
   },[]);
 
-  const confirmLogout = () => {
+   const confirmLogout = () => {
+    try{ useMovieStore.getState().clearOnLogout() }catch{}
     localStorage.removeItem("ug_token");
     localStorage.removeItem("ug_user");
     localStorage.removeItem("ug_guest");
+    localStorage.removeItem("ug-all-movies");
+    // clear per-user keys too
+    Object.keys(localStorage).forEach(k=>{
+      if(k.startsWith("ug-fav-ids__") || k.startsWith("ug-recent-ids__") || k.startsWith("ug-lists__")) localStorage.removeItem(k)
+    })
     setUser(null);
     setLogoutOpen(false);
     setPendingHref(null);
-    window.dispatchEvent(new Event("ug_auth_changed"));
+    window.dispatchEvent(new Event("ug-auth-changed"));
     window.dispatchEvent(new CustomEvent("ug_profile_updated"));
   };
+
 
   const handleServiceClick = (e: React.MouseEvent, href: string) => {
     if (!user) {

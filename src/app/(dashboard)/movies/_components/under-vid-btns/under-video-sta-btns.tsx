@@ -15,29 +15,20 @@ export default function UnderVideoStaBtns({
     lists,
     addToMyList,
     removeFromMyList,
-    createList,
   } = useMovieStore() as any;
 
-  const mainList = lists?.[0];
+   const myList = lists?.find((l:any)=> l.id==="my-list") || lists?.[0];
+  const targetId = movie?.id?? paramsId;
+  const isInMyList = myList?.movieIds?.some((x:any)=> String(x)===String(targetId));
 
-  const isInMyList =
-    mainList?.movieIds?.includes(Number(paramsId)) ||
-    mainList?.movieIds?.includes(String(paramsId));
 
   const isPreview = searchParams.get("t") === "preview";
 
-  const handleMyList = () => {
-    if (!mainList) {
-      createList("my-list");
-      return;
-    }
-
-    if (isInMyList) {
-      removeFromMyList(movie.id);
-    } else {
-      addToMyList(movie.id);
-    }
+   const handleMyList = () => {
+    if (isInMyList) removeFromMyList(targetId);
+    else addToMyList(targetId);
   };
+
 
   const handlePlayToggle = () => {
     /*

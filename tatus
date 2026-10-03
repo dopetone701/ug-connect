@@ -1,0 +1,1495 @@
+[33mcommit 65169bf36a4e2f9280ece04d471dbf63f91d5c03[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Sat Oct 3 11:15:38 2026 +0400
+
+    feat: edit sheet as 6th swipeable cube - avatar/name/email/phone/location with fixed height vertical scroll + DNA-follow CSS
+
+[33mcommit dcb41050c89a3af44c3b8fbe740b84bb0159d9de[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Sat Oct 3 02:28:34 2026 +0400
+
+    feat: slice account sheet into 2 full-width mother cards - upper fixed account, lower swipeable track with dots below
+
+[33mcommit f786be671884ee15af4e7bd8e5eb3b568d457cfe[m
+Author: dopetone701 <dopetone701@gmail.com>
+Date:   Fri Oct 2 18:57:33 2026 +0400
+
+    Update user-account-page.css
+
+[33mcommit 1131f76b1a65e0d83656da093399c6c211538c90[m
+Author: dopetone701 <dopetone701@gmail.com>
+Date:   Fri Oct 2 18:54:12 2026 +0400
+
+    Update user-account-page.tsx
+
+[33mcommit d53f151c4e429a04a53f16a8cbd104b4faba11bf[m
+Author: dopetone701 <dopetone701@gmail.com>
+Date:   Fri Oct 2 18:51:04 2026 +0400
+
+    Update side-sheet.css
+
+[33mcommit 98a857d0983ade13489f442b634add655247ff3e[m
+Author: dopetone701 <dopetone701@gmail.com>
+Date:   Fri Oct 2 18:35:32 2026 +0400
+
+    Update user-account-page.css
+
+[33mcommit bfe821eac585a9c899ffb912f1cbb5d5a38b9801[m
+Author: dopetone701 <dopetone701@gmail.com>
+Date:   Fri Oct 2 18:34:48 2026 +0400
+
+    Update side-sheet.css
+
+[33mcommit e68a64e0a8ffb9f2a4b3bf095cda29ac32ba04e8[m
+Author: dopetone701 <dopetone701@gmail.com>
+Date:   Fri Oct 2 18:07:10 2026 +0400
+
+    Update user-account-page.css
+
+[33mcommit db808c37958c4d8941781fff358018bee9ee8330[m
+Author: dopetone701 <dopetone701@gmail.com>
+Date:   Fri Oct 2 18:06:02 2026 +0400
+
+    Update user-account-page.tsx
+
+[33mcommit d19b6350498bdc64ed386745783c2f07b363c359[m
+Author: dopetone701 <dopetone701@gmail.com>
+Date:   Fri Oct 2 17:49:03 2026 +0400
+
+    Update account-sheet.tsx
+
+[33mcommit e2a7327ff7fca0868924ae0a0ee76b6ebb05f688[m
+Author: dopetone701 <dopetone701@gmail.com>
+Date:   Fri Oct 2 17:47:47 2026 +0400
+
+    Update user-account-page.tsx
+
+[33mcommit b42cd7a07bfe86acc555fa1b592fc3ec161ca92b[m
+Author: dopetone701 <dopetone701@gmail.com>
+Date:   Fri Oct 2 17:43:17 2026 +0400
+
+    Update user-account-page.css
+
+[33mcommit 8479ec5a9385f53a1ae85ae37011d63f47468857[m
+Author: dopetone701 <dopetone701@gmail.com>
+Date:   Fri Oct 2 16:59:22 2026 +0400
+
+    Create user-account-page.css
+
+[33mcommit 7b51b2241193a9725bfa28b9fa3a245c402551c3[m
+Author: dopetone701 <dopetone701@gmail.com>
+Date:   Fri Oct 2 16:47:09 2026 +0400
+
+    Update user-account-page.tsx
+
+[33mcommit b778f310e6ff2ac308b5132ff04b45d0a4fbc84e[m
+Author: dopetone701 <dopetone701@gmail.com>
+Date:   Fri Oct 2 15:37:00 2026 +0400
+
+    Update movies-bottom-bar.tsx
+
+[33mcommit 4b512254f9f4f9c1e98cecc40eef2493633a4c35[m
+Author: dopetone701 <dopetone701@gmail.com>
+Date:   Fri Oct 2 15:27:03 2026 +0400
+
+    Update signin-modals.tsx
+
+[33mcommit 63e499238228a75e2ccb52184e7fc11702beacad[m
+Author: dopetone701 <dopetone701@gmail.com>
+Date:   Fri Oct 2 15:23:52 2026 +0400
+
+    Update movies-bottom-bar.tsx
+
+[33mcommit ae467d7799ee1391996a395d56068a4267272170[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Fri Oct 2 10:59:56 2026 +0400
+
+    Update services, top bar, and admin gate
+
+[33mcommit cb66f141e1b999172e6c8eb6cf2b1c91f21f2f2e[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Fri Oct 2 01:27:44 2026 +0400
+
+    FINAL WORKING: avatar + cast together only when signed in
+
+[33mcommit 0d487e7ac0e4165aaea5dfa29b72de643127a479[m
+Author: dopetone701 <dopetone701@gmail.com>
+Date:   Thu Oct 1 16:40:46 2026 +0400
+
+    Update page.tsx
+
+[33mcommit 8d08675bfc0669aacb1cbd431041f973c3465e5f[m
+Author: dopetone701 <dopetone701@gmail.com>
+Date:   Thu Oct 1 16:39:40 2026 +0400
+
+    Update top-bar.tsx
+
+[33mcommit 246206dc6e5bbb27b5d8402eec00cb55c3efe1ca[m
+Author: dopetone701 <dopetone701@gmail.com>
+Date:   Thu Oct 1 15:35:53 2026 +0400
+
+    Update top-bar.tsx
+
+[33mcommit fc94fbf24c8cd8906ad79ddaf5f816974938f994[m
+Author: dopetone701 <dopetone701@gmail.com>
+Date:   Thu Oct 1 14:59:53 2026 +0400
+
+    Update top-bar.tsx
+
+[33mcommit c2a6fc363ea5de34386ad41cf6ff5eb3a36d5937[m
+Author: dopetone701 <dopetone701@gmail.com>
+Date:   Thu Oct 1 14:30:06 2026 +0400
+
+    Update top-bar.tsx
+
+[33mcommit f6b3db3a1c45602a026a6fc297da3fdf2876e092[m
+Author: dopetone701 <dopetone701@gmail.com>
+Date:   Thu Oct 1 14:22:41 2026 +0400
+
+    Update signin-modals.tsx
+
+[33mcommit 674c71e3d3ee3117c0bb214b07b30cbf2e987541[m
+Author: dopetone701 <dopetone701@gmail.com>
+Date:   Thu Oct 1 14:13:40 2026 +0400
+
+    Update signin-modals.tsx
+
+[33mcommit 89874b409b4469e8761eccc70a034e74f43acac4[m
+Author: dopetone701 <dopetone701@gmail.com>
+Date:   Thu Oct 1 14:02:09 2026 +0400
+
+    Update page.tsx
+
+[33mcommit 46ab81bc38249d0d5ab42a701f07d1899f2f6107[m
+Author: dopetone701 <dopetone701@gmail.com>
+Date:   Thu Oct 1 13:54:31 2026 +0400
+
+    Update page.tsx
+
+[33mcommit ee39a741ca01fa0e6522e1007cd504a0bc913316[m
+Author: dopetone701 <dopetone701@gmail.com>
+Date:   Thu Oct 1 13:24:41 2026 +0400
+
+    Update get-started-input-gate.tsx
+
+[33mcommit 6441d9dd02861328a0540f30599a240dc5f16cef[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Thu Oct 1 10:47:21 2026 +0400
+
+    fix: auth gate sync, correct worker URL to connectu89, hide middle signup after login, add check-email
+
+[33mcommit 819bcf9a2fa07ba5fe26e02f69adea578a4e58de[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Thu Oct 1 00:42:02 2026 +0400
+
+    feat: auth system
+
+[33mcommit d9b7f9cedbb1fd203f8331105a2985376cbf18cc[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Wed Sep 30 17:29:05 2026 +0400
+
+    fix: sidebar icons positioning + theme colors, cast identical to top-bar (close then open drawer), you btn opens account direct without back, bottom bar arrows and layout
+
+[33mcommit 96a3bb056f3652b2126e4a3c43609ed85f3c3c18[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Wed Sep 30 02:37:03 2026 +0400
+
+    fix: kill keyboard on fader select, prevent search bar focus
+
+[33mcommit 97963e20c8b5dcbedcf720722dfc43a1b63abbe8[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Wed Sep 30 02:10:46 2026 +0400
+
+    fix: force hide search bar when faders open - DOM hide for webview + incognito
+
+[33mcommit 782047e8286f27ceb15c1653f9f4f704f8fbd706[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Wed Sep 30 01:50:11 2026 +0400
+
+    fix: hide search bar when faders open, show back when closed
+
+[33mcommit 49e908c0c0cd791fb998f92103039942fedd8be7[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Wed Sep 30 01:24:05 2026 +0400
+
+    fix: faders below topbar, search drawer clean, settings line hidden
+
+[33mcommit 839aa35b4aeeaf67a0917de2c09c2879fc8ba20f[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Tue Sep 29 23:57:57 2026 +0400
+
+    fix: WA drawer hugs content, scoped side-sheet, side-bar title - no more huge empty panel
+
+[33mcommit 81d50443cd007aeffc9e0c229ceea535af40384e[m
+Author: dopetone701 <dopetone701@gmail.com>
+Date:   Tue Sep 29 20:45:55 2026 +0400
+
+    Update side-sheet.css
+
+[33mcommit 1d5f15149183cee88c4f373b3406b71ce967b098[m
+Author: dopetone701 <dopetone701@gmail.com>
+Date:   Tue Sep 29 20:30:24 2026 +0400
+
+    Update top-bar.tsx
+
+[33mcommit ed79199d0242928a1bf4fe9b6635f4bba668be78[m
+Author: dopetone701 <dopetone701@gmail.com>
+Date:   Tue Sep 29 20:29:02 2026 +0400
+
+    Update side-bar.tsx
+
+[33mcommit e501dadbcf171a1c9623967d50c3bfcac22b742d[m
+Author: dopetone701 <dopetone701@gmail.com>
+Date:   Tue Sep 29 20:27:55 2026 +0400
+
+    Update side-sheet.css
+
+[33mcommit 95087cfd9c79d0d637b45313d157e97208774edc[m
+Author: dopetone701 <dopetone701@gmail.com>
+Date:   Tue Sep 29 20:15:53 2026 +0400
+
+    Update side-sheet.css
+
+[33mcommit 6915ad074b597fd0426e667254be3fc978b93228[m
+Author: dopetone701 <dopetone701@gmail.com>
+Date:   Tue Sep 29 20:13:50 2026 +0400
+
+    Update top-bar.tsx
+
+[33mcommit d50bc5678d7e5f064df559cbbaf59d2939505ce9[m
+Author: dopetone701 <dopetone701@gmail.com>
+Date:   Tue Sep 29 20:11:09 2026 +0400
+
+    Update side-bar.tsx
+
+[33mcommit a287d9641b7b0e34a4a3a7887feaa429a7026727[m
+Author: dopetone701 <dopetone701@gmail.com>
+Date:   Tue Sep 29 19:17:37 2026 +0400
+
+    Update side-sheet.css
+
+[33mcommit bcf8239a0780111c9efe2d7e22675e49549039c6[m
+Author: dopetone701 <dopetone701@gmail.com>
+Date:   Tue Sep 29 19:16:03 2026 +0400
+
+    Update top-bar.tsx
+
+[33mcommit 88685f3f5477b9edcec6a4a0adc5df8b2a97d547[m
+Author: dopetone701 <dopetone701@gmail.com>
+Date:   Tue Sep 29 19:14:52 2026 +0400
+
+    Update side-bar.tsx
+
+[33mcommit f572de4cbfcf8164d109e195fc092718bd9b0d19[m
+Author: dopetone701 <dopetone701@gmail.com>
+Date:   Tue Sep 29 19:03:48 2026 +0400
+
+    Update side-sheet.css
+
+[33mcommit 44708af81c3654daff2370a9fd2201bbc769ee45[m
+Author: dopetone701 <dopetone701@gmail.com>
+Date:   Tue Sep 29 18:51:41 2026 +0400
+
+    Update side-sheet.css
+
+[33mcommit e579b86ef8c0b85dff5ea08a2db301c12d267189[m
+Author: dopetone701 <dopetone701@gmail.com>
+Date:   Tue Sep 29 17:55:42 2026 +0400
+
+    Update side-sheet.css
+
+[33mcommit 1104d8ad393ebe14fdf6236077019aeba9a5c35a[m
+Author: dopetone701 <dopetone701@gmail.com>
+Date:   Tue Sep 29 17:48:22 2026 +0400
+
+    Update top-bar.tsx
+
+[33mcommit 9e77ef1ac4448c72d56444472c68ba71d06c03f8[m
+Author: dopetone701 <dopetone701@gmail.com>
+Date:   Tue Sep 29 17:44:28 2026 +0400
+
+    Update top-bar.tsx
+
+[33mcommit 5d0528e1ea6997f516836c58d974e5f14340c883[m
+Author: dopetone701 <dopetone701@gmail.com>
+Date:   Tue Sep 29 17:36:04 2026 +0400
+
+    Update side-sheet.css
+
+[33mcommit 69deab6906efca4acaa1ccc3ff4d8bd14ba198cf[m
+Author: dopetone701 <dopetone701@gmail.com>
+Date:   Tue Sep 29 17:34:14 2026 +0400
+
+    Update top-bar.tsx
+
+[33mcommit 5b7f10aba44c63528ff1a3f55f2f0d766e6aa67b[m
+Author: dopetone701 <dopetone701@gmail.com>
+Date:   Tue Sep 29 17:33:18 2026 +0400
+
+    Update side-bar.tsx
+
+[33mcommit f76d1c343f477e10f5ecbcba224bd5e3e359a69e[m
+Author: dopetone701 <dopetone701@gmail.com>
+Date:   Tue Sep 29 17:13:30 2026 +0400
+
+    Update top-bar.tsx
+
+[33mcommit ec0fd1547ce4ee37da091606fabc79c426e85fc0[m
+Author: dopetone701 <dopetone701@gmail.com>
+Date:   Tue Sep 29 17:11:59 2026 +0400
+
+    Update side-bar.tsx
+
+[33mcommit 90f20392cdb9f65397a408782da9fea99b876c5f[m
+Author: dopetone701 <dopetone701@gmail.com>
+Date:   Tue Sep 29 17:10:47 2026 +0400
+
+    Update side-sheet.css
+
+[33mcommit b6888289ebcdb824bd5ae75b84f8197d3f1b211b[m
+Author: dopetone701 <dopetone701@gmail.com>
+Date:   Tue Sep 29 16:50:07 2026 +0400
+
+    Update side-bar.tsx
+
+[33mcommit 617bf785527edf496d51fe4b2a013bf8d258a244[m
+Author: dopetone701 <dopetone701@gmail.com>
+Date:   Tue Sep 29 16:49:04 2026 +0400
+
+    Update top-bar.tsx
+
+[33mcommit bfeffee26f32cf168b88032c5db9657c8441c9c0[m
+Author: dopetone701 <dopetone701@gmail.com>
+Date:   Tue Sep 29 16:19:41 2026 +0400
+
+    Update side-bar.tsx
+
+[33mcommit 3c9f12c0e376dcedc72d792a221ea70f144caa90[m
+Author: dopetone701 <dopetone701@gmail.com>
+Date:   Tue Sep 29 16:18:37 2026 +0400
+
+    Update side-bar.tsx
+
+[33mcommit 6f9d63c3591db10208073fc023683ce357e4c044[m
+Author: dopetone701 <dopetone701@gmail.com>
+Date:   Tue Sep 29 16:17:08 2026 +0400
+
+    Update side-sheet.css
+
+[33mcommit dccffd0f43d086f96084455fc0ad33e71a533b14[m
+Author: dopetone701 <dopetone701@gmail.com>
+Date:   Tue Sep 29 15:58:43 2026 +0400
+
+    Update top-bar.tsx
+
+[33mcommit bb4544f1e42c1b4d4d53165069d66f5346162d9d[m
+Author: dopetone701 <dopetone701@gmail.com>
+Date:   Tue Sep 29 15:50:58 2026 +0400
+
+    Update side-bar.tsx
+
+[33mcommit 4e3b56abfd15e2ae91113de0c04d0812cbd2d129[m
+Author: dopetone701 <dopetone701@gmail.com>
+Date:   Tue Sep 29 15:49:06 2026 +0400
+
+    Update side-sheet.css
+
+[33mcommit d718f8de2dee6e8aad9d922b398fc0934c452e45[m
+Author: dopetone701 <dopetone701@gmail.com>
+Date:   Tue Sep 29 15:29:41 2026 +0400
+
+    Update top-bar.tsx
+
+[33mcommit 1bcae13a5763775b87e08c9e9fc2a1903a066522[m
+Author: dopetone701 <dopetone701@gmail.com>
+Date:   Tue Sep 29 15:27:59 2026 +0400
+
+    Update side-sheet.css
+
+[33mcommit dc94a46b56f44df08a247ad8bae7428cf255f0ab[m
+Author: dopetone701 <dopetone701@gmail.com>
+Date:   Tue Sep 29 15:26:50 2026 +0400
+
+    Update side-bar.tsx
+
+[33mcommit 804949a247e160c6436a1d21e678fb7962e69ba2[m
+Author: dopetone701 <dopetone701@gmail.com>
+Date:   Tue Sep 29 14:02:22 2026 +0400
+
+    Update side-bar.tsx
+
+[33mcommit f28ec272588d0d4ce735b4bd350fb14778f4aa99[m
+Author: dopetone701 <dopetone701@gmail.com>
+Date:   Tue Sep 29 14:00:40 2026 +0400
+
+    Update top-bar.tsx
+
+[33mcommit aa2d33275076151611ba491449fd6c3d9884304b[m
+Author: dopetone701 <dopetone701@gmail.com>
+Date:   Tue Sep 29 13:59:14 2026 +0400
+
+    Update side-sheet.css
+
+[33mcommit 4a0063af4330acfb065b4957d350c995c0f9058e[m
+Author: dopetone701 <dopetone701@gmail.com>
+Date:   Tue Sep 29 12:51:13 2026 +0400
+
+    Update top-bar.tsx
+
+[33mcommit 87d5f7d89fa2c25d79876f1a7f4e0794192f4661[m
+Author: dopetone701 <dopetone701@gmail.com>
+Date:   Tue Sep 29 12:49:48 2026 +0400
+
+    Update side-sheet.css
+
+[33mcommit 1c082a4f6bfe9e8a9d1d4e759e459c5f64b0a55b[m
+Author: dopetone701 <dopetone701@gmail.com>
+Date:   Tue Sep 29 12:48:45 2026 +0400
+
+    Update side-bar.tsx
+
+[33mcommit 9bfddf5cdc7b47c1297f6439fcea4cdb5548db74[m
+Author: dopetone701 <dopetone701@gmail.com>
+Date:   Tue Sep 29 12:26:42 2026 +0400
+
+    Update top-bar.tsx
+
+[33mcommit 54eac21f0f0ce90d197517ed730c1654e2934819[m
+Author: dopetone701 <dopetone701@gmail.com>
+Date:   Tue Sep 29 12:25:10 2026 +0400
+
+    Update side-sheet.css
+
+[33mcommit 918748e5ab71d0e9cc97c5baa69f405a23a86fbb[m
+Author: dopetone701 <dopetone701@gmail.com>
+Date:   Tue Sep 29 12:24:09 2026 +0400
+
+    Update side-bar.tsx
+
+[33mcommit 90719b8c3011d0b2100b44e4119d440abaccdc7a[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Tue Sep 29 10:34:18 2026 +0400
+
+    feat: services page - hide sidebar, you-icon only, sheet system + top-bar fix
+
+[33mcommit a000165319a3fe51b33daa32b76366e2d28a4903[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Tue Sep 29 01:11:19 2026 +0400
+
+    feat: filters opens search + faders instantly, previews opens reels feed
+
+[33mcommit 739b4ff2832527874e1c46d7b6e68fcf53e8ef97[m
+Author: dopetone701 <dopetone701@gmail.com>
+Date:   Mon Sep 28 20:54:36 2026 +0400
+
+    Create share-atom-icon.tsx
+
+[33mcommit 79448bf5bb21df3826b527093d5172253fafaefb[m
+Author: dopetone701 <dopetone701@gmail.com>
+Date:   Mon Sep 28 20:48:52 2026 +0400
+
+    Create app-tips-icon.tsx
+
+[33mcommit c361bda635b95af946432c87c938ed1c55a64dee[m
+Author: dopetone701 <dopetone701@gmail.com>
+Date:   Mon Sep 28 20:45:19 2026 +0400
+
+    Create fadders-icon.tsx
+
+[33mcommit c9274a3913fac2fa81035c6089e3656027ee6d31[m
+Author: dopetone701 <dopetone701@gmail.com>
+Date:   Mon Sep 28 19:15:31 2026 +0400
+
+    Create settings-gear.tsx
+
+[33mcommit f2c2e4a787c09e933cd49a03d7b3d8c0da8fe2df[m
+Author: dopetone701 <dopetone701@gmail.com>
+Date:   Mon Sep 28 19:09:31 2026 +0400
+
+    Create dots-menue-icon.tsx
+
+[33mcommit ee09497c6dfc72a2cf8e742df51f4ba24315117e[m
+Author: dopetone701 <dopetone701@gmail.com>
+Date:   Mon Sep 28 19:05:21 2026 +0400
+
+    Create delete-icon.tsx
+
+[33mcommit 9b23b831170a2289aa0f99e567eb35ea76bd4fa1[m
+Author: dopetone701 <dopetone701@gmail.com>
+Date:   Mon Sep 28 19:00:50 2026 +0400
+
+    Create pro-services-icon.tsx
+
+[33mcommit 85cba6473756e66a99ccdf94ea747c999b86e1e0[m
+Author: dopetone701 <dopetone701@gmail.com>
+Date:   Mon Sep 28 18:56:21 2026 +0400
+
+    Create services-icons.tsx
+
+[33mcommit c59db5389d0e37d58fa8d0da7d3dd85a51269d92[m
+Author: dopetone701 <dopetone701@gmail.com>
+Date:   Mon Sep 28 18:41:04 2026 +0400
+
+    Create bell-icon.tsx
+
+[33mcommit 6841807e0b2910c3254d07463b814cb0528a4fd2[m
+Author: dopetone701 <dopetone701@gmail.com>
+Date:   Mon Sep 28 18:34:28 2026 +0400
+
+    Create Home-icon.tsx
+
+[33mcommit d12e7493df0b08f32532686b9add822474f1a0e3[m
+Author: dopetone701 <dopetone701@gmail.com>
+Date:   Mon Sep 28 18:29:44 2026 +0400
+
+    Create scissors-svg-icon.tsx
+
+[33mcommit e2f6729d6f3fbf621e8cca090516bb24785a6995[m
+Author: dopetone701 <dopetone701@gmail.com>
+Date:   Mon Sep 28 17:53:08 2026 +0400
+
+    Create bookmark-save-icon.tsx
+
+[33mcommit d2635f62a37f6043642eb6d76cdad49d07edbca9[m
+Author: dopetone701 <dopetone701@gmail.com>
+Date:   Mon Sep 28 17:20:51 2026 +0400
+
+    Create tail-share-btn.tsx
+
+[33mcommit be05cf57ef59c576642c2c21372e7c7a2976d080[m
+Author: dopetone701 <dopetone701@gmail.com>
+Date:   Mon Sep 28 16:30:31 2026 +0400
+
+    Create minus-10-revolve-icon.tsx
+
+[33mcommit 134bee43d69c0cc6d8d7e59d53cd6b3c666dbd70[m
+Author: dopetone701 <dopetone701@gmail.com>
+Date:   Mon Sep 28 16:16:49 2026 +0400
+
+    Update plus-10-revolve-icon.tsx
+
+[33mcommit dcaa8d9dee040a02cf7158d68fbf2beaf2d544c1[m
+Author: dopetone701 <dopetone701@gmail.com>
+Date:   Mon Sep 28 15:59:57 2026 +0400
+
+    Create plus-10-revolve-icon.tsx
+
+[33mcommit b916a32ff505d976baad6658b30c8f2316bfb138[m
+Author: dopetone701 <dopetone701@gmail.com>
+Date:   Mon Sep 28 15:22:29 2026 +0400
+
+    Create message-bubble-square.tsx
+
+[33mcommit 3cf3bcb8f9f5efd1e69e64fadd39727f8497047e[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Mon Sep 28 05:27:37 2026 +0400
+
+    fix: hide footer in fullscreen
+
+[33mcommit ee74b50c9dff7a9a50a75368665aa479c1296b95[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Mon Sep 28 05:22:23 2026 +0400
+
+    fix: hide footer in fullscreen
+
+[33mcommit e52470a8fe279946c35533532329acc78bce9952[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Mon Sep 28 04:58:45 2026 +0400
+
+    feat: footer tight to email and bottom bar + spacing from similar
+
+[33mcommit d0391cd28209aba63f326f79f6d270f7be3a7f5a[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Mon Sep 28 04:44:48 2026 +0400
+
+    Update landing: keep hall close to CTA
+
+[33mcommit a5671f6e5ca9631f46bc7212e88daf6965e789f1[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Sun Sep 27 11:51:46 2026 +0400
+
+    fix: watch drawer series scroll
+
+[33mcommit 558a10b77a3df015979e92f6b951017a5b6ee139[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Sun Sep 27 05:18:04 2026 +0400
+
+    fix: make faders drawer cover search bar on mobile, z-index 9999, full screen
+
+[33mcommit 794c14d64450abd7bbd3146c70ba46c39f4c8c2f[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Sun Sep 27 05:08:21 2026 +0400
+
+    fix: faders drawer clip flush to topbar, remove radius/border, fix mobile top row under search
+
+[33mcommit 3f99f8873d6628bbd171f770621b22c659c21ac6[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Sun Sep 27 04:54:14 2026 +0400
+
+    feat: pc faders row layout 4 cols, centered 3d titles, close pane on select + filter via search-drawer, kill ios bounce/flash, hide pc scrollbar
+
+[33mcommit c670a6cb4dac9fac7f2e1412b13cc169b797f3b1[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Sun Sep 27 00:53:18 2026 +0400
+
+    fix: faders See all opens search drawer with All chip + genre image fallback
+
+[33mcommit 8e9d902b196383900de5a7491c664e50500d3882[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Sun Sep 27 00:25:12 2026 +0400
+
+    feat: year search with From/Before sections, centered year labels, faders filter sync and filtered-content
+
+[33mcommit 3e5feddb23603f9a74777494f2ea9e420b6bffec[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Sat Sep 26 23:30:29 2026 +0400
+
+    all: faders close btn logic, hook order fix Play crash, dynamic chips, Present label
+
+[33mcommit e67e28de76250c79dbed41df3df880182cdfaccf[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Sat Sep 26 22:53:08 2026 +0400
+
+    feat: fix faders drawer scroll, time title outside tile, 2025-Present, dynamic search chips for vj/actor/time
+
+[33mcommit 810e65360accfaa33aa06439fab8c201eb5b3c49[m
+Author: dopetone701 <dopetone701@gmail.com>
+Date:   Sat Sep 26 14:58:06 2026 +0400
+
+    Update top-bar.tsx
+
+[33mcommit e5bf1759ded1aeab6b6042a8595c136713c73198[m
+Author: dopetone701 <dopetone701@gmail.com>
+Date:   Sat Sep 26 14:27:19 2026 +0400
+
+    Update top-bar.tsx
+
+[33mcommit 7546f29fe3fe07fc9e49ac85eadb259a045ce1a8[m
+Author: dopetone701 <dopetone701@gmail.com>
+Date:   Sat Sep 26 13:58:43 2026 +0400
+
+    Update search-drawer.tsx use faders btn now
+
+[33mcommit 9114b8995c7bef6f3adfc311a6a860363bc2d06c[m
+Author: dopetone701 <dopetone701@gmail.com>
+Date:   Sat Sep 26 13:57:28 2026 +0400
+
+    Update top-bar.tsx use faders
+
+[33mcommit 5193a082b2329f72d2c86b1d3264a499b75f1441[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Sat Sep 26 11:37:02 2026 +0400
+
+    feat: search drawer + faders drawer
+
+[33mcommit 1d2550c0c29984e87e60737daaffe17b31a56134[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Sat Sep 26 02:45:19 2026 +0400
+
+    fix: reels app overlap - add safe-area fallback 20px and fix dvh for Capacitor
+
+[33mcommit 800d9d858eaa44e5ce214b1d5270a301efb65ca4[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Sat Sep 26 02:39:06 2026 +0400
+
+    fix: reels app overlap - add safe-area fallback 20px and fix dvh for Capacitor
+
+[33mcommit 705dee305515af0b1523217abb08cfdecf632d34[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Sat Sep 26 02:17:51 2026 +0400
+
+    fix: remove static reel-comment-bar double generator, keep scrolling bar in reels-actions
+
+[33mcommit 4643dc83ce80c324b686770fb587ec4ab74f3c07[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Sat Sep 26 00:40:39 2026 +0400
+
+    Reels shell vacated + comment bar min-height 56px fix
+
+[33mcommit 1437d039e9784a4330ef422927cadfe786f4d6be[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Sat Sep 26 00:25:30 2026 +0400
+
+    Fix comment bar override - app vs browser
+
+[33mcommit a75507e637cc15ca6f35492ed2814f758de8a81b[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Fri Sep 25 23:55:54 2026 +0400
+
+    Update reels UI and fixes
+
+[33mcommit 296bf92080ac65e305be7bb7154d20b04a2b1215[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Fri Sep 25 22:10:39 2026 +0400
+
+    Fix reels drawer - fit in scrollable body, remove portal
+
+[33mcommit fbf07bb4b3f13b9c6753e8cd2e5949dd91dbf748[m
+Author: dopetone701 <dopetone701@gmail.com>
+Date:   Fri Sep 25 19:04:14 2026 +0400
+
+    Update app-shell.css
+
+[33mcommit 9d5b2c8abb3a18e92910b886bcee84ecebebe8dc[m
+Author: dopetone701 <dopetone701@gmail.com>
+Date:   Fri Sep 25 18:37:20 2026 +0400
+
+    Update cast.css
+
+[33mcommit ff6fb70b1f084bc252b7a99f4db84195a9abc7bc[m
+Author: dopetone701 <dopetone701@gmail.com>
+Date:   Fri Sep 25 18:27:04 2026 +0400
+
+    Update app-shell.css
+
+[33mcommit 68863e08232f14aa1692e1cfdc30e87813076c39[m
+Author: dopetone701 <dopetone701@gmail.com>
+Date:   Fri Sep 25 18:18:50 2026 +0400
+
+    Update cast.css
+
+[33mcommit 7bcee32be678540974b2f4ff4631e65964f27d92[m
+Author: dopetone701 <dopetone701@gmail.com>
+Date:   Fri Sep 25 18:08:45 2026 +0400
+
+    Update cast.css
+
+[33mcommit 886ec06bbaeac3fadd34db8996b3ddd1fda67e07[m
+Author: dopetone701 <dopetone701@gmail.com>
+Date:   Fri Sep 25 18:02:43 2026 +0400
+
+    Update top-bar.css
+
+[33mcommit 729772af3f3dc4e16947c091491a011d994c9d26[m
+Author: dopetone701 <dopetone701@gmail.com>
+Date:   Fri Sep 25 16:13:40 2026 +0400
+
+    Update top-bar.css
+
+[33mcommit 439e6ec9c9dc9dddf3a646d7be4c1c31596cb22b[m
+Author: dopetone701 <dopetone701@gmail.com>
+Date:   Fri Sep 25 16:05:34 2026 +0400
+
+    Update app-shell.css
+
+[33mcommit 9de05e6808c2107776ba9223a49aef8aca71dd9d[m
+Author: dopetone701 <dopetone701@gmail.com>
+Date:   Fri Sep 25 16:01:12 2026 +0400
+
+    Update top-bar.css
+
+[33mcommit 686cc995d0337d74439f27df0d8842a24c474cd3[m
+Author: dopetone701 <dopetone701@gmail.com>
+Date:   Fri Sep 25 14:57:02 2026 +0400
+
+    Update app-shell.css
+
+[33mcommit 119ceabd2df29f47ca7f9c8dd1ca8e83fca482ea[m
+Author: dopetone701 <dopetone701@gmail.com>
+Date:   Fri Sep 25 14:55:17 2026 +0400
+
+    Update app-shell.tsx
+
+[33mcommit ee1d7aecd84955b90699c11bcc2e160de5c84ada[m
+Author: dopetone701 <dopetone701@gmail.com>
+Date:   Fri Sep 25 14:47:32 2026 +0400
+
+    Update app-shell.tsx
+
+[33mcommit 853c282e9f963cc23dabdd0944b99895b831cd9b[m
+Author: dopetone701 <dopetone701@gmail.com>
+Date:   Fri Sep 25 14:45:44 2026 +0400
+
+    Update app-shell.css
+
+[33mcommit aa4b777ad75a5b4a8411e9b9c646b8c1651fb6dc[m
+Author: dopetone701 <dopetone701@gmail.com>
+Date:   Fri Sep 25 14:29:24 2026 +0400
+
+    Update app-shell.css
+
+[33mcommit c979782190416c68edecac3c4920a2988bad9e0d[m
+Author: dopetone701 <dopetone701@gmail.com>
+Date:   Fri Sep 25 14:25:02 2026 +0400
+
+    Update app-shell.css
+
+[33mcommit a63de113c87abd9fd951d85256c76a3c51ce1609[m
+Author: dopetone701 <dopetone701@gmail.com>
+Date:   Fri Sep 25 14:23:47 2026 +0400
+
+    Update layout.tsx
+
+[33mcommit 213bfc877b7b18ee9e4201cc5ebe4d156fcae611[m
+Author: dopetone701 <dopetone701@gmail.com>
+Date:   Fri Sep 25 13:44:49 2026 +0400
+
+    Update layout.tsx
+
+[33mcommit 5dc395be37391a1b1fbb8527a06a9e4d73b4c8c0[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Fri Sep 25 07:59:08 2026 +0400
+
+    fix: layout cover keep for intro only + top bar safe area - btns aligned
+
+[33mcommit 492d6dd782daf720031ba9d113687853ec9809cc[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Fri Sep 25 07:50:14 2026 +0400
+
+    fix: cast only css isolated - no reels leak
+
+[33mcommit 35f995b4d3227b8052efe03d14871733b70f8601[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Fri Sep 25 07:40:32 2026 +0400
+
+    feat: cast 52vh mid + swipe-close + pure svg + scroll fix
+
+[33mcommit 271b1fb283f7516b2a58eb946615cadde0dcca7d[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Fri Sep 25 05:55:51 2026 +0400
+
+    fix: intro mobile-only, cover safe-area notch, kill flash - no data sneak
+
+[33mcommit 0d3a8d1cf6f6900283223b30d2fef1bbd17a29b3[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Fri Sep 25 05:36:43 2026 +0400
+
+    feat: add instant intro video with poster fadeout - no black delay
+
+[33mcommit 65f48c6b7c5a3b2e7ce9dbb038cd9ffcf34a30e2[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Fri Sep 25 04:07:20 2026 +0400
+
+    fix: preview btn opens reels drawer like movie-card, PC preview -> mobile reels same preview sync, fix MyList store path
+
+[33mcommit 7d0f07d581a3b265281171f5b81e7d1d086f9ad8[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Thu Sep 24 09:47:38 2026 +0400
+
+    feat: watch drawer overlay fix + hide top and bottom bars on full open
+
+[33mcommit 31346abd08b410df7064da5372e3e1aaaaa02daa[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Thu Sep 24 00:05:16 2026 +0400
+
+    fix: overlay full width + reduce fullscreen drag sensitivity
+
+[33mcommit a15ad757d38a3273e55eac6688d35a0c327d7000[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Wed Sep 23 23:44:26 2026 +0400
+
+    Update movie watch drawer and series components
+
+[33mcommit 2cc1af5b31ab692c4b389e950aec7d8804676551[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Wed Sep 23 20:46:05 2026 +0400
+
+    update: movies components, watch drawer and app shell
+
+[33mcommit 61b4ab73cd49d4163b3dc844b8fcbd4bd72276ee[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Wed Sep 23 14:40:50 2026 +0400
+
+    fix: yt drawer - drag sensitivity, down on content = fullscreen, up in fs = exit, auto landscape fullscreen
+
+[33mcommit 33b983e906fce99e3b002e2352acad355d070179[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Tue Sep 22 03:51:21 2026 +0400
+
+    fix: pc drawer inside inner-body, mini bubble draggable sticky 4 corners only mobile, pure svg
+
+[33mcommit f652071ef76f73f6dfccaf6247fb287591aa5f32[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Tue Sep 22 02:16:59 2026 +0400
+
+    fix: remove mini-bubble component, update movies page
+
+[33mcommit 8e47f4af2be3831cd7de98dac0eb889b2fd8d9f6[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Tue Sep 22 02:11:05 2026 +0400
+
+    feat: draggable mini player anywhere + show controls on first click
+
+[33mcommit 8e3e766ba69ce3451e6d8a778489a4b9afb3f72b[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Mon Sep 21 23:46:44 2026 +0400
+
+    feat: replace modal intercept with watch drawer - full screen, blur fix, YT smooth
+
+[33mcommit d981348543caa25d79905a851413bc8995f0eedd[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Mon Sep 21 02:50:37 2026 +0400
+
+    fix: add edge runtime for intercept modal
+
+[33mcommit 0f25adb2d5d13811278df33975228b9e44a8bd9f[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Mon Sep 21 02:42:35 2026 +0400
+
+    fix: overlay smooth slide + zoom-out close + return to viewport, remove single-player
+
+[33mcommit 43ed3249434d24cb1ee2ed524c467e05b068a665[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Sat Sep 19 12:16:28 2026 +0400
+
+    update player and vid components
+
+[33mcommit 77309c6eb185592e05f7001544b75395e6d4f055[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Sat Sep 19 10:14:28 2026 +0400
+
+    align back+VJ with logo, back stays, VJ fades
+
+[33mcommit 90e95869b95b2a131250726fca65f91c8059e265[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Sat Sep 19 09:36:46 2026 +0400
+
+    fix: watch player css leak + mobile ui
+
+[33mcommit a4391564df3b58dfce7d483f580e23b3bfaf0e59[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Sat Sep 19 08:17:40 2026 +0400
+
+    fix: tab no-wrap titles + money rate shrink + mobile money horizontal pill
+
+[33mcommit 247fc4ae4e8f03b03863df12003f6667f3d832d8[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Sat Sep 19 01:01:04 2026 +0400
+
+    revert: keep smooth drawer flow - drawer inside shell
+
+[33mcommit b6424d7f26a91c8f33814eb293cc88302e096e74[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Sat Sep 19 00:57:59 2026 +0400
+
+    fix: remove black viewport bg, shell handles safe-area
+
+[33mcommit a64d3002c11d445fa2efcf388c6c640343345145[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Sat Sep 19 00:52:59 2026 +0400
+
+    fix: drawer inside shell not overlay, smooth slide restored, pages below island
+
+[33mcommit 864a79749c256c714947d5fe82624ede4a09c608[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Sat Sep 19 00:29:05 2026 +0400
+
+    fix: safe-area battery overlap - top-bar, drawer, capacitor contentInset always - keep mobile pill fixed
+
+[33mcommit d7bfaa45048aabe3e16f74fe202e14d2acb733da[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Sat Sep 19 00:06:26 2026 +0400
+
+    fix: tabs behind battery - add safe-area to shell + top-bar spacing - one place fix for all pages
+
+[33mcommit fca21e4e3705e7b7fd613ec8a621d321ae326f96[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Fri Sep 18 23:50:41 2026 +0400
+
+    revert: restore globals.css to b5c6a27 - last valid before yesterday
+
+[33mcommit 27fd8f6c82b9ed41d679eb7de35b487572e3b0c0[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Fri Sep 18 23:45:19 2026 +0400
+
+    fix: top-bar under dynamic island + disappear on scroll + content edge to edge + remove bottom panel
+
+[33mcommit dc4e83ab2d1425191a346f57d35390166be24236[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Fri Sep 18 23:33:44 2026 +0400
+
+    fix: top-bar under dynamic island + disappear on scroll + content edge to edge + remove bottom panel
+
+[33mcommit eeb784986fa75894762f2c1fd4ae108294de1c6c[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Fri Sep 18 09:53:02 2026 +0400
+
+    fix: kill double body scroll, safe area, only content-panel scrolls
+
+[33mcommit d7d05809df77ee7004e49a5cf7c8b53d28dbce78[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Fri Sep 18 09:39:55 2026 +0400
+
+    fix: kill double body scroll, pwa install prompt with remind me later 30min
+
+[33mcommit 1b471f1b210adb72dab69e732859b864ece66032[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Fri Sep 18 09:13:30 2026 +0400
+
+    fix: edge watch page split, CF config, add app logo manager
+
+[33mcommit 236fcd830366cbd9f8ecad6eb63eb7c76f886cad[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Fri Sep 18 09:12:05 2026 +0400
+
+    fix: edge watch page
+
+[33mcommit 0aaa500c1c7a4e6d0a7d7ebf5e6ea046151e5b2d[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Thu Sep 17 10:23:46 2026 +0400
+
+    feat: update mini series and series row css
+
+[33mcommit d7575354d775b7891e4538a68488ff7381c8d686[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Wed Sep 16 16:33:58 2026 +0400
+
+    fix: edit modal heavy upload chunking 10MB, progress bars fix blink, real video preview not image, download/replace/delete per episode with confirm, unlimited preview videos + worker CORS 500 fix
+
+[33mcommit f132fc91ad6258bd0c17a9c964abb2a5d71f17e7[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Wed Sep 16 03:55:04 2026 +0400
+
+    update movie dashboard
+
+[33mcommit 0087abb596a0755d6730ec097516f10a57c75d0c[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Wed Sep 16 02:50:34 2026 +0400
+
+    fix watch page top gap
+
+[33mcommit 35579246a0380425ae1ce081caf9386cec8fdd2e[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Wed Sep 16 02:25:25 2026 +0400
+
+    final: top bar hidden mobile, clean css
+
+[33mcommit 665369cef3a59a9a617ca45c64e952c847af3366[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Wed Sep 16 02:17:25 2026 +0400
+
+    remove striped bg from dots menu
+
+[33mcommit e8a66910b5f5e2f9c920ee51fe77502f71584c70[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Wed Sep 16 02:00:37 2026 +0400
+
+    fix: dots menu - fixed portal clamp no mobile overflow
+
+[33mcommit 7e392cdb604344b71ec6a68de6a48bf416c8ceee[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Wed Sep 16 01:37:44 2026 +0400
+
+    fix: ep row border hover-only + dots menu fixed follow + track scroll
+
+[33mcommit dbaa51e2dbae2bf5b3714d1fe0ec0b4c274bb0e3[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Tue Sep 15 23:19:09 2026 +0400
+
+    feat: mini-series rectangle card, tv-series same logic, latest movies 3 cards + peek mobile and tight row spacing
+
+[33mcommit 95424835d48733a2828415d3a7a6879109c65d7a[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Tue Sep 15 01:28:56 2026 +0400
+
+    feat: add tv-series, mini-series rows and movie controls
+
+[33mcommit b8b35a2f7aa41a61b8f2a6015f624a58782c896b[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Mon Sep 14 06:26:12 2026 +0400
+
+    feat: player 3s autoplay + spinner + action btns + 5line desc more/less + theme dna + fullscreen hide
+
+[33mcommit dfce1a4291cd872109461eb0e5cf8caff4efaadf[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Mon Sep 14 05:37:53 2026 +0400
+
+    feat: reels fix
+
+[33mcommit b9252f46225af09c074e2925f52cdee0961176a5[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Mon Sep 14 05:32:48 2026 +0400
+
+    feat: liquid glass 10s skip orbs + full width bar time left
+
+[33mcommit 0ac65e8937d64a733d3fe76a10864ab31c045f95[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Mon Sep 14 03:45:27 2026 +0400
+
+    fix: smaller logo on mobile
+
+[33mcommit 7fb3684849ec09e3a15bb720d82edc979156f435[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Mon Sep 14 02:34:21 2026 +0400
+
+    fix: fullscreen covers browser search bar mobile
+
+[33mcommit 3585a7586ed29a31daf7fbd5b415542f99ee88d1[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Mon Sep 14 01:55:44 2026 +0400
+
+    fix: mobile youtube fullscreen + edge runtime order
+
+[33mcommit 875c5f660222382f7224326cbbf4f42325caf94b[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Mon Sep 14 01:41:03 2026 +0400
+
+    fix: add edge runtime for cloudflare
+
+[33mcommit 0a3578798c016c6d05b97c8192be5b49be214937[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Mon Sep 14 01:39:01 2026 +0400
+
+    fix: add edge runtime for cloudflare
+
+[33mcommit 776a55c6d1579343835b7acbbc3595f149d1474a[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Mon Sep 14 01:32:22 2026 +0400
+
+    fix: mobile full width edge-to-edge + hide similar in fullscreen
+
+[33mcommit b5c6a2748244f12d1d6373213c68f817024ce1d1[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Mon Sep 14 00:37:38 2026 +0400
+
+    push all - final pc hide on watch mobile
+
+[33mcommit 847b232cedabfd7795d1467997699f7754b39d65[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Mon Sep 14 00:05:35 2026 +0400
+
+    fix: final yt player - correct child selectors, play btn + progress on video, no rotate, lock mobile on landscape, spinner no cover
+
+[33mcommit e43daebb580090667d2577763161c3fccec9616c[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Sun Sep 13 22:37:17 2026 +0400
+
+    fix: YT player - remove cover, add spinner, fix play btn + progress bar on video in portrait, remove rotate bug
+
+[33mcommit 2d08ade48b9c5f14d42b0a9af10d14806eac800b[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Sun Sep 13 22:07:16 2026 +0400
+
+    fix: balance mobile video, remove safe-area gap, kill rotate bug, make PWA edge-to-edge like YouTube
+
+[33mcommit 918bdffeab6f49a31b9046ba5cae1d34556ef336[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Sun Sep 13 04:31:38 2026 +0400
+
+    Update movie UI, search, filters and top bar
+
+[33mcommit 6d841071edc5c99b1c702c5e60279fdf9753d513[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Sat Sep 12 05:48:02 2026 +0400
+
+    fix: search drawer grid
+
+[33mcommit 013e088d77958f28e43dc36bb3effd3d14a48b83[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Fri Sep 11 01:23:07 2026 +0400
+
+    lock portrait starzplay style
+
+[33mcommit e2f24c5762b5a1dc962710519ae159a29776472a[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Fri Sep 11 00:50:00 2026 +0400
+
+    override fix gap
+
+[33mcommit 1188c73658e53f2a11cdb17cc4ad5f919be91435[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Fri Sep 11 00:30:56 2026 +0400
+
+    fix: youtube feel contain not cover
+
+[33mcommit 564f574823d8a95e9ef5a5f08014b711b0d88b12[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Thu Sep 10 23:47:16 2026 +0400
+
+    fix: movies center mobile + pc arrows
+
+[33mcommit aa607249d639a0e5b07a9be6ddf6e785070808cb[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Thu Sep 10 23:01:03 2026 +0400
+
+    feat: movies circular button with transparent bg
+
+[33mcommit 9a9c2d6275fb21d34ee2076121f8a4cf183162cd[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Thu Sep 10 22:01:18 2026 +0400
+
+    Fix mobile video controls and top bar icons
+
+[33mcommit c5dabe77eda81bf8ae9590260144a9479151a035[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Thu Sep 10 09:42:14 2026 +0400
+
+    fix: youtube balance + remove btns in fullscreen, keep in portrait
+
+[33mcommit 4567662e94be0dc2b49b45724f26d2155d484352[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Thu Sep 10 09:30:07 2026 +0400
+
+    fix: starz real orientation lock
+
+[33mcommit 5c31acdf46b428bd9b9463ccff1ad155a1f1e794[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Thu Sep 10 08:53:02 2026 +0400
+
+    fix: remove black safe-area bar, viewport-fit cover, top-bar notch fill
+
+[33mcommit b53b4c795695b6058be8c8abc82b9c0818a11002[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Thu Sep 10 08:28:30 2026 +0400
+
+    fix: full video contain viewport + comment bar fb size
+
+[33mcommit e1f662083e8c66b5b9c5a87f470d82fc802c9362[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Thu Sep 10 08:04:03 2026 +0400
+
+    fix: reels to full screen, cards to yt, remove single-player
+
+[33mcommit 96ec230bfc66ef0c6aafe081d283a78d68157a0b[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Thu Sep 10 05:21:04 2026 +0400
+
+    fix: export skins both named + default
+
+[33mcommit 34623074e1a6ee381f759fee9e9b8decf39ac665[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Thu Sep 10 05:04:39 2026 +0400
+
+    fix: mobile video ui
+
+[33mcommit 6ff42bdccb80cdbdb8acb3d22e52481970844067[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Thu Sep 10 01:38:11 2026 +0400
+
+    feat: restore svg play/pause btn + tiktok scroll no reload
+
+[33mcommit 006f1cd8df42e55197bbb6ce96e4459d6674feba[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Thu Sep 10 01:30:42 2026 +0400
+
+    feat: tiktok reels - scroll snap no reload, fix video behind comment bar
+
+[33mcommit eea3839d311ebed8331ec11b5c8922c02b1265cf[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Tue Sep 8 05:13:02 2026 +0400
+
+    fix mobile video orientation build
+
+[33mcommit d4e01b7f58b059d706b01d7a0e717fbee241c5a1[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Tue Sep 8 05:07:42 2026 +0400
+
+    update movie components: card, mobile preview and video UI
+
+[33mcommit d209a3257ffbaaada9098cbc9f7959ae7e0d98fd[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Tue Sep 8 05:00:22 2026 +0400
+
+    fix mobile video orientation build
+
+[33mcommit 1f400827d5aaff7594926bab725b2a78e22aba79[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Tue Sep 8 04:52:27 2026 +0400
+
+    update movie components: card, mobile preview and video UI
+
+[33mcommit 7df54c33848c14d37191b26aeda5f8732d0d14fe[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Tue Sep 8 03:39:02 2026 +0400
+
+    fix: yt shell visible in parade mode, preview-only reels, volume swipe + fullscreen icon, desc 5-line clamp, single player provider
+
+[33mcommit 3d16a06e5e90e78594466245e71db241817c0490[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Mon Sep 7 22:23:40 2026 +0400
+
+    Update movies page
+
+[33mcommit 237f8bbcf05f823d3e08ba3e27f2ad064f6278fb[m
+Author: dopetone701 <dopetone701@gmail.com>
+Date:   Mon Sep 7 22:22:31 2026 +0400
+
+    Refactor handleShare function for better readability
+
+[33mcommit fff61bb44cb37bf0a2b9d296195a03be170e4c16[m
+Author: dopetone701 <dopetone701@gmail.com>
+Date:   Mon Sep 7 22:21:14 2026 +0400
+
+    Enhance video quality options and mobile compatibility
+    
+    Refactor video quality handling and improve mobile support.
+
+[33mcommit fa6a036cb7d4b000134f4b9b642782bdd6ef202b[m
+Author: dopetone701 <dopetone701@gmail.com>
+Date:   Mon Sep 7 12:55:25 2026 +0400
+
+    Update page.tsx
+
+[33mcommit bb51d978562354f141e0e59f5995a31a63c24484[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Mon Sep 7 06:27:55 2026 +0400
+
+    feat: add similar movies component and update movie pages, player and shell styles
+
+[33mcommit 0a24df0b0f6c91faf712f8b29a53572358e194ef[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Mon Sep 7 00:08:18 2026 +0400
+
+    feat: genre circular filter after hero with noon-scroll + my-list PLAY|PRE fix
+
+[33mcommit 622dd5e9cf8edd0834dd4f4efd4ef791dfdb2674[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Sun Sep 6 22:16:57 2026 +0400
+
+    feat: hero pc bottom-left my-list + share, mobile same-line pill [ + | FULL/PREVIEW | share ] apple 18px, reactive ADDED state, single my-list store fix, 6px starz radius
+
+[33mcommit 194225449e6c21c8ac650bc297ac64c425214424[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Sun Sep 6 06:52:08 2026 +0400
+
+    feat: connect player tiktok bottom sheet + cinema left slide, apple svgs, keep reels before fullscreen
+
+[33mcommit e6bdd51d278b374ff162d11ecd11296f59dda2ed[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Sun Sep 6 02:12:47 2026 +0400
+
+    fix: native noon scroll
+
+[33mcommit 18600f86a241487554eb0dbe8f852a19e342e539[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Sun Sep 6 01:44:48 2026 +0400
+
+    fix: explore-more one row only with coming soon
+
+[33mcommit ebd60922a0fc6603dfd179ffe5872232c04abf89[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Sun Sep 6 01:34:28 2026 +0400
+
+    feat: explore-more noon system - western, ugandan, nigerian, korean, filipino, indian + most popular
+
+[33mcommit 5811e18ac52f4fc5fac18dafe597ca76e97a3fc0[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Sun Sep 6 01:09:14 2026 +0400
+
+    100css final - same drag as for-you
+
+[33mcommit 794847846691bc88876efa378688bdabcb219e91[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Sun Sep 6 00:48:03 2026 +0400
+
+    Update latest movies and app changes
+
+[33mcommit 3e284927a7a5eddb3fbc713e36aebdd01e029732[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Sun Sep 6 00:44:31 2026 +0400
+
+    Update latest movies and app changes
+
+[33mcommit 05bc181541827518d9d1231cefcef1e8ef363235[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Sun Sep 6 00:34:50 2026 +0400
+
+    100css - plain code no drag logic
+
+[33mcommit dda7c11359f9c900122426b7e24a87482ed801b6[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Sun Sep 6 00:23:13 2026 +0400
+
+    fix: native scroll only - latest-movies.css single drag handler
+
+[33mcommit 701d46342d4fb837ee2b71df3f902bd9919285be[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Sat Sep 5 23:57:57 2026 +0400
+
+    fix user-lists-row native scroll
+
+[33mcommit 0b68b9f892ba0c0bdc30f43014b5d3151feb6763[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Sat Sep 5 23:50:31 2026 +0400
+
+    fix css pan-y and rp-scroll flex - full fix
+
+[33mcommit 404b2fda6c52dc89aa4e35ab4f3856a47f0b17ce[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Sat Sep 5 23:27:17 2026 +0400
+
+    smooth mobile drag
+
+[33mcommit 03359df3ff83a363050869bb364c18a674d6a141[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Sat Sep 5 23:15:42 2026 +0400
+
+    fix drag no snap + vertical disarms horizontal
+
+[33mcommit 7d6cfb09f5a6099c112077087501006ecc8bb137[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Sat Sep 5 23:00:28 2026 +0400
+
+    upgraded movies fix
+
+[33mcommit 075bdf8b415b1c48e3c9a25c925296827727a763[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Sat Sep 5 02:52:06 2026 +0400
+
+    fix: vertical lock + red fav + pure drag
+
+[33mcommit 68262dd804ae556b4e5076d4772fff3f128fbadf[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Sat Sep 5 02:35:54 2026 +0400
+
+    fix: keep css, remove snap magnet - pure drag logic
+
+[33mcommit 24368526462f369640954e49b577873ffab9d972[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Sat Sep 5 02:26:30 2026 +0400
+
+    fix: simple finger drag - no snap no magnet
+
+[33mcommit 0a57f1fee308db4c7ccf57d52a3c921f540a8f65[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Sat Sep 5 02:16:00 2026 +0400
+
+    fix: white to red fav svg + pure finger scroll
+
+[33mcommit 0e04d85aa2ecf0dc5709f4690e3aed3ebc9887d7[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Sat Sep 5 01:57:49 2026 +0400
+
+    fix: movies layout kebab + mobile body lock + dynamic sections + recommended
+
+[33mcommit 6dc3286e1c3aebed3a9896bf70b01532df25ad6e[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Fri Sep 4 22:31:12 2026 +0400
+
+    fix(movies): make strips + giant card edge-to-edge, break out of global padding - mobile only
+
+[33mcommit afe0a84fd48c848dcabe346d1658b05d59513f88[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Fri Sep 4 22:14:56 2026 +0400
+
+    fix(movies): mobile 3px trim + toggle 2px gap above bottom nav - pc untouched
+
+[33mcommit c33f6942e8199faf1ca0344807fd7962f4aa5b1b[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Fri Sep 4 05:23:46 2026 +0400
+
+    remove cf adapter from deps - use npx only
+
+[33mcommit 582e976cf193733234d8f8f2f9f02eb8ab2913ca[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Fri Sep 4 05:16:58 2026 +0400
+
+    upgrade next to 15.5.4 secure for CF
+
+[33mcommit bfc63e33572cb4b5273112253ead54f9422542e0[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Fri Sep 4 04:43:33 2026 +0400
+
+    cf adapter
+
+[33mcommit e1c241130c13c5c747f13c92e504258d38ac770f[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Fri Sep 4 04:17:11 2026 +0400
+
+    add missing configs
+
+[33mcommit 4e05ca432481cdabaca0e15c88e8b68367c7c158[m
+Author: Emma Prince <dopetone701@gmail.com>
+Date:   Fri Sep 4 04:13:32 2026 +0400
+
+    clean init - no node_modules
