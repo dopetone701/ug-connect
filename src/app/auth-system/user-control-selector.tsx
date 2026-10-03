@@ -14,6 +14,8 @@ export default function UserControlSelector({ active, onChange }: Props) {
   const startX = useRef(0);
   const dragging = useRef(false);
 
+  const activeLabel = SHEET_REGISTRY[active]?.label || active;
+
   const onTouchStart = (e: React.TouchEvent) => {
     startX.current = e.touches[0].clientX;
     dragging.current = true;
@@ -23,9 +25,9 @@ export default function UserControlSelector({ active, onChange }: Props) {
     const diff = e.changedTouches[0].clientX - startX.current;
     if (Math.abs(diff) > 60) {
       if (diff < 0 && idx < SHEET_ORDER.length - 1) {
-        onChange(SHEET_ORDER[idx + 1]); // swipe left -> next
+        onChange(SHEET_ORDER[idx + 1]);
       } else if (diff > 0 && idx > 0) {
-        onChange(SHEET_ORDER[idx - 1]); // swipe right -> prev
+        onChange(SHEET_ORDER[idx - 1]);
       }
     }
     dragging.current = false;
@@ -33,6 +35,12 @@ export default function UserControlSelector({ active, onChange }: Props) {
 
   return (
     <div className="selector-root" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
+      {/* ADD THIS - this is what shows Library / Favorites */}
+      <div className="selector-header">
+        <h3 className="selector-title">{activeLabel}</h3>
+        <span className="selector-count">{idx + 1} / {SHEET_ORDER.length}</span>
+      </div>
+
       <div className="selector-viewport">
         <div
           ref={trackRef}
@@ -50,10 +58,14 @@ export default function UserControlSelector({ active, onChange }: Props) {
         </div>
       </div>
 
-      {/* dots indicator */}
       <div className="selector-dots">
         {SHEET_ORDER.map((id) => (
-          <span key={id} className={`dot ${active === id? "active" : ""}`} />
+          <button
+            key={id}
+            className={`dot ${active === id? "active" : ""}`}
+            onClick={() => onChange(id)}
+            aria-label={SHEET_REGISTRY[id].label}
+          />
         ))}
       </div>
     </div>
