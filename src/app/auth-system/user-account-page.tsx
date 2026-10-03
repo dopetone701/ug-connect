@@ -100,7 +100,7 @@ export default function UserAccountPage({ onEdit, onSelect }: Props) {
           <span className="cubeLabelOutside">Create</span>
         </div>
         <div className="cubeItem">
-          <button className="cube" onClick={() => onSelect?.("favorites")}><span className="cubeIcon">♡</span></button>
+          <button className="cube" onClick={() => onSelect?.("Library")}><span className="cubeIcon">♡</span></button>
           <span className="cubeLabelOutside">Favorites</span>
         </div>
         <div className="cubeItem">
