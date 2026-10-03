@@ -1,0 +1,516 @@
+/* =========================================================
+   ALERTS SHEET
+   FIXED CARD / NO SCROLL JUMP / SAFE DROPDOWN
+   ========================================================= */
+
+
+/* =========================================================
+   ROOT
+   ========================================================= */
+
+.a-root{
+  width:100%;
+  height:320px;
+  max-height:320px;
+
+  min-width:0;
+  min-height:0;
+
+  padding:0;
+  box-sizing:border-box;
+
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+
+  /*
+   * IMPORTANT:
+   * The dropdown extends outside .a-top.
+   * Do NOT clip it here.
+   */
+  overflow:visible;
+
+  position:relative;
+}
+
+
+/* =========================================================
+   TOP BAR
+   ========================================================= */
+
+.a-top{
+  position:relative;
+
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+
+  padding:10px 12px;
+
+  background:hsl(var(--surface));
+
+  border:1.5px solid hsl(var(--border));
+  border-radius:16px;
+
+  box-sizing:border-box;
+
+  flex-shrink:0;
+}
+
+
+.a-top b{
+  font-size:13px;
+  font-weight:900;
+
+  color:hsl(var(--text));
+
+  display:flex;
+  align-items:center;
+  gap:6px;
+}
+
+
+.dot{
+  width:6px;
+  height:6px;
+
+  border-radius:50%;
+
+  background:#1ED760;
+
+  display:inline-block;
+}
+
+
+/* =========================================================
+   DOTS WRAPPER
+   ========================================================= */
+
+.a-wrap{
+  position:relative;
+
+  display:flex;
+  align-items:center;
+
+  z-index:40;
+}
+
+
+/* =========================================================
+   THREE DOT BUTTON
+   ========================================================= */
+
+.a-dots{
+  width:30px;
+  height:30px;
+
+  padding:0;
+
+  border-radius:50%;
+
+  background:hsl(var(--surface-hover));
+
+  border:1px solid hsl(var(--border));
+
+  color:hsl(var(--text));
+
+  font-weight:900;
+  font-size:16px;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  cursor:pointer;
+
+  -webkit-tap-highlight-color:transparent;
+
+  touch-action:manipulation;
+
+  position:relative;
+  z-index:41;
+}
+
+
+/* =========================================================
+   BACKDROP
+   ========================================================= */
+
+.a-overlay{
+  position:fixed;
+
+  inset:0;
+
+  z-index:20;
+
+  background:transparent;
+
+  /*
+   * DO NOT use touch-action:none here.
+   * It can interfere with the scroll container underneath.
+   */
+  touch-action:auto;
+
+  -webkit-tap-highlight-color:transparent;
+}
+
+
+/* =========================================================
+   DROPDOWN MENU
+   ========================================================= */
+
+.a-menu{
+  position:absolute;
+
+  top:36px;
+  right:0;
+
+  width:176px;
+
+  background:hsl(var(--surface));
+
+  border:1.5px solid hsl(var(--border));
+
+  border-radius:18px;
+
+  padding:8px;
+
+  z-index:50;
+
+  box-shadow:
+    0 16px 40px rgba(0,0,0,.4);
+
+  display:flex;
+  flex-direction:column;
+  gap:2px;
+
+  box-sizing:border-box;
+
+  /*
+   * Menu itself handles interaction.
+   */
+  touch-action:manipulation;
+
+  /*
+   * Prevent the browser from interpreting
+   * menu movement as page/card scrolling.
+   */
+  overscroll-behavior:contain;
+}
+
+
+/* =========================================================
+   MENU TITLE
+   ========================================================= */
+
+.a-head{
+  font-size:10px;
+  font-weight:900;
+
+  color:hsl(var(--text-muted));
+
+  padding:4px 6px 6px;
+
+  letter-spacing:.5px;
+}
+
+
+/* =========================================================
+   MENU ROW
+   ========================================================= */
+
+.a-row{
+  display:flex;
+
+  align-items:center;
+  justify-content:space-between;
+
+  padding:8px 6px;
+
+  border-radius:12px;
+
+  cursor:pointer;
+
+  user-select:none;
+
+  -webkit-user-select:none;
+
+  -webkit-tap-highlight-color:transparent;
+
+  touch-action:manipulation;
+}
+
+
+.a-row:hover{
+  background:hsl(var(--surface-hover));
+}
+
+
+.a-row div:first-child{
+  display:flex;
+
+  flex-direction:column;
+
+  line-height:1.1;
+
+  min-width:0;
+}
+
+
+.a-row b{
+  font-size:12px;
+  font-weight:800;
+
+  color:hsl(var(--text));
+}
+
+
+.a-row small{
+  font-size:9.5px;
+
+  color:hsl(var(--text-muted));
+
+  margin-top:2px;
+}
+
+
+/* =========================================================
+   TOGGLE
+   ========================================================= */
+
+.a-pill{
+  width:34px;
+  height:20px;
+
+  border-radius:20px;
+
+  background:hsl(var(--surface-hover));
+
+  border:1px solid hsl(var(--border));
+
+  position:relative;
+
+  transition:
+    background .2s ease,
+    border-color .2s ease;
+
+  flex-shrink:0;
+}
+
+
+.a-pill i{
+  position:absolute;
+
+  top:1px;
+  left:1px;
+
+  width:16px;
+  height:16px;
+
+  border-radius:50%;
+
+  background:hsl(var(--text-muted));
+
+  transition:
+    left .22s ease,
+    background .22s ease;
+}
+
+
+.a-pill.on{
+  background:hsl(var(--primary));
+
+  border-color:hsl(var(--primary));
+}
+
+
+.a-pill.on i{
+  left:15px;
+
+  background:hsl(var(--primary-text));
+}
+
+
+/* =========================================================
+   EMPTY / SIGN-IN BODY
+   ========================================================= */
+
+.a-body{
+  width:100%;
+
+  background:hsl(var(--surface));
+
+  border:1px solid hsl(var(--border));
+
+  border-radius:20px;
+
+  padding:22px 14px;
+
+  text-align:center;
+
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+
+  gap:8px;
+
+  box-sizing:border-box;
+
+  flex-shrink:0;
+}
+
+
+.a-bell{
+  font-size:28px;
+}
+
+
+.a-bell.faded{
+  opacity:.35;
+}
+
+
+.a-body h2{
+  font-size:14px;
+  font-weight:900;
+
+  color:hsl(var(--text));
+
+  margin:0;
+}
+
+
+.a-body p{
+  font-size:11px;
+
+  line-height:1.35;
+
+  color:hsl(var(--text-muted));
+
+  margin:0;
+
+  max-width:320px;
+}
+
+
+/* =========================================================
+   SIGN IN BUTTON
+   ========================================================= */
+
+.a-cta{
+  margin-top:6px;
+
+  background:hsl(var(--text));
+
+  color:hsl(var(--bg));
+
+  border:none;
+
+  border-radius:20px;
+
+  padding:9px 16px;
+
+  font-size:11.5px;
+  font-weight:900;
+
+  cursor:pointer;
+
+  touch-action:manipulation;
+
+  -webkit-tap-highlight-color:transparent;
+}
+
+
+/* =========================================================
+   BOTTOM ACTIONS
+   ========================================================= */
+
+.a-actions{
+  display:flex;
+
+  gap:8px;
+
+  overflow-x:auto;
+
+  padding-bottom:2px;
+
+  flex-shrink:0;
+
+  scrollbar-width:none;
+
+  -webkit-overflow-scrolling:touch;
+
+  overscroll-behavior-x:contain;
+}
+
+
+.a-actions::-webkit-scrollbar{
+  display:none;
+  width:0;
+  height:0;
+}
+
+
+/* =========================================================
+   MINI BUTTONS
+   ========================================================= */
+
+.a-mini{
+  white-space:nowrap;
+
+  background:hsl(var(--text));
+
+  color:hsl(var(--bg));
+
+  border:none;
+
+  border-radius:20px;
+
+  padding:7px 12px;
+
+  font-size:11px;
+  font-weight:800;
+
+  cursor:pointer;
+
+  flex-shrink:0;
+
+  touch-action:manipulation;
+
+  -webkit-tap-highlight-color:transparent;
+}
+
+
+.a-mini.ghost{
+  background:hsl(var(--surface));
+
+  border:1px solid hsl(var(--border));
+
+  color:hsl(var(--text-muted));
+}
+
+
+/* =========================================================
+   MOBILE SAFETY
+   ========================================================= */
+
+@media (max-width:600px){
+
+  .a-root{
+    /*
+     * Never create a vertical scrolling context here.
+     */
+    overflow:visible;
+
+    overscroll-behavior-y:contain;
+  }
+
+  .a-menu{
+    /*
+     * Keep dropdown independent from the card's
+     * horizontal/vertical scrolling.
+     */
+    overscroll-behavior:contain;
+  }
+
+}

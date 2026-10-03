@@ -93,10 +93,14 @@ export default function UserAccountPage({ onEdit, onSelect }: Props) {
       </div>
 
       <div className="cubesRow">
+        {/* CHANGED: Create -> Subscriptions */}
         <div className="cubeItem">
-          <button className="cube" onClick={() => onSelect?.("create")}><span className="cubeIcon">+</span></button>
-          <span className="cubeLabelOutside">Create</span>
+          <button className="cube" onClick={() => onSelect?.("subscriptions" as SheetId)}>
+            <span className="cubeIcon">✦</span>
+          </button>
+          <span className="cubeLabelOutside">Subs</span>
         </div>
+
         <div className="cubeItem">
           <button className="cube" onClick={() => onSelect?.("favorites")}><span className="cubeIcon">♡</span></button>
           <span className="cubeLabelOutside">Library</span>
