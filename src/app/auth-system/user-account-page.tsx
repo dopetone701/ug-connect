@@ -76,7 +76,7 @@ export default function UserAccountPage({ onEdit, onSelect }: Props) {
 
   return (
     <div className="page">
-      <button className="editBtn" onClick={onEdit}>
+<button className="editBtn" onClick={() => { onEdit?.(); onSelect?.("edit"); }}>
         Edit
       </button>
 
