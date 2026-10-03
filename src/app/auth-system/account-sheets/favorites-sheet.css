@@ -1,13 +1,13 @@
 .vault-root {
   width: 100%;
   height: 100%;
-  max-height: 320px;
+  max-height: 520px; /* was 320px - taller so it can scroll vertically */
   overflow-y: auto;
   overflow-x: hidden;
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  padding: 4px 2px 12px 2px;
+  gap: 16px;
+  padding: 4px 2px 20px 2px;
   box-sizing: border-box;
   scrollbar-width: none;
   -ms-overflow-style: none;
@@ -60,7 +60,6 @@
   -webkit-overflow-scrolling: touch;
 }
 .vault-track::-webkit-scrollbar { display:none; }
-
 .vault-track .latest-card {
   flex-shrink: 0;
   scroll-snap-align: start;
@@ -73,11 +72,15 @@
 }
 
 .vault-h {
-  font-size: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11px;
   font-weight: 800;
   letter-spacing: 0.4px;
   color: hsl(var(--text-muted));
   text-transform: uppercase;
+  padding: 0 4px;
 }
 
 .vault-row {
@@ -87,6 +90,7 @@
   overflow-y: hidden;
   scrollbar-width: none;
   -webkit-overflow-scrolling: touch;
+  padding-bottom: 4px;
 }
 .vault-row::-webkit-scrollbar { display:none; }
 
@@ -101,4 +105,23 @@
   color: hsl(var(--text-muted));
   font-size: 13px;
   background: hsl(var(--surface-hover));
+}
+.vault-empty.small {
+  width: 100%;
+  height: 90px;
+}
+
+/* Makes your MovieRow inside Library look right */
+.vault-root .latest-root {
+  margin: 0;
+  padding: 0;
+}
+.vault-root .latest-head {
+  padding: 0 4px;
+  margin-bottom: 2px;
+}
+.vault-root .latest-title {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: .4px;
 }
