@@ -1,3 +1,8 @@
+/* =========================================================
+   USER ACCOUNT PAGE
+   FULL-WIDTH / BORDERLESS / THEME AWARE
+   ========================================================= */
+
 .page {
   width: 100%;
   padding: 24px 16px 32px 16px;
@@ -10,21 +15,35 @@
   box-sizing: border-box;
 }
 
-/* EDIT BUTTON TOP RIGHT */
+
+/* =========================================================
+   EDIT BUTTON
+   ========================================================= */
+
 .editBtn {
   position: absolute;
   top: 14px;
   right: 14px;
+
   background: hsl(var(--surface));
   border: 1px solid hsl(var(--border));
   color: hsl(var(--text-muted));
+
   font-size: 12px;
   font-weight: 600;
+
   padding: 6px 14px;
   border-radius: 20px;
+
   cursor: pointer;
   z-index: 10;
-  transition: all 0.2s;
+
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease,
+    filter 0.2s ease,
+    transform 0.2s ease;
 }
 
 .editBtn:hover {
@@ -34,25 +53,39 @@
   filter: brightness(1.1);
 }
 
+
+/* =========================================================
+   PROFILE HEADER
+   ========================================================= */
+
 .header {
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
+
   gap: 12px;
   width: 100%;
   margin-top: 12px;
 }
 
-/* FLAME CIRCLE - keeps flame but glow uses primary */
+
+/* =========================================================
+   AVATAR
+   ========================================================= */
+
 .avatarWrap {
   width: 88px;
   height: 88px;
+
   border-radius: 50%;
   padding: 3px;
+
   display: flex;
   align-items: center;
   justify-content: center;
+
+  box-sizing: border-box;
 }
 
 .avatarWrap.flame {
@@ -64,97 +97,257 @@
     hsl(var(--surface-hover)),
     hsl(var(--primary))
   );
-  box-shadow: 0 0 18px hsla(var(--primary), 0.5);
+
+  box-shadow:
+    0 0 18px
+    hsla(var(--primary), 0.5);
 }
 
 .avatarInner {
   width: 100%;
   height: 100%;
+
   border-radius: 50%;
+
   background: hsl(var(--bg));
+
   display: flex;
   align-items: center;
   justify-content: center;
+
   overflow: hidden;
+
   border: 3px solid hsl(var(--bg));
+
+  box-sizing: border-box;
 }
 
 .avatar {
   width: 100%;
   height: 100%;
+
   object-fit: cover;
+
   border-radius: 50%;
+
+  display: block;
 }
 
 .fallback {
   font-size: 34px;
   font-weight: 800;
+
   color: hsl(var(--text));
+
   text-transform: uppercase;
+
   line-height: 1;
 }
+
+
+/* =========================================================
+   NAME
+   ========================================================= */
 
 .name {
   font-size: 18px;
   font-weight: 700;
+
   margin: 0;
+
   color: hsl(var(--text));
+
+  line-height: 1.2;
 }
+
+
+/* =========================================================
+   EMAIL
+   ========================================================= */
 
 .email {
   font-size: 13px;
+  font-weight: 400;
+
   margin: 0;
+
   color: hsl(var(--text-muted));
+
+  line-height: 1.3;
 }
 
-/* CUBES ROW */
+
+/* =========================================================
+   ACTION CUBES ROW
+   ========================================================= */
+
 .cubesRow {
   display: flex;
   flex-direction: row;
+
   gap: 12px;
+
   width: 100%;
+
   justify-content: space-between;
+
+  box-sizing: border-box;
 }
+
+
+/* =========================================================
+   INDIVIDUAL CUBE ITEM
+   ========================================================= */
 
 .cubeItem {
   flex: 1;
+
   display: flex;
   flex-direction: column;
+
   align-items: center;
+
   gap: 8px;
+
   min-width: 0;
 }
 
+
+/* =========================================================
+   CUBE BUTTON
+   ========================================================= */
+
 .cube {
   width: 100%;
+
   aspect-ratio: 1 / 1;
+
   background: hsl(var(--surface));
+
   border: 1px solid hsl(var(--border));
+
   border-radius: 16px;
+
   display: flex;
   align-items: center;
   justify-content: center;
+
   cursor: pointer;
-  transition: all 0.2s;
-  color: hsl(var(--text));
+
+  color: hsl(var(--text-muted));
+
+  padding: 0;
+
+  box-sizing: border-box;
+
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.2s ease,
+    filter 0.2s ease;
 }
 
 .cube:hover {
   background: hsl(var(--surface-hover));
+
   border-color: hsl(var(--border));
+
   transform: translateY(-2px);
+
   filter: brightness(1.05);
 }
 
+.cube:active {
+  transform: translateY(0);
+}
+
+
+/* =========================================================
+   ALL SVG ICONS
+   UNIFIED SIZE + THEME COLOR
+   ========================================================= */
+
+.cubeIconSvg {
+  width: 28px;
+  height: 28px;
+
+  display: block;
+
+  flex: 0 0 28px;
+
+  color: hsl(var(--text-muted));
+
+  fill: none;
+
+  flex-shrink: 0;
+
+  pointer-events: none;
+}
+
+
+/* =========================================================
+   TEXT / GLYPH ICON FALLBACK
+   ========================================================= */
+
 .cubeIcon {
+  width: 28px;
+  height: 28px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
   font-size: 22px;
   line-height: 1;
+
+  color: hsl(var(--text-muted));
+
+  flex-shrink: 0;
+
+  pointer-events: none;
 }
+
+
+/* =========================================================
+   LABELS
+   ========================================================= */
 
 .cubeLabelOutside {
   font-size: 10px;
   font-weight: 500;
+
   color: hsl(var(--text-muted));
+
   text-align: center;
+
   white-space: nowrap;
+
+  line-height: 1.2;
+}
+
+
+/* =========================================================
+   ACCESSIBILITY
+   ========================================================= */
+
+.cube:focus-visible,
+.editBtn:focus-visible {
+  outline: 2px solid hsl(var(--primary));
+  outline-offset: 3px;
+}
+
+
+/* =========================================================
+   REDUCED MOTION
+   ========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+  .cube,
+  .editBtn {
+    transition: none;
+  }
+
+  .cube:hover {
+    transform: none;
+  }
 }
