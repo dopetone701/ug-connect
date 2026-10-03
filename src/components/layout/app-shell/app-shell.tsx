@@ -19,6 +19,9 @@ import CastSwipeClose from "../top-bar/cast-swipe-close";
 import { usePcFadersDrawer } from "@/stores/use-pc-faders-drawer";
 import PcFaders from "../top-bar/faders-drawer/pc-faders";
 
+// GLOBAL AUTH GATE
+import SigninModals from "@/app/auth-system/signin-modals";
+
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { open, minimized } = useWatchDrawer() as any;
@@ -31,6 +34,18 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
   const isServicesPage = pathname === "/" || pathname === "/dashboard";
   const isReelsPage = pathname?.startsWith("/reels") || pathname?.startsWith("/reel");
+
+  // --- GLOBAL AUTH ---
+  const [authOpen, setAuthOpen] = useState(false);
+  const [authMode, setAuthMode] = useState<"signin" | "signup">("signin");
+  useEffect(() => {
+    const h = () => {
+      setAuthMode("signin");
+      setAuthOpen(true);
+    };
+    window.addEventListener("ug-open-signin" as any, h);
+    return () => window.removeEventListener("ug-open-signin" as any, h);
+  }, []);
 
   useEffect(() => {
     initTheme();
@@ -89,6 +104,19 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           <Cast />
         </CastSwipeClose>
       </div>
+
+      {/* GLOBAL SIGNIN MODAL - listens to ug-open-signin from anywhere */}
+      <SigninModals
+        isOpen={authOpen}
+        mode={authMode}
+        onClose={() => setAuthOpen(false)}
+        onSwitchMode={setAuthMode}
+        onSuccess={() => {
+          setAuthOpen(false);
+          window.dispatchEvent(new CustomEvent("ug-auth-changed"));
+        }}
+      />
     </>
   );
 }
+

@@ -72,9 +72,22 @@ export default function UserAccountPage({ onEdit, onSelect }: Props) {
   const avatarSrc = user.avatarUrl || user.avatar || "";
   const showImg = avatarSrc && !imgErr;
 
+  const handleEdit = () => {
+    try {
+      const token = localStorage.getItem("ug_token");
+      const isGuest = user?.isGuest || !token || localStorage.getItem("ug_guest") === "1";
+      if (isGuest) {
+        window.dispatchEvent(new CustomEvent("ug-open-signin"));
+        return;
+      }
+    } catch {}
+    onEdit?.();
+    onSelect?.("edit");
+  };
+
   return (
     <div className="page">
-      <button className="editBtn" onClick={() => { onEdit?.(); onSelect?.("edit"); }}>
+      <button className="editBtn" onClick={handleEdit}>
         Edit
       </button>
 
@@ -121,3 +134,4 @@ export default function UserAccountPage({ onEdit, onSelect }: Props) {
     </div>
   );
 }
+

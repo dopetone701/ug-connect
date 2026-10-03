@@ -1,5 +1,5 @@
 "use client";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import "./signin-modals.css";
 import { PasswordInput } from "./input-eye";
 
@@ -24,7 +24,23 @@ export default function SigninModals({ isOpen, mode, onClose, onSuccess, onSwitc
   const [error, setError] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
 
-  if (!isOpen) return null;
+  const [forcedOpen, setForcedOpen] = useState(false);
+  useEffect(() => {
+    const h = () => {
+      setForcedOpen(true);
+      onSwitchMode("signin");
+    };
+    window.addEventListener("ug-open-signin" as any, h);
+    return () => window.removeEventListener("ug-open-signin" as any, h);
+  }, [onSwitchMode]);
+
+  const show = isOpen || forcedOpen;
+  const closeAll = () => {
+    setForcedOpen(false);
+    onClose();
+  };
+
+  if (!show) return null;
 
   const handleAvatar = (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
@@ -49,8 +65,8 @@ export default function SigninModals({ isOpen, mode, onClose, onSuccess, onSwitc
     setLoading(true);
     setError("");
     try {
-      const endpoint = mode === "signup"? "/api/auth/signup" : "/api/auth/signin";
-      const body = mode === "signup"? { email, password, name } : { email, password };
+      const endpoint = mode === "signup" ? "/api/auth/signup" : "/api/auth/signin";
+      const body = mode === "signup" ? { email, password, name } : { email, password };
 
       const res = await fetch(`${WORKER_URL}${endpoint}`, {
         method: "POST",
@@ -62,14 +78,14 @@ export default function SigninModals({ isOpen, mode, onClose, onSuccess, onSwitc
 
       localStorage.setItem("ug_token", data.token);
       localStorage.setItem("ug_user", JSON.stringify(data.user));
-window.dispatchEvent(new CustomEvent("ug-auth-changed"));
+      window.dispatchEvent(new CustomEvent("ug-auth-changed"));
 
       if (avatarFile) {
-        await uploadAvatar(data.token).catch(()=>{});
+        await uploadAvatar(data.token).catch(() => {});
       }
 
       onSuccess?.(data.user);
-      onClose();
+      closeAll();
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -78,12 +94,12 @@ window.dispatchEvent(new CustomEvent("ug-auth-changed"));
   };
 
   const handleGuest = async () => {
-    const guestUser = { id: "guest_"+Date.now(), name: "Guest", email: "guest@ug.local", isGuest: true };
+    const guestUser = { id: "guest_" + Date.now(), name: "Guest", email: "guest@ug.local", isGuest: true };
     localStorage.setItem("ug_user", JSON.stringify(guestUser));
     localStorage.setItem("ug_guest", "1");
-window.dispatchEvent(new CustomEvent("ug-auth-changed"));
+    window.dispatchEvent(new CustomEvent("ug-auth-changed"));
     onSuccess?.(guestUser);
-    onClose();
+    closeAll();
   };
 
   const handleGoogle = async () => {
@@ -95,7 +111,7 @@ window.dispatchEvent(new CustomEvent("ug-auth-changed"));
   };
 
   return (
-    <div className="ug-modal-overlay" onClick={onClose} style={{ animation: "ugFadeIn 0.25s ease-out" }}>
+    <div className="ug-modal-overlay" onClick={closeAll} style={{ animation: "ugFadeIn 0.25s ease-out" }}>
       <style>{`
         @keyframes ugFadeIn {
           from { opacity: 0; }
@@ -106,13 +122,13 @@ window.dispatchEvent(new CustomEvent("ug-auth-changed"));
           to { opacity: 1; transform: translateY(0); }
         }
       `}</style>
-      <div className="ug-modal-wrap" onClick={onClose} style={{ animation: "ugSlideUp 0.4s cubic-bezier(0.16,1,0.3,1)" }}>
+      <div className="ug-modal-wrap" onClick={closeAll} style={{ animation: "ugSlideUp 0.4s cubic-bezier(0.16,1,0.3,1)" }}>
         <div className="ug-modal" onClick={(e) => e.stopPropagation()}>
 
-          <button className="ug-modal-close" onClick={onClose}>✕</button>
+          <button className="ug-modal-close" onClick={closeAll}>✕</button>
 
           <h2 className="ug-modal-title">
-            {mode === "signin"? "Sign In to continue" : "Create account"}
+            {mode === "signin" ? "Sign In to continue" : "Create account"}
           </h2>
           {mode === "signup" ? (
             <>
@@ -120,27 +136,22 @@ window.dispatchEvent(new CustomEvent("ug-auth-changed"));
               <p className="ug-modal-sub sales"></p>
             </>
           ) : (
-  <p className="ug-modal-sub"></p>
-)}
-
+            <p className="ug-modal-sub"></p>
+          )}
 
           <form onSubmit={handleSubmit} className="ug-modal-form">
             {mode === "signup" && (
               <>
                 <div className="ug-avatar-row">
-                  <div className="ug-avatar-preview" onClick={()=>fileRef.current?.click()}>
-                    {avatarPreview? (
-                      <img src={avatarPreview} alt="avatar" />
-                    ) : (
-                      <span>+</span>
-                    )}
+                  <div className="ug-avatar-preview" onClick={() => fileRef.current?.click()}>
+                    {avatarPreview ? <img src={avatarPreview} alt="avatar" /> : <span>+</span>}
                   </div>
                   <div className="ug-avatar-meta">
-                    <p onClick={()=>fileRef.current?.click()}>Add avatar (optional)</p>
+                    <p onClick={() => fileRef.current?.click()}>Add avatar (optional)</p>
                     <small>Tap to upload, or skip</small>
                   </div>
                   <input ref={fileRef} type="file" accept="image/*" hidden onChange={handleAvatar} />
-                  {avatarFile && <button type="button" className="ug-avatar-clear" onClick={()=>{setAvatarFile(null); setAvatarPreview("");}}>Remove</button>}
+                  {avatarFile && <button type="button" className="ug-avatar-clear" onClick={() => { setAvatarFile(null); setAvatarPreview(""); }}>Remove</button>}
                 </div>
 
                 <input
@@ -162,11 +173,11 @@ window.dispatchEvent(new CustomEvent("ug-auth-changed"));
               className="ug-input"
               required
             />
-                       <PasswordInput value={password} onChange={e=>setPassword(e.target.value)} />
+            <PasswordInput value={password} onChange={e => setPassword(e.target.value)} />
 
             {mode === "signin" && (
               <div style={{ textAlign: "right", marginTop: "8px" }}>
-                <span 
+                <span
                   onClick={() => setError("Password reset - check your email link coming soon")}
                   style={{ fontSize: "13px", textDecoration: "underline", cursor: "pointer" }}
                 >
@@ -178,7 +189,7 @@ window.dispatchEvent(new CustomEvent("ug-auth-changed"));
             {error && <div className="ug-error">{error}</div>}
 
             <button type="submit" disabled={loading} className="ug-btn-primary">
-              {loading? "Please wait..." : mode === "signin"? "Sign In" : "Sign Up & Continue"}
+              {loading ? "Please wait..." : mode === "signin" ? "Sign In" : "Sign Up & Continue"}
             </button>
 
             <p style={{ fontSize: "11px", textAlign: "center", marginTop: "12px", lineHeight: "1.4", opacity: 0.75 }}>
@@ -187,7 +198,6 @@ window.dispatchEvent(new CustomEvent("ug-auth-changed"));
               <a href="/privacy" style={{ textDecoration: "underline" }}>Privacy Policy</a> and{" "}
               <a href="/cookies" style={{ textDecoration: "underline" }}>Cookie Policy</a>
             </p>
-
 
             <div className="ug-divider"><span>or</span></div>
 
@@ -221,7 +231,7 @@ window.dispatchEvent(new CustomEvent("ug-auth-changed"));
           </form>
 
           <div className="ug-modal-switch">
-            {mode === "signin"? (
+            {mode === "signin" ? (
               <p>Don't have account? <span onClick={() => onSwitchMode("signup")}>Sign up</span></p>
             ) : (
               <p>Already have account? <span onClick={() => onSwitchMode("signin")}>Sign in</span></p>
@@ -232,3 +242,4 @@ window.dispatchEvent(new CustomEvent("ug-auth-changed"));
     </div>
   );
 }
+

@@ -161,7 +161,7 @@ export default function Page(){
     if (!user) {
       e.preventDefault();
       setPendingHref(href);
-      setModalMode("signup");
+      setModalMode("signin");
       setModalOpen(true);
       return;
     }
