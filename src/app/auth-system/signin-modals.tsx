@@ -4,9 +4,20 @@ import "./signin-modals.css";
 import { PasswordInput } from "./input-eye";
 import { saveGuestSession } from "./guest-user-account";
 
-const WORKER_URL = (process.env.NEXT_PUBLIC_API_URL || "https://user-account-server-api.connectu89.workers.dev").trim();
-const GOOGLE_WORKER_URL = (process.env.NEXT_PUBLIC_GOOGLE_WORKER_URL || "https://google-signin-api.connectu89.workers.dev").trim();
-const GOOGLE_CLIENT_ID = (process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "246957161701-9grkrunibu4iidvqomha8vpdtmnhe994s.apps.googleusercontent.com").trim();
+// FIX: strips "value: https://..." if you paste wrong in Cloudflare
+const cleanUrl = (v: string | undefined, fallback: string) => {
+  let s = (v || fallback).trim();
+  s = s.replace(/^value:\s*/i, '');
+  s = s.replace(/^Value encrypted/i, '');
+  s = s.replace(/^["']|["']$/g, '').trim();
+  // Also fix if someone typed "value: https://"
+  if (s.startsWith('value:')) s = s.slice(6).trim();
+  return s;
+};
+
+const WORKER_URL = cleanUrl(process.env.NEXT_PUBLIC_API_URL, "https://user-account-server-api.connectu89.workers.dev");
+const GOOGLE_WORKER_URL = cleanUrl(process.env.NEXT_PUBLIC_GOOGLE_WORKER_URL, "https://google-signin-api.connectu89.workers.dev");
+const GOOGLE_CLIENT_ID = cleanUrl(process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID, "246957161701-9grkrunibu4iidvqomha8vpdtmnhe994s.apps.googleusercontent.com");
 
 declare global { interface Window { google?: any } }
 
@@ -100,6 +111,7 @@ export default function SigninModals({ isOpen, mode, onClose, onSuccess, onSwitc
     try {
       const endpoint = mode === "signup" ? "/api/auth/signup" : "/api/auth/signin";
       const body = mode === "signup" ? { email, password, name } : { email, password };
+      console.log("WORKER_URL clean:", WORKER_URL);
       const res = await fetch(`${WORKER_URL}${endpoint}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -128,13 +140,14 @@ export default function SigninModals({ isOpen, mode, onClose, onSuccess, onSwitc
 
   const handleGoogle = async () => {
     setError("");
-    if (!GOOGLE_CLIENT_ID) return setError("Missing NEXT_PUBLIC_GOOGLE_CLIENT_ID - add in Cloudflare Pages > Settings > Variables");
+    if (!GOOGLE_CLIENT_ID) return setError("Missing NEXT_PUBLIC_GOOGLE_CLIENT_ID");
     if (!window.google) return setError("Google SDK loading, wait 1s and retry");
     setGLoading(true);
     window.google.accounts.id.initialize({
       client_id: GOOGLE_CLIENT_ID,
       callback: async (res: any) => {
         try {
+          console.log("GOOGLE_WORKER_URL clean:", GOOGLE_WORKER_URL);
           const r = await fetch(`${GOOGLE_WORKER_URL}/api/auth/google`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -170,7 +183,7 @@ export default function SigninModals({ isOpen, mode, onClose, onSuccess, onSwitc
   };
 
   const handleApple = async () => {
-    setError("Apple sign-in coming - add Apple Service ID");
+    setError("Apple sign-in coming");
   };
 
   return (
@@ -182,12 +195,8 @@ export default function SigninModals({ isOpen, mode, onClose, onSuccess, onSwitc
       <div className="ug-modal-wrap" onClick={closeAll} style={{ animation: "ugSlideUp 0.4s cubic-bezier(0.16,1,0.3,1)" }}>
         <div className="ug-modal" onClick={(e) => e.stopPropagation()}>
           <div id="google-hidden-btn" style={{ position: "absolute", left: -9999, top: 0, opacity: 0, pointerEvents: "none" }}></div>
-
           <button className="ug-modal-close" onClick={closeAll}>✕</button>
-
-          <h2 className="ug-modal-title">
-            {mode === "signin" ? "Sign In to continue" : "Create account"}
-          </h2>
+          <h2 className="ug-modal-title">{mode === "signin" ? "Sign In to continue" : "Create account"}</h2>
           {mode === "signup" ? (
             <>
               <div className="ug-bonus-badge"> INSTANT WELCOME BONUS</div>
@@ -196,7 +205,6 @@ export default function SigninModals({ isOpen, mode, onClose, onSuccess, onSwitc
           ) : (
             <p className="ug-modal-sub"></p>
           )}
-
           <form onSubmit={handleSubmit} className="ug-modal-form">
             {mode === "signup" && (
               <>
@@ -214,46 +222,35 @@ export default function SigninModals({ isOpen, mode, onClose, onSuccess, onSwitc
                 <input type="text" placeholder="Your name" value={name} onChange={(e) => setName(e.target.value)} className="ug-input" required />
               </>
             )}
-
             <input type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} className="ug-input" required />
             <PasswordInput value={password} onChange={e => setPassword(e.target.value)} />
-
             {mode === "signin" && (
               <div style={{ textAlign: "right", marginTop: "8px" }}>
-                <span onClick={() => setError("Password reset - check your email link coming soon")} style={{ fontSize: "13px", textDecoration: "underline", cursor: "pointer" }}>
+                <span onClick={() => setError("Password reset - coming soon")} style={{ fontSize: "13px", textDecoration: "underline", cursor: "pointer" }}>
                   Forgot password?
                 </span>
               </div>
             )}
-
             {error && <div className="ug-error">{error}</div>}
-
             <button type="submit" disabled={loading} className="ug-btn-primary">
               {loading ? "Please wait..." : mode === "signin" ? "Sign In" : "Sign Up & Continue"}
             </button>
-
             <p style={{ fontSize: "11px", textAlign: "center", marginTop: "12px", lineHeight: "1.4", opacity: 0.75 }}>
               By continuing you agree to UG-Connect's <a href="/terms" style={{ textDecoration: "underline" }}>Terms</a>, <a href="/privacy" style={{ textDecoration: "underline" }}>Privacy Policy</a> and <a href="/cookies" style={{ textDecoration: "underline" }}>Cookie Policy</a>
             </p>
-
             <div className="ug-divider"><span>or</span></div>
-
             <div className="ug-social-grid">
               <button type="button" className="ug-btn-social google" onClick={handleGoogle} disabled={gLoading}>
                 <svg viewBox="0 0 24 24" width="18" height="18"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
                 {gLoading ? "..." : "Google"}
               </button>
               <button type="button" className="ug-btn-social apple" onClick={handleApple}>
-                <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                  <path d="M17.05 12.66c-.02-2.24 1.83-3.32 1.91-3.37a4.1 4.1 0 0 0-3.23-1.75c-1.36-.14-2.68.81-3.37.81-.7 0-1.77-.8-2.91-.78a4.29 4.29 0 0 0-3.61 2.2c-1.55 2.69-.39 6.65 1.11 8.83.75 1.07 1.61 2.27 2.76 2.23 1.11-.05 1.53-.72 2.88-.72s1.74.72 2.91.69c1.2-.02 1.94-1.08 2.67-2.16a8.87 8.87 0 0 0 1.22-2.51 3.89 3.89 0 0 1-2.34-3.47ZM14.84 6.1a3.93 3.93 0 0 0.9-2.85 4 4 0 0 0-2.58 1.34 3.75 3.75 0 0 0-.92 2.73 3.3 3.3 0 0 0 2.6-1.22Z"/>
-                </svg>
+                <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M17.05 12.66c-.02-2.24 1.83-3.32 1.91-3.37a4.1 4.1 0 0 0-3.23-1.75c-1.36-.14-2.68.81-3.37.81-.7 0-1.77-.8-2.91-.78a4.29 4.29 0 0 0-3.61 2.2c-1.55 2.69-.39 6.65 1.11 8.83.75 1.07 1.61 2.27 2.76 2.23 1.11-.05 1.53-.72 2.88-.72s1.74.72 2.91.69c1.2-.02 1.94-1.08 2.67-2.16a8.87 8.87 0 0 0 1.22-2.51 3.89 3.89 0 0 1-2.34-3.47ZM14.84 6.1a3.93 3.93 0 0 0.9-2.85 4 4 0 0 0-2.58 1.34 3.75 3.75 0 0 0-.92 2.73 3.3 3.3 0 0 0 2.6-1.22Z"/></svg>
                 Apple
               </button>
             </div>
-
             <button type="button" className="ug-btn-guest" onClick={handleGuest}>Continue as Guest →</button>
           </form>
-
           <div className="ug-modal-switch">
             {mode === "signin" ? (
               <p>Don't have account? <span onClick={() => onSwitchMode("signup")}>Sign up</span></p>
