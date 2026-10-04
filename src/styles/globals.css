@@ -166,7 +166,7 @@ html, body { overflow-x: hidden; }
 @media (max-width: 1024px) {
   /* When mobile video exists, kill PC chrome */
   body:has(.mob-full-root) {
-    background: #000 !important;
+    background: #e60000 !important;
     overflow: hidden !important;
   }
 
@@ -176,7 +176,7 @@ html, body { overflow-x: hidden; }
   }
 
   body:has(.mob-full-root) .content-panel {
-    background: #000 !important;
+    background: #ff0000 !important;
     border: none !important;
     border-radius: 0 !important;
     padding: 0 !important;
@@ -188,7 +188,7 @@ html, body { overflow-x: hidden; }
   body:has(.mob-full-root) .giant-panel {
     padding: 0 !important;
     gap: 0 !important;
-    background: #000 !important;
+    background: #f30202 !important;
   }
 }
 
@@ -246,3 +246,4 @@ html, body { overflow-x: hidden; }
     width: 0 !important;
   }
 }
+
