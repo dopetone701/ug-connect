@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef } from "react";
 import "./edit-sheet.css";
 
-const WORKER_URL = (process.env.NEXT_PUBLIC_API_URL || "https://user-account-server-api.connectu89.workers.dev").trim();
+const WORKER_URL = (process.env.NEXT_PUBLIC_API_URL || "https://user-account-server-api.connectu89.workers.dev").trim().replace(/\/$/, "");
 
 export default function EditSheet() {
   const [name, setName] = useState("");
@@ -58,28 +58,35 @@ export default function EditSheet() {
       // 1. Upload to R2 first if new file - worker will DELETE old ones and replace
       if (file) {
         const fd = new FormData();
-        fd.append("file", file);
-        // IMPORTANT: Do NOT set Content-Type header - browser adds boundary automatically
+        // IMPORTANT: pass filename as 3rd param so boundary is generated correctly
+        fd.append("file", file, file.name);
+        
+        // DO NOT set Content-Type - browser will add multipart/form-data; boundary=...
         const up = await fetch(`${WORKER_URL}/api/user/avatar`, {
           method: "POST",
-          headers: { Authorization: `Bearer ${token}` },
+          headers: { 
+            Authorization: `Bearer ${token}`
+            // No Content-Type here!
+          },
           body: fd,
         });
-        const upJson = await up.json().catch(() => ({}));
-        if (!up.ok) throw new Error(upJson.error || `Avatar upload failed: ${up.status}`);
-        finalAvatarUrl = upJson.fullUrl || upJson.url;
+        const text = await up.text();
+        let upJson: any = {};
+        try { upJson = JSON.parse(text); } catch { upJson = { raw: text }; }
+        if (!up.ok) throw new Error(upJson.error || upJson.raw || `Avatar upload failed: ${up.status}`);
+        finalAvatarUrl = upJson.fullUrl || upJson.url || finalAvatarUrl;
       }
 
       // 2. Save profile to D1
       const res = await fetch(`${WORKER_URL}/api/user/update`, {
         method: "PUT",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ 
-          name: name.trim(), 
-          email: email.trim().toLowerCase(), 
-          phone, 
-          location_city: location, 
-          avatarUrl: finalAvatarUrl 
+        body: JSON.stringify({
+          name: name.trim(),
+          email: email.trim().toLowerCase(),
+          phone,
+          location_city: location,
+          avatarUrl: finalAvatarUrl
         }),
       });
       const data = await res.json().catch(() => ({}));
@@ -87,15 +94,15 @@ export default function EditSheet() {
 
       // Update local storage with fresh data
       const current = JSON.parse(localStorage.getItem("ug_user") || "{}");
-      const updatedUser = { 
-        ...current, 
-        ...data.user, 
-        avatarUrl: data.user.avatar_url || data.user.avatarUrl,
-        avatar_url: data.user.avatar_url 
+      const updatedUser = {
+        ...current,
+        ...data.user,
+        avatarUrl: data.user.avatar_url || data.user.avatarUrl || finalAvatarUrl,
+        avatar_url: data.user.avatar_url || finalAvatarUrl
       };
       localStorage.setItem("ug_user", JSON.stringify(updatedUser));
       window.dispatchEvent(new Event("ug-auth-changed"));
-      
+     
       setFile(null);
       setAvatarUrl(updatedUser.avatar_url);
       setPreview(updatedUser.avatar_url);
