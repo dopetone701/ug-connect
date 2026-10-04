@@ -55,25 +55,22 @@ export default function EditSheet() {
 
       let finalAvatarUrl = avatarUrl;
 
-      // 1. Upload to R2 first if new file - worker will DELETE old ones and replace
+      // 1. Upload avatar as RAW BINARY - NO FormData, NO boundary bug
       if (file) {
-        const fd = new FormData();
-        // IMPORTANT: pass filename as 3rd param so boundary is generated correctly
-        fd.append("file", file, file.name);
-        
-        // DO NOT set Content-Type - browser will add multipart/form-data; boundary=...
+        const buffer = await file.arrayBuffer();
         const up = await fetch(`${WORKER_URL}/api/user/avatar`, {
           method: "POST",
           headers: { 
-            Authorization: `Bearer ${token}`
-            // No Content-Type here!
+            Authorization: `Bearer ${token}`,
+            "Content-Type": file.type || "image/jpeg",
+            "X-Filename": file.name
           },
-          body: fd,
+          body: buffer,
         });
         const text = await up.text();
         let upJson: any = {};
-        try { upJson = JSON.parse(text); } catch { upJson = { raw: text }; }
-        if (!up.ok) throw new Error(upJson.error || upJson.raw || `Avatar upload failed: ${up.status}`);
+        try { upJson = JSON.parse(text); } catch { upJson = { error: text }; }
+        if (!up.ok) throw new Error(upJson.error || `Avatar upload failed: ${up.status} ${text.slice(0,200)}`);
         finalAvatarUrl = upJson.fullUrl || upJson.url || finalAvatarUrl;
       }
 
@@ -92,7 +89,6 @@ export default function EditSheet() {
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || "Failed to save profile");
 
-      // Update local storage with fresh data
       const current = JSON.parse(localStorage.getItem("ug_user") || "{}");
       const updatedUser = {
         ...current,
