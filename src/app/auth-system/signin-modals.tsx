@@ -4,9 +4,10 @@ import "./signin-modals.css";
 import { PasswordInput } from "./input-eye";
 import { saveGuestSession } from "./guest-user-account";
 
-const WORKER_URL = "https://user-account-server-api.connectu89.workers.dev";
-const GOOGLE_WORKER_URL = "https://google-signin-api.connectu89.workers.dev";
-const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID!;
+const WORKER_URL = (process.env.NEXT_PUBLIC_API_URL || "https://user-account-server-api.connectu89.workers.dev").trim();
+const GOOGLE_WORKER_URL = (process.env.NEXT_PUBLIC_GOOGLE_WORKER_URL || "https://google-signin-api.connectu89.workers.dev").trim();
+const GOOGLE_CLIENT_ID = (process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "246957161701-9grkrunibu4iidvqomha8vpdtmnhe994s.apps.googleusercontent.com").trim();
+
 declare global { interface Window { google?: any } }
 
 type Props = {
@@ -53,6 +54,7 @@ export default function SigninModals({ isOpen, mode, onClose, onSuccess, onSwitc
   const closeAll = () => {
     setForcedOpen(false);
     setGLoading(false);
+    setError("");
     onClose();
   };
 
@@ -61,19 +63,34 @@ export default function SigninModals({ isOpen, mode, onClose, onSuccess, onSwitc
   const handleAvatar = (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
     if (!f) return;
+    if (f.size > 5 * 1024 * 1024) {
+      setError("Avatar max 5MB");
+      return;
+    }
     setAvatarFile(f);
     setAvatarPreview(URL.createObjectURL(f));
   };
 
   const uploadAvatar = async (token: string) => {
-    if (!avatarFile) return;
-    const fd = new FormData();
-    fd.append("file", avatarFile);
-    await fetch(`${WORKER_URL}/api/user/avatar`, {
-      method: "POST",
-      headers: { Authorization: `Bearer ${token}` },
-      body: fd,
-    });
+    if (!avatarFile) return null;
+    try {
+      const fd = new FormData();
+      fd.append("file", avatarFile);
+      const res = await fetch(`${WORKER_URL}/api/user/avatar`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+        body: fd,
+      });
+      const data = await res.json().catch(() => null);
+      if (!res.ok) {
+        console.error("Avatar upload failed:", data);
+        return null;
+      }
+      return data;
+    } catch (e) {
+      console.error("Avatar upload error", e);
+      return null;
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -81,8 +98,8 @@ export default function SigninModals({ isOpen, mode, onClose, onSuccess, onSwitc
     setLoading(true);
     setError("");
     try {
-      const endpoint = mode === "signup"? "/api/auth/signup" : "/api/auth/signin";
-      const body = mode === "signup"? { email, password, name } : { email, password };
+      const endpoint = mode === "signup" ? "/api/auth/signup" : "/api/auth/signin";
+      const body = mode === "signup" ? { email, password, name } : { email, password };
       const res = await fetch(`${WORKER_URL}${endpoint}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -111,7 +128,7 @@ export default function SigninModals({ isOpen, mode, onClose, onSuccess, onSwitc
 
   const handleGoogle = async () => {
     setError("");
-    if (!GOOGLE_CLIENT_ID) return setError("Missing NEXT_PUBLIC_GOOGLE_CLIENT_ID in.env.local");
+    if (!GOOGLE_CLIENT_ID) return setError("Missing NEXT_PUBLIC_GOOGLE_CLIENT_ID - add in Cloudflare Pages > Settings > Variables");
     if (!window.google) return setError("Google SDK loading, wait 1s and retry");
     setGLoading(true);
     window.google.accounts.id.initialize({
@@ -124,7 +141,7 @@ export default function SigninModals({ isOpen, mode, onClose, onSuccess, onSwitc
             body: JSON.stringify({ credential: res.credential }),
           });
           const data = await r.json();
-          if (!r.ok) throw new Error(data.error);
+          if (!r.ok) throw new Error(data.error || "Google auth failed");
           localStorage.setItem("ug_token", data.token);
           localStorage.setItem("ug_user", JSON.stringify(data.user));
           window.dispatchEvent(new CustomEvent("ug-auth-changed"));
@@ -164,15 +181,14 @@ export default function SigninModals({ isOpen, mode, onClose, onSuccess, onSwitc
       `}</style>
       <div className="ug-modal-wrap" onClick={closeAll} style={{ animation: "ugSlideUp 0.4s cubic-bezier(0.16,1,0.3,1)" }}>
         <div className="ug-modal" onClick={(e) => e.stopPropagation()}>
-          {/* Hidden Google fallback - MUST be here, not inside h2 */}
           <div id="google-hidden-btn" style={{ position: "absolute", left: -9999, top: 0, opacity: 0, pointerEvents: "none" }}></div>
 
           <button className="ug-modal-close" onClick={closeAll}>✕</button>
 
           <h2 className="ug-modal-title">
-            {mode === "signin"? "Sign In to continue" : "Create account"}
+            {mode === "signin" ? "Sign In to continue" : "Create account"}
           </h2>
-          {mode === "signup"? (
+          {mode === "signup" ? (
             <>
               <div className="ug-bonus-badge"> INSTANT WELCOME BONUS</div>
               <p className="ug-modal-sub sales"></p>
@@ -186,7 +202,7 @@ export default function SigninModals({ isOpen, mode, onClose, onSuccess, onSwitc
               <>
                 <div className="ug-avatar-row">
                   <div className="ug-avatar-preview" onClick={() => fileRef.current?.click()}>
-                    {avatarPreview? <img src={avatarPreview} alt="avatar" /> : <span>+</span>}
+                    {avatarPreview ? <img src={avatarPreview} alt="avatar" /> : <span>+</span>}
                   </div>
                   <div className="ug-avatar-meta">
                     <p onClick={() => fileRef.current?.click()}>Add avatar (optional)</p>
@@ -213,7 +229,7 @@ export default function SigninModals({ isOpen, mode, onClose, onSuccess, onSwitc
             {error && <div className="ug-error">{error}</div>}
 
             <button type="submit" disabled={loading} className="ug-btn-primary">
-              {loading? "Please wait..." : mode === "signin"? "Sign In" : "Sign Up & Continue"}
+              {loading ? "Please wait..." : mode === "signin" ? "Sign In" : "Sign Up & Continue"}
             </button>
 
             <p style={{ fontSize: "11px", textAlign: "center", marginTop: "12px", lineHeight: "1.4", opacity: 0.75 }}>
@@ -225,7 +241,7 @@ export default function SigninModals({ isOpen, mode, onClose, onSuccess, onSwitc
             <div className="ug-social-grid">
               <button type="button" className="ug-btn-social google" onClick={handleGoogle} disabled={gLoading}>
                 <svg viewBox="0 0 24 24" width="18" height="18"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
-                {gLoading? "..." : "Google"}
+                {gLoading ? "..." : "Google"}
               </button>
               <button type="button" className="ug-btn-social apple" onClick={handleApple}>
                 <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -239,7 +255,7 @@ export default function SigninModals({ isOpen, mode, onClose, onSuccess, onSwitc
           </form>
 
           <div className="ug-modal-switch">
-            {mode === "signin"? (
+            {mode === "signin" ? (
               <p>Don't have account? <span onClick={() => onSwitchMode("signup")}>Sign up</span></p>
             ) : (
               <p>Already have account? <span onClick={() => onSwitchMode("signin")}>Sign in</span></p>
@@ -250,3 +266,4 @@ export default function SigninModals({ isOpen, mode, onClose, onSuccess, onSwitc
     </div>
   );
 }
+
