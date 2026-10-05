@@ -13,11 +13,10 @@ export type GuestUser = {
 };
 
 export function createGuestUser(): GuestUser {
-  // crypto.randomUUID() = 122-bit = no collision even at 1B users
   const uuid = crypto.randomUUID().replace(/-/g, '').slice(0, 12);
   const now = Date.now();
   return {
-    id: `${GUEST_PREFIX}${uuid}`, // gst_a1b2c3d4e5f6
+    id: `${GUEST_PREFIX}${uuid}`,
     name: "Guest",
     isGuest: true,
     isAnonymous: true,
@@ -28,16 +27,29 @@ export function createGuestUser(): GuestUser {
 
 export function saveGuestSession() {
   const guest = createGuestUser();
+  
+  // YOUR OLD KEYS (keep for compat)
   localStorage.setItem("ug_user", JSON.stringify(guest));
   localStorage.setItem("ug_guest", "1");
   localStorage.setItem("ug_guest_id", guest.id);
+  
+  // FIX: THIS IS THE KEY NOX V5 CHECKS - THIS WAS MISSING
+  localStorage.setItem("ug_guest_session", JSON.stringify(guest));
+  
+  // clear force auth lock
+  sessionStorage.removeItem("ug_nox_force_auth");
+  
   window.dispatchEvent(new CustomEvent("ug-auth-changed"));
+  window.dispatchEvent(new CustomEvent("ug-guest-continue" as any));
   return guest;
 }
 
 export function clearGuestSession() {
   localStorage.removeItem("ug_guest");
   localStorage.removeItem("ug_guest_id");
+  localStorage.removeItem("ug_guest_session");
+  localStorage.removeItem("ug_user");
+  sessionStorage.removeItem("ug_nox_force_auth");
 }
 
 export function isGuestExpired(): boolean {

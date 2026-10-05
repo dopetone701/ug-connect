@@ -19,9 +19,17 @@ import CastSwipeClose from "../top-bar/cast-swipe-close";
 import { usePcFadersDrawer } from "@/stores/use-pc-faders-drawer";
 import PcFaders from "../top-bar/faders-drawer/pc-faders";
 
-// GLOBAL AUTH GATE + NOX V4 KEEP MODAL
+// GLOBAL AUTH GATE + NOX V5 GUEST AWARE
 import SigninModals from "@/app/auth-system/signin-modals";
 import { useNoxSpy } from "@/app/auth-system/nox-spy";
+
+function hasValidSession() {
+  if (typeof window === "undefined") return false;
+  const token = localStorage.getItem("ug_token");
+  const user = localStorage.getItem("ug_user");
+  const guest = localStorage.getItem("ug_guest_session");
+  return (!!token && !!user) || !!guest;
+}
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -39,22 +47,50 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const [authOpen, setAuthOpen] = useState(false);
   const [authMode, setAuthMode] = useState<"signin" | "signup">("signin");
 
-  // NOX V4 - anti-flash + keeps modal on landing bg change
+  // NOX V5 - guest = signed in, no bypass
   const { isChecking } = useNoxSpy();
 
   useEffect(() => {
-    const h = () => {
+    const openSigninIfNeeded = () => {
+      // FIX: if guest or authed already exists, NEVER open modal
+      if (hasValidSession()) {
+        sessionStorage.removeItem("ug_nox_force_auth");
+        setAuthOpen(false);
+        return;
+      }
       setAuthMode("signin");
       setAuthOpen(true);
     };
-    const pending = typeof window !== "undefined" ? sessionStorage.getItem("ug_nox_force_auth") : null;
-    if (pending === "1") {
-      setAuthMode("signin");
-      setAuthOpen(true);
+
+    const handleAuthChanged = () => {
+      // when guest continues or signin succeeds, close modal and clear flag
+      if (hasValidSession()) {
+        sessionStorage.removeItem("ug_nox_force_auth");
+        setAuthOpen(false);
+      }
+    };
+
+    // Check pending flag on mount - but respect guest
+    if (typeof window !== "undefined") {
+      const pending = sessionStorage.getItem("ug_nox_force_auth");
+      if (pending === "1" && !hasValidSession()) {
+        setAuthMode("signin");
+        setAuthOpen(true);
+      }
+      if (hasValidSession()) {
+        sessionStorage.removeItem("ug_nox_force_auth");
+      }
     }
 
-    window.addEventListener("ug-open-signin" as any, h);
-    return () => window.removeEventListener("ug-open-signin" as any, h);
+    window.addEventListener("ug-open-signin" as any, openSigninIfNeeded);
+    window.addEventListener("ug-auth-changed" as any, handleAuthChanged);
+    window.addEventListener("ug-guest-continue" as any, handleAuthChanged);
+    
+    return () => {
+      window.removeEventListener("ug-open-signin" as any, openSigninIfNeeded);
+      window.removeEventListener("ug-auth-changed" as any, handleAuthChanged);
+      window.removeEventListener("ug-guest-continue" as any, handleAuthChanged);
+    };
   }, []);
 
   useEffect(() => {
@@ -64,7 +100,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     const seen = sessionStorage.getItem("ug-intro-seen");
     if (isLanding && !seen && isMobileCheck) setShowIntro(true);
     setChecked(true);
-    
+   
     // FIX: kill that black overscroll stretch on mobile
     document.documentElement.style.overscrollBehavior = "none";
     document.body.style.overscrollBehavior = "none";
@@ -88,8 +124,8 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       {showIntro && <IntroVideo onFinished={() => setShowIntro(false)} />}
       <div
         className={`google-shell ${isSplit ? "is-split" : ""} ${isServicesPage ? "is-services" : ""}`}
-        style={{ 
-          opacity: showIntro ? 0 : 1, 
+        style={{
+          opacity: showIntro ? 0 : 1,
           pointerEvents: showIntro ? "none" : "auto",
           overscrollBehavior: "none" as any,
         }}
@@ -100,7 +136,6 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             <SideBar />
             <main className="content-panel">
               <div className="content-scroll" style={{ overscrollBehavior: "contain" } as any}>
-                {/* FIX: always show children, PcFaders is overlay on desktop only */}
                 {children}
                 {isPcOpen && !isMobile ? <PcFaders /> : null}
               </div>
@@ -122,7 +157,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           </div>
         ) : null}
 
-        {/* FIX: THIS WAS THE BLACK SKIN - don't mount when closed */}
+        {/* FIX: black skin - only mount when open */}
         {isCastOpen ? (
           <CastSwipeClose isOpen={isCastOpen} onClose={() => setCastOpen(false)}>
             <Cast />

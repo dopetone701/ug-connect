@@ -4,6 +4,7 @@ import "./signin-modals.css";
 import { PasswordInput } from "./input-eye";
 import { saveGuestSession } from "./guest-user-account";
 import ForgotPassword from "./forgot-password";
+import { useRouter } from "next/navigation";
 
 const cleanUrl = (v: string | undefined, fallback: string) => {
   let s = (v || fallback).trim();
@@ -28,6 +29,7 @@ type Props = {
 };
 
 export default function SigninModals({ isOpen, mode, onClose, onSuccess, onSwitchMode, initialEmail = "" }: Props) {
+  const router = useRouter();
   const [email, setEmail] = useState(initialEmail);
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
@@ -42,6 +44,9 @@ export default function SigninModals({ isOpen, mode, onClose, onSuccess, onSwitc
 
   useEffect(() => {
     const h = () => {
+      // don't force open if guest or authed already exists
+      const hasSession = localStorage.getItem("ug_token") || localStorage.getItem("ug_guest_session");
+      if (hasSession) return;
       setForcedOpen(true);
       onSwitchMode("signin");
     };
@@ -61,6 +66,10 @@ export default function SigninModals({ isOpen, mode, onClose, onSuccess, onSwitc
 
   const show = isOpen || forcedOpen;
   const closeAll = () => {
+    // FIX: always clear NOX force flag
+    if (typeof window !== "undefined") {
+      sessionStorage.removeItem("ug_nox_force_auth");
+    }
     setForcedOpen(false);
     setGLoading(false);
     setError("");
@@ -86,7 +95,7 @@ export default function SigninModals({ isOpen, mode, onClose, onSuccess, onSwitc
       const buffer = await avatarFile.arrayBuffer();
       const res = await fetch(`${WORKER_URL}/api/user/avatar`, {
         method: "POST",
-        headers: { 
+        headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": avatarFile.type || "image/jpeg",
           "X-Filename": avatarFile.name
@@ -118,6 +127,8 @@ export default function SigninModals({ isOpen, mode, onClose, onSuccess, onSwitc
       if (!res.ok) throw new Error(data.error || "Failed");
       localStorage.setItem("ug_token", data.token);
       localStorage.setItem("ug_user", JSON.stringify(data.user));
+      localStorage.removeItem("ug_guest_session");
+      sessionStorage.removeItem("ug_nox_force_auth");
       window.dispatchEvent(new CustomEvent("ug-auth-changed"));
       if (avatarFile) await uploadAvatar(data.token).catch(() => {});
       onSuccess?.(data.user);
@@ -129,10 +140,35 @@ export default function SigninModals({ isOpen, mode, onClose, onSuccess, onSwitc
     }
   };
 
+  // FIX: GUEST NOW OPENS APP NORMALLY
   const handleGuest = async () => {
-    const guestUser = saveGuestSession();
-    onSuccess?.(guestUser);
-    closeAll();
+    try {
+      // clear any forced auth lock
+      sessionStorage.removeItem("ug_nox_force_auth");
+      localStorage.removeItem("ug_token");
+      localStorage.removeItem("ug_user");
+      
+      const guestUser = saveGuestSession(); // this should set ug_guest_session
+      
+      // ensure event for AppShell + NOX spy
+      window.dispatchEvent(new CustomEvent("ug-auth-changed"));
+      window.dispatchEvent(new CustomEvent("ug-guest-continue" as any));
+      
+      onSuccess?.(guestUser);
+      closeAll();
+
+      // if user is on landing /, take them to app
+      if (window.location.pathname === "/") {
+        router.replace("/movies");
+      }
+    } catch (err: any) {
+      console.error("Guest error", err);
+      // fallback still open app
+      closeAll();
+      if (window.location.pathname === "/") {
+        router.replace("/movies");
+      }
+    }
   };
 
   const handleGoogle = async () => {
@@ -153,6 +189,8 @@ export default function SigninModals({ isOpen, mode, onClose, onSuccess, onSwitc
           if (!r.ok) throw new Error(data.error || "Google auth failed");
           localStorage.setItem("ug_token", data.token);
           localStorage.setItem("ug_user", JSON.stringify(data.user));
+          localStorage.removeItem("ug_guest_session");
+          sessionStorage.removeItem("ug_nox_force_auth");
           window.dispatchEvent(new CustomEvent("ug-auth-changed"));
           onSuccess?.(data.user);
           closeAll();
@@ -251,17 +289,14 @@ export default function SigninModals({ isOpen, mode, onClose, onSuccess, onSwitc
         </div>
       )}
 
-      {/* FORGOT PASSWORD - SLIDE IN MODAL */}
-      <ForgotPassword 
-        isOpen={showForgot} 
-        onClose={() => setShowForgot(false)} 
+      <ForgotPassword
+        isOpen={showForgot}
+        onClose={() => setShowForgot(false)}
         initialEmail={email}
         onSuccess={() => {
           setShowForgot(false);
-          // Will auto open signin via event
         }}
       />
     </>
   );
 }
-
