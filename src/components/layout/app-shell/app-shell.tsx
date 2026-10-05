@@ -19,8 +19,9 @@ import CastSwipeClose from "../top-bar/cast-swipe-close";
 import { usePcFadersDrawer } from "@/stores/use-pc-faders-drawer";
 import PcFaders from "../top-bar/faders-drawer/pc-faders";
 
-// GLOBAL AUTH GATE
+// GLOBAL AUTH GATE + NOX V4 KEEP MODAL
 import SigninModals from "@/app/auth-system/signin-modals";
+import { useNoxSpy } from "@/app/auth-system/nox-spy";
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -35,14 +36,23 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const isServicesPage = pathname === "/" || pathname === "/dashboard";
   const isReelsPage = pathname?.startsWith("/reels") || pathname?.startsWith("/reel");
 
-  // --- GLOBAL AUTH ---
   const [authOpen, setAuthOpen] = useState(false);
   const [authMode, setAuthMode] = useState<"signin" | "signup">("signin");
+
+  // NOX V4 - anti-flash + keeps modal on landing bg change
+  const { isChecking } = useNoxSpy();
+
   useEffect(() => {
     const h = () => {
       setAuthMode("signin");
       setAuthOpen(true);
     };
+    const pending = typeof window !== "undefined" ? sessionStorage.getItem("ug_nox_force_auth") : null;
+    if (pending === "1") {
+      setAuthMode("signin");
+      setAuthOpen(true);
+    }
+
     window.addEventListener("ug-open-signin" as any, h);
     return () => window.removeEventListener("ug-open-signin" as any, h);
   }, []);
@@ -54,6 +64,11 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     const seen = sessionStorage.getItem("ug-intro-seen");
     if (isLanding && !seen && isMobileCheck) setShowIntro(true);
     setChecked(true);
+    
+    // FIX: kill that black overscroll stretch on mobile
+    document.documentElement.style.overscrollBehavior = "none";
+    document.body.style.overscrollBehavior = "none";
+    document.body.style.background = "#0f1f16";
   }, []);
 
   useEffect(() => {
@@ -64,7 +79,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   }, []);
 
   const isSplit = !isMobile && open && !minimized;
-  if (!checked) return null;
+  if (!checked || isChecking) return null;
 
   const showTopBar = !isReelsPage && !isReelsOpen;
 
@@ -73,15 +88,21 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       {showIntro && <IntroVideo onFinished={() => setShowIntro(false)} />}
       <div
         className={`google-shell ${isSplit ? "is-split" : ""} ${isServicesPage ? "is-services" : ""}`}
-        style={{ opacity: showIntro ? 0 : 1, pointerEvents: showIntro ? "none" : "auto" }}
+        style={{ 
+          opacity: showIntro ? 0 : 1, 
+          pointerEvents: showIntro ? "none" : "auto",
+          overscrollBehavior: "none" as any,
+        }}
       >
-        <div className="giant-panel">
+        <div className="giant-panel" style={{ overscrollBehavior: "contain" } as any}>
           {showTopBar ? <TopBar /> : null}
           <div className="giant-body">
             <SideBar />
             <main className="content-panel">
-              <div className="content-scroll">
-                {isPcOpen && !isMobile ? <PcFaders /> : children}
+              <div className="content-scroll" style={{ overscrollBehavior: "contain" } as any}>
+                {/* FIX: always show children, PcFaders is overlay on desktop only */}
+                {children}
+                {isPcOpen && !isMobile ? <PcFaders /> : null}
               </div>
               <WatchDrawer />
             </main>
@@ -100,18 +121,25 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             </div>
           </div>
         ) : null}
-        <CastSwipeClose isOpen={isCastOpen} onClose={() => setCastOpen(false)}>
-          <Cast />
-        </CastSwipeClose>
+
+        {/* FIX: THIS WAS THE BLACK SKIN - don't mount when closed */}
+        {isCastOpen ? (
+          <CastSwipeClose isOpen={isCastOpen} onClose={() => setCastOpen(false)}>
+            <Cast />
+          </CastSwipeClose>
+        ) : null}
       </div>
 
-      {/* GLOBAL SIGNIN MODAL - listens to ug-open-signin from anywhere */}
       <SigninModals
         isOpen={authOpen}
         mode={authMode}
-        onClose={() => setAuthOpen(false)}
+        onClose={() => {
+          if (typeof window !== "undefined") sessionStorage.removeItem("ug_nox_force_auth");
+          setAuthOpen(false);
+        }}
         onSwitchMode={setAuthMode}
         onSuccess={() => {
+          if (typeof window !== "undefined") sessionStorage.removeItem("ug_nox_force_auth");
           setAuthOpen(false);
           window.dispatchEvent(new CustomEvent("ug-auth-changed"));
         }}
@@ -119,4 +147,3 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     </>
   );
 }
-

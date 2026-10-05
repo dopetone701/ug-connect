@@ -10,7 +10,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   viewportFit: "cover",
-  themeColor: "#0a0a0a",
+  themeColor: "#0f1f16", // same as your app bg, not #0a0a0a
 };
 
 export const metadata: Metadata = {
@@ -19,9 +19,10 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     title: "UG Connect",
-    statusBarStyle: "black-translucent",
+    statusBarStyle: "default", // NOT black-translucent
   },
 };
+
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
