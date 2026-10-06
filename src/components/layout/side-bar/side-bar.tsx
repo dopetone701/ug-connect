@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { THEMES } from "@/lib/theme/dna";
 import { setTheme } from "@/lib/theme/theme-controller";
 import { SIDEBAR_ITEMS } from "./config";
@@ -8,12 +9,26 @@ import "./side-bar.css";
 import "./side-sheet.css";
 import AppTipsIcon from "@/modal-generator/svg-icons/app-tips-icon";
 import { useGlobalCast } from "@/stores/use-global-cast";
+import SubscriptionIcon from "@/modal-generator/svg-icons/subscription-icon";
 
-const customOrder = ['cast', 'lists', 'privacy', 'account', 'tips', 'subscription', 'invite'];
+
+const ADMIN_EMAIL = "connectu89@gmail.com";
+
+const customOrder = ['cast', 'lists', 'privacy', 'account', 'tips', 'subscription', 'invite', 'control-center'];
 
 const icons: any = {
   account: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M20 21a8 8 0 0 0-16 0"/><circle cx="12" cy="7" r="4"/></svg>,
-  subscription: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 3l7 3v6c0 5-3.5 8-7 9-3.5-1-7-4-7-9V6l7-3z"/></svg>,
+  subscription: (
+  <span style={{ width: 20, height: 20, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
+    <SubscriptionIcon
+      size={18}
+      color="currentColor"
+      playColor="hsl(var(--bg))"
+      style={{ width: '100%', height: '100%' }}
+    />
+  </span>
+),
+
   lists: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>,
   cast: <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M3 18v3h3c0-1.66-1.34-3-3-3Z"/><path d="M3 13v2c3.31 0 6 2.69 6 6h2c0-4.42-3.58-8-8-8Z"/><path d="M3 8v2c5.52 0 10 4.48 10 10h2C15 13.37 9.63 8 3 8Z"/><path d="M5 4h14c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2h-4v-2h4V6H5v3H3V6c0-1.1.9-2 2-2Z"/></svg>,
   tips: <span style={{ width: 20, height: 20, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}><span style={{ width: 20, height: 20, display: 'flex' }}><AppTipsIcon /></span></span>,
@@ -32,6 +47,7 @@ const icons: any = {
   ),
   privacy: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>,
   control: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 3l7 3v6c0 5-3.5 8-7 9-3.5-1-7-4-7-9V6l7-3z"/></svg>,
+  "control-center": <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/></svg>,
 };
 
 export default function SideBar({ onOpen }: { onOpen?: (id: string) => void }) {
@@ -39,13 +55,45 @@ export default function SideBar({ onOpen }: { onOpen?: (id: string) => void }) {
   const [curTheme, setCurTheme] = useState("");
   const [showSettings, setShowSettings] = useState(false);
   const { setOpen: setCastOpen } = useGlobalCast();
+  const router = useRouter();
 
   useEffect(() => {
-    setIsAdmin(localStorage.getItem("ug-admin") === "true");
-    setCurTheme(localStorage.getItem("ug-theme") || "dark");
+    const checkAdmin = () => {
+      const adminFlag = localStorage.getItem("ug-admin") === "true";
+      const raw = localStorage.getItem("ug_user");
+      let isEmailAdmin = false;
+      let isGuest = false;
+      try {
+        const u = JSON.parse(raw || "null");
+        const email = (u?.email || "").toLowerCase().trim();
+        isGuest = !!u?.isGuest || !!u?.isAnonymous || !u?.email?.includes("@") || !!localStorage.getItem("ug_guest");
+        if (!isGuest && email === ADMIN_EMAIL) isEmailAdmin = true;
+      } catch {}
+
+      const finalAdmin = !isGuest && (adminFlag || isEmailAdmin);
+      setIsAdmin(finalAdmin);
+
+      if (isEmailAdmin) localStorage.setItem("ug-admin", "true");
+      if (isGuest) localStorage.removeItem("ug-admin");
+
+      setCurTheme(localStorage.getItem("ug-theme") || "dark");
+    };
+
+    checkAdmin();
+    window.addEventListener("ug-auth-changed" as any, checkAdmin);
+    window.addEventListener("ug-guest-continue" as any, checkAdmin);
+    window.addEventListener("storage", checkAdmin);
+    return () => {
+      window.removeEventListener("ug-auth-changed" as any, checkAdmin);
+      window.removeEventListener("ug-guest-continue" as any, checkAdmin);
+      window.removeEventListener("storage", checkAdmin);
+    };
   }, []);
 
-  const sortedItems = [...SIDEBAR_ITEMS.filter((i: any) => !(i as any).admin || isAdmin)].sort((a: any, b: any) => {
+  const sortedItems = [...SIDEBAR_ITEMS.filter((i: any) => {
+    if ((i as any).admin) return isAdmin;
+    return true;
+  })].sort((a: any, b: any) => {
     const indexA = customOrder.indexOf(a.id);
     const indexB = customOrder.indexOf(b.id);
     if (indexA === -1 && indexB === -1) return 0;
@@ -56,14 +104,20 @@ export default function SideBar({ onOpen }: { onOpen?: (id: string) => void }) {
 
   const handleItemClick = (id: string) => {
     if (id === 'cast') {
-      // 1. close slide bar first
       window.dispatchEvent(new CustomEvent("ug-close-menu-panel"));
-      // 2. open cast drawer after close animation (280ms = wa panel exit)
       setTimeout(() => {
         setCastOpen(true);
       }, 320);
       return;
     }
+
+    // SURGICAL FIX: Control Center opens as PAGE, not as sheet
+    if (id === 'control-center' || id === 'control_center' || id === 'control') {
+      window.dispatchEvent(new CustomEvent("ug-close-menu-panel"));
+      router.push("/control-center-page");
+      return;
+    }
+
     onOpen?.(id);
   };
 
@@ -112,4 +166,3 @@ export default function SideBar({ onOpen }: { onOpen?: (id: string) => void }) {
     </aside>
   );
 }
-
