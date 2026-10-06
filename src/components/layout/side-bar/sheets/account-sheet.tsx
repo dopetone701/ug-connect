@@ -4,7 +4,8 @@ import UserAccountPage from "@/app/auth-system/user-account-page";
 import { SHEET_REGISTRY, SHEET_ORDER, type SheetId } from "@/app/auth-system/account-sheets";
 
 export default function AccountSheet(){
-  const [active, setActive] = useState<SheetId>("create");
+  // FIX RED LINE - use first item from SHEET_ORDER, not hardcoded string
+  const [active, setActive] = useState<SheetId>(SHEET_ORDER[0] as SheetId);
   const idx = SHEET_ORDER.indexOf(active);
   const startX = useRef(0);
 
@@ -23,14 +24,25 @@ export default function AccountSheet(){
   };
 
   return (
-    <div data-account-sheet className="account-slice-root" style={{ width:'100%', display:'flex', flexDirection:'column', gap:'16px' }}>
+    <div
+      data-account-sheet
+      className="account-slice-root"
+      style={{
+        width:'100%',
+        display:'flex',
+        flexDirection:'column',
+        gap:'16px',
+        marginTop:'12px', // <-- LIL GAP between Account header and top card
+        paddingTop:'4px'
+      }}
+    >
 
       {/* UPPER - FIXED - FULL WIDTH */}
       <div style={{ width:'100%', borderRadius:'24px', background:'hsl(var(--surface))', border:'1px solid hsl(var(--border))' }}>
         <UserAccountPage onSelect={setActive} />
       </div>
 
-      {/* LOWER VIEWPORT - HOLDS THE TRACK OF CARDS */}
+      {/* LOWER VIEWPORT */}
       <div
         className="lower-viewport"
         onTouchStart={onTouchStart}
@@ -50,7 +62,6 @@ export default function AccountSheet(){
             const Comp = SHEET_REGISTRY[id].component;
             return (
               <div key={id} style={{ minWidth:'100%', width:'100%', flexShrink:0, padding:'0 1px', boxSizing:'border-box' }}>
-                {/* THIS IS THE WHOLE LOWER CARD - SAME SHAPE AS UPPER */}
                 <div style={{ width:'100%', borderRadius:'24px', background:'hsl(var(--surface))', border:'1px solid hsl(var(--border))', minHeight:'320px', padding:'16px' }}>
                   <Comp />
                 </div>
@@ -60,7 +71,7 @@ export default function AccountSheet(){
         </div>
       </div>
 
-      {/* DOTS - BELOW THE CARDS, OUTSIDE */}
+      {/* DOTS */}
       <div style={{ display:'flex', justifyContent:'center', gap:'6px', marginTop:'-4px' }}>
         {SHEET_ORDER.map((id) => (
           <span

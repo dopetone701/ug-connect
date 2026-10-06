@@ -102,11 +102,20 @@ export default function SideBar({ onOpen }: { onOpen?: (id: string) => void }) {
     return indexA - indexB;
   });
 
-  const handleItemClick = (id: string) => {
+   const handleItemClick = (id: string) => {
     if (id === 'cast') {
       window.dispatchEvent(new CustomEvent("ug-close-menu-panel"));
       setTimeout(() => {
         setCastOpen(true);
+      }, 320);
+      return;
+    }
+
+    // ACCOUNT - open direct like bottom bar You btn
+    if (id === 'account') {
+      window.dispatchEvent(new CustomEvent("ug-close-menu-panel"));
+      setTimeout(() => {
+        window.dispatchEvent(new CustomEvent("ug-open-account-sheet"));
       }, 320);
       return;
     }
@@ -120,6 +129,7 @@ export default function SideBar({ onOpen }: { onOpen?: (id: string) => void }) {
 
     onOpen?.(id);
   };
+
 
   return (
     <aside className="side-bar">

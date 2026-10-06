@@ -72,14 +72,27 @@
   bottom: auto !important;
   width: auto;
   height: auto !important;
-  max-height: calc(100dvh - 80px);
-  overflow-y: auto;
+  max-height: calc(100dvh - 80px) !important;
+  overflow: hidden !important; /* was auto - now fixed */
+  display: flex !important;
+  flex-direction: column !important;
   -webkit-overflow-scrolling: touch;
   transform: translateY(110%);
   opacity: 0;
   pointer-events: none;
   z-index: 2;
-  display: block;
+}
+
+/* INNER BECOMES THE SCROLL CONTAINER */
+.wa-mob-panel.is-menu .wa-card.detail-card .morph-body {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  max-height: 100% !important;
+  height: auto !important;
+  overflow: hidden !important; /* let invite-sheet handle its own scroll */
+  display: flex !important;
+  flex-direction: column !important;
+  padding: 0 !important; /* remove padding that was pushing */
 }
 
 .wa-mob-panel.is-menu .wa-card.list-card.is-dipping,
