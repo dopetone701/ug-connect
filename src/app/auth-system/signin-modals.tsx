@@ -43,16 +43,17 @@ export default function SigninModals({ isOpen, mode, onClose, onSuccess, onSwitc
   const [forcedOpen, setForcedOpen] = useState(false);
 
   useEffect(() => {
-    const h = () => {
-      // don't force open if guest or authed already exists
-      const hasSession = localStorage.getItem("ug_token") || localStorage.getItem("ug_guest_session");
-      if (hasSession) return;
-      setForcedOpen(true);
-      onSwitchMode("signin");
-    };
-    window.addEventListener("ug-open-signin" as any, h);
-    return () => window.removeEventListener("ug-open-signin" as any, h);
-  }, [onSwitchMode]);
+  const h = (e: any) => {
+    const force = e?.detail?.force === true;
+    const hasToken = localStorage.getItem("ug_token");
+    if (hasToken &&!force) return; // only block real authed user
+    setForcedOpen(true);
+    onSwitchMode("signin");
+  };
+  window.addEventListener("ug-open-signin" as any, h);
+  return () => window.removeEventListener("ug-open-signin" as any, h);
+}, [onSwitchMode]);
+
 
   useEffect(() => {
     if (document.getElementById("google-gsi")) return;
@@ -132,7 +133,13 @@ export default function SigninModals({ isOpen, mode, onClose, onSuccess, onSwitc
       window.dispatchEvent(new CustomEvent("ug-auth-changed"));
       if (avatarFile) await uploadAvatar(data.token).catch(() => {});
       onSuccess?.(data.user);
-      closeAll();
+closeAll();
+// OPEN EDIT SHEET IMMEDIATELY AFTER SIGNIN
+setTimeout(() => {
+  window.dispatchEvent(new CustomEvent("ug-open-edit-sheet" as any));
+  window.dispatchEvent(new CustomEvent("ug-open-account-sheet" as any, { detail: { sheet: "edit" } }));
+}, 350);
+
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -189,11 +196,19 @@ export default function SigninModals({ isOpen, mode, onClose, onSuccess, onSwitc
           if (!r.ok) throw new Error(data.error || "Google auth failed");
           localStorage.setItem("ug_token", data.token);
           localStorage.setItem("ug_user", JSON.stringify(data.user));
+          localStorage.removeItem("ug_guest");
+          localStorage.removeItem("ug_guest_user");
+          window.dispatchEvent(new Event("ug-auth-changed"));
           localStorage.removeItem("ug_guest_session");
           sessionStorage.removeItem("ug_nox_force_auth");
           window.dispatchEvent(new CustomEvent("ug-auth-changed"));
           onSuccess?.(data.user);
-          closeAll();
+closeAll();
+setTimeout(() => {
+  window.dispatchEvent(new CustomEvent("ug-open-edit-sheet" as any));
+  window.dispatchEvent(new CustomEvent("ug-open-account-sheet" as any, { detail: { sheet: "edit" } }));
+}, 350);
+
         } catch (e: any) {
           setError(e.message);
         } finally {

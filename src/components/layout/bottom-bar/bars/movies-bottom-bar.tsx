@@ -11,7 +11,9 @@ import { PreviewIcon } from "@/modal-generator/svg-icons/pre-play-icon";
 import { ServicesIcon } from "@/modal-generator/svg-icons/pro-services-icon";
 import { FilterIcon } from "@/modal-generator/svg-icons/fadders-icon";
 import { YouIcon } from "@/modal-generator/svg-icons/profile-avatar";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
+
+const WORKER_URL = (process.env.NEXT_PUBLIC_API_URL || "https://user-account-server-api.connectu89.workers.dev").trim().replace(/\/$/, "");
 
 export default function MoviesBottomBar() {
   const path = usePathname();
@@ -19,33 +21,68 @@ export default function MoviesBottomBar() {
   const { openReels } = useReelsDrawer() as any;
   const { allMovies } = useGlobalSearch() as any;
   const [currentUser, setCurrentUser] = useState<any>(null);
+  const [imgErr, setImgErr] = useState(false);
+
+  const loadUser = useCallback(async () => {
+    try {
+      // 1. Instant local cache - no lag
+      const raw = localStorage.getItem("ug_user");
+      const parsed = raw ? JSON.parse(raw) : null;
+      if (parsed) setCurrentUser(parsed);
+      else setCurrentUser(null);
+      setImgErr(false);
+
+      // 2. Background D1 refresh - non-blocking
+      const token = localStorage.getItem("ug_token");
+      if (!token) return;
+      try {
+        const controller = new AbortController();
+        const t = setTimeout(() => controller.abort(), 4000);
+        const res = await fetch(`${WORKER_URL}/api/user/me`, {
+          headers: { Authorization: `Bearer ${token}` },
+          signal: controller.signal,
+          cache: "no-store",
+        });
+        clearTimeout(t);
+        if (res.ok) {
+          const data = await res.json();
+          const fresh = data.user || data;
+          // update only if changed
+          const freshStr = JSON.stringify(fresh);
+          if (freshStr !== raw) {
+            localStorage.setItem("ug_user", freshStr);
+            setCurrentUser(fresh);
+            setImgErr(false);
+          }
+        }
+      } catch {
+        // silent, keep cache
+      }
+    } catch {
+      setCurrentUser(null);
+    }
+  }, []);
 
   useEffect(() => {
-    const loadUser = () => {
-      try {
-        const raw = localStorage.getItem("ug_user");
-        setCurrentUser(raw? JSON.parse(raw) : null);
-      } catch {
-        setCurrentUser(null);
-      }
-    };
-    loadUser();
-    // listen for login/logout from anywhere
-    window.addEventListener("storage", loadUser);
-    window.addEventListener("ug-auth-changed", loadUser as EventListener);
-    return () => {
-      window.removeEventListener("storage", loadUser);
-      window.removeEventListener("ug-auth-changed", loadUser as EventListener);
-    };
-  }, []);
+  loadUser();
+  window.addEventListener("storage", loadUser);
+  window.addEventListener("ug-auth-changed" as any, loadUser);
+  window.addEventListener("ug-profile-updated" as any, loadUser);
+  return () => {
+    window.removeEventListener("storage", loadUser);
+    window.removeEventListener("ug-auth-changed" as any, loadUser);
+    window.removeEventListener("ug-profile-updated" as any, loadUser);
+  };
+}, [loadUser]);
+
 
   const openPreviewsReels = () => {
     const normalize = (x: any) => {
       const preview = x?.preview_urls?.[0] || x?.preview_url || x?.trailer_url || x?.video_preview_url || x?.preview;
-      return {...x, id: String(x.id), preview_url: preview, preview_urls: x.preview_urls || (preview? [preview] : []), trailer_url: x.trailer_url || preview };
+      return { ...x, id: String(x.id), preview_url: preview, preview_urls: x.preview_urls || (preview ? [preview] : []), trailer_url: x.trailer_url || preview };
     };
     const list = (allMovies || []).map(normalize).filter((m: any) => m.preview_url || (m.preview_urls && m.preview_urls.length));
-    const feed = list.length? list : (allMovies || []).map(normalize);
+    const feed = list.length ? list : (allMovies || []).map(normalize);
     if (feed.length) openReels(feed, 0);
   };
 
@@ -54,12 +91,14 @@ export default function MoviesBottomBar() {
   };
 
   const avatarUrl = currentUser?.avatarUrl || currentUser?.avatar_url || currentUser?.avatar || currentUser?.photo || currentUser?.image;
-  const isLoggedIn =!!currentUser &&!currentUser?.isGuest;
+  const isLoggedIn = !!currentUser && !currentUser?.isGuest && !!localStorage.getItem("ug_token");
+  const initial = (currentUser?.name?.[0] || currentUser?.email?.[0] || "U").toUpperCase();
+  const showImg = isLoggedIn && !!avatarUrl && !imgErr;
 
   return (
     <nav className="bottom-bar-glass movies-bar">
       <div className="bottom-inner">
-        <Link href="/" className={`bottom-item ${path === "/"? "active" : ""}`}>
+        <Link href="/" className={`bottom-item ${path === "/" ? "active" : ""}`}>
           <span className="bottom-icon"><ServicesIcon size={24} className="services-svg" /></span>
           <span className="bottom-label">Services</span>
         </Link>
@@ -75,30 +114,33 @@ export default function MoviesBottomBar() {
           </span>
         </Link>
 
-        <button type="button" onClick={openPreviewsReels} className={`bottom-item ${path.includes("previews")? "active" : ""}`}>
+        <button type="button" onClick={openPreviewsReels} className={`bottom-item ${path.includes("previews") ? "active" : ""}`}>
           <span className="bottom-icon"><PreviewIcon size={24} className="preview-svg" /></span>
           <span className="bottom-label">Previews</span>
         </button>
 
-        <button type="button" onClick={openAccountSheet} className={`bottom-item ${path === "/profile"? "active" : ""}`}>
+        <button type="button" onClick={openAccountSheet} className={`bottom-item ${path === "/profile" ? "active" : ""}`}>
           <span className="bottom-icon">
-           {isLoggedIn && avatarUrl? (
-  <img
-    src={avatarUrl}
-    alt={currentUser?.name || "You"}
-    style={{ width: 28, height: 28, borderRadius: '50%', objectFit: 'cover', border: '2px solid hsl(var(--border))' }}
-  />
-) : isLoggedIn? (
-  <div style={{ width: 28, height: 28, borderRadius: '50%', background: 'hsl(var(--primary))', color: 'hsl(var(--primary-text))', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700 }}>
-    {(currentUser?.name?.[0] || currentUser?.email?.[0] || "U").toUpperCase()}
-  </div>
-) : (
-  <YouIcon size={24} className="you-svg" />
-)}
+            {showImg ? (
+              <img
+                src={avatarUrl}
+                alt={currentUser?.name || "You"}
+                style={{ width: 28, height: 28, borderRadius: "50%", objectFit: "cover", border: "2px solid hsl(var(--border))" }}
+                onError={() => setImgErr(true)}
+                onLoad={() => setImgErr(false)}
+              />
+            ) : isLoggedIn ? (
+              <div style={{ width: 28, height: 28, borderRadius: "50%", background: "hsl(var(--primary))", color: "hsl(var(--primary-text))", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 700 }}>
+                {initial}
+              </div>
+            ) : (
+              <YouIcon size={24} className="you-svg" />
+            )}
           </span>
-          <span className="bottom-label">{isLoggedIn? (currentUser?.name?.split(" ")[0] || "You") : "You"}</span>
+          <span className="bottom-label">{isLoggedIn ? (currentUser?.name?.split(" ")[0] || "You") : "You"}</span>
         </button>
       </div>
     </nav>
   );
 }
+
