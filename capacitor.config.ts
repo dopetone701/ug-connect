@@ -5,13 +5,17 @@ const config: CapacitorConfig = {
   appName: 'UG Connect',
   webDir: 'out',
   ios: {
-    contentInset: 'always', // <— FIX: was 'never'
+    contentInset: 'always',
+  },
+  android: {
+    // force portrait in native
+    // we handle unlock in JS for fullscreen
   },
   plugins: {
     StatusBar: {
       overlaysWebView: false,
       style: 'DARK',
-      backgroundColor: '#0a0a0a', // <— FIX: match your --bg so no white flash
+      backgroundColor: '#0f1f16',
     },
     SplashScreen: {
       launchShowDuration: 0

@@ -1,5 +1,10 @@
 "use client"
 import { createContext, useRef, useState, useCallback, useEffect } from "react"
+
+if (typeof window === 'undefined' && typeof (globalThis as any).self === 'undefined') {
+  (globalThis as any).self = globalThis;
+}
+
 export const EngineContext = createContext<any>(null)
 
 export function EngineProvider({ children }: { children: React.ReactNode }) {
@@ -33,31 +38,17 @@ export function EngineProvider({ children }: { children: React.ReactNode }) {
 
   const play = useCallback(async (item: any) => {
     if (!item?.src) return
-    setCurrent((prev: any) => {
-      if (prev?.id === item.id && prev?.src === item.src) return prev
-      return item
-    })
-
+    setCurrent((prev: any) => prev?.id === item.id && prev?.src === item.src ? prev : item)
     const v = videoRef.current
     if (!v) return
-
-    if (hlsRef.current) {
-      hlsRef.current.destroy()
-      hlsRef.current = null
-    }
-
+    if (hlsRef.current) { hlsRef.current.destroy(); hlsRef.current = null }
     const src = item.src
     const isHls = src.includes('.m3u8')
-
     try {
       if (isHls) {
         if (v.canPlayType('application/vnd.apple.mpegurl')) {
-          // Safari
-          v.src = src
-          v.load()
-          await v.play()
+          v.src = src; v.load(); await v.play()
         } else {
-          // Chrome/PC + Android - needs hls.js
           const mod = await import('hls.js')
           const Hls = mod.default
           if (Hls.isSupported()) {
@@ -66,24 +57,14 @@ export function EngineProvider({ children }: { children: React.ReactNode }) {
             hls.loadSource(src)
             hls.attachMedia(v)
             hls.on(Hls.Events.MANIFEST_PARSED, () => v.play().catch(()=>{}))
-          } else {
-            v.src = src
-            v.load()
-            await v.play()
-          }
+          } else { v.src = src; v.load(); await v.play() }
         }
       } else {
-        // your normal MP4 full movie - RESTORED WORKING LOGIC
-        if (!v.src.includes(src)) {
-          v.src = src
-          v.load()
-        }
+        if (!v.src.includes(src)) { v.src = src; v.load() }
         if (item.poster) v.poster = item.poster
         await v.play()
       }
-    } catch (e) {
-      console.error('play failed', e)
-    }
+    } catch (e) { console.error('play failed', e) }
   }, [])
 
   const togglePlay = useCallback(() => {
@@ -94,13 +75,14 @@ export function EngineProvider({ children }: { children: React.ReactNode }) {
 
   const seek = useCallback((t: number) => { if (videoRef.current) videoRef.current.currentTime = t }, [])
 
+  // ALWAYS SAME JSX - fixes removeChild crash
   return (
     <EngineContext.Provider value={{ videoRef, current, activeSkin, setSkin: setActiveSkin, isMini, setIsMini, exitMini: () => setIsMini(false), playback, currentTime, duration, play, togglePlay, seek }}>
-      <div style={{ position: 'fixed', inset: 0, background: '#000', zIndex: 0 }}>
+      <div style={{ position: 'fixed', inset: 0, background: '#000', zIndex: 0 }} suppressHydrationWarning>
         <video
           ref={videoRef}
           playsInline
-          preload="auto"
+          preload="metadata"
           style={{ width: '100%', height: '100%', objectFit: activeSkin === 'vertical' ? 'cover' : 'contain', background: '#000' }}
         />
       </div>

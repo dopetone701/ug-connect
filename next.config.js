@@ -1,6 +1,11 @@
 /** @type {import('next').NextConfig} */
+const isCapacitor = process.env.CAPACITOR === 'true';
+
 const nextConfig = {
-  // output: 'export' -> NUKED for now, we add back only when building APK
+  ...(isCapacitor ? { 
+    output: 'export',
+    trailingSlash: true,
+  } : {}),
   images: { unoptimized: true },
   eslint: { ignoreDuringBuilds: true },
   typescript: { ignoreBuildErrors: true },

@@ -10,7 +10,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   viewportFit: "cover",
-  themeColor: "#0f1f16", // same as your app bg, not #0a0a0a
+  themeColor: "#0f1f16",
 };
 
 export const metadata: Metadata = {
@@ -19,14 +19,21 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     title: "UG Connect",
-    statusBarStyle: "default", // NOT black-translucent
+    statusBarStyle: "default",
   },
 };
-
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" style={{ background: "hsl(var(--bg))" }}>
+      <head>
+        {/* HARD LOCK orientation via CSS */}
+        <style dangerouslySetInnerHTML={{__html: `
+          @media (orientation: landscape) and (max-height: 600px) {
+            html { transform: none !important; }
+          }
+        `}} />
+      </head>
       <body style={{ background: "hsl(var(--bg))", margin: 0, padding: 0 }}>
         <EngineProvider>
           <CoreEngine />

@@ -247,3 +247,67 @@ html, body { overflow-x: hidden; }
   }
 }
 
+/* ===== FINAL MOBILE LOCK - KILL PC UI FOREVER ===== */
+.is-mobile-locked .side-bar,
+.is-mobile-locked .pc-sheet-host,
+.is-mobile-locked .pc-faders,
+.is-mobile-locked .pc-faders-page,
+.is-mobile-locked .desktop-shell {
+  display: none !important;
+  width: 0 !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+/* Force mobile width even on landscape / desktop browser */
+.is-mobile-locked {
+  max-width: 480px !important;
+  margin: 0 auto !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  box-shadow: 0 0 0 1px hsl(var(--border));
+}
+
+/* Make content scroll work like phone */
+.is-mobile-locked .giant-body {
+  padding: 0 !important;
+}
+.is-mobile-locked .content-panel {
+  border-radius: 0 !important;
+  border: none !important;
+  padding-top: 12px !important;
+}
+
+/* Disable your old desktop media queries */
+@media (min-width: 769px) {
+  .is-mobile-locked .google-shell,
+  .is-mobile-locked .giant-panel,
+  .is-mobile-locked .giant-body,
+  .is-mobile-locked .content-panel {
+    height: 100dvh !important;
+    width: 100% !important;
+    max-width: 480px !important;
+    border-radius: 0 !important;
+    padding: 0 !important;
+  }
+  .is-mobile-locked .content-panel {
+    padding-top: 12px !important;
+  }
+}
+
+/* Landscape lock overlay - except when video fullscreen */
+@media (orientation: landscape) and (max-height: 500px) {
+  body:not(:has(.mob-full-root:fullscreen)):not(:has(:fullscreen))::after {
+    content: "Please rotate to portrait";
+    position: fixed;
+    inset: 0;
+    z-index: 2147483647;
+    background: #0f1f16;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+    font-size: 20px;
+  }
+}
