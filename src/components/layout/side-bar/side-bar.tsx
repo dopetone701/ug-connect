@@ -10,41 +10,18 @@ import "./side-sheet.css";
 import AppTipsIcon from "@/modal-generator/svg-icons/app-tips-icon";
 import { useGlobalCast } from "@/stores/use-global-cast";
 import SubscriptionIcon from "@/modal-generator/svg-icons/subscription-icon";
-
+import { useSideSheet } from "@/stores/use-side-sheet";
 
 const ADMIN_EMAIL = "connectu89@gmail.com";
-
 const customOrder = ['cast', 'lists', 'privacy', 'account', 'tips', 'subscription', 'invite', 'control-center'];
 
 const icons: any = {
   account: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M20 21a8 8 0 0 0-16 0"/><circle cx="12" cy="7" r="4"/></svg>,
-  subscription: (
-  <span style={{ width: 20, height: 20, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
-    <SubscriptionIcon
-      size={18}
-      color="currentColor"
-      playColor="hsl(var(--bg))"
-      style={{ width: '100%', height: '100%' }}
-    />
-  </span>
-),
-
+  subscription: (<span style={{ width: 20, height: 20, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}><SubscriptionIcon size={18} color="currentColor" playColor="hsl(var(--bg))" style={{ width: '100%', height: '100%' }} /></span>),
   lists: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>,
   cast: <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M3 18v3h3c0-1.66-1.34-3-3-3Z"/><path d="M3 13v2c3.31 0 6 2.69 6 6h2c0-4.42-3.58-8-8-8Z"/><path d="M3 8v2c5.52 0 10 4.48 10 10h2C15 13.37 9.63 8 3 8Z"/><path d="M5 4h14c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2h-4v-2h4V6H5v3H3V6c0-1.1.9-2 2-2Z"/></svg>,
   tips: <span style={{ width: 20, height: 20, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}><span style={{ width: 20, height: 20, display: 'flex' }}><AppTipsIcon /></span></span>,
-  invite: (
-    <span style={{ width: 20, height: 20, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
-      <span style={{ width: 20, height: 20, display: 'block' }}>
-        <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" style={{ display: "block", overflow: "visible" }}>
-          <line x1="40.7" y1="41.2" x2="59.3" y2="30.8" stroke="currentColor" strokeWidth="5.5" strokeLinecap="round" />
-          <line x1="40.7" y1="58.8" x2="59.3" y2="69.2" stroke="currentColor" strokeWidth="5.5" strokeLinecap="round" />
-          <circle cx="25" cy="50" r="18" fill="none" stroke="currentColor" strokeWidth="5.5" />
-          <circle cx="75" cy="22" r="18" fill="none" stroke="currentColor" strokeWidth="5.5" />
-          <circle cx="75" cy="78" r="18" fill="none" stroke="currentColor" strokeWidth="5.5" />
-        </svg>
-      </span>
-    </span>
-  ),
+  invite: (<span style={{ width: 20, height: 20, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}><span style={{ width: 20, height: 20, display: 'block' }}><svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" style={{ display: "block", overflow: "visible" }}><line x1="40.7" y1="41.2" x2="59.3" y2="30.8" stroke="currentColor" strokeWidth="5.5" strokeLinecap="round" /><line x1="40.7" y1="58.8" x2="59.3" y2="69.2" stroke="currentColor" strokeWidth="5.5" strokeLinecap="round" /><circle cx="25" cy="50" r="18" fill="none" stroke="currentColor" strokeWidth="5.5" /><circle cx="75" cy="22" r="18" fill="none" stroke="currentColor" strokeWidth="5.5" /><circle cx="75" cy="78" r="18" fill="none" stroke="currentColor" strokeWidth="5.5" /></svg></span></span>),
   privacy: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>,
   control: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><path d="M12 3l7 3v6c0 5-3.5 8-7 9-3.5-1-7-4-7-9V6l7-3z"/></svg>,
   "control-center": <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/></svg>,
@@ -55,6 +32,7 @@ export default function SideBar({ onOpen }: { onOpen?: (id: string) => void }) {
   const [curTheme, setCurTheme] = useState("");
   const [showSettings, setShowSettings] = useState(false);
   const { setOpen: setCastOpen } = useGlobalCast();
+  const { open: openSideSheet, active: activeSheet } = useSideSheet();
   const router = useRouter();
 
   useEffect(() => {
@@ -69,16 +47,12 @@ export default function SideBar({ onOpen }: { onOpen?: (id: string) => void }) {
         isGuest = !!u?.isGuest || !!u?.isAnonymous || !u?.email?.includes("@") || !!localStorage.getItem("ug_guest");
         if (!isGuest && email === ADMIN_EMAIL) isEmailAdmin = true;
       } catch {}
-
       const finalAdmin = !isGuest && (adminFlag || isEmailAdmin);
       setIsAdmin(finalAdmin);
-
       if (isEmailAdmin) localStorage.setItem("ug-admin", "true");
       if (isGuest) localStorage.removeItem("ug-admin");
-
       setCurTheme(localStorage.getItem("ug-theme") || "dark");
     };
-
     checkAdmin();
     window.addEventListener("ug-auth-changed" as any, checkAdmin);
     window.addEventListener("ug-guest-continue" as any, checkAdmin);
@@ -103,38 +77,39 @@ export default function SideBar({ onOpen }: { onOpen?: (id: string) => void }) {
   });
 
    const handleItemClick = (id: string) => {
+    const isDesktop = typeof window !== "undefined" && window.innerWidth >= 1024;
+    if (isDesktop) {
+      // toggle off if same selected
+      if (activeSheet === id) {
+        // optional: keep selected or close? close returns to movies
+        // openSideSheet(null) would close
+        return;
+      }
+      openSideSheet(id as any);
+      return;
+    }
     if (id === 'cast') {
       window.dispatchEvent(new CustomEvent("ug-close-menu-panel"));
-      setTimeout(() => {
-        setCastOpen(true);
-      }, 320);
+      setTimeout(() => { setCastOpen(true); }, 320);
       return;
     }
-
-    // ACCOUNT - open direct like bottom bar You btn
     if (id === 'account') {
       window.dispatchEvent(new CustomEvent("ug-close-menu-panel"));
-      setTimeout(() => {
-        window.dispatchEvent(new CustomEvent("ug-open-account-sheet"));
-      }, 320);
+      setTimeout(() => { window.dispatchEvent(new CustomEvent("ug-open-account-sheet")); }, 320);
       return;
     }
-
-    // SURGICAL FIX: Control Center opens as PAGE, not as sheet
     if (id === 'control-center' || id === 'control_center' || id === 'control') {
       window.dispatchEvent(new CustomEvent("ug-close-menu-panel"));
       router.push("/control-center-page");
       return;
     }
-
     onOpen?.(id);
   };
-
 
   return (
     <aside className="side-bar">
       <nav className="side-nav">
-        <Link href="/movies" className="nav-item live">
+        <Link href="/movies" className={`nav-item live ${!activeSheet ? 'is-active' : ''}`} onClick={() => { if (typeof window !== "undefined" && window.innerWidth >= 1024) openSideSheet(null as any); }}>
           <span className="nav-left">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8"><rect x="2" y="2" width="20" height="20" rx="2.18"/><line x1="7" y1="2" x2="7" y2="22"/><line x1="17" y1="2" x2="17" y2="22"/><line x1="2" y1="12" x2="22" y2="12"/></svg>
             <span className="nav-label">Movies</span>
@@ -142,19 +117,27 @@ export default function SideBar({ onOpen }: { onOpen?: (id: string) => void }) {
           <span className="live-dot">live</span>
         </Link>
         <div className="nav-divider" />
-        {sortedItems.map((i) => (
-          <button key={i.id} onClick={() => handleItemClick(i.id)} className="nav-item as-btn" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-            <span className="nav-left" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              {icons[i.id] || icons.account}
-              <span className="nav-label">{i.label}</span>
-            </span>
-            <span className="nav-right" style={{ opacity: 0.6 }}>
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M9 18l6-6-6-6" />
-              </svg>
-            </span>
-          </button>
-        ))}
+        {sortedItems.map((i) => {
+          const isSelected = activeSheet === i.id;
+          return (
+            <button 
+              key={i.id} 
+              onClick={() => handleItemClick(i.id)} 
+              className={`nav-item as-btn ${isSelected ? 'is-active' : ''}`} 
+              style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', position: 'relative' }}
+            >
+              <span className="nav-left" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                {icons[i.id] || icons.account}
+                <span className="nav-label">{i.label}</span>
+              </span>
+              <span className="nav-right" style={{ opacity: isSelected ? 1 : 0.6 }}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M9 18l6-6-6-6" />
+                </svg>
+              </span>
+            </button>
+          );
+        })}
       </nav>
       <div className="settings-section">
         <button className="settings-toggle" onClick={() => setShowSettings(v => !v)}>
@@ -176,3 +159,4 @@ export default function SideBar({ onOpen }: { onOpen?: (id: string) => void }) {
     </aside>
   );
 }
+

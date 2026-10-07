@@ -11,15 +11,13 @@ import { useReelsDrawer } from "@/stores/use-reels-drawer";
 import MobilePreview from "@/app/(dashboard)/movies/watch/[id]/mobile-preview";
 import IntroVideo from "../../intro/intro-video";
 import "./app-shell.css";
-
 import { useGlobalCast } from "@/stores/use-global-cast";
 import Cast from "../top-bar/cast";
 import CastSwipeClose from "../top-bar/cast-swipe-close";
-
 import { usePcFadersDrawer } from "@/stores/use-pc-faders-drawer";
 import PcFaders from "../top-bar/faders-drawer/pc-faders";
-
-// GLOBAL AUTH GATE + NOX V5 GUEST AWARE
+import PcSheetHost from "../side-bar/pc-sheets/pc-sheet-host";
+import { useSideSheet } from "@/stores/use-side-sheet";
 import SigninModals from "@/app/auth-system/signin-modals";
 import { useNoxSpy } from "@/app/auth-system/nox-spy";
 
@@ -36,23 +34,20 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const { open, minimized } = useWatchDrawer() as any;
   const { isOpen: isReelsOpen, movies, startIndex, currentMovie, closeReels } = useReelsDrawer() as any;
   const [isMobile, setIsMobile] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(false);
   const [showIntro, setShowIntro] = useState(false);
   const [checked, setChecked] = useState(false);
   const { isOpen: isCastOpen, setOpen: setCastOpen } = useGlobalCast();
   const { isOpen: isPcOpen } = usePcFadersDrawer() as any;
-
+  const { active } = useSideSheet();
   const isServicesPage = pathname === "/" || pathname === "/dashboard";
   const isReelsPage = pathname?.startsWith("/reels") || pathname?.startsWith("/reel");
-
   const [authOpen, setAuthOpen] = useState(false);
   const [authMode, setAuthMode] = useState<"signin" | "signup">("signin");
-
-  // NOX V5 - guest = signed in, no bypass
   const { isChecking } = useNoxSpy();
 
   useEffect(() => {
     const openSigninIfNeeded = () => {
-      // FIX: if guest or authed already exists, NEVER open modal
       if (hasValidSession()) {
         sessionStorage.removeItem("ug_nox_force_auth");
         setAuthOpen(false);
@@ -61,31 +56,23 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
       setAuthMode("signin");
       setAuthOpen(true);
     };
-
     const handleAuthChanged = () => {
-      // when guest continues or signin succeeds, close modal and clear flag
       if (hasValidSession()) {
         sessionStorage.removeItem("ug_nox_force_auth");
         setAuthOpen(false);
       }
     };
-
-    // Check pending flag on mount - but respect guest
     if (typeof window !== "undefined") {
       const pending = sessionStorage.getItem("ug_nox_force_auth");
       if (pending === "1" && !hasValidSession()) {
         setAuthMode("signin");
         setAuthOpen(true);
       }
-      if (hasValidSession()) {
-        sessionStorage.removeItem("ug_nox_force_auth");
-      }
+      if (hasValidSession()) sessionStorage.removeItem("ug_nox_force_auth");
     }
-
     window.addEventListener("ug-open-signin" as any, openSigninIfNeeded);
     window.addEventListener("ug-auth-changed" as any, handleAuthChanged);
     window.addEventListener("ug-guest-continue" as any, handleAuthChanged);
-    
     return () => {
       window.removeEventListener("ug-open-signin" as any, openSigninIfNeeded);
       window.removeEventListener("ug-auth-changed" as any, handleAuthChanged);
@@ -100,15 +87,16 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     const seen = sessionStorage.getItem("ug-intro-seen");
     if (isLanding && !seen && isMobileCheck) setShowIntro(true);
     setChecked(true);
-   
-    // FIX: kill that black overscroll stretch on mobile
     document.documentElement.style.overscrollBehavior = "none";
     document.body.style.overscrollBehavior = "none";
     document.body.style.background = "#0f1f16";
   }, []);
 
   useEffect(() => {
-    const c = () => setIsMobile(window.innerWidth <= 768);
+    const c = () => {
+      setIsMobile(window.innerWidth <= 768);
+      setIsDesktop(window.innerWidth >= 1024);
+    };
     c();
     window.addEventListener("resize", c);
     return () => window.removeEventListener("resize", c);
@@ -116,19 +104,15 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
   const isSplit = !isMobile && open && !minimized;
   if (!checked || isChecking) return null;
-
   const showTopBar = !isReelsPage && !isReelsOpen;
+  const showPcInline = isDesktop && !!active;
 
   return (
     <>
       {showIntro && <IntroVideo onFinished={() => setShowIntro(false)} />}
       <div
         className={`google-shell ${isSplit ? "is-split" : ""} ${isServicesPage ? "is-services" : ""}`}
-        style={{
-          opacity: showIntro ? 0 : 1,
-          pointerEvents: showIntro ? "none" : "auto",
-          overscrollBehavior: "none" as any,
-        }}
+        style={{ opacity: showIntro ? 0 : 1, pointerEvents: showIntro ? "none" : "auto", overscrollBehavior: "none" as any }}
       >
         <div className="giant-panel" style={{ overscrollBehavior: "contain" } as any}>
           {showTopBar ? <TopBar /> : null}
@@ -136,10 +120,16 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             <SideBar />
             <main className="content-panel">
               <div className="content-scroll" style={{ overscrollBehavior: "contain" } as any}>
-                {children}
-                {isPcOpen && !isMobile ? <PcFaders /> : null}
+                {/* NO FLASH: both mounted, only display toggles */}
+                <div style={{ display: showPcInline ? "none" : "block", minHeight: "100%" }}>
+                  {children}
+                  {isPcOpen && !isMobile ? <PcFaders /> : null}
+                </div>
+                <div style={{ display: showPcInline ? "block" : "none", minHeight: "100%" }}>
+                  <PcSheetHost />
+                </div>
+                <WatchDrawer />
               </div>
-              <WatchDrawer />
             </main>
           </div>
         </div>
@@ -147,24 +137,16 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         {isReelsOpen ? (
           <div className="reels-backdrop" onClick={closeReels}>
             <div className="reels-sheet" onClick={(e) => e.stopPropagation()}>
-              <MobilePreview
-                movies={movies}
-                startIndex={startIndex}
-                currentMovie={currentMovie}
-                onClose={closeReels}
-              />
+              <MobilePreview movies={movies} startIndex={startIndex} currentMovie={currentMovie} onClose={closeReels} />
             </div>
           </div>
         ) : null}
-
-        {/* FIX: black skin - only mount when open */}
         {isCastOpen ? (
           <CastSwipeClose isOpen={isCastOpen} onClose={() => setCastOpen(false)}>
             <Cast />
           </CastSwipeClose>
         ) : null}
       </div>
-
       <SigninModals
         isOpen={authOpen}
         mode={authMode}
@@ -182,3 +164,4 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     </>
   );
 }
+
