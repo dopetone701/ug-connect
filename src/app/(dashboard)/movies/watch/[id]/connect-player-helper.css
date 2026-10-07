@@ -1,4 +1,4 @@
-/* ===== HELPER ONLY - FINAL FIX - HOME NEVER DIES + NO BLANK + SOFT YT SHEET ===== */
+/* ===== HELPER ONLY - FINAL FIX - HOME NEVER DIES + NO BLANK + SOFT YT SHEET - ORIGINAL ===== */
 .movies-shell{
   position:relative !important;
   min-height:80vh !important;
@@ -70,5 +70,4 @@
     100%{ transform: translate3d(0,40%,0) scale(0.92); opacity:0; }
   }
 }
-
 

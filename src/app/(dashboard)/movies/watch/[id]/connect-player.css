@@ -53,7 +53,7 @@
 .connect-root .settings-wrap{position:relative}
 .connect-root .settings-menu{position:absolute;bottom:36px;right:0;width:150px;background:rgba(18,18,18,.94);border:1px solid rgba(255,255,255,.15);backdrop-filter:blur(20px);border-radius:12px;padding:6px;z-index:99}
 
-/* MOBILE YOUTUBE TOP - ONLY .connect-root */
+/* MOBILE YOUTUBE TOP - ONLY .connect-root - ORIGINAL STAYS AS IS */
 @media(max-width:768px){
 .connect-root{padding:0!important;margin:0 auto!important;width:100%!important;max-width:100%!important;background:#000!important;border-radius:0!important;border:none!important}
 .connect-root .film-giant.inner-body{width:100%!important;max-width:100%!important;height:auto!important;aspect-ratio:16/9!important;max-height:none!important;border-radius:0!important;border:none!important;margin:0!important;background:#000!important}
@@ -71,7 +71,7 @@
 .connect-root .fullscreen-logo.top-right img{max-width:32px!important;max-height:32px!important;width:32px!important}
 }
 
-/* FULLSCREEN - SCOPED ONLY */
+/* FULLSCREEN - SCOPED ONLY - ORIGINAL */
 .connect-root.is-shell-full{position:fixed!important;inset:0!important;width:100vw!important;height:100dvh!important;z-index:2147483647!important;background:#000!important;padding:0!important;margin:0!important;max-width:100vw!important}
 .connect-root.is-shell-full .film-giant.inner-body{position:fixed!important;inset:0!important;width:100vw!important;height:100dvh!important;max-width:100vw!important;max-height:100dvh!important;aspect-ratio:auto!important;border-radius:0!important;border:none!important;margin:0!important}
 .connect-root.is-shell-full .film-center,.connect-root.is-shell-full .center-cover{width:100vw!important;height:100dvh!important;max-width:100vw!important;max-height:100dvh!important;border-radius:0!important}
@@ -83,7 +83,6 @@
 .connect-root.is-shell-full .connect-controls,.connect-root.is-shell-full .center-top,.connect-root.is-shell-full .play-apple,.connect-root.is-shell-full .fullscreen-logo{z-index:20!important}
 .connect-root.is-shell-full .connect-under-section,.connect-root.is-shell-full .c-desc-wrap,.connect-root.is-shell-full .connect-action-row,.connect-root.is-shell-full .c-meta-row,.connect-root.is-shell-full .c-more-btn,.connect-root.is-shell-full .connect-desc-block{display:none!important}
 
-
 /* ===== VIDEO ACTIONS + BUTTONS - RESTORED AS WAS - SCOPED ===== */
 .connect-root .action-pills-row{
   display:flex !important;
@@ -91,7 +90,6 @@
   align-items:center !important;
   gap:8px !important;
 }
-
 .connect-root .pill-btn{
   display:inline-flex !important;
   align-items:center !important;
@@ -115,7 +113,6 @@
 .connect-root .pill-btn.mylist.added{ background:hsl(var(--primary)) !important; color:white !important; border-color:hsl(var(--primary)) !important; }
 .connect-root .pill-btn.share{ background:rgba(20,20,20,.6) !important; color:white !important; }
 .connect-root .pill-btn:hover{ transform:scale(1.02) !important; }
-
 .connect-root .connect-under-section{
   width:100% !important;
   max-width:1280px !important;
@@ -126,7 +123,6 @@
   flex-direction:column !important;
   gap:16px !important;
 }
-
 .connect-root .connect-action-row{
   display:flex !important;
   gap:10px !important;
@@ -136,7 +132,6 @@
   padding-bottom:2px !important;
 }
 .connect-root .connect-action-row::-webkit-scrollbar{ display:none !important; }
-
 .connect-root .c-action-btn{
   display:inline-flex !important;
   align-items:center !important;
@@ -154,7 +149,6 @@
   cursor:pointer !important;
   transition:all 0.2s ease !important;
 }
-
 .connect-root .c-action-btn.primary{
   background:hsl(var(--primary)) !important;
   color:hsl(var(--primary-text)) !important;
@@ -165,8 +159,6 @@
   color:hsl(var(--bg)) !important;
   border-color:hsl(var(--text)) !important;
 }
-
-/* MOBILE KEEP BUTTONS VISIBLE - DON'T HIDE */
 @media(max-width:768px){
   .connect-root .action-pills-row{
     display:flex !important;
@@ -184,7 +176,6 @@
   }
 }
 
-
 /* ===== YOUTUBE PRO PROGRESS - CLEAN ===== */
 .connect-root .connect-controls{
   left:0 !important;
@@ -197,12 +188,10 @@
   border-radius:0 !important;
   gap:0 !important;
 }
-
 .connect-root .cc-progress-top{
   width:100% !important;
   padding:0 !important;
 }
-
 .connect-root .starz-progress{
   width:100% !important;
   height:12px !important;
@@ -215,7 +204,6 @@
   border-radius:0 !important;
   cursor:pointer !important;
 }
-
 .connect-root .starz-progress-bg{
   width:100% !important;
   height:3px !important;
@@ -224,11 +212,9 @@
   position:relative !important;
   transition:height .15s ease !important;
 }
-
 .connect-root .starz-progress:hover .starz-progress-bg{
   height:5px !important;
 }
-
 .connect-root .starz-buffered{
   position:absolute !important;
   left:0 !important;
@@ -237,7 +223,6 @@
   background:rgba(255,255,255,.5) !important;
   border-radius:0 !important;
 }
-
 .connect-root .starz-progress-fill{
   position:absolute !important;
   left:0 !important;
@@ -247,7 +232,6 @@
   border-radius:0 !important;
   z-index:2 !important;
 }
-
 .connect-root .starz-thumb{
   position:absolute !important;
   top:50% !important;
@@ -260,17 +244,14 @@
   transition:transform .15s ease !important;
   z-index:3 !important;
 }
-
 .connect-root .starz-progress:hover .starz-thumb,
 .connect-root .starz-progress:active .starz-thumb{
   transform:translate(-50%,-50%) scale(1) !important;
 }
-
 .connect-root .cc-bottom-row{
   padding:8px 12px 10px 12px !important;
   margin:0 !important;
 }
-
 .connect-root .cc-left-time{
   background:transparent !important;
   border:none !important;
@@ -281,7 +262,6 @@
   font-weight:400 !important;
 }
 
-
 /* ===== YT TIME + FULLSCREEN BTN - PRO ===== */
 .connect-root .cc-bottom-row{
   display:flex !important;
@@ -290,7 +270,6 @@
   padding:6px 12px 12px 12px !important;
   background:transparent !important;
 }
-
 .connect-root .cc-left-time{
   background:transparent !important;
   border:none !important;
@@ -304,13 +283,11 @@
   letter-spacing:.02em !important;
   opacity:.9 !important;
 }
-
 .connect-root .cc-right-simple{
   display:flex !important;
   align-items:center !important;
   gap:16px !important;
 }
-
 .connect-root .cc-icon{
   width:36px !important;
   height:36px !important;
@@ -322,19 +299,15 @@
   opacity:.9 !important;
   transition:.15s ease !important;
 }
-
 .connect-root .cc-icon:hover{
   opacity:1 !important;
   transform:scale(1.1) !important;
 }
-
 .connect-root .cc-icon svg{
   width:22px !important;
   height:22px !important;
   fill:white !important;
 }
-
-/* FULLSCREEN LOGO - HIDE IN NORMAL, SHOW ONLY ON HOVER LIKE YT */
 .connect-root .fullscreen-logo.top-right{
   opacity:0 !important;
   transition:.2s ease !important;
@@ -349,8 +322,6 @@
   max-width:36px !important;
   filter:drop-shadow(0 1px 2px rgba(0,0,0,.6)) !important;
 }
-
-/* MOBILE - BIGGER TOUCH TARGETS */
 @media(max-width:768px){
   .connect-root .cc-left-time{
     font-size:11px !important;
@@ -365,8 +336,7 @@
   }
 }
 
-
-/* ===== LOGO NEVER TIMEOUT - ALWAYS VISIBLE ===== */
+/* ===== LOGO NEVER TIMEOUT - ALWAYS VISIBLE - ORIGINAL ===== */
 .connect-root .fullscreen-logo.top-right{
   opacity:1 !important;
   visibility:visible !important;
@@ -375,37 +345,22 @@
   transition:none !important;
   display:flex !important;
 }
-
-.connect-root .connect-controls,
-.connect-root .connect-controls.show,
-.connect-root:hover .fullscreen-logo.top-right,
-.connect-root .center-top,
-.connect-root .center-top.show{
-  /* don't hide logo with controls */
-}
-
 .connect-root .fullscreen-logo.top-right img{
   opacity:1 !important;
   visibility:visible !important;
 }
-
 .connect-root.is-shell-full .fullscreen-logo.top-right{
   opacity:1 !important;
   visibility:visible !important;
   display:flex !important;
   z-index:2147483647 !important;
 }
-
-
 .connect-root .center-top{
   opacity:1 !important;
   transform:translateY(0) !important;
   pointer-events:auto !important;
   gap:8px !important;
 }
-
-
-/* BACK stays, VJ fades - logo stays ref */
 .connect-root .center-top{
   position:absolute !important;
   top: 12px !important;
@@ -419,209 +374,133 @@
   transform:translateY(0) !important;
   pointer-events:auto !important;
 }
-
 .connect-root .center-top .top-pills{
   opacity:0 !important;
   transform:translateY(-6px) !important;
   pointer-events:none !important;
   transition:.32s ease !important;
 }
-
 .connect-root .center-top.show .top-pills{
   opacity:1 !important;
   transform:translateY(0) !important;
   pointer-events:auto !important;
 }
 
-
-/* =========================
-   TOP BAR
-========================= */
-
+/* TOP BAR */
 .center-top {
   position: absolute;
   top: 12px;
   left: 12px;
   right: 12px;
-
   display: flex;
   align-items: center;
   justify-content: space-between;
-
   z-index: 50;
-
   opacity: 0;
   visibility: hidden;
-
-  transition:
-    opacity 0.3s ease,
-    visibility 0s linear 0.8s;
+  transition: opacity 0.3s ease, visibility 0s linear 0.8s;
 }
-
 .center-top.show {
   opacity: 1;
   visibility: visible;
-
-  transition:
-    opacity 0.3s ease,
-    visibility 0s linear 0s;
+  transition: opacity 0.3s ease, visibility 0s linear 0s;
 }
-
 .top-left {
   display: flex;
   align-items: center;
   gap: 6px;
 }
-
 .fullscreen-logo {
   display: flex;
   align-items: center;
 }
-
 .fullscreen-logo img {
   display: block;
 }
 
-
-/* =========================
-   PLAYER CONTROLS
-========================= */
-
+/* PLAYER CONTROLS */
 .connect-controls {
   position: absolute;
   inset: 0;
-
   z-index: 40;
-
   pointer-events: none;
-
   opacity: 0;
   visibility: hidden;
-
-  transition:
-    opacity 0.4s ease,
-    visibility 0s linear 0.8s;
+  transition: opacity 0.4s ease, visibility 0s linear 0.8s;
 }
-
 .connect-controls.show {
   opacity: 1;
   visibility: visible;
-
-  transition:
-    opacity 0.3s ease,
-    visibility 0s linear 0s;
+  transition: opacity 0.3s ease, visibility 0s linear 0s;
 }
-
 .connect-controls > * {
   pointer-events: auto;
 }
 
-
-/* =========================
-   TIME + FULLSCREEN
-========================= */
-
+/* TIME + FULLSCREEN */
 .cc-above-progress {
   position: absolute;
-
   left: 12px;
   right: 12px;
   bottom: 14px;
-
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
-
 .cc-left-time {
   font-size: 11px;
   font-weight: 600;
-
   color: #fff;
-
-  text-shadow:
-    0 1px 4px rgba(0, 0, 0, 0.8);
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
 }
 
-
-/* =========================
-   FULLSCREEN BUTTON
-========================= */
-
+/* FULLSCREEN BUTTON */
 .apple-full {
   width: 28px;
   height: 28px;
-
   padding: 0;
-
   display: flex;
   align-items: center;
   justify-content: center;
-
   background: transparent;
   border: 0;
-
   cursor: pointer;
 }
 
-
-/* =========================
-   PROGRESS BAR
-========================= */
-
+/* PROGRESS BAR */
 .cc-progress-bottom {
   position: absolute;
-
   left: 0;
   right: 0;
   bottom: 0;
-
   width: 100%;
 }
-
 .cc-progress-bottom .starz-progress {
   width: 100%;
-
   cursor: pointer;
 }
-
 .cc-progress-bottom .starz-progress-bg {
   position: relative;
-
   width: 100%;
   height: 3px;
 }
 
-
-/* =========================
-   CENTER PLAY BUTTON
-========================= */
-
+/* CENTER PLAY BUTTON */
 .play-apple {
   opacity: 1;
   visibility: visible;
-
-  transition:
-    opacity 0.3s ease,
-    transform 0.2s ease;
+  transition: opacity 0.3s ease, transform 0.2s ease;
 }
-
 .play-apple:active {
   transform: scale(0.94);
 }
-
 .play-apple.hidden {
   opacity: 0;
   visibility: hidden;
-
   pointer-events: none;
 }
 
-
-/* =========================
-   PROGRESS PARTS
-========================= */
-
+/* PROGRESS PARTS */
 .starz-buffered,
 .starz-progress-fill {
   position: absolute;
@@ -629,17 +508,36 @@
   top: 0;
   height: 100%;
 }
-
 .starz-thumb {
   position: absolute;
   top: 50%;
-
   width: 9px;
   height: 9px;
-
-  transform: translate(-50%, -50%);
-
+  transform: translate(-50%,-50%);
   border-radius: 50%;
 }
 
+/* ===== LANDSCAPE FIX ONLY - PC LOOK IN LANDSCAPE - NO OVERFLOW ===== */
+@media(max-width:900px) and (orientation:landscape){
+  .connect-root{
+    padding:0 !important;
+    background:#000 !important;
+    max-width:100% !important;
+  }
+  .connect-root .film-giant.inner-body{
+    width:100% !important;
+    max-width:680px !important;
+    height:auto !important;
+    aspect-ratio:16/9 !important;
+    max-height:86dvh !important;
+    border-radius:12px !important;
+    margin:0 auto !important;
+    border:none !important;
+  }
+  .connect-root .film-center,.connect-root .center-cover{
+    border-radius:12px !important;
+  }
+}
+
 @import "./connect-player-helper.css";
+
