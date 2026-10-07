@@ -26,12 +26,28 @@ function hasValidSession() {
   return (!!token && !!user) || !!guest;
 }
 
+function isPhoneDevice() {
+  if (typeof window === "undefined" || typeof navigator === "undefined") return false;
+  return (
+    window.matchMedia("(pointer: coarse)").matches ||
+    navigator.maxTouchPoints > 0 ||
+    /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent) ||
+    (navigator as any).userAgentData?.mobile === true
+  );
+}
+
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { open, minimized } = useWatchDrawer() as any;
   const { isOpen: isReelsOpen, movies, startIndex, currentMovie, closeReels } = useReelsDrawer() as any;
-  const [isMobile, setIsMobile] = useState(false);
-  const [isDesktop, setIsDesktop] = useState(true);
+  const [isMobile, setIsMobile] = useState(() => {
+    if (typeof window !== "undefined") return isPhoneDevice() || window.innerWidth <= 1024;
+    return false;
+  });
+  const [isDesktop, setIsDesktop] = useState(() => {
+    if (typeof window !== "undefined") return !isPhoneDevice() && window.innerWidth > 1024;
+    return true;
+  });
   const [showIntro, setShowIntro] = useState(false);
   const [checked, setChecked] = useState(false);
   const { isOpen: isCastOpen, setOpen: setCastOpen } = useGlobalCast();
@@ -79,13 +95,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     initTheme();
     const check = () => {
-      // STARZPLAY LOGIC: if touch device (phone/tablet), always mobile UI even in landscape
-      const isTouch =
-        window.matchMedia("(pointer: coarse)").matches ||
-        navigator.maxTouchPoints > 0 ||
-        /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-
-      if (isTouch) {
+      if (isPhoneDevice()) {
         setIsMobile(true);
         setIsDesktop(false);
       } else {
@@ -93,7 +103,6 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         setIsMobile(mobile);
         setIsDesktop(!mobile);
       }
-
       const isLanding = window.location.pathname === "/";
       const seen = sessionStorage.getItem("ug-intro-seen");
       if (isLanding && !seen && window.innerWidth <= 1024) setShowIntro(true);
@@ -108,7 +117,6 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
-  const isSplit = false;
   if (!checked || isChecking) return null;
   const showTopBar = !isReelsPage && !isReelsOpen;
 
