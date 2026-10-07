@@ -1,180 +1,815 @@
+/* =========================================================
+   APP SHELL
+   DEVICE-SAFE / MOBILE-FIRST BOUNDARY
+
+   IMPORTANT:
+   .is-mobile  = mobile UI regardless of viewport width
+   .is-desktop = desktop UI
+
+   DO NOT use viewport width as the primary device detector.
+   ========================================================= */
+
+
+/* =========================================================
+   ROOT SHELL
+   ========================================================= */
+
 .google-shell {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  height: 100dvh;
-  min-height: 100dvh;
-  max-height: 100dvh;
-  background: hsl(var(--surface));
-  overflow: hidden;
   position: fixed;
   inset: 0;
+
+  width: 100%;
+  height: 100dvh;
+
+  min-width: 0;
+  min-height: 0;
+  max-width: 100vw;
+  max-height: 100dvh;
+
+  display: flex;
+  flex-direction: column;
+
+  box-sizing: border-box;
+
+  background: hsl(var(--surface));
+
+  overflow: hidden;
+
   padding-top: env(safe-area-inset-top);
+
+  isolation: isolate;
+
+  overscroll-behavior: none;
+}
+
+
+/* =========================================================
+   HARD MOBILE WIDTH PROTECTION
+   ========================================================= */
+
+.google-shell.is-mobile {
+  width: 100%;
+  max-width: 100vw;
+
+  min-width: 0;
+
+  overflow: hidden;
+
+  /*
+   * Mobile UI always wins.
+   * This remains true in landscape.
+   */
+  --shell-device: mobile;
+}
+
+
+/* =========================================================
+   HARD DESKTOP MODE
+   ========================================================= */
+
+.google-shell.is-desktop {
+  width: 100%;
+  max-width: 100vw;
+
+  min-width: 0;
+
+  --shell-device: desktop;
+}
+
+
+/* =========================================================
+   GIANT PANEL
+   ========================================================= */
+
+.giant-panel {
+  flex: 1 1 auto;
+
+  min-width: 0;
+  min-height: 0;
+
+  width: 100%;
+
+  display: flex;
+  flex-direction: column;
+
+  overflow: hidden;
+
+  background: hsl(var(--surface));
+
+  position: relative;
+
   box-sizing: border-box;
 }
 
-.giant-panel {
-  flex: 1;
-  min-height: 0;
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  background: hsl(var(--surface));
-  position: relative;
-}
+
+/* =========================================================
+   GIANT BODY
+   ========================================================= */
 
 .giant-body {
-  flex: 1;
+  flex: 1 1 auto;
+
+  min-width: 0;
   min-height: 0;
+
+  width: 100%;
+
   display: flex;
+
   overflow: hidden;
+
   gap: 0;
+
   padding-right: 8px;
   padding-bottom: 8px;
+
   position: relative;
+
+  box-sizing: border-box;
+}
+
+
+/* =========================================================
+   CONTENT PANEL
+   ========================================================= */
+
+.content-panel {
+  flex: 1 1 0;
+
+  min-width: 0;
+  min-height: 0;
+
+  width: 100%;
+
+  background: hsl(var(--bg));
+
+  border-radius: 16px;
+
+  border: 1px solid hsl(var(--border));
+
+  display: flex;
+  flex-direction: column;
+
+  position: relative;
+
+  overflow: hidden;
+
+  padding: 0;
+
+  box-sizing: border-box;
+}
+
+
+/* =========================================================
+   CONTENT PANEL CHILDREN
+   ========================================================= */
+
+.content-panel > * {
+  flex-shrink: 0;
+}
+
+
+/* =========================================================
+   NO-SCROLL MODE
+   ========================================================= */
+
+.content-panel.no-scroll {
+  overflow: hidden;
+}
+
+
+/* =========================================================
+   CONTENT PANEL SCROLLBAR
+   ========================================================= */
+
+.content-panel::-webkit-scrollbar {
+  display: none;
 }
 
 .content-panel {
-  flex: 1;
-  min-height: 0;
-  width: 100%;
-  background: hsl(var(--bg));
-  border-radius: 16px;
-  border: 1px solid hsl(var(--border));
-  display: flex;
-  flex-direction: column;
-  position: relative;
-  overflow: hidden;
-  padding: 0;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
-.content-panel > * { flex-shrink: 0; }
-.content-panel.no-scroll { overflow: hidden; }
-.content-panel::-webkit-scrollbar { display: none; }
-.content-panel { scrollbar-width: none; -ms-overflow-style: none; }
+
+/* =========================================================
+   CONTENT SCROLL
+   ========================================================= */
 
 .content-scroll {
-  flex: 1;
+  flex: 1 1 auto;
+
+  min-width: 0;
   min-height: 0;
+
   width: 100%;
+
   overflow-y: auto;
   overflow-x: hidden;
+
   overscroll-behavior: contain;
+
   -webkit-overflow-scrolling: touch;
+
+  box-sizing: border-box;
+
+  /*
+   * Prevent horizontal desktop layouts from forcing
+   * the mobile shell wider than the viewport.
+   */
+  max-width: 100%;
 }
+
+
+/* =========================================================
+   CONTENT INNER
+   ========================================================= */
+
+.content-inner {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+
+  box-sizing: border-box;
+}
+
+
+/* =========================================================
+   WATCH DRAWER
+   ========================================================= */
 
 .content-panel .watch-drawer,
 .watch-drawer {
   position: absolute;
+
   inset: 0;
+
   width: 100%;
   height: 100%;
+
+  max-width: 100%;
+  max-height: 100%;
+
   z-index: 50;
+
+  box-sizing: border-box;
 }
 
-/* Reels - outside giant-panel */
+
+/* =========================================================
+   REELS BACKDROP
+   ========================================================= */
+
 .reels-backdrop {
   position: fixed;
+
   inset: 0;
+
   width: 100vw;
   height: 100dvh;
+
+  max-width: 100vw;
+  max-height: 100dvh;
+
   z-index: 9999;
+
   display: flex;
   align-items: flex-end;
+
   background: hsl(var(--bg));
+
+  overflow: hidden;
+
+  box-sizing: border-box;
 }
+
+
+/* =========================================================
+   REELS SHEET
+   ========================================================= */
 
 .reels-sheet {
   width: 100%;
   height: 100%;
+
+  max-width: 100%;
+  max-height: 100%;
+
+  min-width: 0;
+  min-height: 0;
+
   display: flex;
   flex-direction: column;
+
+  overflow: hidden;
+
+  box-sizing: border-box;
 }
 
-@media (max-width: 768px) {
-  .giant-body { padding: 0; }
+
+/* =========================================================
+   =========================================================
+   MOBILE MODE
+   =========================================================
+   IMPORTANT:
+   These rules are based on .is-mobile rather than width.
+   Therefore landscape phones remain mobile.
+   =========================================================
+   ========================================================= */
+
+.google-shell.is-mobile {
+
+  /*
+   * Kill desktop spacing.
+   */
+  .giant-body {
+    width: 100%;
+    max-width: 100%;
+
+    min-width: 0;
+
+    padding: 0;
+
+    gap: 0;
+
+    overflow: hidden;
+  }
+
+
+  /*
+   * Mobile content fills the available body.
+   */
   .content-panel {
+    width: 100%;
+    max-width: 100%;
+
+    min-width: 0;
+    min-height: 0;
+
+    flex: 1 1 100%;
+
     border-radius: 0;
+
     border: none;
+
+    overflow: hidden;
   }
+
+
+  /*
+   * Mobile scrolling.
+   */
   .content-scroll {
-    padding-bottom: calc(80px + env(safe-area-inset-bottom));
+    width: 100%;
+    max-width: 100%;
+
+    min-width: 0;
+    min-height: 0;
+
+    overflow-x: hidden;
+    overflow-y: auto;
+
+    /*
+     * BottomBar clearance.
+     */
+    padding-bottom:
+      calc(
+        80px +
+        env(safe-area-inset-bottom)
+      );
+
+    box-sizing: border-box;
   }
-}
 
 
-@media (max-width: 768px) {
-  /* WATCH + REELS - FIT IN SCROLLABLE BODY, NOT TOUCH 6:55 BAR */
+  /*
+   * Watch drawer belongs inside mobile shell.
+   */
   .content-panel .watch-drawer,
   .watch-drawer,
   .watch-drawer-root {
     position: absolute !important;
+
     inset: 0 !important;
+
     width: 100% !important;
     height: 100% !important;
+
+    max-width: 100% !important;
     max-height: 100% !important;
+
+    min-width: 0 !important;
+    min-height: 0 !important;
   }
+
+
   .watch-drawer-panel {
-    height: 100% !important;
-    max-height: 100% !important;
-  }
-  .reels-backdrop {
-    position: absolute !important;
-    inset: 0 !important;
     width: 100% !important;
     height: 100% !important;
+
+    max-width: 100% !important;
     max-height: 100% !important;
+
+    min-width: 0 !important;
+    min-height: 0 !important;
+  }
+
+
+  /*
+   * Reels must never become a desktop-sized panel.
+   */
+  .reels-backdrop {
+    position: fixed;
+
+    inset: 0;
+
+    width: 100vw;
+    height: 100dvh;
+
+    max-width: 100vw;
+    max-height: 100dvh;
+
+    overflow: hidden;
+  }
+
+
+  .reels-sheet {
+    width: 100%;
+    height: 100%;
+
+    max-width: 100%;
+    max-height: 100%;
+
+    min-width: 0;
+    min-height: 0;
+
+    overflow: hidden;
   }
 }
 
 
-/* FIX: service page should have no sidebar space / red */
+/* =========================================================
+   MOBILE HARD SIDEBAR KILL
+   =========================================================
+
+   Even if another component accidentally places a sidebar
+   inside giant-body, mobile mode kills it.
+   ========================================================= */
+
+.google-shell.is-mobile .side-bar,
+.google-shell.is-mobile .sidebar,
+.google-shell.is-mobile [class*="side-bar"],
+.google-shell.is-mobile [class*="SideBar"] {
+  display: none !important;
+
+  width: 0 !important;
+  min-width: 0 !important;
+  max-width: 0 !important;
+
+  flex: 0 0 0 !important;
+
+  margin: 0 !important;
+  padding: 0 !important;
+
+  visibility: hidden !important;
+}
+
+
+/* =========================================================
+   MOBILE DESKTOP-ONLY ELEMENT PROTECTION
+   ========================================================= */
+
+.google-shell.is-mobile .desktop-only,
+.google-shell.is-mobile [data-desktop-only="true"] {
+  display: none !important;
+}
+
+
+/* =========================================================
+   DESKTOP-ONLY ELEMENTS
+   ========================================================= */
+
+.google-shell.is-desktop .mobile-only,
+.google-shell.is-desktop [data-mobile-only="true"] {
+  display: none !important;
+}
+
+
+/* =========================================================
+   SERVICE PAGE
+   ========================================================= */
+
 .google-shell.is-services .giant-body {
   grid-template-columns: 1fr !important;
+
   margin-left: 0 !important;
+
   background: hsl(var(--background)) !important;
 }
 
+
+/*
+ * Services pages do not show sidebar.
+ */
 .google-shell.is-services .side-bar,
 .google-shell.is-services .sidebar {
   display: none !important;
+
   width: 0 !important;
+  min-width: 0 !important;
+
+  flex: 0 0 0 !important;
 }
 
-/* === DESKTOP ONLY FIX - shrink to fit, no overflow - MOBILE NOT TOUCHED === */
-.is-desktop .giant-body {
+
+/* =========================================================
+   DESKTOP MODE ONLY
+   ========================================================= */
+
+.google-shell.is-desktop .giant-body {
   min-width: 0;
+
+  width: 100%;
+  max-width: 100%;
 }
-.is-desktop .content-panel {
+
+
+.google-shell.is-desktop .content-panel {
   min-width: 0;
+
   flex: 1 1 0;
+
   overflow: hidden;
 }
-.is-desktop .content-scroll {
+
+
+.google-shell.is-desktop .content-scroll {
   min-width: 0;
+
+  max-width: 100%;
 }
 
-/* when PC window gets small (like your Image 2 laptop), 
-   keep PC layout but make sidebar a bit smaller and content shrink */
+
+/* =========================================================
+   DESKTOP SIDEBAR SAFETY
+   ========================================================= */
+
+.google-shell.is-desktop .giant-body > .side-bar,
+.google-shell.is-desktop .giant-body > .sidebar {
+  flex-shrink: 0;
+}
+
+
+/* =========================================================
+   SMALLER DESKTOP WINDOW
+   =========================================================
+
+   IMPORTANT:
+   These rules only apply to .is-desktop.
+
+   A phone in landscape can be 769-1024px wide and WILL NOT
+   enter these rules because its shell is .is-mobile.
+   ========================================================= */
+
 @media (max-width: 1280px) and (min-width: 769px) {
-  .is-desktop .giant-body .side-bar,
-  .is-desktop .giant-body [class*="side-bar"],
-  .is-desktop .giant-body [class*="SideBar"] {
+
+  .google-shell.is-desktop
+  .giant-body
+  .side-bar,
+
+  .google-shell.is-desktop
+  .giant-body
+  [class*="side-bar"],
+
+  .google-shell.is-desktop
+  .giant-body
+  [class*="SideBar"] {
+
     flex: 0 0 200px !important;
+
     width: 200px !important;
     min-width: 200px !important;
   }
 }
 
+
+/* =========================================================
+   EVEN SMALLER DESKTOP WINDOW
+   ========================================================= */
+
 @media (max-width: 1100px) and (min-width: 769px) {
-  .is-desktop .giant-body .side-bar,
-  .is-desktop .giant-body [class*="side-bar"] {
+
+  .google-shell.is-desktop
+  .giant-body
+  .side-bar,
+
+  .google-shell.is-desktop
+  .giant-body
+  [class*="side-bar"] {
+
     flex: 0 0 180px !important;
+
     width: 180px !important;
     min-width: 180px !important;
   }
-  .is-desktop .giant-panel {
+
+
+  .google-shell.is-desktop
+  .giant-panel {
+
     font-size: 95%;
   }
+}
+
+
+/* =========================================================
+   VERY SMALL DESKTOP / TABLET-LIKE WIDTH
+   =========================================================
+
+   This intentionally does NOT switch to mobile based on CSS.
+   JS device detection decides that.
+
+   This section only prevents overflow if a real desktop
+   browser window is narrow.
+   ========================================================= */
+
+@media (max-width: 1024px) {
+
+  .google-shell.is-desktop {
+    overflow: hidden;
+  }
+
+  .google-shell.is-desktop .giant-body {
+    min-width: 0;
+    max-width: 100vw;
+  }
+
+  .google-shell.is-desktop .content-panel {
+    min-width: 0;
+    max-width: 100%;
+  }
+}
+
+
+/* =========================================================
+   MOBILE SAFE AREA
+   ========================================================= */
+
+.google-shell.is-mobile {
+  padding-top: env(safe-area-inset-top);
+  padding-right: 0;
+  padding-left: 0;
+}
+
+
+/* =========================================================
+   MOBILE LANDSCAPE
+   =========================================================
+
+   NO DESKTOP SWITCH HERE.
+
+   The shell remains .is-mobile because JS already detected
+   the physical/touch device.
+   ========================================================= */
+
+@media (orientation: landscape) {
+
+  .google-shell.is-mobile {
+    width: 100vw;
+    max-width: 100vw;
+
+    height: 100dvh;
+    max-height: 100dvh;
+
+    overflow: hidden;
+  }
+
+  .google-shell.is-mobile .giant-body {
+    padding: 0;
+  }
+
+  .google-shell.is-mobile .content-panel {
+    border-radius: 0;
+    border: none;
+  }
+
+  .google-shell.is-mobile .content-scroll {
+    padding-bottom:
+      calc(
+        80px +
+        env(safe-area-inset-bottom)
+      );
+  }
+}
+
+
+/* =========================================================
+   ULTRA-WIDE CONTENT PROTECTION
+   ========================================================= */
+
+.google-shell.is-mobile * {
+  /*
+   * Prevent common accidental fixed-width children from
+   * forcing the shell horizontally.
+   */
+  max-width: 100%;
+}
+
+
+/*
+ * EXCEPTION:
+ * Images/media should still obey their own dimensions.
+ */
+.google-shell.is-mobile img,
+.google-shell.is-mobile video,
+.google-shell.is-mobile canvas,
+.google-shell.is-mobile svg {
+  max-width: 100%;
+}
+
+
+/* =========================================================
+   MOBILE HORIZONTAL OVERFLOW KILL
+   ========================================================= */
+
+.google-shell.is-mobile,
+.google-shell.is-mobile .giant-panel,
+.google-shell.is-mobile .giant-body,
+.google-shell.is-mobile .content-panel,
+.google-shell.is-mobile .content-scroll {
+  overflow-x: hidden;
+}
+
+
+/* =========================================================
+   DESKTOP HORIZONTAL OVERFLOW PROTECTION
+   ========================================================= */
+
+.google-shell.is-desktop,
+.google-shell.is-desktop .giant-panel,
+.google-shell.is-desktop .giant-body,
+.google-shell.is-desktop .content-panel,
+.google-shell.is-desktop .content-scroll {
+  max-width: 100vw;
+}
+
+
+/* =========================================================
+   PREVENT BODY-LEVEL OVERSCROLL EFFECTS
+   ========================================================= */
+
+.google-shell.is-mobile {
+  overscroll-behavior: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+
+/* =========================================================
+   MOBILE BOTTOM SAFE AREA
+   ========================================================= */
+
+.google-shell.is-mobile::after {
+  content: "";
+
+  position: fixed;
+
+  left: 0;
+  right: 0;
+  bottom: 0;
+
+  height: env(safe-area-inset-bottom);
+
+  pointer-events: none;
+
+  z-index: 100000;
+}
+
+
+/* =========================================================
+   FINAL DEVICE MODE GUARDS
+   ========================================================= */
+
+/*
+ * MOBILE = NEVER SHOW DESKTOP SIDEBAR
+ */
+.google-shell[data-mobile="true"]
+  .side-bar,
+
+.google-shell[data-mobile="true"]
+  .sidebar {
+
+  display: none !important;
+}
+
+
+/*
+ * DESKTOP = NEVER SHOW MOBILE-ONLY ELEMENTS
+ */
+.google-shell[data-desktop="true"]
+  .mobile-only,
+
+.google-shell[data-desktop="true"]
+  [data-mobile-only="true"] {
+
+  display: none !important;
 }
