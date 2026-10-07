@@ -14,9 +14,6 @@ import "./app-shell.css";
 import { useGlobalCast } from "@/stores/use-global-cast";
 import Cast from "../top-bar/cast";
 import CastSwipeClose from "../top-bar/cast-swipe-close";
-import { usePcFadersDrawer } from "@/stores/use-pc-faders-drawer";
-import PcFaders from "../top-bar/faders-drawer/pc-faders";
-import PcSheetHost from "../side-bar/pc-sheets/pc-sheet-host";
 import { useSideSheet } from "@/stores/use-side-sheet";
 import SigninModals from "@/app/auth-system/signin-modals";
 import { useNoxSpy } from "@/app/auth-system/nox-spy";
@@ -34,11 +31,10 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const { open, minimized } = useWatchDrawer() as any;
   const { isOpen: isReelsOpen, movies, startIndex, currentMovie, closeReels } = useReelsDrawer() as any;
   const [isMobile, setIsMobile] = useState(false);
-  const [isDesktop, setIsDesktop] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(true);
   const [showIntro, setShowIntro] = useState(false);
   const [checked, setChecked] = useState(false);
   const { isOpen: isCastOpen, setOpen: setCastOpen } = useGlobalCast();
-  const { isOpen: isPcOpen } = usePcFadersDrawer() as any;
   const { active } = useSideSheet();
   const isServicesPage = pathname === "/" || pathname === "/dashboard";
   const isReelsPage = pathname?.startsWith("/reels") || pathname?.startsWith("/reel");
@@ -82,58 +78,44 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     initTheme();
-    const isMobileCheck = window.innerWidth <= 768;
-    const isLanding = window.location.pathname === "/";
-    const seen = sessionStorage.getItem("ug-intro-seen");
-    if (isLanding && !seen && isMobileCheck) setShowIntro(true);
-    setChecked(true);
-    document.documentElement.style.overscrollBehavior = "none";
-    document.body.style.overscrollBehavior = "none";
-    document.body.style.background = "#0f1f16";
-  }, []);
-
-  useEffect(() => {
-    const c = () => {
-      setIsMobile(window.innerWidth <= 768);
-      setIsDesktop(window.innerWidth >= 1024);
+    const check = () => {
+      const mobile = window.innerWidth <= 1024;
+      setIsMobile(mobile);
+      setIsDesktop(!mobile);
+      const isLanding = window.location.pathname === "/";
+      const seen = sessionStorage.getItem("ug-intro-seen");
+      if (isLanding && !seen && mobile) setShowIntro(true);
+      setChecked(true);
     };
-    c();
-    window.addEventListener("resize", c);
-    return () => window.removeEventListener("resize", c);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
   }, []);
 
-  const isSplit = !isMobile && open && !minimized;
+  const isSplit = false;
   if (!checked || isChecking) return null;
   const showTopBar = !isReelsPage && !isReelsOpen;
-  const showPcInline = isDesktop && !!active;
 
   return (
     <>
       {showIntro && <IntroVideo onFinished={() => setShowIntro(false)} />}
       <div
-        className={`google-shell ${isSplit ? "is-split" : ""} ${isServicesPage ? "is-services" : ""}`}
-        style={{ opacity: showIntro ? 0 : 1, pointerEvents: showIntro ? "none" : "auto", overscrollBehavior: "none" as any }}
+        className={`google-shell ${isMobile ? "is-mobile" : "is-desktop"} ${isServicesPage ? "is-services" : ""}`}
+        style={{ opacity: showIntro ? 0 : 1, pointerEvents: showIntro ? "none" : "auto" }}
       >
-        <div className="giant-panel" style={{ overscrollBehavior: "contain" } as any}>
+        <div className="giant-panel">
           {showTopBar ? <TopBar /> : null}
           <div className="giant-body">
-            <SideBar />
+            {isDesktop ? <SideBar /> : null}
             <main className="content-panel">
-              <div className="content-scroll" style={{ overscrollBehavior: "contain" } as any}>
-                {/* NO FLASH: both mounted, only display toggles */}
-                <div style={{ display: showPcInline ? "none" : "block", minHeight: "100%" }}>
-                  {children}
-                  {isPcOpen && !isMobile ? <PcFaders /> : null}
-                </div>
-                <div style={{ display: showPcInline ? "block" : "none", minHeight: "100%" }}>
-                  <PcSheetHost />
-                </div>
+              <div className="content-scroll">
+                <div style={{ display: "block", minHeight: "100%" }}>{children}</div>
                 <WatchDrawer />
               </div>
             </main>
           </div>
         </div>
-        <BottomBar />
+        {isMobile ? <BottomBar /> : null}
         {isReelsOpen ? (
           <div className="reels-backdrop" onClick={closeReels}>
             <div className="reels-sheet" onClick={(e) => e.stopPropagation()}>
@@ -164,4 +146,3 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     </>
   );
 }
-

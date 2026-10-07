@@ -141,3 +141,40 @@
   display: none !important;
   width: 0 !important;
 }
+
+/* === DESKTOP ONLY FIX - shrink to fit, no overflow - MOBILE NOT TOUCHED === */
+.is-desktop .giant-body {
+  min-width: 0;
+}
+.is-desktop .content-panel {
+  min-width: 0;
+  flex: 1 1 0;
+  overflow: hidden;
+}
+.is-desktop .content-scroll {
+  min-width: 0;
+}
+
+/* when PC window gets small (like your Image 2 laptop), 
+   keep PC layout but make sidebar a bit smaller and content shrink */
+@media (max-width: 1280px) and (min-width: 769px) {
+  .is-desktop .giant-body .side-bar,
+  .is-desktop .giant-body [class*="side-bar"],
+  .is-desktop .giant-body [class*="SideBar"] {
+    flex: 0 0 200px !important;
+    width: 200px !important;
+    min-width: 200px !important;
+  }
+}
+
+@media (max-width: 1100px) and (min-width: 769px) {
+  .is-desktop .giant-body .side-bar,
+  .is-desktop .giant-body [class*="side-bar"] {
+    flex: 0 0 180px !important;
+    width: 180px !important;
+    min-width: 180px !important;
+  }
+  .is-desktop .giant-panel {
+    font-size: 95%;
+  }
+}
