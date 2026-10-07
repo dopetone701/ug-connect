@@ -27,12 +27,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" style={{ background: "hsl(var(--bg))" }}>
       <head>
-        {/* HARD LOCK orientation via CSS */}
-        <style dangerouslySetInnerHTML={{__html: `
-          @media (orientation: landscape) and (max-height: 600px) {
-            html { transform: none !important; }
-          }
-        `}} />
+       
       </head>
       <body style={{ background: "hsl(var(--bg))", margin: 0, padding: 0 }}>
         <EngineProvider>

@@ -28,12 +28,15 @@ function hasValidSession() {
 
 function isPhoneDevice() {
   if (typeof window === "undefined" || typeof navigator === "undefined") return false;
-  return (
-    window.matchMedia("(pointer: coarse)").matches ||
-    navigator.maxTouchPoints > 0 ||
-    /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent) ||
-    (navigator as any).userAgentData?.mobile === true
-  );
+  const ua = navigator.userAgent || "";
+  // WhatsApp / STARZ way: check UA + touch + iPad desktop mode + new mobile flag
+  const isMobileUA = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(ua);
+  const isTouch = "ontouchstart" in window || navigator.maxTouchPoints > 0;
+  const isIPadDesktopMode = navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1;
+  const isNewMobileFlag = (navigator as any).userAgentData?.mobile === true;
+  const isCoarse = window.matchMedia("(pointer: coarse)").matches;
+
+  return isMobileUA || isIPadDesktopMode || isNewMobileFlag || isCoarse || isTouch;
 }
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
@@ -96,6 +99,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     initTheme();
     const check = () => {
       if (isPhoneDevice()) {
+        // PHONE: portrait + landscape = SAME mobile UI like WhatsApp
         setIsMobile(true);
         setIsDesktop(false);
       } else {
