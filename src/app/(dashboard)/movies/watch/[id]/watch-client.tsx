@@ -83,10 +83,14 @@ export default function WatchPage({
   })
 
   // === FIXED HANDOFF: PREVIEW -> REELS ONLY, FULL -> WATCH ONLY ===
-  useEffect(() => {
+   useEffect(() => {
     if (isOverlay) return
     const onResize = () => {
+      // BULLETPROOF: Never switch modes when fullscreen
+      if (document.fullscreenElement || (document as any).webkitFullscreenElement || isFullScreen) return
       if (window.innerWidth > 768) return
+      // ... keep your existing logic below
+
       if (!effectiveId ||!movie) return
 
       try {
@@ -159,17 +163,66 @@ export default function WatchPage({
     }else{ videoRef.current.pause(); setPlaying(false) }
   }, [])
 
-  const toggleFullscreen = useCallback(async () => {
-    const video = videoRef.current as any; const root = rootRef.current as any
-    if (!video ||!root) return
-    if (!isFullScreen) {
-      setIsFullScreen(true); onFsChange?.(true); document.body.style.overflow = 'hidden'
-      try { if (video.webkitEnterFullscreen) video.webkitEnterFullscreen(); else if (root.requestFullscreen) await root.requestFullscreen({ navigationUI: "hide" }) } catch {}
-    } else {
-      setIsFullScreen(false); onFsChange?.(false); document.body.style.overflow = ''
-      try { if (document.fullscreenElement) await document.exitFullscreen() } catch {}
+   const toggleFullscreen = useCallback(async () => {
+    const video = videoRef.current as any
+    const root = rootRef.current as any
+    if (!video || !root) return
+
+    // save progress before any OS lock - so user never notices
+    const savedTime = video.currentTime
+    const wasPlaying = !video.paused
+
+    try {
+      const { ScreenOrientation } = await import('@capacitor/screen-orientation').catch(()=> ({ ScreenOrientation: null } as any))
+
+      if (!isFullScreen) {
+        // --- ENTER FULLSCREEN -> LANDSCAPE ---
+        setIsFullScreen(true)
+        onFsChange?.(true)
+        document.body.style.overflow = 'hidden'
+
+        // 1. Unlock first, then force landscape (STARZ)
+        try { await ScreenOrientation?.unlock?.() } catch {}
+        try { await (screen.orientation as any)?.unlock?.() } catch {}
+        try { await ScreenOrientation?.lock?.({ orientation: 'landscape' }) } catch {}
+        try { await (screen.orientation as any)?.lock?.('landscape') } catch {}
+
+        // 2. Request fullscreen on root (not video, so controls stay)
+        try {
+          if (root.requestFullscreen) {
+            await root.requestFullscreen({ navigationUI: "hide" } as any)
+          } else if (video.webkitEnterFullscreen) {
+            video.webkitEnterFullscreen()
+          }
+        } catch {}
+
+        // 3. Restore time if browser reset it
+        if (Math.abs(video.currentTime - savedTime) > 0.5) {
+          video.currentTime = savedTime
+        }
+        if (wasPlaying) video.play().catch(()=>{})
+
+      } else {
+        // --- EXIT FULLSCREEN -> PORTRAIT ---
+        try {
+          if (document.fullscreenElement) await document.exitFullscreen()
+          if ((document as any).webkitFullscreenElement) await (document as any).webkitExitFullscreen?.()
+        } catch {}
+
+        setIsFullScreen(false)
+        onFsChange?.(false)
+        document.body.style.overflow = ''
+
+        // Lock back to portrait
+        try { await ScreenOrientation?.lock?.({ orientation: 'portrait' }) } catch {}
+        try { await (screen.orientation as any)?.lock?.('portrait') } catch {}
+      }
+    } catch (e) {
+      // Fallback: still toggle UI even if orientation fails
+      setIsFullScreen(!isFullScreen)
     }
   }, [isFullScreen, onFsChange])
+
 
   const formatTime = useCallback((sec: number) => {
     if(!sec || isNaN(sec)) return "0:00"

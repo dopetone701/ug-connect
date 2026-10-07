@@ -26,16 +26,19 @@ export default function WatchDrawer(){
     else setIsFullscreen(v=>!v);
   }, []);
 
-  useEffect(()=>{
-    const check = () => setIsMobile(window.innerWidth <= 768);
+ useEffect(()=>{
+  const check = () => setIsMobile(window.innerWidth <= 1024);
+
     check(); window.addEventListener("resize", check);
     return () => window.removeEventListener("resize", check);
   },[]);
 
-  // SWITCH TO PC VERSION WHEN RESIZING
+   // SWITCH TO PC VERSION WHEN RESIZING - BULLETPROOF
   useEffect(()=>{
     const handleSwitch = () => {
-      const isPC = window.innerWidth > 768;
+      // NEVER switch while fullscreen - bulletproof
+      if(isFullscreen || document.fullscreenElement || (document as any).webkitFullscreenElement) return
+      const isPC = window.innerWidth > 1024; // use 1024 not 768
       if(isPC && open &&!minimized && movieId &&!isClosing){
         const t = playType || 'full';
         closeDrawer();
@@ -47,14 +50,11 @@ export default function WatchDrawer(){
     };
     window.addEventListener("resize", handleSwitch);
     return () => window.removeEventListener("resize", handleSwitch);
-  }, [open, minimized, movieId, playType, isClosing, closeDrawer, router]);
+  }, [open, minimized, movieId, playType, isClosing, closeDrawer, router, isFullscreen]);
 
-  useEffect(()=>{
-    if(!showControls) return;
-    const t = setTimeout(()=> setShowControls(false), 3000);
-    return ()=> clearTimeout(t);
-  }, [showControls]);
-
+  // REMOVED auto orientation effect for STARZ style
+  // If you want YouTube auto-rotate, uncomment this, but for STARZ keep it deleted
+  /*
   useEffect(()=>{
     if(!isMobile || minimized) return;
     const handleOrientation = () => {
@@ -70,6 +70,16 @@ export default function WatchDrawer(){
       window.removeEventListener("orientationchange", handleOrientation);
     };
   }, [isMobile, open, minimized, isFullscreen, triggerFsBtn]);
+  */
+
+
+  useEffect(()=>{
+    if(!showControls) return;
+    const t = setTimeout(()=> setShowControls(false), 3000);
+    return ()=> clearTimeout(t);
+  }, [showControls]);
+
+  
 
   if(!movieId) return null;
   if(!open &&!minimized &&!isClosing) return null;

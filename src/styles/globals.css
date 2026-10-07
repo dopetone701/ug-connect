@@ -5,21 +5,20 @@
 @tailwind utilities;
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
-html { 
-  background: hsl(var(--bg)); 
+html {
+  background: hsl(var(--bg));
   min-height: calc(100% + env(safe-area-inset-top));
 }
-body { 
+body {
   min-height:100dvh;
   width:100vw;
-  background: hsl(var(--bg)); 
-  color: hsl(var(--text)); 
-  font-family: Inter, -apple-system, BlinkMacSystemFont, sans-serif; 
-  -webkit-font-smoothing: antialiased; 
+  background: hsl(var(--bg));
+  color: hsl(var(--text));
+  font-family: Inter, -apple-system, BlinkMacSystemFont, sans-serif;
+  -webkit-font-smoothing: antialiased;
 }
 button { cursor: pointer; border: none; background: none; }
 html, body { overflow-x: hidden; }
-
 
 /* DEPTH + VARIATION SYSTEM */
 :root {
@@ -132,7 +131,6 @@ html, body { overflow-x: hidden; }
   .content-panel::-webkit-scrollbar { width: 0; }
   .content-panel { scrollbar-width: none; -ms-overflow-style: none; }
 
-
   /* MOBILE - kill separators only */
 @media (max-width: 768px){
   .top-bar{
@@ -166,7 +164,7 @@ html, body { overflow-x: hidden; }
 @media (max-width: 1024px) {
   /* When mobile video exists, kill PC chrome */
   body:has(.mob-full-root) {
-    background: #e60000 !important;
+    background: hsl(var(--bg)) !important;
     overflow: hidden !important;
   }
 
@@ -176,7 +174,7 @@ html, body { overflow-x: hidden; }
   }
 
   body:has(.mob-full-root) .content-panel {
-    background: #ff0000 !important;
+    background: hsl(var(--bg)) !important;
     border: none !important;
     border-radius: 0 !important;
     padding: 0 !important;
@@ -188,7 +186,7 @@ html, body { overflow-x: hidden; }
   body:has(.mob-full-root) .giant-panel {
     padding: 0 !important;
     gap: 0 !important;
-    background: #f30202 !important;
+    background: hsl(var(--bg)) !important;
   }
 }
 
@@ -235,7 +233,7 @@ html, body { overflow-x: hidden; }
     height: 0 !important;
     background: transparent !important;
   }
-  
+ 
   html::-webkit-scrollbar,
   body::-webkit-scrollbar,
   .content-scroll::-webkit-scrollbar,
@@ -295,19 +293,4 @@ html, body { overflow-x: hidden; }
   }
 }
 
-/* Landscape lock overlay - except when video fullscreen */
-@media (orientation: landscape) and (max-height: 500px) {
-  body:not(:has(.mob-full-root:fullscreen)):not(:has(:fullscreen))::after {
-    content: "Please rotate to portrait";
-    position: fixed;
-    inset: 0;
-    z-index: 2147483647;
-    background: #0f1f16;
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 800;
-    font-size: 20px;
-  }
-}
+/* STARZPLAY STYLE: app never rotates, only fullscreen video rotates - NO overlay */
