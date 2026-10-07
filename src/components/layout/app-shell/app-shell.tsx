@@ -79,17 +79,33 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     initTheme();
     const check = () => {
-      const mobile = window.innerWidth <= 1024;
-      setIsMobile(mobile);
-      setIsDesktop(!mobile);
+      // STARZPLAY LOGIC: if touch device (phone/tablet), always mobile UI even in landscape
+      const isTouch =
+        window.matchMedia("(pointer: coarse)").matches ||
+        navigator.maxTouchPoints > 0 ||
+        /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+      if (isTouch) {
+        setIsMobile(true);
+        setIsDesktop(false);
+      } else {
+        const mobile = window.innerWidth <= 1024;
+        setIsMobile(mobile);
+        setIsDesktop(!mobile);
+      }
+
       const isLanding = window.location.pathname === "/";
       const seen = sessionStorage.getItem("ug-intro-seen");
-      if (isLanding && !seen && mobile) setShowIntro(true);
+      if (isLanding && !seen && window.innerWidth <= 1024) setShowIntro(true);
       setChecked(true);
     };
     check();
     window.addEventListener("resize", check);
-    return () => window.removeEventListener("resize", check);
+    window.addEventListener("orientationchange", check);
+    return () => {
+      window.removeEventListener("resize", check);
+      window.removeEventListener("orientationchange", check);
+    };
   }, []);
 
   const isSplit = false;
