@@ -187,10 +187,17 @@
 
 
 /* === PHONE FIX - 14 Pro Max landscape 932px must stay mobile === */
-.is-phone .giant-body .side-bar,
-.is-phone .side-bar {
+/* Only hide sidebar that is direct child of giant-body (PC sidebar) */
+/* DO NOT hide sidebar inside mobile drawer (wa-mob-panel) */
+.is-phone .giant-body > .side-bar,
+.is-desktop .giant-body > .side-bar {
+  /* let JS decide */
+}
+
+.is-phone .giant-body > .side-bar {
   display: none !important;
   width: 0 !important;
+  flex: 0 0 0 !important;
 }
 
 .is-phone .giant-body {
@@ -202,8 +209,19 @@
   border: none !important;
 }
 
-@media (pointer: coarse) {
-  .giant-body .side-bar {
-    display: none !important;
-  }
+/* Mobile drawer must ALWAYS show sidebar */
+.wa-mob-panel .side-bar,
+.wa-mob-panel .side-bar * {
+  display: block !important;
+}
+.wa-mob-panel .side-nav {
+  display: block !important;
+}
+
+/* TopBar - phone must hide PC controls even in landscape 932px */
+.is-phone .pc-only {
+  display: none !important;
+}
+.is-phone .top-bar .pc-top-controls {
+  display: none !important;
 }
