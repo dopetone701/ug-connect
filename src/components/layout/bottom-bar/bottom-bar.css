@@ -6,8 +6,7 @@
   display: none;
 }
 
-@media (max-width: 768px) {
-
+@media (max-width: 1024px), (pointer: coarse) {
   .bottom-bar-glass {
     display: block;
     position: fixed;
@@ -142,5 +141,18 @@
     letter-spacing: 0.2px;
 
     line-height: 1;
+  }
+}
+
+
+
+
+
+
+
+/* Ensure content doesn't hide behind bottom bar on phone landscape */
+@media (max-width: 1024px), (pointer: coarse) {
+  .content-scroll {
+    padding-bottom: calc(80px + env(safe-area-inset-bottom)) !important;
   }
 }
