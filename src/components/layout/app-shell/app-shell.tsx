@@ -29,6 +29,16 @@ function hasValidSession() {
   return (!!token && !!user) || !!guest;
 }
 
+// WHATSAPP FIX - phone is phone even in landscape
+function isPhoneDevice() {
+  if (typeof window === "undefined") return false;
+  const ua = navigator.userAgent;
+  const isTouch = navigator.maxTouchPoints > 0;
+  const isCoarse = window.matchMedia("(pointer: coarse)").matches;
+  const isMobileUA = /iPhone|iPad|iPod|Android/i.test(ua);
+  return isMobileUA || isTouch || isCoarse;
+}
+
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { open, minimized } = useWatchDrawer() as any;
@@ -82,10 +92,10 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     initTheme();
-    const isMobileCheck = window.innerWidth <= 768;
+    const isPhone = isPhoneDevice();
     const isLanding = window.location.pathname === "/";
     const seen = sessionStorage.getItem("ug-intro-seen");
-    if (isLanding && !seen && isMobileCheck) setShowIntro(true);
+    if (isLanding && !seen && isPhone) setShowIntro(true);
     setChecked(true);
     document.documentElement.style.overscrollBehavior = "none";
     document.body.style.overscrollBehavior = "none";
@@ -94,12 +104,17 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const c = () => {
-      setIsMobile(window.innerWidth <= 768);
-      setIsDesktop(window.innerWidth >= 1024);
+      const phone = isPhoneDevice();
+      setIsMobile(phone); // phone = mobile even in landscape
+      setIsDesktop(!phone); // desktop only if NOT phone
     };
     c();
     window.addEventListener("resize", c);
-    return () => window.removeEventListener("resize", c);
+    window.addEventListener("orientationchange", c);
+    return () => {
+      window.removeEventListener("resize", c);
+      window.removeEventListener("orientationchange", c);
+    };
   }, []);
 
   const isSplit = !isMobile && open && !minimized;
