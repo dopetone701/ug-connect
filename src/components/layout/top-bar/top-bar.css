@@ -815,8 +815,8 @@ body.reels-open.top-bar {
 
 
 
-/* === BOTTOM OVERRIDE ONLY - KILLS PC ON PHONE, KEEPS PC ON DESKTOP === */
-@media (pointer: coarse), (max-width: 1024px) {
+/* === PORTRAIT PHONE - only logo + 3 icons === */
+@media (pointer: coarse) and (orientation: portrait), (max-width: 768px) and (orientation: portrait) {
   .top-bar .location-wrap,
   .top-bar .search-wrap,
   .top-bar .island-group,
@@ -828,18 +828,22 @@ body.reels-open.top-bar {
   }
 }
 
-@media (min-width: 1025px) and (pointer: fine) {
-  .top-bar .location-wrap {
-    display: flex !important; /* brings back your inline on PC only */
+/* === LANDSCAPE PHONE - hide ONLY location + grid + faders, keep rest === */
+@media (pointer: coarse) and (orientation: landscape), (max-width: 932px) and (orientation: landscape) {
+  .top-bar .location-wrap,
+  .top-bar .grid-btn,
+  .top-bar .sliders-btn,
+  .top-bar .pc-top-controls .pc-grid-btn,
+  .top-bar .pc-top-controls .pc-faders-btn,
+  .top-bar .pc-faders-btn {
+    display: none !important;
   }
+  /* KEEP these visible */
   .top-bar .search-wrap,
   .top-bar .island-group,
-  .top-bar .pc-top-controls,
-  .top-bar .pc-only {
+  .top-bar .right-actions,
+  .top-bar .logo,
+  .top-bar .pc-top-controls .pc-profile-btn {
     display: flex !important;
-  }
-  .top-bar .sliders-btn,
-  .top-bar .grid-btn {
-    display: grid !important;
   }
 }
