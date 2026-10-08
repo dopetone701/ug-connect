@@ -815,25 +815,3 @@ body.reels-open.top-bar {
 
 
 
-/* === MOBILE TOP BAR FINAL - SAME ON PORTRAIT + LANDSCAPE === */
-@media (pointer: coarse), (max-width: 1024px) {
-  .top-bar .location-wrap,
-  .top-bar .search-wrap,
-  .top-bar .island-group,
-  .top-bar .pc-top-controls,
-  .top-bar .sliders-btn,
-  .top-bar .grid-btn,
-  .top-bar .pc-only {
-    display: none !important;
-  }
-  .top-bar {
-    height: 56px !important;
-    justify-content: space-between !important;
-  }
-  .top-bar .logo {
-    display: flex !important;
-  }
-  .top-bar .right-actions {
-    display: flex !important;
-  }
-}
