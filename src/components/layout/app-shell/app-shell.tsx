@@ -29,21 +29,17 @@ function hasValidSession() {
   return (!!token && !!user) || !!guest;
 }
 
-// WHATSAPP FIX - phone is phone even in landscape
 function isPhoneDevice() {
   if (typeof window === "undefined") return false;
   const ua = navigator.userAgent;
-  const isTouch = navigator.maxTouchPoints > 0;
-  const isCoarse = window.matchMedia("(pointer: coarse)").matches;
-  const isMobileUA = /iPhone|iPad|iPod|Android/i.test(ua);
-  return isMobileUA || isTouch || isCoarse;
+  return /iPhone|iPad|iPod|Android/i.test(ua) || navigator.maxTouchPoints > 0 || window.matchMedia("(pointer: coarse)").matches;
 }
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { open, minimized } = useWatchDrawer() as any;
   const { isOpen: isReelsOpen, movies, startIndex, currentMovie, closeReels } = useReelsDrawer() as any;
-  const [isMobile, setIsMobile] = useState(false);
+  const [isMobile, setIsMobile] = useState(true);
   const [isDesktop, setIsDesktop] = useState(false);
   const [showIntro, setShowIntro] = useState(false);
   const [checked, setChecked] = useState(false);
@@ -92,10 +88,10 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     initTheme();
-    const isPhone = isPhoneDevice();
+    const phone = isPhoneDevice();
     const isLanding = window.location.pathname === "/";
     const seen = sessionStorage.getItem("ug-intro-seen");
-    if (isLanding && !seen && isPhone) setShowIntro(true);
+    if (isLanding && !seen && phone) setShowIntro(true);
     setChecked(true);
     document.documentElement.style.overscrollBehavior = "none";
     document.body.style.overscrollBehavior = "none";
@@ -105,8 +101,8 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const c = () => {
       const phone = isPhoneDevice();
-      setIsMobile(phone); // phone = mobile even in landscape
-      setIsDesktop(!phone); // desktop only if NOT phone
+      setIsMobile(phone);
+      setIsDesktop(!phone);
     };
     c();
     window.addEventListener("resize", c);
@@ -121,24 +117,24 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   if (!checked || isChecking) return null;
   const showTopBar = !isReelsPage && !isReelsOpen;
   const showPcInline = isDesktop && !!active;
+  const showSideBarInShell = isDesktop && !isServicesPage;
 
   return (
     <>
       {showIntro && <IntroVideo onFinished={() => setShowIntro(false)} />}
       <div
-        className={`google-shell ${isSplit ? "is-split" : ""} ${isServicesPage ? "is-services" : ""}`}
+        className={`google-shell ${isSplit ? "is-split" : ""} ${isServicesPage ? "is-services" : ""} ${isMobile ? "is-phone" : "is-desktop"}`}
         style={{ opacity: showIntro ? 0 : 1, pointerEvents: showIntro ? "none" : "auto", overscrollBehavior: "none" as any }}
       >
         <div className="giant-panel" style={{ overscrollBehavior: "contain" } as any}>
           {showTopBar ? <TopBar /> : null}
           <div className="giant-body">
-            <SideBar />
+            {showSideBarInShell ? <SideBar /> : null}
             <main className="content-panel">
               <div className="content-scroll" style={{ overscrollBehavior: "contain" } as any}>
-                {/* NO FLASH: both mounted, only display toggles */}
                 <div style={{ display: showPcInline ? "none" : "block", minHeight: "100%" }}>
                   {children}
-                  {isPcOpen && !isMobile ? <PcFaders /> : null}
+                  {isPcOpen && isDesktop ? <PcFaders /> : null}
                 </div>
                 <div style={{ display: showPcInline ? "block" : "none", minHeight: "100%" }}>
                   <PcSheetHost />
