@@ -1003,3 +1003,18 @@ body.reels-open.top-bar {
     display: none !important;
   }
 }
+
+
+
+/* =========================================================
+   MOBILE LANDSCAPE — SIDE SAFE AREA ONLY
+   PORTRAIT UNTOUCHED
+   ========================================================= */
+
+@media (max-width: 768px) and (orientation: landscape) {
+  .top-bar {
+    padding-left: max(20px, env(safe-area-inset-left));
+    padding-right: max(20px, env(safe-area-inset-right));
+  }
+}
+
