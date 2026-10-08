@@ -38,7 +38,9 @@ export default function WatchDrawer(){
     const handleSwitch = () => {
       // NEVER switch while fullscreen - bulletproof
       if(isFullscreen || document.fullscreenElement || (document as any).webkitFullscreenElement) return
-      const isPC = window.innerWidth > 1024; // use 1024 not 768
+const isPC =
+  window.innerWidth > 1024 &&
+  window.matchMedia("(pointer: fine)").matches;
       if(isPC && open &&!minimized && movieId &&!isClosing){
         const t = playType || 'full';
         closeDrawer();

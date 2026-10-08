@@ -95,8 +95,26 @@ export default function MovieCard({
       )
     } catch {}
 
-    const isDesktop =
-      typeof window !== "undefined" && window.innerWidth > 768
+    const isDesktop = (() => {
+  if (typeof window === "undefined") return false
+
+  const ua = navigator.userAgent
+
+  const phoneUA =
+    /iPhone|iPod|Android.*Mobile|Windows Phone/i.test(ua)
+
+  const touchDevice =
+    navigator.maxTouchPoints > 0
+
+  const width = window.innerWidth
+
+  if (phoneUA) return false
+
+  if (touchDevice && width <= 1024) return false
+
+  return true
+})()
+
 
     /*
      * DESKTOP

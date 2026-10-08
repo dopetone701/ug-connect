@@ -552,6 +552,62 @@ export default function TopBar() {
     }
   };
 
+
+
+  /* =======================================================
+     SEARCH PLACEHOLDER
+     ======================================================= */
+
+  const placeholder =
+    useMemo(() => {
+      if (!pathname) {
+        return "Search...";
+      }
+
+      for (const key in PLACEHOLDER_MAP) {
+        if (
+          pathname.includes(key)
+        ) {
+          return PLACEHOLDER_MAP[
+            key
+          ];
+        }
+      }
+
+      return "Search...";
+    }, [pathname]);
+
+  /* =======================================================
+     SEARCH CHIPS
+     ======================================================= */
+
+  const chips =
+    useMemo(() => {
+      if (
+        !globalQuery?.trim()
+      ) {
+        return [];
+      }
+
+      return globalQuery
+        .trim()
+        .toLowerCase()
+        .split(" ")
+        .filter(
+          (w: string) =>
+            w.length >= 1
+        )
+        .slice(0, 2)
+        .map(
+          (
+            label: string
+          ) => ({
+            label,
+          })
+        );
+    }, [globalQuery]);
+
+
   /* =======================================================
      SPECIAL PAGE HIDES
      ======================================================= */
@@ -796,59 +852,7 @@ export default function TopBar() {
   const isAdmin =
     isAdminUser(user);
 
-  /* =======================================================
-     SEARCH PLACEHOLDER
-     ======================================================= */
-
-  const placeholder =
-    useMemo(() => {
-      if (!pathname) {
-        return "Search...";
-      }
-
-      for (const key in PLACEHOLDER_MAP) {
-        if (
-          pathname.includes(key)
-        ) {
-          return PLACEHOLDER_MAP[
-            key
-          ];
-        }
-      }
-
-      return "Search...";
-    }, [pathname]);
-
-  /* =======================================================
-     SEARCH CHIPS
-     ======================================================= */
-
-  const chips =
-    useMemo(() => {
-      if (
-        !globalQuery?.trim()
-      ) {
-        return [];
-      }
-
-      return globalQuery
-        .trim()
-        .toLowerCase()
-        .split(" ")
-        .filter(
-          (w: string) =>
-            w.length >= 1
-        )
-        .slice(0, 2)
-        .map(
-          (
-            label: string
-          ) => ({
-            label,
-          })
-        );
-    }, [globalQuery]);
-
+  
   const isIslandActive =
     globalQuery?.length > 1;
 
