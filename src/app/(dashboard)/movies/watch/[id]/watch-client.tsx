@@ -18,8 +18,18 @@ import { useWatchDrawer } from "@/stores/use-watch-drawer"
 import { useReelsDrawer } from "@/stores/use-reels-drawer"
 import FooterFree from "@/components/layout/curvy-pro-room/get-started-email/footer/footer"
 
-
 const API_URL = "https://movie-server-api.connectu89.workers.dev/api/movies"
+
+// Same detector as top-bar - fixes 844px landscape being seen as desktop
+function detectMobileDevice() {
+  if (typeof window === "undefined") return true;
+  const ua = navigator.userAgent || "";
+  const isPhoneUA = /iPhone|iPod|Android.*Mobile|Windows Phone/i.test(ua);
+  const isTouchDevice = navigator.maxTouchPoints > 0;
+  if (isPhoneUA) return true;
+  if (isTouchDevice && window.innerWidth <= 1024) return true;
+  return false;
+}
 
 export default function WatchPage({
   isOverlay = false,
@@ -52,7 +62,6 @@ export default function WatchPage({
   const [allMovies, setAllMovies] = useState<any[]>([])
   const videoRef = useRef<HTMLVideoElement>(null)
   const rootRef = useRef<HTMLDivElement>(null)
-  const volRef = useRef<HTMLDivElement>(null)
   const lastTimeRef = useRef(0)
   const autoPlayTimerRef = useRef<any>(null)
 
@@ -67,7 +76,7 @@ export default function WatchPage({
   const [isFullScreen, setIsFullScreen] = useState(false)
   const [quality, setQuality] = useState("auto")
   const [bufferedProgress, setBufferedProgress] = useState(0)
-  const [isMobile, setIsMobile] = useState(false)
+  const [isMobile, setIsMobile] = useState(true)
   const [isLoading, setIsLoading] = useState(true)
   const [descExpanded, setDescExpanded] = useState(false)
   const maximize = useWatchDrawer((s) => s.maximize)
@@ -82,54 +91,66 @@ export default function WatchPage({
     } catch { return null }
   })
 
-  // === FIXED HANDOFF: PREVIEW -> REELS ONLY, FULL -> WATCH ONLY ===
-   useEffect(() => {
+  // === FIXED HANDOFF: PREVIEW -> REELS ONLY, FULL -> WATCH ONLY, NEVER DURING FULLSCREEN ===
+  useEffect(() => {
     if (isOverlay) return
+    let lastWidth = typeof window !== "undefined" ? window.innerWidth : 768
+    let timeout: any = null
+
     const onResize = () => {
       // BULLETPROOF: Never switch modes when fullscreen
       if (document.fullscreenElement || (document as any).webkitFullscreenElement || isFullScreen) return
-      if (window.innerWidth > 768) return
-      // ... keep your existing logic below
+      if (rootRef.current === document.fullscreenElement) return
 
-      if (!effectiveId ||!movie) return
+      clearTimeout(timeout)
+      timeout = setTimeout(() => {
+        const curWidth = window.innerWidth
+        const crossedToMobile = lastWidth > 768 && curWidth <= 768
+        lastWidth = curWidth
 
-      try {
-        if (videoRef.current) {
-          sessionStorage.setItem(`continue_${effectiveId}`, JSON.stringify({
-            time: videoRef.current.currentTime,
-            playing:!videoRef.current.paused,
-            type: isPreview? "preview" : "full",
-          }))
+        if (!crossedToMobile) return
+        if (!effectiveId ||!movie) return
+
+        try {
+          if (videoRef.current) {
+            sessionStorage.setItem(`continue_${effectiveId}`, JSON.stringify({
+              time: videoRef.current.currentTime,
+              playing:!videoRef.current.paused,
+              type: isPreview? "preview" : "full",
+            }))
+          }
+        } catch {}
+
+        if (isPreview) {
+          closeDrawer?.()
+          const p = movie?.preview_urls?.[0] || movie?.preview_url || movie?.trailer_url || movie?.video_preview_url || movie?.preview
+          const single = [{
+         ...movie,
+            id: String(movie.id),
+            cover: movie.cover || movie.cover_url,
+            cover_url: movie.cover || movie.cover_url,
+            video: movie.video || movie.video_url,
+            video_url: movie.video || movie.video_url,
+            preview_url: p,
+            preview_urls: movie.preview_urls || (p? [p] : []),
+            trailer_url: movie.trailer_url || p,
+          }]
+          openReels(single, 0)
+          router.replace("/movies")
+        } else {
+          closeReels?.()
+          openDrawer(effectiveId, "full")
+          router.replace("/movies")
         }
-      } catch {}
-
-      if (isPreview) {
-        // SAME PREVIEW, NO WATCH DRAWER
-        closeDrawer?.()
-        const p = movie?.preview_urls?.[0] || movie?.preview_url || movie?.trailer_url || movie?.video_preview_url || movie?.preview
-        const single = [{
-       ...movie,
-          id: String(movie.id),
-          cover: movie.cover || movie.cover_url,
-          cover_url: movie.cover || movie.cover_url,
-          video: movie.video || movie.video_url,
-          video_url: movie.video || movie.video_url,
-          preview_url: p,
-          preview_urls: movie.preview_urls || (p? [p] : []),
-          trailer_url: movie.trailer_url || p,
-        }]
-        openReels(single, 0)
-        router.replace("/movies")
-      } else {
-        // FULL MOVIE
-        closeReels?.()
-        openDrawer(effectiveId, "full")
-        router.replace("/movies")
-      }
+      }, 200)
     }
+
     window.addEventListener("resize", onResize)
-    return () => window.removeEventListener("resize", onResize)
-  }, [effectiveId, isPreview, isOverlay, movie, openDrawer, openReels, closeDrawer, closeReels, router])
+    return () => {
+      window.removeEventListener("resize", onResize)
+      clearTimeout(timeout)
+    }
+  }, [effectiveId, isPreview, isOverlay, movie, isFullScreen, openDrawer, openReels, closeDrawer, closeReels, router])
 
   const skip = useCallback((sec: number) => {
     if(!videoRef.current) return
@@ -163,65 +184,77 @@ export default function WatchPage({
     }else{ videoRef.current.pause(); setPlaying(false) }
   }, [])
 
-   const toggleFullscreen = useCallback(async () => {
-    const video = videoRef.current as any
-    const root = rootRef.current as any
-    if (!video || !root) return
+  // === FIXED FULLSCREEN: PORTRAIT LOCKED BY MANIFEST, UNLOCK ONLY ON BTN CLICK ===
+const toggleFullscreen = useCallback(async () => {
+  const video = videoRef.current as any
+  const root = rootRef.current as any
+  if (!video || !root) return
 
-    // save progress before any OS lock - so user never notices
-    const savedTime = video.currentTime
-    const wasPlaying = !video.paused
+  const savedTime = video.currentTime
+  const wasPlaying = !video.paused
+  const isNative = (window as any).Capacitor?.isNativePlatform?.() || false
 
+  // Lazy load Capacitor only on native
+  let CapOrientation: any = null
+  if (isNative) {
     try {
-      const { ScreenOrientation } = await import('@capacitor/screen-orientation').catch(()=> ({ ScreenOrientation: null } as any))
+      const mod = await import('@capacitor/screen-orientation')
+      CapOrientation = mod.ScreenOrientation
+    } catch {}
+  }
 
-      if (!isFullScreen) {
-        // --- ENTER FULLSCREEN -> LANDSCAPE ---
-        setIsFullScreen(true)
-        onFsChange?.(true)
-        document.body.style.overflow = 'hidden'
+  try {
+    if (!isFullScreen) {
+      // --- ENTER FULLSCREEN -> LANDSCAPE ---
+      try { if (isNative) await CapOrientation?.unlock?.() } catch {}
+      try { await (screen.orientation as any)?.unlock?.() } catch {}
 
-        // 1. Unlock first, then force landscape (STARZ)
-        try { await ScreenOrientation?.unlock?.() } catch {}
-        try { await (screen.orientation as any)?.unlock?.() } catch {}
-        try { await ScreenOrientation?.lock?.({ orientation: 'landscape' }) } catch {}
-        try { await (screen.orientation as any)?.lock?.('landscape') } catch {}
-
-        // 2. Request fullscreen on root (not video, so controls stay)
-        try {
-          if (root.requestFullscreen) {
-            await root.requestFullscreen({ navigationUI: "hide" } as any)
-          } else if (video.webkitEnterFullscreen) {
-            video.webkitEnterFullscreen()
-          }
-        } catch {}
-
-        // 3. Restore time if browser reset it
-        if (Math.abs(video.currentTime - savedTime) > 0.5) {
-          video.currentTime = savedTime
+      // Request fullscreen FIRST (required for Chrome)
+      try {
+        if (root.requestFullscreen) {
+          await root.requestFullscreen({ navigationUI: "hide" } as any)
+        } else if ((root as any).webkitRequestFullscreen) {
+          await (root as any).webkitRequestFullscreen()
+        } else if (video.webkitEnterFullscreen) {
+          video.webkitEnterFullscreen()
         }
-        if (wasPlaying) video.play().catch(()=>{})
+      } catch {}
 
-      } else {
-        // --- EXIT FULLSCREEN -> PORTRAIT ---
-        try {
-          if (document.fullscreenElement) await document.exitFullscreen()
-          if ((document as any).webkitFullscreenElement) await (document as any).webkitExitFullscreen?.()
-        } catch {}
+      // Now force landscape
+      try { if (isNative) await CapOrientation?.lock?.({ orientation: 'landscape' }) } catch {}
+      try { 
+        if (screen.orientation && (screen.orientation as any).lock) {
+          await (screen.orientation as any).lock('landscape')
+        }
+      } catch {}
 
-        setIsFullScreen(false)
-        onFsChange?.(false)
-        document.body.style.overflow = ''
+      setIsFullScreen(true)
+      onFsChange?.(true)
+      document.body.style.overflow = 'hidden'
 
-        // Lock back to portrait
-        try { await ScreenOrientation?.lock?.({ orientation: 'portrait' }) } catch {}
-        try { await (screen.orientation as any)?.lock?.('portrait') } catch {}
-      }
-    } catch (e) {
-      // Fallback: still toggle UI even if orientation fails
-      setIsFullScreen(!isFullScreen)
+      if (Math.abs(video.currentTime - savedTime) > 0.5) video.currentTime = savedTime
+      if (wasPlaying) video.play().catch(()=>{})
+
+    } else {
+      // --- EXIT FULLSCREEN -> PORTRAIT ---
+      try { if (document.fullscreenElement) await document.exitFullscreen() } catch {}
+      try { if ((document as any).webkitFullscreenElement) await (document as any).webkitExitFullscreen?.() } catch {}
+
+      setIsFullScreen(false)
+      onFsChange?.(false)
+      document.body.style.overflow = ''
+
+      try { if (isNative) await CapOrientation?.lock?.({ orientation: 'portrait' }) } catch {}
+      try { 
+        if (screen.orientation && (screen.orientation as any).lock) {
+          await (screen.orientation as any).lock('portrait')
+        }
+      } catch {}
     }
-  }, [isFullScreen, onFsChange])
+  } catch {
+    setIsFullScreen(v=>!v)
+  }
+}, [isFullScreen, onFsChange])
 
 
   const formatTime = useCallback((sec: number) => {
@@ -242,16 +275,29 @@ export default function WatchPage({
   }, [effectiveId])
 
   useEffect(() => {
-    const check = () => setIsMobile(window.innerWidth <= 768)
-    check(); window.addEventListener("resize", check)
-    return () => window.removeEventListener("resize", check)
+    const check = () => setIsMobile(detectMobileDevice())
+    check(); 
+    window.addEventListener("resize", check)
+    window.addEventListener("orientationchange", check)
+    return () => {
+      window.removeEventListener("resize", check)
+      window.removeEventListener("orientationchange", check)
+    }
   }, [])
 
   useEffect(() => {
     if(!movie) return; setMounted(true)
-    const onFs = () => { const fs =!!document.fullscreenElement ||!!(document as any).webkitFullscreenElement; setIsFullScreen(fs) }
+    const onFs = () => { 
+      const fs =!!document.fullscreenElement ||!!(document as any).webkitFullscreenElement; 
+      setIsFullScreen(fs)
+      if(!fs) document.body.style.overflow = ''
+    }
     document.addEventListener("fullscreenchange", onFs)
-    return () => document.removeEventListener("fullscreenchange", onFs)
+    document.addEventListener("webkitfullscreenchange", onFs as any)
+    return () => {
+      document.removeEventListener("fullscreenchange", onFs)
+      document.removeEventListener("webkitfullscreenchange", onFs as any)
+    }
   }, [movie])
 
   useEffect(()=>{ if(!playing) return; const t=setTimeout(()=>setShowControls(false),3200); return()=>clearTimeout(t) },[playing, showControls])
@@ -354,10 +400,7 @@ export default function WatchPage({
         )}
         {!isMini && !isFullScreen && <SimilarMovies current={movie} />}
 
-
-
-{!isMini && !isFullScreen && <FooterFree />}
-
+        {!isMini && !isFullScreen && <FooterFree />}
 
       </div>
     </>

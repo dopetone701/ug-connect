@@ -28,28 +28,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" style={{ background: "hsl(var(--bg))" }}>
       <head />
       <body style={{ background: "hsl(var(--bg))", margin: 0, padding: 0 }}>
-        {/* iOS PWA portrait respect - locks after first tap, no message */}
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-(function(){
-  async function lockP(){
-    try{
-      if(window.screen && window.screen.orientation && window.screen.orientation.lock){
-        await window.screen.orientation.lock('portrait');
-      }
-    }catch(e){}
-  }
-  window.addEventListener('load', lockP);
-  window.addEventListener('click', lockP, {once: true});
-  window.addEventListener('touchstart', lockP, {once: true});
-  document.addEventListener('visibilitychange', function(){
-    if(!document.hidden) lockP();
-  });
-})();
-            `,
-          }}
-        />
         <EngineProvider>
           <CoreEngine />
           <AppShell>{children}</AppShell>

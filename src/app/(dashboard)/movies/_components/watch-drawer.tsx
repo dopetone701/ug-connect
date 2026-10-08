@@ -5,6 +5,15 @@ import { useWatchDrawer } from "@/stores/use-watch-drawer";
 import WatchClient from "../watch/[id]/watch-client";
 import "./watch-drawer.css";
 
+function detectMobileDevice() {
+  if (typeof window === "undefined") return true;
+  const isPhoneUA = /iPhone|iPod|Android.*Mobile|Windows Phone/i.test(navigator.userAgent || "");
+  const isTouch = navigator.maxTouchPoints > 0;
+  if (isPhoneUA) return true;
+  if (isTouch && window.innerWidth <= 1024) return true;
+  return false;
+}
+
 export default function WatchDrawer(){
   const router = useRouter();
   const { open, minimized, movieId, playType, closeDrawer, minimize, maximize } = useWatchDrawer() as any;
@@ -18,7 +27,7 @@ export default function WatchDrawer(){
   const [isClosing, setIsClosing] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [showControls, setShowControls] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
+  const [isMobile, setIsMobile] = useState(true);
 
   const triggerFsBtn = useCallback(() => {
     const btn = panelRef.current?.querySelector(".cc-icon.apple-full") as HTMLButtonElement | null;
@@ -26,54 +35,54 @@ export default function WatchDrawer(){
     else setIsFullscreen(v=>!v);
   }, []);
 
- useEffect(()=>{
-  const check = () => setIsMobile(window.innerWidth <= 1024);
-
-    check(); window.addEventListener("resize", check);
-    return () => window.removeEventListener("resize", check);
+  useEffect(()=>{
+    const check = () => setIsMobile(detectMobileDevice());
+    check();
+    window.addEventListener("resize", check);
+    window.addEventListener("orientationchange", check);
+    return () => {
+      window.removeEventListener("resize", check);
+      window.removeEventListener("orientationchange", check);
+    }
   },[]);
 
-   // SWITCH TO PC VERSION WHEN RESIZING - BULLETPROOF
+  // === FIXED SWITCH TO PC - NO SWAP DURING FULLSCREEN ===
   useEffect(()=>{
+    let timeout: any = null;
+    let lastWidth = typeof window!== "undefined"? window.innerWidth : 0;
+
     const handleSwitch = () => {
-      // NEVER switch while fullscreen - bulletproof
-      if(isFullscreen || document.fullscreenElement || (document as any).webkitFullscreenElement) return
-const isPC =
-  window.innerWidth > 1024 &&
-  window.matchMedia("(pointer: fine)").matches;
-      if(isPC && open &&!minimized && movieId &&!isClosing){
+      // BULLETPROOF: never switch during fullscreen
+      if(isFullscreen) return;
+      if(document.fullscreenElement) return;
+      if((document as any).webkitFullscreenElement) return;
+      if(panelRef.current === document.fullscreenElement) return;
+
+      clearTimeout(timeout);
+      timeout = setTimeout(() => {
+        const curWidth = window.innerWidth;
+        const crossedToPC = lastWidth <= 1024 && curWidth > 1024;
+        const isPC = curWidth > 1024 && window.matchMedia("(pointer: fine)").matches;
+        lastWidth = curWidth;
+
+        if(!crossedToPC ||!isPC) return;
+        if(!open || minimized ||!movieId || isClosing) return;
+
         const t = playType || 'full';
         closeDrawer();
         setIsClosing(false);
         setIsFullscreen(false);
         document.body.style.overflow = '';
         router.push(`/movies/watch/${movieId}?t=${t}`);
-      }
+      }, 250);
     };
+
     window.addEventListener("resize", handleSwitch);
-    return () => window.removeEventListener("resize", handleSwitch);
+    return () => {
+      window.removeEventListener("resize", handleSwitch);
+      clearTimeout(timeout);
+    }
   }, [open, minimized, movieId, playType, isClosing, closeDrawer, router, isFullscreen]);
-
-  // REMOVED auto orientation effect for STARZ style
-  // If you want YouTube auto-rotate, uncomment this, but for STARZ keep it deleted
-  /*
-  useEffect(()=>{
-    if(!isMobile || minimized) return;
-    const handleOrientation = () => {
-      const isLandscape = window.matchMedia("(orientation: landscape)").matches || window.innerWidth > window.innerHeight;
-      if(isLandscape && open &&!isFullscreen) triggerFsBtn();
-      else if(!isLandscape && isFullscreen) triggerFsBtn();
-    };
-    const mql = window.matchMedia("(orientation: landscape)");
-    mql.addEventListener("change", handleOrientation);
-    window.addEventListener("orientationchange", handleOrientation);
-    return ()=>{
-      mql.removeEventListener("change", handleOrientation);
-      window.removeEventListener("orientationchange", handleOrientation);
-    };
-  }, [isMobile, open, minimized, isFullscreen, triggerFsBtn]);
-  */
-
 
   useEffect(()=>{
     if(!showControls) return;
@@ -81,15 +90,9 @@ const isPC =
     return ()=> clearTimeout(t);
   }, [showControls]);
 
-  
-
   if(!movieId) return null;
   if(!open &&!minimized &&!isClosing) return null;
-
-  // NEVER show full drawer on PC - only mini allowed
-  if(!isMobile && open &&!minimized){
-    return null;
-  }
+  if(!isMobile && open &&!minimized) return null; // PC full drawer never shown
 
   const handleClose = () => {
     if(isFullscreen){ triggerFsBtn(); return; }
@@ -122,10 +125,7 @@ const isPC =
     const y = e.clientY?? e.touches?.[0]?.clientY;
     if(!y) return;
     const dy = y - startY.current;
-
-    // deadzone to ignore jitter
     if(Math.abs(dy) < 12) return;
-
     if(dragModeRef.current === "to-mini"){
       if(dy < 0) return;
       dragYRef.current = dy;
@@ -134,7 +134,6 @@ const isPC =
     else if(dragModeRef.current === "to-fs"){
       if(dy < 0) return;
       dragYRef.current = dy;
-      // HEAVY RESISTANCE for fullscreen - almost no visual move
       setDragY(Math.min(dy * 0.08, 32));
     }
     else if(dragModeRef.current === "exit-fs"){
@@ -151,16 +150,11 @@ const isPC =
     const elapsed = Date.now() - startTime.current;
     const dy = dragYRef.current;
     const velocity = Math.abs(dy) / Math.max(elapsed, 1);
-
     if(dragModeRef.current === "to-mini"){
       if(dy > 140 && elapsed > 180) minimize();
     }
     else if(dragModeRef.current === "to-fs"){
-      // REDUCED SENSITIVITY LOGIC:
-      // 1. Ignore sudden fast flicks
-      // 2. Require long + big intentional drag
       if(velocity > 0.9){
-        // sudden drag - ignore
       } else if(dy > 180 && elapsed > 250){
         triggerFsBtn();
       }
@@ -182,7 +176,6 @@ const isPC =
         WebkitBackdropFilter: "blur(2px)",
         opacity: dragging && dragModeRef.current==="to-mini"? 1 - progress : 1
       } as any} onClick={handleClose} />
-
       <div ref={panelRef} className="watch-drawer-panel" style={dragging? { transform: `translate3d(0,${dragY}px,0)` } as any : undefined} onPointerDown={onDown} onPointerMove={onMove} onPointerUp={onUp} onTouchStart={onDown} onTouchMove={onMove} onTouchEnd={onUp}>
         <div className="watch-drawer-content" onClick={()=>{
           if(!minimized) return;
