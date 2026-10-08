@@ -440,14 +440,8 @@ export default function TopBar() {
           <AppLogo className="logo-img" />
         </div>
 
-        <div
-          className="location-wrap pc-only"
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: "8px",
-          }}
-        >
+        <div className="location-wrap pc-only">
+
           <button
             className="sidebar-v-toggle big pc-only"
             onClick={toggleSidebar}

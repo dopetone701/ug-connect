@@ -815,75 +815,51 @@ body.reels-open.top-bar {
 
 
 
-/* === FINAL: PHONE MUST BE ONLY LOGO + CAST + SEARCH + MENU - NO PC STUFF === */
-@media (max-width: 1024px), (pointer: coarse) {
-  /* Hide EVERYTHING PC */
-  .pc-only,
-  .pc-top-controls,
-  .location-wrap,
-  .search-wrap,
-  .desktop-search,
-  .sliders-btn,
-  .grid-btn,
-  .top-bar .profile,
-  .top-bar > .back-btn {
-    display: none !important;
-  }
-
-  /* TopBar = transparent bg, like mobile page */
-  .top-bar {
-    height: auto !important;
-    min-height: 56px !important;
-    flex-wrap: nowrap !important;
-    background: hsl(var(--bg)) !important;
-    border: none !important;
-    box-shadow: none !important;
-    padding: 8px 12px !important;
-    gap: 8px !important;
-    justify-content: space-between !important;
-  }
-
-  .logo {
-    width: auto !important;
-    padding: 6px 12px !important;
-    height: 38px !important;
-    background: hsl(var(--surface)) !important;
-    border-radius: 10px !important;
-    display: flex !important;
-    align-items: center !important;
-    order: 1 !important;
-  }
-
-  /* The only right side on phone - 3 icons pill */
-  .top-bar .right-actions {
-    order: 2 !important;
-    display: flex !important;
-    align-items: center !important;
-    height: 38px !important;
-    margin-left: auto !important;
-    background: hsl(var(--surface)) !important;
-    border: 1px solid hsl(var(--border)/0.6) !important;
-    border-radius: 10px !important;
-    overflow: hidden !important;
-    padding: 0 !important;
-    gap: 0 !important;
-  }
-
-  .top-bar .right-actions .tv-share-btn,
-  .top-bar .right-actions .mobile-search-icon,
-  .top-bar .right-actions .apple-burger {
-    display: grid !important;
-    place-items: center !important;
-    width: 38px !important;
-    height: 38px !important;
-    background: transparent !important;
-    border: 0 !important;
-  }
-
-  .top-bar .right-actions .tv-share-btn + .mobile-search-icon,
-  .top-bar .right-actions .mobile-search-icon + .apple-burger {
-    border-left: 1px solid hsl(var(--border)/0.5) !important;
-  }
+/* ===== PHONE = DEFAULT, PC ONLY ON BIG MOUSE ===== */
+.location-wrap,
+.search-wrap,
+.island-group,
+.pc-top-controls,
+.sliders-btn,
+.grid-btn,
+.pc-only {
+  display: none !important;
 }
 
+/* mobile right pill always visible */
+.right-actions {
+  display: flex !important;
+  margin-left: auto !important;
+  background: hsl(var(--surface)) !important;
+  border: 1px solid hsl(var(--border)/0.6) !important;
+  border-radius: 10px !important;
+  height: 38px !important;
+  overflow: hidden !important;
+}
+.right-actions .tv-share-btn,
+.right-actions .mobile-search-icon,
+.right-actions .apple-burger {
+  display: grid !important;
+  width: 38px !important;
+  height: 38px !important;
+}
 
+/* ===== PC ONLY - min 1025px + mouse ===== */
+@media (min-width: 1025px) and (pointer: fine) {
+  .location-wrap,
+  .search-wrap,
+  .island-group,
+  .pc-top-controls,
+  .pc-only {
+    display: flex !important;
+  }
+  .right-actions .tv-share-btn,
+  .right-actions .mobile-search-icon,
+  .right-actions .apple-burger {
+    display: none !important;
+  }
+  .right-actions {
+    background: transparent !important;
+    border: none !important;
+  }
+}
