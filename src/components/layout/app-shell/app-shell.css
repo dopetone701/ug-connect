@@ -178,3 +178,32 @@
     font-size: 95%;
   }
 }
+
+
+
+
+
+
+
+
+/* === PHONE FIX - 14 Pro Max landscape 932px must stay mobile === */
+.is-phone .giant-body .side-bar,
+.is-phone .side-bar {
+  display: none !important;
+  width: 0 !important;
+}
+
+.is-phone .giant-body {
+  padding: 0 !important;
+}
+
+.is-phone .content-panel {
+  border-radius: 0 !important;
+  border: none !important;
+}
+
+@media (pointer: coarse) {
+  .giant-body .side-bar {
+    display: none !important;
+  }
+}
