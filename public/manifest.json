@@ -4,9 +4,10 @@
   "description": "Watch Ugandan movies",
   "start_url": "/",
   "display": "standalone",
-  "orientation": "any",
+  "orientation": "portrait",
   "background_color": "#0f1f16",
   "theme_color": "#0f1f16",
+  "scope": "/",
   "icons": [
     {
       "src": "/icon.png",
