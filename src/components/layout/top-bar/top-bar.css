@@ -1007,14 +1007,38 @@ body.reels-open.top-bar {
 
 
 /* =========================================================
-   MOBILE LANDSCAPE — SIDE SAFE AREA ONLY
-   PORTRAIT UNTOUCHED
+   MOBILE LANDSCAPE — FIX LOGO + RIGHT ICONS KISSING EDGES
+   Portrait untouched
    ========================================================= */
 
-@media (max-width: 768px) and (orientation: landscape) {
+/* iPhone / Android landscape - must NOT use max-width:768 */
+@media (orientation: landscape) and (hover: none) and (pointer: coarse) {
   .top-bar {
-    padding-left: max(20px, env(safe-area-inset-left));
-    padding-right: max(20px, env(safe-area-inset-right));
+    padding-left: max(20px, env(safe-area-inset-left)) !important;
+    padding-right: max(20px, env(safe-area-inset-right)) !important;
+    padding-top: max(8px, env(safe-area-inset-top)) !important;
+    height: auto !important;
+    flex-wrap: nowrap !important;
+    justify-content: space-between !important;
+    gap: 12px !important;
+  }
+
+  .top-bar .logo {
+    margin-left: 0 !important;
+    /* keep the pill from touching the left notch */
+    margin-left: max(0px, env(safe-area-inset-left)) !important;
+  }
+
+  .top-bar .right-actions {
+    margin-left: auto !important;
+    margin-right: max(0px, env(safe-area-inset-right)) !important;
   }
 }
 
+/* Extra safety for larger phones like 14 Pro Max / tablets in landscape */
+@media (orientation: landscape) and (max-width: 1024px) and (hover: none) and (pointer: coarse) {
+  .top-bar {
+    padding-left: max(24px, env(safe-area-inset-left)) !important;
+    padding-right: max(24px, env(safe-area-inset-right)) !important;
+  }
+}
