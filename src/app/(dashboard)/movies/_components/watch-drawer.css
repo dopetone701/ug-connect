@@ -218,3 +218,244 @@
   -webkit-backdrop-filter: blur(1px) !important;
   border: none !important;
 }
+
+
+
+
+
+
+
+/* =========================================================
+ DOPE TONE — WATCH DRAWER FINAL OVERRIDES
+ Scrollable landscape • Video at top • Mini-player preserved
+ Paste at the VERY BOTTOM of watch-drawer.css
+ ========================================================= */
+/* DRAWER ROOT */
+ .watch-drawer-root {
+ position: fixed !important;
+ inset: 0 !important;
+ z-index: 99999 !important;
+ visibility: hidden;
+ pointer-events: none;
+ }
+.watch-drawer-root.open,
+ .watch-drawer-root.is-mini,
+ .watch-drawer-root.is-dragging,
+ .watch-drawer-root.closing {
+ visibility: visible !important;
+ pointer-events: auto !important;
+ }
+/* BACKDROP — NEVER BLOCK MINI-PLAYER CONTROLS */
+ .watch-drawer-backdrop {
+ position: absolute !important;
+ inset: 0 !important;
+ z-index: 0 !important;
+ }
+.watch-drawer-root.is-mini .watch-drawer-backdrop,
+ .watch-drawer-root.closing .watch-drawer-backdrop {
+ opacity: 0 !important;
+ pointer-events: none !important;
+ }
+/* MAIN DRAWER — SCROLLABLE */
+ .watch-drawer-panel {
+ position: absolute !important;
+ inset: 0 !important;
+width: 100% !important;
+ height: 100% !important;
+ min-width: 0 !important;
+ min-height: 0 !important;
+ max-height: 100dvh !important;
+padding: 0 !important;
+ margin: 0 !important;
+ border-radius: 0 !important;
+overflow-x: hidden !important;
+ overflow-y: auto !important;
+overscroll-behavior-y: contain;
+ -webkit-overflow-scrolling: touch;
+touch-action: pan-y !important;
+background: hsl(var(–bg)) !important;
+ z-index: 1 !important;
+transform: translate3d(0, 100%, 0);
+ transition: transform .52s cubic-bezier(.32, .72, 0, 1);
+ will-change: transform;
+ box-sizing: border-box !important;
+ }
+.watch-drawer-root.open:not(.is-mini) .watch-drawer-panel {
+ transform: translate3d(0, 0, 0) !important;
+ }
+.watch-drawer-root.is-dragging .watch-drawer-panel {
+ transition: none !important;
+ }
+.watch-drawer-root.closing .watch-drawer-panel {
+ transform: translate3d(0, 100%, 0) !important;
+ transition: transform .38s cubic-bezier(.32, 0, 1, 1) !important;
+ }
+/* CONTENT — ALLOW THE PAGE TO GROW BELOW THE VIDEO */
+ .watch-drawer-content {
+ position: relative !important;
+ width: 100% !important;
+ min-width: 0 !important;
+ min-height: 100% !important;
+ height: auto !important;
+padding: 0 !important;
+ margin: 0 !important;
+overflow: visible !important;
+ touch-action: pan-y !important;
+ background: hsl(var(–bg)) !important;
+ box-sizing: border-box !important;
+ }
+/* LANDSCAPE PHONE — NORMAL WATCH PAGE, NOT FULLSCREEN */
+ @media (max-width: 1024px) and (orientation: landscape) {
+ .watch-drawer-root.open:not(.is-mini) .watch-drawer-panel {
+ position: absolute !important;
+ inset: 0 !important;
+ width: 100% !important;
+ height: 100dvh !important;
+ max-height: 100dvh !important;
+overflow-x: hidden !important;
+overflow-y: auto !important;
+touch-action: pan-y !important;
+}
+.watch-drawer-root.open:not(.is-mini) .watch-drawer-content {
+ width: 100% !important;
+ min-height: 100% !important;
+ height: auto !important;
+ overflow: visible !important;
+ }
+.watch-drawer-root.open:not(.is-mini) .connect-root:not(.is-shell-full) {
+ position: relative !important;
+ inset: auto !important;
+ width: 100% !important;
+ height: auto !important;
+ min-height: 100% !important;
+ max-width: 100% !important;
+ margin: 0 !important;
+ padding: 0 !important;
+ overflow: visible !important;
+ background: hsl(var(–bg)) !important;
+ }
+.watch-drawer-root.open:not(.is-mini) .connect-root:not(.is-shell-full) .film-giant.inner-body {
+ position: relative !important;
+ inset: auto !important;
+ width: 100% !important;
+ height: auto !important;
+ aspect-ratio: 16 / 9 !important;
+ max-width: 100% !important;
+ max-height: none !important;
+ margin: 0 !important;
+ overflow: hidden !important;
+ }
+.watch-drawer-root.open:not(.is-mini) .connect-root:not(.is-shell-full) .film-center,
+ .watch-drawer-root.open:not(.is-mini) .connect-root:not(.is-shell-full) .center-cover {
+ width: 100% !important;
+ height: 100% !important;
+ }
+.watch-drawer-root.open:not(.is-mini) .connect-root:not(.is-shell-full) .connect-video {
+ width: 100% !important;
+ height: 100% !important;
+ object-fit: contain !important;
+ }
+ }
+/* MINI-PLAYER — SMALL FLOATING VIDEO */
+ .watch-drawer-root.is-mini {
+ pointer-events: none !important;
+ }
+.watch-drawer-root.is-mini .watch-drawer-panel {
+ position: fixed !important;
+ left: auto !important;
+ top: auto !important;
+ right: 12px !important;
+ bottom: 88px !important;
+width: 190px !important;
+ height: 108px !important;
+ min-height: 0 !important;
+ max-height: none !important;
+overflow: hidden !important;
+ border-radius: 10px !important;
+ background: #000 !important;
+transform: none !important;
+ touch-action: manipulation !important;
+pointer-events: auto !important;
+ box-shadow: 0 10px 30px rgba(0, 0, 0, .5) !important;
+ transition: width .3s ease, height .3s ease,
+ right .3s ease, bottom .3s ease,
+ border-radius .3s ease !important;
+ }
+.watch-drawer-root.is-mini .watch-drawer-content {
+ width: 100% !important;
+ height: 100% !important;
+ min-height: 0 !important;
+ overflow: hidden !important;
+ border-radius: 10px !important;
+ }
+.watch-drawer-root.is-mini .connect-root {
+ width: 100% !important;
+ height: 100% !important;
+ min-height: 0 !important;
+ padding: 0 !important;
+ margin: 0 !important;
+ overflow: hidden !important;
+ }
+.watch-drawer-root.is-mini .film-giant.inner-body {
+ width: 100% !important;
+ height: 100% !important;
+ min-height: 0 !important;
+ max-height: none !important;
+ aspect-ratio: auto !important;
+ border-radius: 0 !important;
+ }
+.watch-drawer-root.is-mini .connect-under-section,
+ .watch-drawer-root.is-mini .connect-root .episodes-row,
+ .watch-drawer-root.is-mini .connect-root .similar-movies,
+ .watch-drawer-root.is-mini .connect-root footer {
+ display: none !important;
+ }
+.watch-drawer-root.is-mini .bubble-close,
+ .watch-drawer-root.is-mini .bubble-expand {
+ opacity: 0 !important;
+ pointer-events: none !important;
+ }
+.watch-drawer-root.is-mini.show-controls .bubble-close,
+ .watch-drawer-root.is-mini.show-controls .bubble-expand {
+ opacity: 1 !important;
+ pointer-events: auto !important;
+ transform: scale(1) !important;
+ }
+@media (max-width: 768px) {
+ .watch-drawer-root.is-mini .watch-drawer-panel {
+ width: 190px !important;
+ height: 108px !important;
+ right: 12px !important;
+ bottom: 88px !important;
+ }
+ }
+/* MINI BUTTONS — ABOVE VIDEO */
+ .watch-drawer-root.is-mini .bubble-close,
+ .watch-drawer-root.is-mini .bubble-expand {
+ z-index: 1000 !important;
+ }
+/* HOME — BLUR ONLY WHILE DRAWER IS FULLY OPEN */
+ .movies-shell:has(.watch-drawer-root.open:not(.is-mini)) > .film-root {
+ transform: scale(.96) translateY(12px) !important;
+ opacity: .5 !important;
+ filter: blur(8px) brightness(.7) !important;
+ pointer-events: none !important;
+ }
+.movies-shell:has(.watch-drawer-root.is-mini) > .film-root {
+ transform: none !important;
+ opacity: 1 !important;
+ filter: none !important;
+ pointer-events: auto !important;
+ }
+/* NEVER APPLY DRAWER ANIMATION TO THE VIDEO’S CLICKABLE CONTROLS */
+ .watch-drawer-root .connect-player,
+ .watch-drawer-root .center-cover {
+ pointer-events: auto;
+ }
+.watch-drawer-root .play-apple,
+ .watch-drawer-root .connect-controls,
+ .watch-drawer-root .center-top {
+ z-index: 200 !important;
+ pointer-events: auto !important;
+ }
+
