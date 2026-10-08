@@ -1,17 +1,180 @@
-.google-shell {    display: flex;    flex-direction: column;    width: 100%;    height: 100dvh;    min-height: 100dvh;    max-height: 100dvh;    background: hsl(var(--surface));    overflow: hidden;    position: fixed;    inset: 0;    padding-top: env(safe-area-inset-top);    box-sizing: border-box;  }
-.giant-panel {    flex: 1;    min-height: 0;    width: 100%;    display: flex;    flex-direction: column;    overflow: hidden;    background: hsl(var(--surface));    position: relative;  }
-.giant-body {    flex: 1;    min-height: 0;    display: flex;    overflow: hidden;    gap: 0;    padding-right: 8px;    padding-bottom: 8px;    position: relative;  }
-.content-panel {    flex: 1;    min-height: 0;    width: 100%;    background: hsl(var(--bg));    border-radius: 16px;    border: 1px solid hsl(var(--border));    display: flex;    flex-direction: column;    position: relative;    overflow: hidden;    padding: 0;  }
-.content-panel > * { flex-shrink: 0; }  .content-panel.no-scroll { overflow: hidden; }  .content-panel::-webkit-scrollbar { display: none; }  .content-panel { scrollbar-width: none; -ms-overflow-style: none; }
-.content-scroll {    flex: 1;    min-height: 0;    width: 100%;    overflow-y: auto;    overflow-x: hidden;    overscroll-behavior: contain;    -webkit-overflow-scrolling: touch;  }
-.content-panel .watch-drawer,  .watch-drawer {    position: absolute;    inset: 0;    width: 100%;    height: 100%;    z-index: 50;  }
-/* Reels - outside giant-panel */  .reels-backdrop {    position: fixed;    inset: 0;    width: 100vw;    height: 100dvh;    z-index: 9999;    display: flex;    align-items: flex-end;    background: hsl(var(--bg));  }
-.reels-sheet {    width: 100%;    height: 100%;    display: flex;    flex-direction: column;  }
-@media (max-width: 768px) {    .giant-body { padding: 0; }    .content-panel {      border-radius: 0;      border: none;    }    .content-scroll {      padding-bottom: calc(80px + env(safe-area-inset-bottom));    }  }
-@media (max-width: 768px) {    /* WATCH + REELS - FIT IN SCROLLABLE BODY, NOT TOUCH 6:55 BAR */    .content-panel .watch-drawer,    .watch-drawer,    .watch-drawer-root {      position: absolute !important;      inset: 0 !important;      width: 100% !important;      height: 100% !important;      max-height: 100% !important;    }    .watch-drawer-panel {      height: 100% !important;      max-height: 100% !important;    }    .reels-backdrop {      position: absolute !important;      inset: 0 !important;      width: 100% !important;      height: 100% !important;      max-height: 100% !important;    }  }
-/* FIX: service page should have no sidebar space / red */  .google-shell.is-services .giant-body {    grid-template-columns: 1fr !important;    margin-left: 0 !important;    background: hsl(var(--background)) !important;  }
-.google-shell.is-services .side-bar,  .google-shell.is-services .sidebar {    display: none !important;    width: 0 !important;  }
-/* === DESKTOP ONLY FIX - shrink to fit, no overflow - MOBILE NOT TOUCHED === */  .is-desktop .giant-body {    min-width: 0;  }  .is-desktop .content-panel {    min-width: 0;    flex: 1 1 0;    overflow: hidden;  }  .is-desktop .content-scroll {    min-width: 0;  }
-/* when PC window gets small (like your Image 2 laptop),     keep PC layout but make sidebar a bit smaller and content shrink */  @media (max-width: 1280px) and (min-width: 769px) {    .is-desktop .giant-body .side-bar,    .is-desktop .giant-body [class*="side-bar"],    .is-desktop .giant-body [class*="SideBar"] {      flex: 0 0 200px !important;      width: 200px !important;      min-width: 200px !important;    }  }
-@media (max-width: 1100px) and (min-width: 769px) {    .is-desktop .giant-body .side-bar,    .is-desktop .giant-body [class*="side-bar"] {      flex: 0 0 180px !important;      width: 180px !important;      min-width: 180px !important;    }    .is-desktop .giant-panel {      font-size: 95%;    }  }
+.google-shell {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100dvh;
+  min-height: 100dvh;
+  max-height: 100dvh;
+  background: hsl(var(--surface));
+  overflow: hidden;
+  position: fixed;
+  inset: 0;
+  padding-top: env(safe-area-inset-top);
+  box-sizing: border-box;
+}
 
+.giant-panel {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: hsl(var(--surface));
+  position: relative;
+}
+
+.giant-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  overflow: hidden;
+  gap: 0;
+  padding-right: 8px;
+  padding-bottom: 8px;
+  position: relative;
+}
+
+.content-panel {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  background: hsl(var(--bg));
+  border-radius: 16px;
+  border: 1px solid hsl(var(--border));
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+  padding: 0;
+}
+
+.content-panel > * { flex-shrink: 0; }
+.content-panel.no-scroll { overflow: hidden; }
+.content-panel::-webkit-scrollbar { display: none; }
+.content-panel { scrollbar-width: none; -ms-overflow-style: none; }
+
+.content-scroll {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+.content-panel .watch-drawer,
+.watch-drawer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 50;
+}
+
+/* Reels - outside giant-panel */
+.reels-backdrop {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100dvh;
+  z-index: 9999;
+  display: flex;
+  align-items: flex-end;
+  background: hsl(var(--bg));
+}
+
+.reels-sheet {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+@media (max-width: 768px) {
+  .giant-body { padding: 0; }
+  .content-panel {
+    border-radius: 0;
+    border: none;
+  }
+  .content-scroll {
+    padding-bottom: calc(80px + env(safe-area-inset-bottom));
+  }
+}
+
+
+@media (max-width: 768px) {
+  /* WATCH + REELS - FIT IN SCROLLABLE BODY, NOT TOUCH 6:55 BAR */
+  .content-panel .watch-drawer,
+  .watch-drawer,
+  .watch-drawer-root {
+    position: absolute !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    max-height: 100% !important;
+  }
+  .watch-drawer-panel {
+    height: 100% !important;
+    max-height: 100% !important;
+  }
+  .reels-backdrop {
+    position: absolute !important;
+    inset: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    max-height: 100% !important;
+  }
+}
+
+
+/* FIX: service page should have no sidebar space / red */
+.google-shell.is-services .giant-body {
+  grid-template-columns: 1fr !important;
+  margin-left: 0 !important;
+  background: hsl(var(--background)) !important;
+}
+
+.google-shell.is-services .side-bar,
+.google-shell.is-services .sidebar {
+  display: none !important;
+  width: 0 !important;
+}
+
+/* === DESKTOP ONLY FIX - shrink to fit, no overflow - MOBILE NOT TOUCHED === */
+.is-desktop .giant-body {
+  min-width: 0;
+}
+.is-desktop .content-panel {
+  min-width: 0;
+  flex: 1 1 0;
+  overflow: hidden;
+}
+.is-desktop .content-scroll {
+  min-width: 0;
+}
+
+/* when PC window gets small (like your Image 2 laptop), 
+   keep PC layout but make sidebar a bit smaller and content shrink */
+@media (max-width: 1280px) and (min-width: 769px) {
+  .is-desktop .giant-body .side-bar,
+  .is-desktop .giant-body [class*="side-bar"],
+  .is-desktop .giant-body [class*="SideBar"] {
+    flex: 0 0 200px !important;
+    width: 200px !important;
+    min-width: 200px !important;
+  }
+}
+
+@media (max-width: 1100px) and (min-width: 769px) {
+  .is-desktop .giant-body .side-bar,
+  .is-desktop .giant-body [class*="side-bar"] {
+    flex: 0 0 180px !important;
+    width: 180px !important;
+    min-width: 180px !important;
+  }
+  .is-desktop .giant-panel {
+    font-size: 95%;
+  }
+}
