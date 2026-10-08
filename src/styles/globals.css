@@ -160,137 +160,29 @@ html, body { overflow-x: hidden; }
 
 }
 
-/* ===== FIX PC MODE ON MOBILE WATCH - FINAL ===== */
-@media (max-width: 1024px) {
-  /* When mobile video exists, kill PC chrome */
-  body:has(.mob-full-root) {
-    background: hsl(var(--bg)) !important;
-    overflow: hidden !important;
-  }
-
-  body:has(.mob-full-root) .google-shell {
-    height: 100dvh !important;
-    overflow: hidden !important;
-  }
-
-  body:has(.mob-full-root) .content-panel {
-    background: hsl(var(--bg)) !important;
+/* ===== MOBILE - kill separators only - SINGLE BLOCK ===== */
+@media (max-width: 1024px){
+  .top-bar,
+  .app-shell,
+  .main-content,
+  .sidebar,
+  .bottom-bar-glass,
+  .bottom-inner {
     border: none !important;
-    border-radius: 0 !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    overflow: hidden !important;
+    box-shadow: none !important;
   }
-
-  body:has(.mob-full-root) .giant-body,
-  body:has(.mob-full-root) .giant-panel {
-    padding: 0 !important;
-    gap: 0 !important;
+  .top-bar {
     background: hsl(var(--bg)) !important;
+    padding-top: env(safe-area-inset-top) !important;
+    height: calc(56px + env(safe-area-inset-top)) !important;
+    min-height: calc(56px + env(safe-area-inset-top)) !important;
   }
-}
-
-@media (max-width: 1024px) and (orientation: landscape) {
-  /* landscape = pure video, no sidebar, no topbar, no bottom bar */
-  body:has(.mob-full-root) .top-bar,
-  body:has(.mob-full-root) .giant-body > :first-child,
-  body:has(.mob-full-root) .side-bar,
-  body:has(.mob-full-root) [class*="side-bar"],
-  body:has(.mob-full-root) .bottom-bar,
-  body:has(.mob-full-root) .bottom-bar-glass {
-    display: none !important;
-  }
-
-  body:has(.mob-full-root) .content-panel {
-    width: 100vw !important;
-    height: 100dvh !important;
-  }
-}
-
-@media (max-width: 1024px) and (orientation: portrait) {
-  /* portrait = YouTube style, hide only desktop sidebar chrome but keep bottom bar for nav */
-  body:has(.mob-full-root) .giant-body > :first-child,
-  body:has(.mob-full-root) .side-bar {
-    display: none !important;
-  }
-  body:has(.mob-full-root) .content-panel {
-    overflow-y: auto !important;
-    height: auto !important;
-    min-height: 100dvh !important;
-    background: hsl(var(--bg)) !important;
-  }
-}
-
-/* HIDE SCROLLBAR ON PC - keep scroll */
-@media (min-width: 769px) {
-    * {
-    scrollbar-width: none !important;
-    -ms-overflow-style: none !important;
-  }
-  *::-webkit-scrollbar {
-    display: none !important;
-    width: 0 !important;
-    height: 0 !important;
-    background: transparent !important;
-  }
- 
-  html::-webkit-scrollbar,
-  body::-webkit-scrollbar,
-  .content-scroll::-webkit-scrollbar,
-  .giant-body::-webkit-scrollbar,
-  .giant-panel::-webkit-scrollbar,
-  .pc-faders-page-content::-webkit-scrollbar {
-    display: none !important;
-    width: 0 !important;
-  }
-}
-
-/* ===== FINAL MOBILE LOCK - KILL PC UI FOREVER ===== */
-.is-mobile-locked .side-bar,
-.is-mobile-locked .pc-sheet-host,
-.is-mobile-locked .pc-faders,
-.is-mobile-locked .pc-faders-page,
-.is-mobile-locked .desktop-shell {
-  display: none !important;
-  width: 0 !important;
-  opacity: 0 !important;
-  pointer-events: none !important;
-}
-
-/* Force mobile width even on landscape / desktop browser */
-.is-mobile-locked {
-  max-width: 480px !important;
-  margin: 0 auto !important;
-  left: 50% !important;
-  transform: translateX(-50%) !important;
-  box-shadow: 0 0 0 1px hsl(var(--border));
-}
-
-/* Make content scroll work like phone */
-.is-mobile-locked .giant-body {
-  padding: 0 !important;
-}
-.is-mobile-locked .content-panel {
-  border-radius: 0 !important;
-  border: none !important;
-  padding-top: 12px !important;
-}
-
-/* Disable your old desktop media queries */
-@media (min-width: 769px) {
-  .is-mobile-locked .google-shell,
-  .is-mobile-locked .giant-panel,
-  .is-mobile-locked .giant-body,
-  .is-mobile-locked .content-panel {
-    height: 100dvh !important;
-    width: 100% !important;
-    max-width: 480px !important;
-    border-radius: 0 !important;
-    padding: 0 !important;
-  }
-  .is-mobile-locked .content-panel {
+  .content-panel {
+    border: none !important;
+    margin-top: 0 !important;
     padding-top: 12px !important;
+    box-shadow: none !important;
   }
 }
 
-/* STARZPLAY STYLE: app never rotates, only fullscreen video rotates - NO overlay */
+/* DELETE is-mobile-locked completely - it breaks landscape */
