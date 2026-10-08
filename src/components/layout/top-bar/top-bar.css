@@ -816,62 +816,22 @@ body.reels-open.top-bar {
 
 
 
-/* === FIX 14 PRO MAX LANDSCAPE 932px - keep mobile TopBar === */
-@media (max-width: 1024px) {
-  .pc-only,
-  .pc-top-controls {
-    display: none !important;
-  }
-}
-
-@media (pointer: coarse) {
-  .pc-only,
-  .pc-top-controls {
-    display: none !important;
-  }
-}
-
-/* Force mobile right-actions pill on any touch device or <=1024px */
+/* FINAL FIX - 14 Pro Max 932px landscape stays mobile */
 @media (max-width: 1024px), (pointer: coarse) {
-  .top-bar {
-    height: auto !important;
-    flex-wrap: wrap !important;
-  }
-  
+  .pc-only, .pc-top-controls { display: none !important; }
   .top-bar .right-actions {
     display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
     height: 38px !important;
-    width: auto !important;
-    margin-left: auto !important;
-    padding: 0 !important;
-    gap: 0 !important;
     background: hsl(var(--surface)) !important;
-    border: 1px solid hsl(var(--border) / 0.6) !important;
+    border: 1px solid hsl(var(--border)/0.6) !important;
     border-radius: 10px !important;
-    overflow: hidden !important;
   }
-
   .top-bar .right-actions .tv-share-btn,
   .top-bar .right-actions .mobile-search-icon,
   .top-bar .right-actions .apple-burger {
+    display: grid !important;
     width: 38px !important;
     height: 38px !important;
-    display: grid !important;
-    place-items: center !important;
-    background: transparent !important;
-    border: 0 !important;
   }
-
-  .top-bar .right-actions .tv-share-btn {
-    display: grid !important;
-  }
-}
-
-/* Keep drawer sidebar visible - fix black screen */
-.wa-mob-panel .side-bar {
-  display: flex !important;
-  visibility: visible !important;
-  opacity: 1 !important;
+  .top-bar { height: auto !important; flex-wrap: wrap !important; }
 }

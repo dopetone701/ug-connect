@@ -1130,3 +1130,12 @@
   color: hsl(var(--text));
 }
 
+
+
+
+
+/* FINAL FIX - services stay 1col/2col on 932px landscape */
+@media (max-width: 1024px), (pointer: coarse) {
+  .top-grid { grid-template-columns: 1fr !important; }
+  .bottom-grid { grid-template-columns: repeat(2,1fr) !important; }
+}

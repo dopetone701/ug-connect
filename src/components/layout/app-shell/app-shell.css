@@ -186,8 +186,10 @@
 
 
 
-/* === FIX - keep mobile on rotate, but keep drawer working === */
-.is-phone .giant-body > .side-bar {
-  display: none !important;
-  width: 0 !important;
+/* FINAL FIX - hide only PC sidebar, keep drawer */
+.is-phone .giant-body > .side-bar { display: none !important; width: 0 !important; }
+@media (max-width: 1024px), (pointer: coarse) {
+  .giant-body > .side-bar { display: none !important; }
+  .giant-body { padding: 0 !important; }
+  .content-panel { border-radius: 0 !important; border: none !important; }
 }
