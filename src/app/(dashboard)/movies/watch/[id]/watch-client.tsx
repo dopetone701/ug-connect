@@ -215,8 +215,6 @@ const toggleFullscreen = useCallback(async () => {
           await root.requestFullscreen({ navigationUI: "hide" } as any)
         } else if ((root as any).webkitRequestFullscreen) {
           await (root as any).webkitRequestFullscreen()
-        } else if (video.webkitEnterFullscreen) {
-          video.webkitEnterFullscreen()
         }
       } catch {}
 

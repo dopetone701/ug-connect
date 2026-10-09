@@ -459,3 +459,83 @@ pointer-events: auto !important;
  pointer-events: auto !important;
  }
 
+
+
+ /* =====================================================
+ LANDSCAPE SAFE FRAME — WATCH DRAWER
+ Keeps the complete video visible with safe spacing
+ ===================================================== */
+@media (max-width: 1024px) and (orientation: landscape) {
+ .watch-drawer-root.open:not(.is-mini) .watch-drawer-panel {
+ padding-top: env(safe-area-inset-top) !important;
+ padding-bottom: env(safe-area-inset-bottom) !important;
+ box-sizing: border-box !important;
+ overflow-x: hidden !important;
+ overflow-y: auto !important;
+ overscroll-behavior-y: contain !important;
+ touch-action: pan-y !important;
+ }
+.watch-drawer-root.open:not(.is-mini) .connect-root:not(.is-shell-full) {
+ width: 100% !important;
+ max-width: 100% !important;
+ height: auto !important;
+ min-height: 0 !important;
+ padding: 0 !important;
+ margin: 0 !important;
+ overflow: visible !important;
+ box-sizing: border-box !important;
+ }
+.watch-drawer-root.open:not(.is-mini) .connect-root:not(.is-shell-full) .film-giant.inner-body {
+ position: relative !important;
+ width: 100% !important;
+ height: auto !important;
+ aspect-ratio: 16 / 9 !important;
+ max-width: 100% !important;
+ max-height: calc(
+ 100dvh
+ - env(safe-area-inset-top)
+ - env(safe-area-inset-bottom)
+ - 24px
+ ) !important;
+ margin: 0 auto !important;
+ padding: 0 !important;
+ overflow: hidden !important;
+ box-sizing: border-box !important;
+ }
+.watch-drawer-root.open:not(.is-mini) .connect-root:not(.is-shell-full) .film-center,
+ .watch-drawer-root.open:not(.is-mini) .connect-root:not(.is-shell-full) .center-cover {
+ width: 100% !important;
+ height: 100% !important;
+ max-width: 100% !important;
+ max-height: 100% !important;
+ overflow: hidden !important;
+ }
+.watch-drawer-root.open:not(.is-mini) .connect-root:not(.is-shell-full) .connect-video {
+ display: block !important;
+ width: 100% !important;
+ height: 100% !important;
+ object-fit: contain !important;
+ object-position: center center !important;
+ }
+/* Keep controls inside the actual video frame */
+ .watch-drawer-root.open:not(.is-mini) .connect-root:not(.is-shell-full) .center-top,
+ .watch-drawer-root.open:not(.is-mini) .connect-root:not(.is-shell-full) .connect-controls {
+ max-width: 100% !important;
+ box-sizing: border-box !important;
+ }
+/* Movie information must remain below the video */
+ .watch-drawer-root.open:not(.is-mini) .connect-under-section {
+ position: relative !important;
+ width: 100% !important;
+ height: auto !important;
+ overflow: visible !important;
+ }
+ }
+/* Play button must remain clickable */
+ .watch-drawer-root .play-apple {
+ position: absolute;
+ z-index: 500 !important;
+ pointer-events: auto !important;
+ touch-action: manipulation !important;
+ }
+
