@@ -20,7 +20,6 @@ import FooterFree from "@/components/layout/curvy-pro-room/get-started-email/foo
 
 const API_URL = "https://movie-server-api.connectu89.workers.dev/api/movies"
 
-// Same detector as top-bar - fixes 844px landscape being seen as desktop
 function detectMobileDevice() {
   if (typeof window === "undefined") return true;
   const ua = navigator.userAgent || "";
@@ -80,6 +79,7 @@ export default function WatchPage({
   const [isLoading, setIsLoading] = useState(true)
   const [descExpanded, setDescExpanded] = useState(false)
   const maximize = useWatchDrawer((s) => s.maximize)
+  const drawerState = useWatchDrawer() as any
 
   useEffect(() => { if (externalFs!== undefined) setIsFullScreen(externalFs) }, [externalFs])
 
@@ -91,14 +91,78 @@ export default function WatchPage({
     } catch { return null }
   })
 
-  // === FIXED HANDOFF: PREVIEW -> REELS ONLY, FULL -> WATCH ONLY, NEVER DURING FULLSCREEN ===
+  // === NEW: MOBILE BACK = MINIMIZE (v) ===
+  const handleBack = useCallback(() => {
+  if (isFullScreen) return;
+
+  const store = useWatchDrawer.getState();
+
+  // MOBILE: player is already inside the floating drawer.
+  // Minimize it exactly like the swipe-down gesture.
+  if (isMobile && isOverlay) {
+    store.minimize();
+    return;
+  }
+
+  // MOBILE: player is on the standalone watch page.
+  // Save playback, open the drawer, minimize, and return to movies.
+  if (isMobile) {
+    const video = videoRef.current;
+
+    try {
+      if (video && effectiveId) {
+        sessionStorage.setItem(
+          `continue_${effectiveId}`,
+          JSON.stringify({
+            time: video.currentTime,
+            playing: !video.paused,
+            type: isPreview ? "preview" : "full",
+          })
+        );
+      }
+    } catch {}
+
+    if (effectiveId) {
+      store.openDrawer(
+        String(effectiveId),
+        isPreview ? "preview" : "full"
+      );
+
+      store.minimize();
+    }
+
+    router.replace("/movies");
+    return;
+  }
+
+  // DESKTOP: preserve existing behavior.
+  if (isOverlay) {
+    if (onClose) {
+      onClose();
+    } else {
+      closeDrawer();
+    }
+  } else {
+    router.push("/movies");
+  }
+}, [
+  isFullScreen,
+  isMobile,
+  isOverlay,
+  effectiveId,
+  isPreview,
+  onClose,
+  closeDrawer,
+  router,
+]);
+
+
   useEffect(() => {
     if (isOverlay) return
     let lastWidth = typeof window !== "undefined" ? window.innerWidth : 768
     let timeout: any = null
 
     const onResize = () => {
-      // BULLETPROOF: Never switch modes when fullscreen
       if (document.fullscreenElement || (document as any).webkitFullscreenElement || isFullScreen) return
       if (rootRef.current === document.fullscreenElement) return
 
@@ -184,7 +248,6 @@ export default function WatchPage({
     }else{ videoRef.current.pause(); setPlaying(false) }
   }, [])
 
-  // === FIXED FULLSCREEN: PORTRAIT LOCKED BY MANIFEST, UNLOCK ONLY ON BTN CLICK ===
 const toggleFullscreen = useCallback(async () => {
   const video = videoRef.current as any
   const root = rootRef.current as any
@@ -194,7 +257,6 @@ const toggleFullscreen = useCallback(async () => {
   const wasPlaying = !video.paused
   const isNative = (window as any).Capacitor?.isNativePlatform?.() || false
 
-  // Lazy load Capacitor only on native
   let CapOrientation: any = null
   if (isNative) {
     try {
@@ -205,11 +267,9 @@ const toggleFullscreen = useCallback(async () => {
 
   try {
     if (!isFullScreen) {
-      // --- ENTER FULLSCREEN -> LANDSCAPE ---
       try { if (isNative) await CapOrientation?.unlock?.() } catch {}
       try { await (screen.orientation as any)?.unlock?.() } catch {}
 
-      // Request fullscreen FIRST (required for Chrome)
       try {
         if (root.requestFullscreen) {
           await root.requestFullscreen({ navigationUI: "hide" } as any)
@@ -218,9 +278,8 @@ const toggleFullscreen = useCallback(async () => {
         }
       } catch {}
 
-      // Now force landscape
       try { if (isNative) await CapOrientation?.lock?.({ orientation: 'landscape' }) } catch {}
-      try { 
+      try {
         if (screen.orientation && (screen.orientation as any).lock) {
           await (screen.orientation as any).lock('landscape')
         }
@@ -234,7 +293,6 @@ const toggleFullscreen = useCallback(async () => {
       if (wasPlaying) video.play().catch(()=>{})
 
     } else {
-      // --- EXIT FULLSCREEN -> PORTRAIT ---
       try { if (document.fullscreenElement) await document.exitFullscreen() } catch {}
       try { if ((document as any).webkitFullscreenElement) await (document as any).webkitExitFullscreen?.() } catch {}
 
@@ -243,7 +301,7 @@ const toggleFullscreen = useCallback(async () => {
       document.body.style.overflow = ''
 
       try { if (isNative) await CapOrientation?.lock?.({ orientation: 'portrait' }) } catch {}
-      try { 
+      try {
         if (screen.orientation && (screen.orientation as any).lock) {
           await (screen.orientation as any).lock('portrait')
         }
@@ -253,7 +311,6 @@ const toggleFullscreen = useCallback(async () => {
     setIsFullScreen(v=>!v)
   }
 }, [isFullScreen, onFsChange])
-
 
   const formatTime = useCallback((sec: number) => {
     if(!sec || isNaN(sec)) return "0:00"
@@ -274,7 +331,7 @@ const toggleFullscreen = useCallback(async () => {
 
   useEffect(() => {
     const check = () => setIsMobile(detectMobileDevice())
-    check(); 
+    check();
     window.addEventListener("resize", check)
     window.addEventListener("orientationchange", check)
     return () => {
@@ -285,8 +342,8 @@ const toggleFullscreen = useCallback(async () => {
 
   useEffect(() => {
     if(!movie) return; setMounted(true)
-    const onFs = () => { 
-      const fs =!!document.fullscreenElement ||!!(document as any).webkitFullscreenElement; 
+    const onFs = () => {
+      const fs =!!document.fullscreenElement ||!!(document as any).webkitFullscreenElement;
       setIsFullScreen(fs)
       if(!fs) document.body.style.overflow = ''
     }
@@ -383,7 +440,27 @@ const toggleFullscreen = useCallback(async () => {
               }}
               onClick={togglePlay} playsInline loop={isPreview} preload="auto" muted
             />
-            <PlayerOverlay movie={movie} showControls={showControls} isLoading={isLoading} playing={playing} progress={progress} bufferedProgress={bufferedProgress} currentTime={currentTime} duration={duration} isFullScreen={isFullScreen} formatTime={formatTime} onSeek={(x: number, r: DOMRect)=>seekTo(x, r)} onTogglePlay={togglePlay} onToggleFullscreen={toggleFullscreen} onBack={()=>{ if(isOverlay){ if(onClose) onClose(); else closeDrawer() }else{ router.push("/movies") } }} isMini={isMini} onClose={onClose} onExpand={maximize} />
+            {/* === CHANGED: pass handleBack + isMobile + isFullScreen === */}
+            <PlayerOverlay 
+              movie={movie} 
+              showControls={showControls} 
+              isLoading={isLoading} 
+              playing={playing} 
+              progress={progress} 
+              bufferedProgress={bufferedProgress} 
+              currentTime={currentTime} 
+              duration={duration} 
+              isFullScreen={isFullScreen} 
+              isMobile={isMobile}
+              formatTime={formatTime} 
+              onSeek={(x: number, r: DOMRect)=>seekTo(x, r)} 
+              onTogglePlay={togglePlay} 
+              onToggleFullscreen={toggleFullscreen} 
+              onBack={handleBack}
+              isMini={isMini} 
+              onClose={onClose} 
+              onExpand={maximize} 
+            />
           </div></div>
         </div>
 
