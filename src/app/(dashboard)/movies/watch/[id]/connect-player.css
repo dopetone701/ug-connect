@@ -643,3 +643,163 @@
 }
 
 @import "./connect-player-helper.css";
+
+
+
+
+
+
+
+/* ===== CLEAN PRO PLAY / PAUSE ICON ===== */
+
+/* Kill the glass circle and button background */
+.connect-root .play-apple,
+.connect-root .play-apple-core {
+  background: transparent !important;
+  border: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: none !important;
+}
+
+/* Keep the Pro icon centered with a subtle shade */
+.connect-root .play-apple {
+  transform: translate(-50%, -50%) !important;
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.2s ease !important;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Remove the diagonal / scaling animation */
+.connect-root .play-apple:active {
+  transform: translate(-50%, -50%) !important;
+}
+
+.connect-root .play-apple-core {
+  width: 88px !important;
+  height: 88px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+/* Subtle shadow on the icon itself */
+.connect-root .play-apple-core svg {
+  filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.45)) !important;
+}
+
+/* Keep the hidden state working with the overlays */
+.connect-root .play-apple.hidden {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+
+
+
+/* ===== PREMIUM IPHONE-STYLE MINIMIZE / V ICON ===== */
+.connect-root button[aria-label="Minimize"] {
+  width: 48px !important;
+  height: 48px !important;
+  min-width: 48px !important;
+  min-height: 48px !important;
+
+  background: transparent !important;
+  border: none !important;
+  border-radius: 50% !important;
+  box-shadow: none !important;
+
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Make the V bold, large and crisp */
+.connect-root button[aria-label="Minimize"] svg {
+  width: 32px !important;
+  height: 32px !important;
+
+  stroke: rgba(255, 255, 255, 0.98) !important;
+  stroke-width: 2.8 !important;
+
+  filter: drop-shadow(0 1px 3px rgba(255, 255, 255, 0.18))
+          drop-shadow(0 2px 4px rgba(0, 0, 0, 0.4));
+}
+
+/* Gentle press feedback without shifting the button */
+.connect-root button[aria-label="Minimize"]:active {
+  transform: scale(0.94) !important;
+  background: transparent !important;
+}
+
+
+
+/* ===== REMOVE FULL DARK OVERLAY SHEET ===== */
+
+/* Remove the full-screen dark/glass panel */
+.connect-root .connect-controls,
+.connect-root .connect-controls.show {
+  background: transparent !important;
+  background-image: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* The control layer itself never captures empty-space taps */
+.connect-root .connect-controls {
+  pointer-events: none !important;
+}
+
+/* Only actual controls receive taps */
+.connect-root .connect-controls button,
+.connect-root .connect-controls a,
+.connect-root .connect-controls .starz-progress {
+  pointer-events: auto !important;
+}
+
+/* Keep the progress bar itself visible and functional */
+.connect-root .cc-progress-bottom,
+.connect-root .cc-above-progress,
+.connect-root .cc-bottom-row {
+  background: transparent !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* Preserve the individual play icon without a giant hit layer */
+.connect-root .center-play-group {
+  background: transparent !important;
+  pointer-events: none !important;
+}
+
+.connect-root .center-play-group .play-apple,
+.connect-root .center-play-group .center-skip-btn {
+  pointer-events: auto !important;
+}
+
+/* Keep minimize working */
+.connect-root button[aria-label="Minimize"] {
+  z-index: 10002 !important;
+  pointer-events: auto !important;
+}
+
+/* No background sheet behind the center play button */
+.connect-root .play-apple,
+.connect-root .play-apple-core {
+  background: transparent !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: none !important;
+}
+

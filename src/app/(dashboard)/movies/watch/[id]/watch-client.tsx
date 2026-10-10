@@ -63,6 +63,11 @@ export default function WatchPage({
   const rootRef = useRef<HTMLDivElement>(null)
   const lastTimeRef = useRef(0)
   const autoPlayTimerRef = useRef<any>(null)
+  
+const controlsTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+const interactingRef = useRef(false);
+
+
 
   const [playing, setPlaying] = useState(false)
   const [progress, setProgress] = useState(0)
@@ -92,20 +97,39 @@ export default function WatchPage({
   })
 
   // === NEW: MOBILE BACK = MINIMIZE (v) ===
-  const handleBack = useCallback(() => {
+ 
+const handleBack = useCallback(() => {
   if (isFullScreen) return;
 
   const store = useWatchDrawer.getState();
 
-  // MOBILE: player is already inside the floating drawer.
-  // Minimize it exactly like the swipe-down gesture.
+  // MOBILE OVERLAY: minimize while keeping playback running.
   if (isMobile && isOverlay) {
+    const video = videoRef.current;
+    const wasPlaying = video ? !video.paused : playing;
+    const savedTime = video?.currentTime ?? currentTime;
+
     store.minimize();
+
+    // Restore playback if minimizing pauses the existing video.
+    requestAnimationFrame(() => {
+      const currentVideo = videoRef.current;
+
+      if (currentVideo && wasPlaying && currentVideo.paused) {
+        if (Number.isFinite(savedTime)) {
+          try {
+            currentVideo.currentTime = savedTime;
+          } catch {}
+        }
+
+        currentVideo.play().catch(() => {});
+      }
+    });
+
     return;
   }
 
-  // MOBILE: player is on the standalone watch page.
-  // Save playback, open the drawer, minimize, and return to movies.
+  // MOBILE STANDALONE: preserve existing behavior.
   if (isMobile) {
     const video = videoRef.current;
 
@@ -127,7 +151,6 @@ export default function WatchPage({
         String(effectiveId),
         isPreview ? "preview" : "full"
       );
-
       store.minimize();
     }
 
@@ -149,12 +172,16 @@ export default function WatchPage({
   isFullScreen,
   isMobile,
   isOverlay,
+  playing,
+  currentTime,
   effectiveId,
   isPreview,
   onClose,
   closeDrawer,
   router,
 ]);
+
+
 
 
   useEffect(() => {
@@ -355,7 +382,58 @@ const toggleFullscreen = useCallback(async () => {
     }
   }, [movie])
 
-  useEffect(()=>{ if(!playing) return; const t=setTimeout(()=>setShowControls(false),3200); return()=>clearTimeout(t) },[playing, showControls])
+
+const cancelControlsTimer = useCallback(() => {
+  if (controlsTimerRef.current) {
+    clearTimeout(controlsTimerRef.current);
+    controlsTimerRef.current = null;
+  }
+}, []);
+
+const scheduleControlsHide = useCallback(() => {
+  cancelControlsTimer();
+
+  if (!playing || interactingRef.current) return;
+
+  controlsTimerRef.current = setTimeout(() => {
+    if (!interactingRef.current) {
+      setShowControls(false);
+    }
+    controlsTimerRef.current = null;
+  }, 3200);
+}, [playing, cancelControlsTimer]);
+
+const keepControlsVisible = useCallback(() => {
+  setShowControls(true);
+  cancelControlsTimer();
+}, [cancelControlsTimer]);
+
+const startControlsInteraction = useCallback(() => {
+  interactingRef.current = true;
+  setShowControls(true);
+  cancelControlsTimer();
+}, [cancelControlsTimer]);
+
+const endControlsInteraction = useCallback(() => {
+  interactingRef.current = false;
+  scheduleControlsHide();
+}, [scheduleControlsHide]);
+
+useEffect(() => {
+  scheduleControlsHide();
+
+  return () => {
+    cancelControlsTimer();
+  };
+}, [scheduleControlsHide, cancelControlsTimer]);
+
+useEffect(() => {
+  return () => {
+    interactingRef.current = false;
+    cancelControlsTimer();
+  };
+}, [cancelControlsTimer]);
+
 
   const searchEpId = search.get("ep") || search.get("e")
   const epId = isOverlay? overlayEpId || searchEpId : searchEpId
@@ -453,13 +531,19 @@ const toggleFullscreen = useCallback(async () => {
               isFullScreen={isFullScreen} 
               isMobile={isMobile}
               formatTime={formatTime} 
-              onSeek={(x: number, r: DOMRect)=>seekTo(x, r)} 
-              onTogglePlay={togglePlay} 
-              onToggleFullscreen={toggleFullscreen} 
+              onSeek={(x: number, r: DOMRect) => seekTo(x, r)}
+              onTogglePlay={togglePlay}
+              onSkip={skip}
+              onToggleFullscreen={toggleFullscreen}
               onBack={handleBack}
               isMini={isMini} 
               onClose={onClose} 
-              onExpand={maximize} 
+              onExpand={maximize}               
+              onShowControls={keepControlsVisible}
+              onInteractionStart={startControlsInteraction}
+              onInteractionEnd={endControlsInteraction}
+
+
             />
           </div></div>
         </div>
