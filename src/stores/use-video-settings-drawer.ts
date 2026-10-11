@@ -1,50 +1,31 @@
-
-"use client";
-
 import { create } from "zustand";
 
-export type VideoQualityOption = {
-  label: string;
-  value: string;
-};
+export type VideoQuality = string;
 
-type VideoSettingsDrawerState = {
+type State = {
   isOpen: boolean;
+  qualityOptions: { label: string; value: string; hint?: string }[];
+  selectedQuality: string;
   open: () => void;
   close: () => void;
   toggle: () => void;
-
-  qualityOptions: VideoQualityOption[];
-  selectedQuality: string;
-  selectQuality: ((value: string) => void) | null;
-
-  setQualityOptions: (options: VideoQualityOption[]) => void;
-  setSelectedQuality: (value: string) => void;
-  setQualityHandler: (
-    handler: ((value: string) => void) | null
-  ) => void;
+  selectQuality: (v: string) => void;
+  setQualityOptions: (opts: any[]) => void;
+  setSelectedQuality: (v: string) => void;
+  setQualityHandler: (fn: any) => void;
+  qualityHandler: any;
 };
 
-export const useVideoSettingsDrawer =
-  create<VideoSettingsDrawerState>((set) => ({
-    isOpen: false,
-
-    open: () => set({ isOpen: true }),
-    close: () => set({ isOpen: false }),
-    toggle: () =>
-      set((state) => ({ isOpen: !state.isOpen })),
-
-    qualityOptions: [],
-    selectedQuality: "auto",
-    selectQuality: null,
-
-    setQualityOptions: (qualityOptions) =>
-      set({ qualityOptions }),
-
-    setSelectedQuality: (selectedQuality) =>
-      set({ selectedQuality }),
-
-    setQualityHandler: (selectQuality) =>
-      set({ selectQuality }),
-  }));
-
+export const useVideoSettingsDrawer = create<State>((set) => ({
+  isOpen: false,
+  selectedQuality: "auto",
+  qualityOptions: [],
+  qualityHandler: null,
+  open: () => set({ isOpen: true }),
+  close: () => set({ isOpen: false }),
+  toggle: () => set((s) => ({ isOpen: !s.isOpen })),
+  selectQuality: (v) => set({ selectedQuality: v }),
+  setQualityOptions: (opts) => set({ qualityOptions: opts }),
+  setSelectedQuality: (v) => set({ selectedQuality: v }),
+  setQualityHandler: (fn) => set({ qualityHandler: fn }),
+}));

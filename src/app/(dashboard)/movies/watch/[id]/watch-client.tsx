@@ -593,55 +593,7 @@ useEffect(() => {
 
             />
 
-{settingsOpen && !isOverlay &&
-  (() => {
-    const qualityPanel = (
-      <div
-        className="video-settings-panel"
-        role="dialog"
-        aria-label="Video quality"
-      >
-        <div className="video-settings-header">
-          <strong>Video quality</strong>
 
-          <button
-            type="button"
-            aria-label="Close settings"
-            onClick={closeVideoSettings}
-          >
-            ✕
-          </button>
-        </div>
-
-        {qualitySources.map((source) => (
-          <button
-            key={source.value}
-            type="button"
-            className={`video-settings-option ${
-              currentQualityObj?.value === source.value
-                ? "selected"
-                : ""
-            }`}
-            onClick={() => {
-              setQuality(source.value);
-              closeVideoSettings();
-            }}
-          >
-            <span>{source.label}</span>
-
-            {currentQualityObj?.value === source.value && (
-              <span>✓</span>
-            )}
-          </button>
-        ))}
-      </div>
-    );
-
-
-
-return qualityPanel;
-
-  })()}
 
           </div></div>
         </div>

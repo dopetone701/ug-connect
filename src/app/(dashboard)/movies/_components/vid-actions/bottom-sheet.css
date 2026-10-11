@@ -1,0 +1,154 @@
+/* Bottom sheet - DNA theme - NO BLUR on backdrop, gear white, height kept 52vh */
+.bs-backdrop {
+  position: fixed;
+  inset: 0;
+  background: hsl(var(--bg) / 0.65);
+  /* BLUR REMOVED */
+  z-index: 10000;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  animation: backdropIn 0.25s ease;
+}
+
+.bs-backdrop.is-closing {
+  animation: backdropOut 0.3s ease forwards;
+}
+
+.bs-sheet {
+  width: 100%;
+  max-width: 640px;
+  max-height: 52vh;
+  min-height: 52vh;
+  background: hsl(var(--surface));
+  border: 1px solid hsl(var(--border));
+  border-bottom: none;
+  border-radius: 20px 20px 0 0;
+  box-shadow: 0 -8px 32px hsl(var(--bg) / 0.4);
+  animation: sheetIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.bs-sheet.is-closing {
+  animation: sheetOut 0.3s cubic-bezier(0.7, 0, 0.84, 0) forwards;
+}
+
+.bs-handle {
+  width: 36px;
+  height: 4px;
+  background: hsl(var(--border));
+  border-radius: 999px;
+  margin: 12px auto 8px;
+  flex-shrink: 0;
+}
+
+.bs-content {
+  overflow-y: auto;
+  padding: 8px 16px 24px;
+  overscroll-behavior: contain;
+}
+
+.cast-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: hsl(var(--text));
+  margin: 8px 0 4px;
+  letter-spacing: -0.02em;
+}
+
+.cast-subtitle {
+  font-size: 13px;
+  color: hsl(var(--text-muted));
+  margin-bottom: 16px;
+}
+
+.cast-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cast-device {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 14px 16px;
+  border-radius: 12px;
+  background: hsl(var(--surface));
+  border: 1px solid hsl(var(--border));
+  cursor: pointer;
+  transition: all 0.15s;
+  text-align: left;
+}
+
+.cast-device:hover {
+  background: hsl(var(--surface-hover));
+}
+
+.cast-device-primary {
+  background: hsl(var(--surface-hover));
+  border-color: hsl(var(--primary) / 0.5);
+}
+
+.cast-device-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: hsl(var(--text));
+}
+
+.cast-device-type {
+  font-size: 12px;
+  color: hsl(var(--text-muted));
+}
+
+/* Gear icon always white */
+.quality-settings-trigger {
+  color: white !important;
+}
+
+.quality-settings-trigger svg {
+  stroke: white !important;
+  fill: none;
+}
+
+.quality-settings-trigger svg path,
+.quality-settings-trigger svg circle {
+  stroke: white !important;
+}
+
+@keyframes backdropIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes backdropOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes sheetIn {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+@keyframes sheetOut {
+  from { transform: translateY(0); }
+  to { transform: translateY(100%); }
+}
+/* GEAR ONLY - match fullscreen size */
+.quality-desktop-wrap .cc-icon.apple-full,
+.quality-settings-trigger {
+  width: 28px !important;
+  height: 28px !important;
+  background: transparent !important;
+  border: none !important;
+}
+
+.quality-desktop-wrap .cc-icon.apple-full svg,
+.quality-settings-trigger svg {
+  width: 24px !important;
+  height: 24px !important;
+}

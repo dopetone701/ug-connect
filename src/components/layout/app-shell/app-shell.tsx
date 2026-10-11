@@ -528,53 +528,8 @@ const selectQuality = useVideoSettingsDrawer((s) => s.selectQuality);
 
 
 
-       {/* MOBILE VIDEO QUALITY SHEET — APP SHELL LEVEL */}
-{isMobile && settingsOpen && (
-    <div
-      className="mobile-video-settings-backdrop"
-      onClick={closeVideoSettings}
-    >
-      <section
-        className="mobile-video-settings-sheet"
-        role="dialog"
-        aria-modal="true"
-        aria-label="Video quality"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="mobile-video-settings-header">
-          <strong>Video quality</strong>
+       
 
-          <button
-            type="button"
-            aria-label="Close video settings"
-            onClick={closeVideoSettings}
-          >
-            ✕
-          </button>
-        </div>
-
-        {qualityOptions.map((option) => (
-          <button
-            key={option.value}
-            type="button"
-            className={`video-settings-option ${
-              selectedQuality === option.value ? "selected" : ""
-            }`}
-            onClick={() => {
-              selectQuality?.(option.value);
-              closeVideoSettings();
-            }}
-          >
-            <span>{option.label}</span>
-
-            {selectedQuality === option.value && (
-              <span>✓</span>
-            )}
-          </button>
-        ))}
-      </section>
-    </div>
-  )}
 
 
       {/* =====================================================
