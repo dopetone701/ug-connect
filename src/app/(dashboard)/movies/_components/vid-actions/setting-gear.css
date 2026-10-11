@@ -1,0 +1,217 @@
+/* =========================================
+ DOPE TONE / UG-CONNECT
+ QUALITY SETTINGS
+ ========================================= */
+.connect-root .quality-settings {
+ position: relative;
+ display: inline-flex;
+ align-items: center;
+ justify-content: center;
+ flex: 0 0 36px;
+ width: 36px;
+ height: 36px;
+ margin: 0;
+ isolation: isolate;
+ }
+/* Settings gear button */
+ .connect-root .quality-settings-trigger {
+ position: relative;
+ z-index: 2;
+ display: inline-flex;
+ align-items: center;
+ justify-content: center;
+ flex: 0 0 36px;
+ width: 36px;
+ height: 36px;
+ min-width: 36px;
+ min-height: 36px;
+ padding: 0;
+ margin: 0;
+ color: #fff !important;
+ background: transparent !important;
+ border: none !important;
+ border-radius: 0;
+ box-shadow: none !important;
+ cursor: pointer;
+ -webkit-tap-highlight-color: transparent;
+ touch-action: manipulation;
+ transition: opacity 0.15s ease, transform 0.15s ease;
+ }
+.connect-root .quality-settings-trigger:hover {
+ opacity: 1;
+ }
+.connect-root .quality-settings-trigger:active {
+ transform: scale(0.94);
+ }
+.connect-root .quality-settings-trigger:focus-visible {
+ outline: 2px solid #fff;
+ outline-offset: 3px;
+ }
+/* Force the gear SVG to white */
+ .connect-root .quality-settings-trigger svg {
+ display: block;
+ width: 22px;
+ height: 22px;
+ max-width: 100%;
+ max-height: 100%;
+ color: #fff !important;
+ stroke: #fff !important;
+ fill: none !important;
+ }
+.connect-root .quality-settings-trigger svg path,
+ .connect-root .quality-settings-trigger svg circle,
+ .connect-root .quality-settings-trigger svg line,
+ .connect-root .quality-settings-trigger svg polyline,
+ .connect-root .quality-settings-trigger svg polygon {
+ stroke: #fff !important;
+ }
+/* Settings and fullscreen alignment */
+ .connect-root .cc-right-simple {
+ display: inline-flex !important;
+ align-items: center !important;
+ justify-content: flex-end !important;
+ gap: 8px !important;
+ margin-left: auto !important;
+ flex-shrink: 0 !important;
+ }
+/* Transparent dismissal area */
+ .connect-root .quality-settings-dismiss {
+ position: fixed;
+ inset: 0;
+ z-index: 100;
+ width: 100%;
+ height: 100%;
+ padding: 0;
+ margin: 0;
+ background: transparent;
+ border: 0;
+ cursor: default;
+ -webkit-tap-highlight-color: transparent;
+ }
+/* Quality selection popup */
+ .connect-root .quality-settings-menu {
+ position: absolute;
+ right: 0;
+ bottom: calc(100% + 10px);
+ z-index: 101;
+ width: min(276px, calc(100vw - 32px));
+ padding: 8px;
+ color: hsl(var(–text));
+ background: hsl(var(–surface) / 0.97);
+ border: 1px solid hsl(var(–border) / 0.85);
+ border-radius: 16px;
+ box-shadow:
+ 0 12px 32px rgba(0, 0, 0, 0.22),
+ 0 2px 8px rgba(0, 0, 0, 0.12);
+ backdrop-filter: blur(22px) saturate(150%);
+ -webkit-backdrop-filter: blur(22px) saturate(150%);
+ animation: quality-menu-in 0.16s ease-out;
+ }
+/* Popup animation */
+ @keyframes quality-menu-in {
+ from {
+ opacity: 0;
+ transform: translateY(5px) scale(0.98);
+ }
+to {
+ opacity: 1;
+ transform: translateY(0) scale(1);
+ }
+ }
+/* Popup heading */
+ .connect-root .quality-settings-heading {
+ padding: 10px 12px 12px;
+ color: hsl(var(–text-muted));
+ font-size: 12px;
+ font-weight: 700;
+ letter-spacing: 0.07em;
+ text-transform: uppercase;
+ }
+/* Quality options */
+ .connect-root .quality-settings-option {
+ display: flex;
+ align-items: center;
+ justify-content: space-between;
+ gap: 14px;
+ width: 100%;
+ min-height: 58px;
+ padding: 11px 12px;
+ margin: 0;
+ color: hsl(var(–text));
+ text-align: left;
+ background: transparent;
+ border: 1px solid transparent;
+ border-radius: 11px;
+ cursor: pointer;
+ -webkit-tap-highlight-color: transparent;
+ touch-action: manipulation;
+ transition: background 0.16s ease, border-color 0.16s ease;
+ }
+.connect-root .quality-settings-option:hover {
+ background: hsl(var(–surface-hover));
+ }
+.connect-root .quality-settings-option[aria-checked=“true”] {
+ background: hsl(var(–primary) / 0.08);
+ border-color: hsl(var(–border) / 0.7);
+ }
+.connect-root .quality-settings-option:focus-visible {
+ outline: 2px solid hsl(var(–primary));
+ outline-offset: -2px;
+ }
+/* Option title */
+ .connect-root .quality-settings-option strong {
+ display: block;
+ color: hsl(var(–text));
+ font-size: 13px;
+ font-weight: 700;
+ line-height: 1.4;
+ }
+/* Option description */
+ .connect-root .quality-settings-option small {
+ display: block;
+ margin-top: 4px;
+ color: hsl(var(–text-muted));
+ font-size: 11px;
+ font-weight: 500;
+ line-height: 1.4;
+ }
+/* Selected checkmark */
+ .connect-root .quality-settings-option > span:last-child {
+ flex-shrink: 0;
+ color: hsl(var(–primary));
+ font-size: 17px;
+ font-weight: 800;
+ }
+/* Mobile sizing */
+ @media (max-width: 768px) {
+ .connect-root .quality-settings,
+ .connect-root .quality-settings-trigger {
+ flex-basis: 40px;
+ width: 40px;
+ height: 40px;
+ min-width: 40px;
+ min-height: 40px;
+ }
+.connect-root .quality-settings-trigger svg {
+ width: 24px;
+ height: 24px;
+ }
+.connect-root .quality-settings-menu {
+ width: min(260px, calc(100vw - 24px));
+ border-radius: 14px;
+ }
+.connect-root .quality-settings-option {
+ min-height: 56px;
+ }
+ }
+/* Reduced motion accessibility */
+ @media (prefers-reduced-motion: reduce) {
+ .connect-root .quality-settings-menu {
+ animation: none;
+ }
+.connect-root .quality-settings-trigger,
+ .connect-root .quality-settings-option {
+ transition: none;
+ }
+ }
+

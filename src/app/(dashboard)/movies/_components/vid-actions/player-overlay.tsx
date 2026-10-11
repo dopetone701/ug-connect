@@ -1,10 +1,11 @@
-
 "use client";
 
 import BackBtn from "../back-btn";
 import PlayBtnIcon from "./../../../../../modal-generator/svg-icons/play-btn-icon";
 import Reverse10Icon from "./../../../../../modal-generator/svg-icons/minus-10-revolve-icon";
 import Replay10Icon from "./../../../../../modal-generator/svg-icons/plus-10-revolve-icon";
+import QualitySettings from "./quality-settings";
+import "./setting-gear.css";
 
 export default function PlayerOverlay({
   movie,
@@ -139,44 +140,41 @@ export default function PlayerOverlay({
           }}
         >
           {isMobile ? (
-            
-<button
-  type="button"
-  onPointerUp={(e) => {
-    e.preventDefault();
-    e.stopPropagation();
+            <button
+              type="button"
+              onPointerUp={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
 
-    if (e.button !== 0) return;
+                if (e.button !== 0) return;
 
-    keepControlsVisible();
-    onBack?.();
-  }}
-  onClick={(e) => {
-    e.preventDefault();
-    e.stopPropagation();
-  }}
-  className="w-10 h-10 rounded-full bg-black/60 backdrop-blur flex items-center justify-center text-white border border-white/10"
-  aria-label="Minimize"
-  style={{
-    pointerEvents: "auto",
-    touchAction: "manipulation",
-  }}
->
-  <svg
-    width="22"
-    height="22"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2.5"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="m6 9 6 6 6-6" />
-  </svg>
-</button>
-
-
+                keepControlsVisible();
+                onBack?.();
+              }}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+              }}
+              className="w-10 h-10 rounded-full bg-black/60 backdrop-blur flex items-center justify-center text-white border border-white/10"
+              aria-label="Minimize"
+              style={{
+                pointerEvents: "auto",
+                touchAction: "manipulation",
+              }}
+            >
+              <svg
+                width="22"
+                height="22"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="m6 9 6 6 6-6" />
+              </svg>
+            </button>
           ) : (
             <BackBtn
               onClick={() => {
@@ -245,39 +243,38 @@ export default function PlayerOverlay({
       )}
 
       {/* CENTRAL PLAY / PAUSE */}
-{showControls && !isLoading && (
-  <button
-    type="button"
-    className="play-apple"
-    onPointerDown={(e) => {
-      e.stopPropagation();
-      startInteraction();
-    }}
-    onPointerUp={endInteraction}
-    onPointerCancel={endInteraction}
-    onClick={(e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      keepControlsVisible();
-      onTogglePlay?.();
-    }}
-    aria-label={playing ? "Pause" : "Play"}
-    style={{
-      position: "absolute",
-      top: "50%",
-      left: "50%",
-      transform: "translate(-50%, -50%)",
-      zIndex: 10001,
-      pointerEvents: "auto",
-      touchAction: "manipulation",
-    }}
-  >
-    <span className="play-apple-core">
-      <PlayBtnIcon playing={playing} size={64} />
-    </span>
-  </button>
-)}
-
+      {showControls && !isLoading && (
+        <button
+          type="button"
+          className="play-apple"
+          onPointerDown={(e) => {
+            e.stopPropagation();
+            startInteraction();
+          }}
+          onPointerUp={endInteraction}
+          onPointerCancel={endInteraction}
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            keepControlsVisible();
+            onTogglePlay?.();
+          }}
+          aria-label={playing ? "Pause" : "Play"}
+          style={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            zIndex: 10001,
+            pointerEvents: "auto",
+            touchAction: "manipulation",
+          }}
+        >
+          <span className="play-apple-core">
+            <PlayBtnIcon playing={playing} size={64} />
+          </span>
+        </button>
+      )}
 
       {/* FORWARD 10 */}
       {showControls && !isLoading && (
@@ -317,56 +314,62 @@ export default function PlayerOverlay({
             {formatTime(currentTime)} / {formatTime(duration)}
           </span>
 
-          <button
-            type="button"
-            className="cc-icon apple-full"
-            onPointerDown={startInteraction}
-            onPointerUp={endInteraction}
-            onPointerCancel={endInteraction}
-            onClick={(e) => {
-              e.stopPropagation();
-              keepControlsVisible();
-              onToggleFullscreen?.();
-            }}
-            aria-label={
-              isFullScreen ? "Exit fullscreen" : "Enter fullscreen"
-            }
-          >
-            <svg
-              width="20"
-              height="20"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="white"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
+          {/* RIGHT-SIDE CONTROLS: SETTINGS THEN FULLSCREEN */}
+          <div className="cc-right-simple">
+            <QualitySettings />
+
+            <button
+              type="button"
+              className="cc-icon apple-full"
+              onPointerDown={startInteraction}
+              onPointerUp={endInteraction}
+              onPointerCancel={endInteraction}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                keepControlsVisible();
+                onToggleFullscreen?.();
+              }}
+              aria-label={
+                isFullScreen ? "Exit fullscreen" : "Enter fullscreen"
+              }
             >
-              {isFullScreen ? (
-                <>
-                  <path d="M9 4v5H4" />
-                  <path d="M4 4l6 6" />
-                  <path d="M15 4v5h5" />
-                  <path d="M20 4l-6 6" />
-                  <path d="M9 20v-5H4" />
-                  <path d="M4 20l6-6" />
-                  <path d="M15 20v-5h5" />
-                  <path d="M20 20l-6-6" />
-                </>
-              ) : (
-                <>
-                  <path d="M4 9V4h5" />
-                  <path d="M4 4l6 6" />
-                  <path d="M20 9V4h-5" />
-                  <path d="M20 4l-6 6" />
-                  <path d="M4 15v5h5" />
-                  <path d="M4 20l6-6" />
-                  <path d="M20 15v5h-5" />
-                  <path d="M20 20l-6-6" />
-                </>
-              )}
-            </svg>
-          </button>
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="white"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                {isFullScreen ? (
+                  <>
+                    <path d="M9 4v5H4" />
+                    <path d="M4 4l6 6" />
+                    <path d="M15 4v5h5" />
+                    <path d="M20 4l-6 6" />
+                    <path d="M9 20v-5H4" />
+                    <path d="M4 20l6-6" />
+                    <path d="M15 20v-5h5" />
+                    <path d="M20 20l-6-6" />
+                  </>
+                ) : (
+                  <>
+                    <path d="M4 9V4h5" />
+                    <path d="M4 4l6 6" />
+                    <path d="M20 9V4h-5" />
+                    <path d="M20 4l-6 6" />
+                    <path d="M4 15v5h5" />
+                    <path d="M4 20l6-6" />
+                    <path d="M20 15v5h-5" />
+                    <path d="M20 20l-6-6" />
+                  </>
+                )}
+              </svg>
+            </button>
+          </div>
         </div>
 
         {/* DRAGGABLE PROGRESS BAR */}
@@ -435,4 +438,3 @@ export default function PlayerOverlay({
     </>
   );
 }
-

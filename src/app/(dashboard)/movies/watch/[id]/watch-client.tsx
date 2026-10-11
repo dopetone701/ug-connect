@@ -17,6 +17,8 @@ import UnderVideoStaBtns from "../../_components/under-vid-btns/under-video-sta-
 import { useWatchDrawer } from "@/stores/use-watch-drawer"
 import { useReelsDrawer } from "@/stores/use-reels-drawer"
 import FooterFree from "@/components/layout/curvy-pro-room/get-started-email/footer/footer"
+import { useVideoSettingsDrawer } from "@/stores/use-video-settings-drawer";
+
 
 const API_URL = "https://movie-server-api.connectu89.workers.dev/api/movies"
 
@@ -85,6 +87,9 @@ const interactingRef = useRef(false);
   const [descExpanded, setDescExpanded] = useState(false)
   const maximize = useWatchDrawer((s) => s.maximize)
   const drawerState = useWatchDrawer() as any
+  const settingsOpen = useVideoSettingsDrawer((s) => s.isOpen);
+const closeVideoSettings = useVideoSettingsDrawer((s) => s.close);
+
 
   useEffect(() => { if (externalFs!== undefined) setIsFullScreen(externalFs) }, [externalFs])
 
@@ -493,7 +498,9 @@ useEffect(() => {
   return (
     <>
       <div ref={rootRef} className={`film-root connect-root ${isOverlay?'yt-overlay-root':''} ${isFullScreen?'is-shell-full':''} ${isMobile?'is-mobile-layout':'is-desktop-layout'}`}>
-        <div className="film-giant connect-player inner-body" onMouseMove={()=>setShowControls(true)} onMouseLeave={()=>playing && setShowControls(false)} onTouchStart={()=>setShowControls(true)}>
+
+<div className="film-giant connect-player inner-body" onMouseMove={()=>setShowControls(true)} onMouseLeave={()=>playing && setShowControls(false)} onTouchStart={()=>setShowControls(true)}>
+
           <div className="film-center"><div className="center-cover">
             <video
               key={`${movie.id}-${quality}-${activeEp?.id || 'default'}`}
@@ -544,9 +551,52 @@ useEffect(() => {
               onInteractionEnd={endControlsInteraction}
 
 
+
             />
+
+            {settingsOpen && (
+              <div
+                className="video-settings-panel"
+                role="dialog"
+                aria-label="Video quality"
+              >
+                <div className="video-settings-header">
+                  <strong>Video quality</strong>
+                  <button
+                    type="button"
+                    aria-label="Close settings"
+                    onClick={closeVideoSettings}
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                {qualitySources.map((source) => (
+                  <button
+                    key={source.value}
+                    type="button"
+                    className={`video-settings-option ${
+                      currentQualityObj?.value === source.value
+                        ? "selected"
+                        : ""
+                    }`}
+                    onClick={() => {
+                      setQuality(source.value);
+                      closeVideoSettings();
+                    }}
+                  >
+                    <span>{source.label}</span>
+                    {currentQualityObj?.value === source.value && (
+                      <span>✓</span>
+                    )}
+                  </button>
+                ))}
+              </div>
+            )}
           </div></div>
         </div>
+
+
 
         {!isMini && (
           <div className="connect-under-section" style={{display:isFullScreen?'none':'flex'}}>

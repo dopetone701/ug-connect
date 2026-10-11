@@ -72,3 +72,119 @@
 }
 
 
+
+
+
+/* Video and desktop settings side by side */
+.connect-player-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 280px;
+  align-items: start;
+  gap: 16px;
+  width: 100%;
+  min-width: 0;
+}
+
+.video-settings-panel {
+  min-width: 0;
+  padding: 16px;
+  border: 1px solid hsl(var(--border));
+  border-radius: 16px;
+  background: hsl(var(--surface));
+  color: hsl(var(--text));
+  box-sizing: border-box;
+}
+
+.video-settings-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.video-settings-header button {
+  border: 0;
+  background: transparent;
+  color: inherit;
+  padding: 8px;
+  cursor: pointer;
+}
+
+.video-settings-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  padding: 12px;
+  margin-top: 6px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.video-settings-option.selected {
+  background: hsl(var(--bg));
+  border-color: hsl(var(--border));
+}
+
+/* Mobile bottom drawer */
+@media (max-width: 768px) {
+  .connect-player-layout {
+    display: block;
+  }
+
+  .video-settings-panel {
+    position: fixed;
+    z-index: 10050;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    max-height: 65dvh;
+    overflow-y: auto;
+    padding: 20px 16px max(20px, env(safe-area-inset-bottom));
+    border-radius: 22px 22px 0 0;
+    background: hsl(var(--surface));
+    box-shadow: 0 -12px 40px rgb(0 0 0 / 25%);
+  }
+}
+
+
+
+
+/* Desktop: anchor settings to the video, lower-right */
+@media (min-width: 769px) {
+  .video-settings-panel {
+    position: absolute;
+    right: 12px;
+    bottom: 64px;
+    z-index: 10050;
+    width: 280px;
+    max-width: calc(100% - 24px);
+    max-height: 70%;
+    overflow-y: auto;
+  }
+}
+
+/* Mobile: open from the bottom */
+@media (max-width: 768px) {
+  .video-settings-panel {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    top: auto;
+    width: 100%;
+    max-width: none;
+    max-height: 65dvh;
+    overflow-y: auto;
+    border-radius: 22px 22px 0 0;
+    padding-bottom: max(20px, env(safe-area-inset-bottom));
+  }
+}
+
