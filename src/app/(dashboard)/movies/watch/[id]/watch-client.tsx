@@ -40,7 +40,7 @@ export default function WatchPage({
   isMini = false,
   isFullscreen: externalFs,
   onFsChange,
-}: any) {
+}: any) { 
   const params = useParams()
   const search = useSearchParams()
   const router = useRouter()
