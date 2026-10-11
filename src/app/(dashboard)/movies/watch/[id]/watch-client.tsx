@@ -20,6 +20,7 @@ import FooterFree from "@/components/layout/curvy-pro-room/get-started-email/foo
 import { useVideoSettingsDrawer } from "@/stores/use-video-settings-drawer";
 
 
+
 const API_URL = "https://movie-server-api.connectu89.workers.dev/api/movies"
 
 function detectMobileDevice() {
@@ -89,6 +90,10 @@ const interactingRef = useRef(false);
   const drawerState = useWatchDrawer() as any
   const settingsOpen = useVideoSettingsDrawer((s) => s.isOpen);
 const closeVideoSettings = useVideoSettingsDrawer((s) => s.close);
+
+
+
+
 
 
   useEffect(() => { if (externalFs!== undefined) setIsFullScreen(externalFs) }, [externalFs])
@@ -473,6 +478,40 @@ useEffect(() => {
   const currentQualityObj = qualitySources.find(q=>q.value===quality) || qualitySources[0]
   const videoUrl = currentQualityObj?.url
 
+  const setSharedQualityOptions = useVideoSettingsDrawer(
+  (s) => s.setQualityOptions
+);
+const setSharedQualityHandler = useVideoSettingsDrawer(
+  (s) => s.setQualityHandler
+);
+const setSharedSelectedQuality = useVideoSettingsDrawer(
+  (s) => s.setSelectedQuality
+);
+
+useEffect(() => {
+  setSharedQualityOptions(
+    qualitySources.map(({ label, value }) => ({ label, value }))
+  );
+
+  setSharedQualityHandler(() => setQuality);
+
+  return () => {
+    setSharedQualityHandler(null);
+    setSharedQualityOptions([]);
+  };
+}, [
+  movie?.id,
+  isPreview,
+  activeEp?.id,
+  setSharedQualityOptions,
+  setSharedQualityHandler,
+]);
+
+useEffect(() => {
+  setSharedSelectedQuality(quality);
+}, [quality, setSharedSelectedQuality]);
+
+
   useEffect(()=>{
     if(!videoUrl ||!videoRef.current) return
     setIsLoading(true)
@@ -554,45 +593,56 @@ useEffect(() => {
 
             />
 
-            {settingsOpen && (
-              <div
-                className="video-settings-panel"
-                role="dialog"
-                aria-label="Video quality"
-              >
-                <div className="video-settings-header">
-                  <strong>Video quality</strong>
-                  <button
-                    type="button"
-                    aria-label="Close settings"
-                    onClick={closeVideoSettings}
-                  >
-                    ✕
-                  </button>
-                </div>
+{settingsOpen && !isOverlay &&
+  (() => {
+    const qualityPanel = (
+      <div
+        className="video-settings-panel"
+        role="dialog"
+        aria-label="Video quality"
+      >
+        <div className="video-settings-header">
+          <strong>Video quality</strong>
 
-                {qualitySources.map((source) => (
-                  <button
-                    key={source.value}
-                    type="button"
-                    className={`video-settings-option ${
-                      currentQualityObj?.value === source.value
-                        ? "selected"
-                        : ""
-                    }`}
-                    onClick={() => {
-                      setQuality(source.value);
-                      closeVideoSettings();
-                    }}
-                  >
-                    <span>{source.label}</span>
-                    {currentQualityObj?.value === source.value && (
-                      <span>✓</span>
-                    )}
-                  </button>
-                ))}
-              </div>
+          <button
+            type="button"
+            aria-label="Close settings"
+            onClick={closeVideoSettings}
+          >
+            ✕
+          </button>
+        </div>
+
+        {qualitySources.map((source) => (
+          <button
+            key={source.value}
+            type="button"
+            className={`video-settings-option ${
+              currentQualityObj?.value === source.value
+                ? "selected"
+                : ""
+            }`}
+            onClick={() => {
+              setQuality(source.value);
+              closeVideoSettings();
+            }}
+          >
+            <span>{source.label}</span>
+
+            {currentQualityObj?.value === source.value && (
+              <span>✓</span>
             )}
+          </button>
+        ))}
+      </div>
+    );
+
+
+
+return qualityPanel;
+
+  })()}
+
           </div></div>
         </div>
 

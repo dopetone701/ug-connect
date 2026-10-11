@@ -31,6 +31,8 @@ import { useSideSheet } from "@/stores/use-side-sheet";
 
 import SigninModals from "@/app/auth-system/signin-modals";
 import { useNoxSpy } from "@/app/auth-system/nox-spy";
+import { useVideoSettingsDrawer } from "@/stores/use-video-settings-drawer";
+
 
 /* =========================================================
    SESSION
@@ -88,6 +90,13 @@ export default function AppShell({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+
+  const settingsOpen = useVideoSettingsDrawer((s) => s.isOpen);
+const closeVideoSettings = useVideoSettingsDrawer((s) => s.close);
+const qualityOptions = useVideoSettingsDrawer((s) => s.qualityOptions);
+const selectedQuality = useVideoSettingsDrawer((s) => s.selectedQuality);
+const selectQuality = useVideoSettingsDrawer((s) => s.selectQuality);
+
 
   const { open, minimized } = useWatchDrawer() as any;
 
@@ -516,6 +525,57 @@ export default function AppShell({
           </CastSwipeClose>
         ) : null}
       </div>
+
+
+
+       {/* MOBILE VIDEO QUALITY SHEET — APP SHELL LEVEL */}
+{isMobile && settingsOpen && (
+    <div
+      className="mobile-video-settings-backdrop"
+      onClick={closeVideoSettings}
+    >
+      <section
+        className="mobile-video-settings-sheet"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Video quality"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="mobile-video-settings-header">
+          <strong>Video quality</strong>
+
+          <button
+            type="button"
+            aria-label="Close video settings"
+            onClick={closeVideoSettings}
+          >
+            ✕
+          </button>
+        </div>
+
+        {qualityOptions.map((option) => (
+          <button
+            key={option.value}
+            type="button"
+            className={`video-settings-option ${
+              selectedQuality === option.value ? "selected" : ""
+            }`}
+            onClick={() => {
+              selectQuality?.(option.value);
+              closeVideoSettings();
+            }}
+          >
+            <span>{option.label}</span>
+
+            {selectedQuality === option.value && (
+              <span>✓</span>
+            )}
+          </button>
+        ))}
+      </section>
+    </div>
+  )}
+
 
       {/* =====================================================
           SIGN IN / SIGN UP

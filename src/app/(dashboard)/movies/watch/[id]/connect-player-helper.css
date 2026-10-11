@@ -188,3 +188,14 @@
   }
 }
 
+/* Video settings portal: separate from scrolling player content */
+#watch-drawer-settings-root {
+  position: fixed;
+  inset: 0;
+  z-index: 10050;
+  pointer-events: none;
+}
+
+#watch-drawer-settings-root .video-settings-panel {
+  pointer-events: auto;
+}
