@@ -129,15 +129,18 @@ export default function PlayerOverlay({
         <div className="connect-loader"><div className="connect-spinner" /></div>
       )}
 
-      {showControls && !isLoading && (
-        <>
-          <button type="button" style={{ ...skipButtonStyle, left: "calc(50% - 100px)" }} onClick={(e) => { e.stopPropagation(); onSkip?.(-10); }}><Reverse10Icon /></button>
-          <button type="button" className="play-apple" onClick={(e) => { e.stopPropagation(); onTogglePlay?.(); }} style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)", zIndex: 10001 }}>
+           {showControls && !isLoading && (
+        <div className="center-controls-layer" style={{ position:"absolute", inset:0, zIndex:9999, pointerEvents:"none" }}>
+          <button type="button" style={{ position:"absolute", top:"50%", left:"calc(50% - 100px)", width:"56px", height:"56px", padding:0, border:"none", background:"transparent", display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer", zIndex:9999, transform:"translate(-50%, -50%)", pointerEvents:"auto" }} onClick={(e)=>{ e.stopPropagation(); onSkip?.(-10); }}><Reverse10Icon /></button>
+          
+          <button type="button" className="play-apple" onClick={(e)=>{ e.stopPropagation(); onTogglePlay?.(); }} style={{ position:"absolute", top:"50%", left:"50%", transform:"translate(-50%, -50%)", zIndex:9999, width:"72px", height:"72px", border:"none", background:"transparent", display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer", pointerEvents:"auto" }}>
             <span className="play-apple-core"><PlayBtnIcon playing={playing} size={64} /></span>
           </button>
-          <button type="button" style={{ ...skipButtonStyle, left: "calc(50% + 100px)" }} onClick={(e) => { e.stopPropagation(); onSkip?.(10); }}><Replay10Icon /></button>
-        </>
+          
+          <button type="button" style={{ position:"absolute", top:"50%", left:"calc(50% + 100px)", width:"56px", height:"56px", padding:0, border:"none", background:"transparent", display:"flex", alignItems:"center", justifyContent:"center", cursor:"pointer", zIndex:9999, transform:"translate(-50%, -50%)", pointerEvents:"auto" }} onClick={(e)=>{ e.stopPropagation(); onSkip?.(10); }}><Replay10Icon /></button>
+        </div>
       )}
+
 
       <div className={`connect-controls ${showControls ? "show" : ""}`} style={{ pointerEvents: showControls ? "auto" : "none" }} onPointerMove={keepControlsVisible}>
         <div className="cc-above-progress">

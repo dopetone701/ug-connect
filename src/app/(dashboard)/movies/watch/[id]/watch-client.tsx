@@ -642,17 +642,6 @@ useEffect(() => {
 
 
 
-                       <div 
-              style={{ 
-                position:'absolute', 
-                inset:0, 
-                zIndex: showControls? 0 : 5, 
-                pointerEvents: showControls? 'none':'auto',
-                background:'transparent'
-              }} 
-              onClickCapture={handleContainerClickCapture}
-            />
-
             <PlayerOverlay 
               movie={movie} 
               showControls={showControls} 
