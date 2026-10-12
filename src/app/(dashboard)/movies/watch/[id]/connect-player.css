@@ -817,5 +817,26 @@
 
 
 
+/* LIFT LOWER ACTIONS ONLY IN FULLSCREEN */
+.film-root.is-shell-full .connect-controls,
+.film-root:fullscreen .connect-controls,
+.film-root:-webkit-full-screen .connect-controls {
+  bottom: 22px !important;
+  padding-bottom: env(safe-area-inset-bottom, 0px) !important;
+  transform: translateY(-10px) !important;
+}
+
+.film-root.is-shell-full .cc-progress-bottom,
+.film-root:fullscreen .cc-progress-bottom,
+.film-root:-webkit-full-screen .cc-progress-bottom {
+  margin-bottom: 8px !important;
+}
+
+/* keep time + fullscreen + settings + cast + next aligned */
+.film-root.is-shell-full .cc-above-progress,
+.film-root:fullscreen .cc-above-progress,
+.film-root:-webkit-full-screen .cc-above-progress {
+  margin-bottom: 6px !important;
+}
 
 
