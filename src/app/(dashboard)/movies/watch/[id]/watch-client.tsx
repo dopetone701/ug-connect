@@ -450,7 +450,38 @@ useEffect(() => {
   const allEps = movie?.seasons?.flatMap((s:any)=>s.episodes||[]) || []
   const activeEp = epId? allEps.find((ep:any)=> String(ep.id)===String(epId)) : null
   const epUrl = activeEp?.video_url || activeEp?.url
+
+  // SERIES DETECT
+const isSeries = (movie?.seasons?.length > 0 && allEps.length > 1) || false
+const currentEpisodeIndex = epId ? allEps.findIndex((ep:any)=> String(ep.id)===String(epId)) : 0
+const [autoPlayOn, setAutoPlayOn] = useState(true)
+
+// NEXT / PREV HANDLERS
+const goToEp = (ep:any) => {
+  if(isOverlay){ setOverlayEpId(String(ep.id)) }
+  else{ router.push(`${pathname}?t=full&ep=${ep.id}`) }
+}
+
+
+const handleEnded = () => {
+  if (!autoPlayOn) return; // toggled off = no auto
+  if (!isSeries) return;
+  const next = allEps[currentEpisodeIndex + 1];
+  if (next) goToEp(next);
+};
+
+const onNextEpisode = () => {
+  const next = allEps[currentEpisodeIndex + 1]
+  if(next) goToEp(next)
+}
+const onPrevEpisode = () => {
+  const prev = allEps[currentEpisodeIndex - 1]
+  if(prev) goToEp(prev)
+}
+
   const previewUrl = movie?.preview_urls?.[0] || (movie as any)?.preview_url || (movie as any)?.trailer_url || (movie as any)?.preview || (movie as any)?.video_preview_url
+
+
 
   const rawSources = movie? isPreview
    ? [{ label:"Preview", value:"preview", url: previewUrl || movie.video_url }]
@@ -563,6 +594,12 @@ useEffect(() => {
                 if(lastTimeRef.current) vid.currentTime=lastTimeRef.current
               }}
               onClick={togglePlay} playsInline loop={isPreview} preload="auto" muted
+
+
+
+                onEnded={handleEnded}
+                autoPlay={autoPlayOn}
+
             />
             {/* === CHANGED: pass handleBack + isMobile + isFullScreen === */}
             <PlayerOverlay 
@@ -588,6 +625,14 @@ useEffect(() => {
               onShowControls={keepControlsVisible}
               onInteractionStart={startControlsInteraction}
               onInteractionEnd={endControlsInteraction}
+                isSeries={isSeries}
+              currentEpisodeIndex={currentEpisodeIndex >=0 ? currentEpisodeIndex : 0}
+              episodes={allEps}
+              autoPlayOn={autoPlayOn}
+              onNextEpisode={onNextEpisode}
+              onPrevEpisode={onPrevEpisode}
+              setAutoPlayOn={setAutoPlayOn}
+
 
 
 

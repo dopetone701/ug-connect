@@ -5,6 +5,7 @@ import PlayBtnIcon from "./../../../../../modal-generator/svg-icons/play-btn-ico
 import Reverse10Icon from "./../../../../../modal-generator/svg-icons/minus-10-revolve-icon";
 import Replay10Icon from "./../../../../../modal-generator/svg-icons/plus-10-revolve-icon";
 import QualitySettings from "./quality-settings";
+import NextMovie from "./next-movie";
 
 export default function PlayerOverlay({
   movie,
@@ -30,8 +31,15 @@ export default function PlayerOverlay({
   onClose,
   onExpand,
   isMini = false,
+  // next movie logic - added
+  currentEpisodeIndex = 0,
+  episodes = [],
+  isSeries = false,
+  autoPlayOn = false,
+  onNextEpisode,
+  onPrevEpisode,
+  setAutoPlayOn,
 }: any) {
-
   const keepControlsVisible = () => onShowControls?.();
   const startInteraction = () => {
     onInteractionStart?.();
@@ -134,6 +142,19 @@ export default function PlayerOverlay({
           <span className="cc-left-time">{formatTime(currentTime)} / {formatTime(duration)}</span>
 
           <div className="cc-right-simple" style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            {/* NEXT/PREV + AUTOPLAY - injected safely */}
+            <div onClick={(e) => e.stopPropagation()} onPointerDown={(e) => e.stopPropagation()}>
+              <NextMovie
+                currentIndex={currentEpisodeIndex}
+                total={episodes?.length || 0}
+                isSeries={isSeries}
+                autoPlayOn={autoPlayOn}
+                onNext={onNextEpisode}
+                onPrev={onPrevEpisode}
+                onToggleAutoPlay={setAutoPlayOn}
+              />
+            </div>
+
             <div onClick={(e) => e.stopPropagation()} onPointerDown={(e) => e.stopPropagation()}>
               {/* @ts-ignore */}
               <QualitySettings onQualityChange={onQualityChange} />
