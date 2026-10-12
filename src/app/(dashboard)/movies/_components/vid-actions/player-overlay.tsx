@@ -6,6 +6,8 @@ import Reverse10Icon from "./../../../../../modal-generator/svg-icons/minus-10-r
 import Replay10Icon from "./../../../../../modal-generator/svg-icons/plus-10-revolve-icon";
 import QualitySettings from "./quality-settings";
 import NextMovie from "./next-movie";
+import VideoCastBtn from "./vide-cast";
+
 
 export default function PlayerOverlay({
   movie,
@@ -153,7 +155,14 @@ export default function PlayerOverlay({
                 onPrev={onPrevEpisode}
                 onToggleAutoPlay={setAutoPlayOn}
               />
+
+
+              
             </div>
+
+            <VideoCastBtn />
+  
+
 
             <div onClick={(e) => e.stopPropagation()} onPointerDown={(e) => e.stopPropagation()}>
               {/* @ts-ignore */}
