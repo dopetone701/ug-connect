@@ -429,7 +429,44 @@ const endControlsInteraction = useCallback(() => {
   scheduleControlsHide();
 }, [scheduleControlsHide]);
 
+const blockClickRef = useRef(false);
+
+const handleContainerClickCapture = useCallback((e: React.MouseEvent) => {
+  // FIRST CLICK WHEN HIDDEN = SHOW ONLY, NEVER DISPATCH ICON
+  if (!showControls) {
+    e.preventDefault();
+    e.stopPropagation();
+    // @ts-ignore
+    e.nativeEvent?.stopImmediatePropagation?.();
+    setShowControls(true);
+    scheduleControlsHide();
+    blockClickRef.current = true;
+    setTimeout(()=>{ blockClickRef.current = false; }, 400);
+    return;
+  }
+}, [showControls, scheduleControlsHide]);
+
+const handleContainerClick = useCallback((e: React.MouseEvent) => {
+  if (blockClickRef.current) {
+    e.preventDefault();
+    e.stopPropagation();
+    return;
+  }
+  const target = e.target as HTMLElement;
+  const isControl =!!target.closest(
+    'button, [data-control],.cc-icon,.apple-full,.center-skip-btn,.play-apple,.starz-progress,.quality-settings,.quality-settings-menu,.video-settings-panel'
+  );
+
+  if (showControls &&!isControl) {
+    e.stopPropagation();
+    setShowControls(false);
+    cancelControlsTimer();
+    return;
+  }
+}, [showControls, cancelControlsTimer]);
+
 useEffect(() => {
+
   scheduleControlsHide();
 
   return () => {
@@ -569,7 +606,7 @@ useEffect(() => {
     <>
       <div ref={rootRef} className={`film-root connect-root ${isOverlay?'yt-overlay-root':''} ${isFullScreen?'is-shell-full':''} ${isMobile?'is-mobile-layout':'is-desktop-layout'}`}>
 
-<div className="film-giant connect-player inner-body" onMouseMove={()=>setShowControls(true)} onMouseLeave={()=>playing && setShowControls(false)} onTouchStart={()=>setShowControls(true)}>
+<div className="film-giant connect-player inner-body" onClickCapture={handleContainerClickCapture} onClick={handleContainerClick} onMouseMove={()=> { if(!isMobile) { setShowControls(true); scheduleControlsHide(); } }} onMouseLeave={()=> playing &&!isMobile && setShowControls(false)} onTouchStart={()=> setShowControls(true)} style={{ position:'relative' }}>
 
           <div className="film-center"><div className="center-cover">
             <video
@@ -593,7 +630,7 @@ useEffect(() => {
                 }catch{}
                 if(lastTimeRef.current) vid.currentTime=lastTimeRef.current
               }}
-              onClick={togglePlay} playsInline loop={isPreview} preload="auto" muted
+             onClick={(e)=>{ if(!showControls){ e.stopPropagation(); return; } togglePlay(); }} playsInline loop={isPreview} preload="auto" muted
 
 
 
@@ -602,6 +639,20 @@ useEffect(() => {
 
             />
             {/* === CHANGED: pass handleBack + isMobile + isFullScreen === */}
+
+
+
+                       <div 
+              style={{ 
+                position:'absolute', 
+                inset:0, 
+                zIndex: showControls? 0 : 5, 
+                pointerEvents: showControls? 'none':'auto',
+                background:'transparent'
+              }} 
+              onClickCapture={handleContainerClickCapture}
+            />
+
             <PlayerOverlay 
               movie={movie} 
               showControls={showControls} 

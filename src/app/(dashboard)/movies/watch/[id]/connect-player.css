@@ -803,3 +803,14 @@
   box-shadow: none !important;
 }
 
+@import "../../_components/vid-actions/player-overlay.css";
+
+
+.yt-overlay-root, .player-overlay-root {
+  pointer-events: none !important;
+}
+.yt-overlay-root.show, .player-overlay-root.show,
+.connect-root .player-overlay-root[data-show="true"] {
+  pointer-events: auto !important;
+}
+
