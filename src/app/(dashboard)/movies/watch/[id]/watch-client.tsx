@@ -18,10 +18,11 @@ import { useWatchDrawer } from "@/stores/use-watch-drawer"
 import { useReelsDrawer } from "@/stores/use-reels-drawer"
 import FooterFree from "@/components/layout/curvy-pro-room/get-started-email/footer/footer"
 import { useVideoSettingsDrawer } from "@/stores/use-video-settings-drawer";
-
+import { useMiniPlayerFloating } from "../../_components/vid-actions/mini-player-floating-logic";
 
 
 const API_URL = "https://movie-server-api.connectu89.workers.dev/api/movies"
+
 
 function detectMobileDevice() {
   if (typeof window === "undefined") return true;
@@ -41,7 +42,7 @@ export default function WatchPage({
   isMini = false,
   isFullscreen: externalFs,
   onFsChange,
-}: any) { 
+}: any) {
   const params = useParams()
   const search = useSearchParams()
   const router = useRouter()
@@ -64,13 +65,12 @@ export default function WatchPage({
   const [allMovies, setAllMovies] = useState<any[]>([])
   const videoRef = useRef<HTMLVideoElement>(null)
   const rootRef = useRef<HTMLDivElement>(null)
+  const floating = useMiniPlayerFloating(rootRef, isMini);
+
   const lastTimeRef = useRef(0)
   const autoPlayTimerRef = useRef<any>(null)
-  
-const controlsTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-const interactingRef = useRef(false);
-
-
+  const controlsTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const interactingRef = useRef(false);
 
   const [playing, setPlaying] = useState(false)
   const [progress, setProgress] = useState(0)
@@ -82,6 +82,7 @@ const interactingRef = useRef(false);
   const [mounted, setMounted] = useState(false)
   const [isFullScreen, setIsFullScreen] = useState(false)
   const [quality, setQuality] = useState("auto")
+  const [videoFit, setVideoFit] = useState<'contain'|'cover'>('contain')
   const [bufferedProgress, setBufferedProgress] = useState(0)
   const [isMobile, setIsMobile] = useState(true)
   const [isLoading, setIsLoading] = useState(true)
@@ -89,12 +90,7 @@ const interactingRef = useRef(false);
   const maximize = useWatchDrawer((s) => s.maximize)
   const drawerState = useWatchDrawer() as any
   const settingsOpen = useVideoSettingsDrawer((s) => s.isOpen);
-const closeVideoSettings = useVideoSettingsDrawer((s) => s.close);
-
-
-
-
-
+  const closeVideoSettings = useVideoSettingsDrawer((s) => s.close);
 
   useEffect(() => { if (externalFs!== undefined) setIsFullScreen(externalFs) }, [externalFs])
 
@@ -106,136 +102,87 @@ const closeVideoSettings = useVideoSettingsDrawer((s) => s.close);
     } catch { return null }
   })
 
-  // === NEW: MOBILE BACK = MINIMIZE (v) ===
- 
 const handleBack = useCallback(() => {
-  if (isFullScreen) return;
+  // MINI PLAYER X = CLOSE MINI
+  if (isMini) {
+    try {
+      const v = videoRef.current;
+      if (v) { v.pause(); }
+    } catch {}
+    if (onClose) { onClose(); }
+    else { closeDrawer?.(); }
+    return;
+  }
 
+  if (isFullScreen) return;
   const store = useWatchDrawer.getState();
 
-  // MOBILE OVERLAY: minimize while keeping playback running.
   if (isMobile && isOverlay) {
     const video = videoRef.current;
     const wasPlaying = video ? !video.paused : playing;
     const savedTime = video?.currentTime ?? currentTime;
-
     store.minimize();
-
-    // Restore playback if minimizing pauses the existing video.
     requestAnimationFrame(() => {
       const currentVideo = videoRef.current;
-
       if (currentVideo && wasPlaying && currentVideo.paused) {
         if (Number.isFinite(savedTime)) {
-          try {
-            currentVideo.currentTime = savedTime;
-          } catch {}
+          try { currentVideo.currentTime = savedTime; } catch {}
         }
-
         currentVideo.play().catch(() => {});
       }
     });
-
     return;
   }
 
-  // MOBILE STANDALONE: preserve existing behavior.
   if (isMobile) {
     const video = videoRef.current;
-
     try {
       if (video && effectiveId) {
-        sessionStorage.setItem(
-          `continue_${effectiveId}`,
-          JSON.stringify({
-            time: video.currentTime,
-            playing: !video.paused,
-            type: isPreview ? "preview" : "full",
-          })
-        );
+        sessionStorage.setItem(`continue_${effectiveId}`, JSON.stringify({
+          time: video.currentTime, playing: !video.paused, type: isPreview ? "preview" : "full",
+        }))
       }
     } catch {}
-
     if (effectiveId) {
-      store.openDrawer(
-        String(effectiveId),
-        isPreview ? "preview" : "full"
-      );
+      store.openDrawer(String(effectiveId), isPreview ? "preview" : "full");
       store.minimize();
     }
-
     router.replace("/movies");
     return;
   }
 
-  // DESKTOP: preserve existing behavior.
   if (isOverlay) {
-    if (onClose) {
-      onClose();
-    } else {
-      closeDrawer();
-    }
+    if (onClose) { onClose(); } else { closeDrawer(); }
   } else {
     router.push("/movies");
   }
-}, [
-  isFullScreen,
-  isMobile,
-  isOverlay,
-  playing,
-  currentTime,
-  effectiveId,
-  isPreview,
-  onClose,
-  closeDrawer,
-  router,
-]);
-
-
-
+}, [isFullScreen, isMobile, isOverlay, isMini, playing, currentTime, effectiveId, isPreview, onClose, closeDrawer, router]);
 
   useEffect(() => {
     if (isOverlay) return
     let lastWidth = typeof window !== "undefined" ? window.innerWidth : 768
     let timeout: any = null
-
     const onResize = () => {
       if (document.fullscreenElement || (document as any).webkitFullscreenElement || isFullScreen) return
       if (rootRef.current === document.fullscreenElement) return
-
       clearTimeout(timeout)
       timeout = setTimeout(() => {
         const curWidth = window.innerWidth
         const crossedToMobile = lastWidth > 768 && curWidth <= 768
         lastWidth = curWidth
-
         if (!crossedToMobile) return
         if (!effectiveId ||!movie) return
-
         try {
           if (videoRef.current) {
             sessionStorage.setItem(`continue_${effectiveId}`, JSON.stringify({
-              time: videoRef.current.currentTime,
-              playing:!videoRef.current.paused,
-              type: isPreview? "preview" : "full",
+              time: videoRef.current.currentTime, playing:!videoRef.current.paused, type: isPreview? "preview" : "full",
             }))
           }
         } catch {}
-
         if (isPreview) {
           closeDrawer?.()
           const p = movie?.preview_urls?.[0] || movie?.preview_url || movie?.trailer_url || movie?.video_preview_url || movie?.preview
-          const single = [{
-         ...movie,
-            id: String(movie.id),
-            cover: movie.cover || movie.cover_url,
-            cover_url: movie.cover || movie.cover_url,
-            video: movie.video || movie.video_url,
-            video_url: movie.video || movie.video_url,
-            preview_url: p,
-            preview_urls: movie.preview_urls || (p? [p] : []),
-            trailer_url: movie.trailer_url || p,
-          }]
+          const single = [{...movie, id: String(movie.id), cover: movie.cover || movie.cover_url, cover_url: movie.cover || movie.cover_url, video: movie.video || movie.video_url, video_url: movie.video || movie.video_url, preview_url: p, preview_urls: movie.preview_urls || (p? [p] : []), trailer_url: movie.trailer_url || p, }]
           openReels(single, 0)
           router.replace("/movies")
         } else {
@@ -245,12 +192,8 @@ const handleBack = useCallback(() => {
         }
       }, 200)
     }
-
     window.addEventListener("resize", onResize)
-    return () => {
-      window.removeEventListener("resize", onResize)
-      clearTimeout(timeout)
-    }
+    return () => { window.removeEventListener("resize", onResize); clearTimeout(timeout) }
   }, [effectiveId, isPreview, isOverlay, movie, isFullScreen, openDrawer, openReels, closeDrawer, closeReels, router])
 
   const skip = useCallback((sec: number) => {
@@ -285,68 +228,40 @@ const handleBack = useCallback(() => {
     }else{ videoRef.current.pause(); setPlaying(false) }
   }, [])
 
+// handleFilmClick moved below to fix TDZ
+
 const toggleFullscreen = useCallback(async () => {
   const video = videoRef.current as any
   const root = rootRef.current as any
   if (!video || !root) return
-
   const savedTime = video.currentTime
   const wasPlaying = !video.paused
   const isNative = (window as any).Capacitor?.isNativePlatform?.() || false
-
   let CapOrientation: any = null
   if (isNative) {
-    try {
-      const mod = await import('@capacitor/screen-orientation')
-      CapOrientation = mod.ScreenOrientation
-    } catch {}
+    try { const mod = await import('@capacitor/screen-orientation'); CapOrientation = mod.ScreenOrientation } catch {}
   }
-
   try {
     if (!isFullScreen) {
       try { if (isNative) await CapOrientation?.unlock?.() } catch {}
       try { await (screen.orientation as any)?.unlock?.() } catch {}
-
       try {
-        if (root.requestFullscreen) {
-          await root.requestFullscreen({ navigationUI: "hide" } as any)
-        } else if ((root as any).webkitRequestFullscreen) {
-          await (root as any).webkitRequestFullscreen()
-        }
+        if (root.requestFullscreen) { await root.requestFullscreen({ navigationUI: "hide" } as any) }
+        else if ((root as any).webkitRequestFullscreen) { await (root as any).webkitRequestFullscreen() }
       } catch {}
-
       try { if (isNative) await CapOrientation?.lock?.({ orientation: 'landscape' }) } catch {}
-      try {
-        if (screen.orientation && (screen.orientation as any).lock) {
-          await (screen.orientation as any).lock('landscape')
-        }
-      } catch {}
-
-      setIsFullScreen(true)
-      onFsChange?.(true)
-      document.body.style.overflow = 'hidden'
-
+      try { if (screen.orientation && (screen.orientation as any).lock) { await (screen.orientation as any).lock('landscape') } } catch {}
+      setIsFullScreen(true); onFsChange?.(true); document.body.style.overflow = 'hidden'
       if (Math.abs(video.currentTime - savedTime) > 0.5) video.currentTime = savedTime
       if (wasPlaying) video.play().catch(()=>{})
-
     } else {
       try { if (document.fullscreenElement) await document.exitFullscreen() } catch {}
       try { if ((document as any).webkitFullscreenElement) await (document as any).webkitExitFullscreen?.() } catch {}
-
-      setIsFullScreen(false)
-      onFsChange?.(false)
-      document.body.style.overflow = ''
-
+      setIsFullScreen(false); onFsChange?.(false); document.body.style.overflow = ''
       try { if (isNative) await CapOrientation?.lock?.({ orientation: 'portrait' }) } catch {}
-      try {
-        if (screen.orientation && (screen.orientation as any).lock) {
-          await (screen.orientation as any).lock('portrait')
-        }
-      } catch {}
+      try { if (screen.orientation && (screen.orientation as any).lock) { await (screen.orientation as any).lock('portrait') } } catch {}
     }
-  } catch {
-    setIsFullScreen(v=>!v)
-  }
+  } catch { setIsFullScreen(v=>!v) }
 }, [isFullScreen, onFsChange])
 
   const formatTime = useCallback((sec: number) => {
@@ -368,119 +283,56 @@ const toggleFullscreen = useCallback(async () => {
 
   useEffect(() => {
     const check = () => setIsMobile(detectMobileDevice())
-    check();
-    window.addEventListener("resize", check)
-    window.addEventListener("orientationchange", check)
-    return () => {
-      window.removeEventListener("resize", check)
-      window.removeEventListener("orientationchange", check)
-    }
+    check(); window.addEventListener("resize", check); window.addEventListener("orientationchange", check)
+    return () => { window.removeEventListener("resize", check); window.removeEventListener("orientationchange", check) }
   }, [])
 
   useEffect(() => {
     if(!movie) return; setMounted(true)
     const onFs = () => {
       const fs =!!document.fullscreenElement ||!!(document as any).webkitFullscreenElement;
-      setIsFullScreen(fs)
-      if(!fs) document.body.style.overflow = ''
+      setIsFullScreen(fs); if(!fs) document.body.style.overflow = ''
     }
-    document.addEventListener("fullscreenchange", onFs)
-    document.addEventListener("webkitfullscreenchange", onFs as any)
-    return () => {
-      document.removeEventListener("fullscreenchange", onFs)
-      document.removeEventListener("webkitfullscreenchange", onFs as any)
-    }
+    document.addEventListener("fullscreenchange", onFs); document.addEventListener("webkitfullscreenchange", onFs as any)
+    return () => { document.removeEventListener("fullscreenchange", onFs); document.removeEventListener("webkitfullscreenchange", onFs as any) }
   }, [movie])
 
-
 const cancelControlsTimer = useCallback(() => {
-  if (controlsTimerRef.current) {
-    clearTimeout(controlsTimerRef.current);
-    controlsTimerRef.current = null;
-  }
+  if (controlsTimerRef.current) { clearTimeout(controlsTimerRef.current); controlsTimerRef.current = null; }
 }, []);
 
 const scheduleControlsHide = useCallback(() => {
   cancelControlsTimer();
-
   if (!playing || interactingRef.current) return;
-
   controlsTimerRef.current = setTimeout(() => {
-    if (!interactingRef.current) {
-      setShowControls(false);
-    }
+    if (!interactingRef.current) { setShowControls(false); }
     controlsTimerRef.current = null;
   }, 3200);
 }, [playing, cancelControlsTimer]);
 
-const keepControlsVisible = useCallback(() => {
-  setShowControls(true);
-  cancelControlsTimer();
-}, [cancelControlsTimer]);
+const keepControlsVisible = useCallback(() => { setShowControls(true); cancelControlsTimer(); }, [cancelControlsTimer]);
+const startControlsInteraction = useCallback(() => { interactingRef.current = true; setShowControls(true); cancelControlsTimer(); }, [cancelControlsTimer]);
+const endControlsInteraction = useCallback(() => { interactingRef.current = false; scheduleControlsHide(); }, [scheduleControlsHide]);
 
-const startControlsInteraction = useCallback(() => {
-  interactingRef.current = true;
-  setShowControls(true);
-  cancelControlsTimer();
-}, [cancelControlsTimer]);
-
-const endControlsInteraction = useCallback(() => {
-  interactingRef.current = false;
-  scheduleControlsHide();
-}, [scheduleControlsHide]);
-
-const blockClickRef = useRef(false);
-
-const handleContainerClickCapture = useCallback((e: React.MouseEvent) => {
-  // FIRST CLICK WHEN HIDDEN = SHOW ONLY, NEVER DISPATCH ICON
-  if (!showControls) {
-    e.preventDefault();
-    e.stopPropagation();
-    // @ts-ignore
-    e.nativeEvent?.stopImmediatePropagation?.();
+const handleFilmClick = useCallback((e: React.MouseEvent) => {
+  const t = e.target as HTMLElement;
+  const isControl = !!t.closest('button, .cc-icon, .apple-full, .center-skip-btn, .play-apple, .starz-progress, .quality-settings, [data-control], .bubble-expand, .bubble-close');
+  if (isControl) {
     setShowControls(true);
     scheduleControlsHide();
-    blockClickRef.current = true;
-    setTimeout(()=>{ blockClickRef.current = false; }, 400);
     return;
   }
-}, [showControls, scheduleControlsHide]);
-
-const handleContainerClick = useCallback((e: React.MouseEvent) => {
-  if (blockClickRef.current) {
-    e.preventDefault();
-    e.stopPropagation();
+  if (!showControls) {
+    setShowControls(true);
+    scheduleControlsHide();
     return;
   }
-  const target = e.target as HTMLElement;
-  const isControl =!!target.closest(
-    'button, [data-control],.cc-icon,.apple-full,.center-skip-btn,.play-apple,.starz-progress,.quality-settings,.quality-settings-menu,.video-settings-panel'
-  );
+  setShowControls(false);
+  cancelControlsTimer();
+}, [showControls, scheduleControlsHide, cancelControlsTimer]);
 
-  if (showControls &&!isControl) {
-    e.stopPropagation();
-    setShowControls(false);
-    cancelControlsTimer();
-    return;
-  }
-}, [showControls, cancelControlsTimer]);
-
-useEffect(() => {
-
-  scheduleControlsHide();
-
-  return () => {
-    cancelControlsTimer();
-  };
-}, [scheduleControlsHide, cancelControlsTimer]);
-
-useEffect(() => {
-  return () => {
-    interactingRef.current = false;
-    cancelControlsTimer();
-  };
-}, [cancelControlsTimer]);
-
+useEffect(() => { scheduleControlsHide(); return () => { cancelControlsTimer(); }; }, [scheduleControlsHide, cancelControlsTimer]);
+useEffect(() => { return () => { interactingRef.current = false; cancelControlsTimer(); }; }, [cancelControlsTimer]);
 
   const searchEpId = search.get("ep") || search.get("e")
   const epId = isOverlay? overlayEpId || searchEpId : searchEpId
@@ -488,37 +340,21 @@ useEffect(() => {
   const activeEp = epId? allEps.find((ep:any)=> String(ep.id)===String(epId)) : null
   const epUrl = activeEp?.video_url || activeEp?.url
 
-  // SERIES DETECT
 const isSeries = (movie?.seasons?.length > 0 && allEps.length > 1) || false
 const currentEpisodeIndex = epId ? allEps.findIndex((ep:any)=> String(ep.id)===String(epId)) : 0
 const [autoPlayOn, setAutoPlayOn] = useState(true)
 
-// NEXT / PREV HANDLERS
-const goToEp = (ep:any) => {
-  if(isOverlay){ setOverlayEpId(String(ep.id)) }
-  else{ router.push(`${pathname}?t=full&ep=${ep.id}`) }
-}
-
+const goToEp = (ep:any) => { if(isOverlay){ setOverlayEpId(String(ep.id)) } else{ router.push(`${pathname}?t=full&ep=${ep.id}`) } }
 
 const handleEnded = () => {
-  if (!autoPlayOn) return; // toggled off = no auto
-  if (!isSeries) return;
-  const next = allEps[currentEpisodeIndex + 1];
-  if (next) goToEp(next);
+  if (!autoPlayOn) return; if (!isSeries) return;
+  const next = allEps[currentEpisodeIndex + 1]; if (next) goToEp(next);
 };
 
-const onNextEpisode = () => {
-  const next = allEps[currentEpisodeIndex + 1]
-  if(next) goToEp(next)
-}
-const onPrevEpisode = () => {
-  const prev = allEps[currentEpisodeIndex - 1]
-  if(prev) goToEp(prev)
-}
+const onNextEpisode = () => { const next = allEps[currentEpisodeIndex + 1]; if(next) goToEp(next) }
+const onPrevEpisode = () => { const prev = allEps[currentEpisodeIndex - 1]; if(prev) goToEp(prev) }
 
   const previewUrl = movie?.preview_urls?.[0] || (movie as any)?.preview_url || (movie as any)?.trailer_url || (movie as any)?.preview || (movie as any)?.video_preview_url
-
-
 
   const rawSources = movie? isPreview
    ? [{ label:"Preview", value:"preview", url: previewUrl || movie.video_url }]
@@ -546,39 +382,17 @@ const onPrevEpisode = () => {
   const currentQualityObj = qualitySources.find(q=>q.value===quality) || qualitySources[0]
   const videoUrl = currentQualityObj?.url
 
-  const setSharedQualityOptions = useVideoSettingsDrawer(
-  (s) => s.setQualityOptions
-);
-const setSharedQualityHandler = useVideoSettingsDrawer(
-  (s) => s.setQualityHandler
-);
-const setSharedSelectedQuality = useVideoSettingsDrawer(
-  (s) => s.setSelectedQuality
-);
+  const setSharedQualityOptions = useVideoSettingsDrawer((s) => s.setQualityOptions);
+  const setSharedQualityHandler = useVideoSettingsDrawer((s) => s.setQualityHandler);
+  const setSharedSelectedQuality = useVideoSettingsDrawer((s) => s.setSelectedQuality);
 
 useEffect(() => {
-  setSharedQualityOptions(
-    qualitySources.map(({ label, value }) => ({ label, value }))
-  );
-
+  setSharedQualityOptions(qualitySources.map(({ label, value }) => ({ label, value })));
   setSharedQualityHandler(() => setQuality);
+  return () => { setSharedQualityHandler(null); setSharedQualityOptions([]); };
+}, [movie?.id, isPreview, activeEp?.id, setSharedQualityOptions, setSharedQualityHandler]);
 
-  return () => {
-    setSharedQualityHandler(null);
-    setSharedQualityOptions([]);
-  };
-}, [
-  movie?.id,
-  isPreview,
-  activeEp?.id,
-  setSharedQualityOptions,
-  setSharedQualityHandler,
-]);
-
-useEffect(() => {
-  setSharedSelectedQuality(quality);
-}, [quality, setSharedSelectedQuality]);
-
+useEffect(() => { setSharedSelectedQuality(quality); }, [quality, setSharedSelectedQuality]);
 
   useEffect(()=>{
     if(!videoUrl ||!videoRef.current) return
@@ -606,12 +420,13 @@ useEffect(() => {
     <>
       <div ref={rootRef} className={`film-root connect-root ${isOverlay?'yt-overlay-root':''} ${isFullScreen?'is-shell-full':''} ${isMobile?'is-mobile-layout':'is-desktop-layout'}`}>
 
-<div className="film-giant connect-player inner-body" onClickCapture={handleContainerClickCapture} onClick={handleContainerClick} onMouseMove={()=> { if(!isMobile) { setShowControls(true); scheduleControlsHide(); } }} onMouseLeave={()=> playing &&!isMobile && setShowControls(false)} onTouchStart={()=> setShowControls(true)} style={{ position:'relative' }}>
+        <div className="film-giant connect-player inner-body" onClick={handleFilmClick} onMouseMove={()=> { if(!isMobile) { setShowControls(true); scheduleControlsHide(); } }} onMouseLeave={()=> playing &&!isMobile && setShowControls(false)} onTouchStart={()=> setShowControls(true)}>
 
           <div className="film-center"><div className="center-cover">
             <video
-              key={`${movie.id}-${quality}-${activeEp?.id || 'default'}`}
-              ref={videoRef} src={videoUrl} className="connect-video"
+              key={`${movie.id}-${quality}-${activeEp?.id || 'default'}-${videoFit}`}
+              ref={videoRef} src={videoUrl} className={`connect-video ${videoFit}`}
+              style={{ objectFit: videoFit as any, width:'100%', height:'100%', background:'#000' }}
               onLoadStart={()=>setIsLoading(true)} onWaiting={()=>setIsLoading(true)} onCanPlay={()=>setIsLoading(false)}
               onPlaying={()=>{ setIsLoading(false); setPlaying(true); setHasStarted(true) }}
               onPause={()=>setPlaying(false)}
@@ -630,60 +445,49 @@ useEffect(() => {
                 }catch{}
                 if(lastTimeRef.current) vid.currentTime=lastTimeRef.current
               }}
-             onClick={(e)=>{ if(!showControls){ e.stopPropagation(); return; } togglePlay(); }} playsInline loop={isPreview} preload="auto" muted
-
-
-
-                onEnded={handleEnded}
-                autoPlay={autoPlayOn}
-
+              onClick={(e)=> e.stopPropagation()}
+              onDoubleClick={()=> setVideoFit(v=> v==='contain' ? 'cover' : 'contain')}
+              playsInline loop={isPreview} preload="auto" muted
+              onEnded={handleEnded}
+              autoPlay={autoPlayOn}
             />
-            {/* === CHANGED: pass handleBack + isMobile + isFullScreen === */}
-
-
-
-            <PlayerOverlay 
-              movie={movie} 
-              showControls={showControls} 
-              isLoading={isLoading} 
-              playing={playing} 
-              progress={progress} 
-              bufferedProgress={bufferedProgress} 
-              currentTime={currentTime} 
-              duration={duration} 
-              isFullScreen={isFullScreen} 
+            <PlayerOverlay
+              movie={movie}
+              showControls={showControls}
+              isLoading={isLoading}
+              playing={playing}
+              progress={progress}
+              bufferedProgress={bufferedProgress}
+              currentTime={currentTime}
+              duration={duration}
+              isFullScreen={isFullScreen}
               isMobile={isMobile}
-              formatTime={formatTime} 
+              formatTime={formatTime}
               onSeek={(x: number, r: DOMRect) => seekTo(x, r)}
               onTogglePlay={togglePlay}
               onSkip={skip}
               onToggleFullscreen={toggleFullscreen}
               onBack={handleBack}
-              isMini={isMini} 
-              onClose={onClose} 
-              onExpand={maximize}               
+              isMini={isMini}
+              onClose={onClose || closeDrawer}
+              onExpand={maximize}
+
               onShowControls={keepControlsVisible}
               onInteractionStart={startControlsInteraction}
               onInteractionEnd={endControlsInteraction}
-                isSeries={isSeries}
+              isSeries={isSeries}
               currentEpisodeIndex={currentEpisodeIndex >=0 ? currentEpisodeIndex : 0}
               episodes={allEps}
               autoPlayOn={autoPlayOn}
               onNextEpisode={onNextEpisode}
               onPrevEpisode={onPrevEpisode}
               setAutoPlayOn={setAutoPlayOn}
-
-
-
-
+              videoFit={videoFit}
+              setVideoFit={setVideoFit}
             />
-
-
 
           </div></div>
         </div>
-
-
 
         {!isMini && (
           <div className="connect-under-section" style={{display:isFullScreen?'none':'flex'}}>
@@ -695,10 +499,9 @@ useEffect(() => {
           <EpisodesRow movie={movie} activeEpId={epId} onSelect={(ep:any)=>{ if(isOverlay){ setOverlayEpId(String(ep.id)) }else{ router.push(`${pathname}?t=full&ep=${ep.id}`) } }} />
         )}
         {!isMini && !isFullScreen && <SimilarMovies current={movie} />}
-
         {!isMini && !isFullScreen && <FooterFree />}
-
       </div>
     </>
   )
 }
+

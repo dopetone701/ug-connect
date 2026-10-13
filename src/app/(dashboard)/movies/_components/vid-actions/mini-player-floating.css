@@ -1,0 +1,102 @@
+/* THE ONE THAT IS ALREADY PLAYING - MAKE IT FLOAT */
+.is-mini-floating {
+  position: fixed !important;
+  z-index: 99999 !important;
+  border-radius: 12px !important;
+  overflow: hidden !important;
+  background: #000;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.6);
+  will-change: left, top;
+  user-select: none;
+  touch-action: none;
+}
+
+.is-mini-floating .film-giant,
+.is-mini-floating .film-center,
+.is-mini-floating .center-cover {
+  width: 100% !important;
+  height: 100% !important;
+  border-radius: 12px !important;
+}
+
+.is-mini-floating .connect-under-section,
+.is-mini-floating .similar-movies,
+.is-mini-floating footer {
+  display: none !important;
+}
+
+.is-mini-floating.is-dragging {
+  transition: none !important;
+}
+
+/* mini buttons */
+.mini-player-actions {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  display: flex;
+  gap: 6px;
+  z-index: 20;
+  opacity: 0;
+  transition: opacity .2s;
+}
+.is-mini-floating:hover .mini-player-actions {
+  opacity: 1;
+}
+.mini-btn {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(0,0,0,.7);
+  backdrop-filter: blur(12px);
+  color: white;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+
+
+/* === MINI PLAYER - HARD TECHNICAL LIMIT - NEVER TOUCH BOTTOM BAR === */
+.watch-drawer-root.is-mini {
+  position: fixed !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  height: 100dvh !important;
+  pointer-events: none !important;
+  z-index: 99998 !important;
+}
+
+.watch-drawer-root.is-mini .watch-drawer-panel.is-mini-floating {
+  position: fixed !important;
+  left: var(--mini-x) !important;
+  right: auto !important;
+  bottom: auto !important;
+  margin: 0 !important;
+  pointer-events: auto !important;
+  z-index: 99999 !important;
+  
+  /* HARD LIMITS */
+  --top-bar-h: 64px;
+  --bottom-bar-h: 80px;
+  --gap: 12px;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  
+  /* Top can never be less than header */
+  top: max(
+    calc(var(--top-bar-h) + var(--safe-top) + var(--gap)),
+    min(
+      var(--mini-y),
+      calc(100dvh - var(--bottom-bar-h) - var(--safe-bottom) - var(--gap) - 100%)
+    )
+  ) !important;
+}
+
+/* Mobile - top bar is taller (auto ~100px) */
+@media (max-width: 768px) {
+  .watch-drawer-root.is-mini .watch-drawer-panel.is-mini-floating {
+    --top-bar-h: 108px; /* your mobile top bar with search */
+    --bottom-bar-h: 80px;
+  }
+}

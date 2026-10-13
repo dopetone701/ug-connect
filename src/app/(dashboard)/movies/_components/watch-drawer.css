@@ -614,3 +614,47 @@ pointer-events: auto !important;
   }
 }
 
+/* ===== FINAL OVERRIDE - DRAGGABLE MAGNETIC - PASTE AT BOTTOM ===== */
+.watch-drawer-root.is-mini .watch-drawer-panel {
+  position: fixed !important;
+  inset: auto !important;
+  left: var(--mini-x, auto) !important;
+  top: var(--mini-y, auto) !important;
+  right: auto !important;
+  bottom: auto !important;
+  width: 190px !important;
+  height: 108px !important;
+  transform: none !important;
+  touch-action: none !important;
+  cursor: grab !important;
+  will-change: left, top, transform !important;
+  transition: left 0.55s cubic-bezier(0.22,1,0.36,1), top 0.55s cubic-bezier(0.22,1,0.36,1), transform 0.3s ease !important;
+}
+
+@media(min-width:769px){
+  .watch-drawer-root.is-mini .watch-drawer-panel{
+    width: 360px !important;
+    height: 203px !important;
+  }
+}
+
+.watch-drawer-root.is-mini .watch-drawer-panel.is-dragging,
+.watch-drawer-root.is-mini .watch-drawer-panel.is-dragging-mini {
+  transition: none !important;
+  transform: scale(0.96) !important;
+  cursor: grabbing !important;
+}
+
+.watch-drawer-root.is-mini{
+  pointer-events: none !important;
+}
+.watch-drawer-root.is-mini .watch-drawer-panel{
+  pointer-events: auto !important;
+}
+
+
+.watch-drawer-panel.is-expanding {
+  z-index: 100000!important;
+  box-shadow: 0 24px 80px rgba(0,0,0,0.9)!important;
+  pointer-events: none!important;
+}

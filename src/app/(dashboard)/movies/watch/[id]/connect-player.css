@@ -806,13 +806,6 @@
 @import "../../_components/vid-actions/player-overlay.css";
 
 
-.yt-overlay-root, .player-overlay-root {
-  pointer-events: none !important;
-}
-.yt-overlay-root.show, .player-overlay-root.show,
-.connect-root .player-overlay-root[data-show="true"] {
-  pointer-events: auto !important;
-}
 
 
 
@@ -840,3 +833,77 @@
 }
 
 
+/* MINI PLAYER — scoped; normal player remains unchanged */
+.connect-root.is-mini-player {
+  position: fixed !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  max-width: none !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  aspect-ratio: auto !important;
+  overflow: hidden !important;
+  background: #000 !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  border-radius: 12px !important;
+  isolation: isolate;
+}
+
+.connect-root.is-mini-player .film-giant.inner-body {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  max-width: none !important;
+  max-height: none !important;
+  aspect-ratio: auto !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  overflow: hidden !important;
+  background: #000 !important;
+}
+
+.connect-root.is-mini-player .film-center,
+.connect-root.is-mini-player .center-cover {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  max-width: none !important;
+  max-height: none !important;
+  aspect-ratio: auto !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  overflow: hidden !important;
+}
+
+.connect-root.is-mini-player .connect-video,
+.connect-root.is-mini-player .connect-poster {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  max-width: none !important;
+  max-height: none !important;
+  object-fit: contain !important;
+  background: #000 !important;
+}
+
+/* Hide page content outside the actual player */
+.connect-root.is-mini-player .connect-under-section,
+.connect-root.is-mini-player .film-similar-wrap,
+.connect-root.is-mini-player .sim-root,
+.connect-root.is-mini-player .similar-slot,
+.connect-root.is-mini-player .similar-movies,
+.connect-root.is-mini-player .details-panel,
+.connect-root.is-mini-player .latest-root {
+  display: none !important;
+}
