@@ -700,3 +700,94 @@ pointer-events: auto !important;
   overflow: auto !important;
 }
 
+
+/* =========================================
+   UG-CONNECT — WATCH DRAWER BLACK SURFACE FIX
+   Paste at the VERY BOTTOM of watch-drawer.css
+   ========================================= */
+
+/* Keep the drawer above the app's normal visual layers */
+.watch-drawer-root {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 2147483000 !important;
+  isolation: isolate !important;
+}
+
+/* True black backdrop: no theme colors bleeding through */
+.watch-drawer-root.open:not(.is-mini) .watch-drawer-backdrop {
+  position: absolute !important;
+  inset: 0 !important;
+  background: #000 !important;
+  opacity: 1 !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  border: 0 !important;
+}
+
+/* Full drawer surface */
+.watch-drawer-root.open:not(.is-mini) .watch-drawer-panel {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100vh !important;
+  height: 100dvh !important;
+  max-width: none !important;
+  max-height: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  background: #000 !important;
+  box-sizing: border-box !important;
+  isolation: isolate !important;
+}
+
+/* Black content surface — never inherit the app theme */
+.watch-drawer-root.open:not(.is-mini) .watch-drawer-content {
+  position: relative !important;
+  width: 100% !important;
+  min-height: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  background: #000 !important;
+  color: #fff !important;
+  box-sizing: border-box !important;
+}
+
+/* Black video stage */
+.watch-drawer-root.open:not(.is-mini) .connect-root,
+.watch-drawer-root.open:not(.is-mini) .film-giant.inner-body {
+  background: #000 !important;
+}
+
+/* Never apply the home-page blur to the fullscreen drawer itself */
+.movies-shell:has(.watch-drawer-root.open:not(.is-mini)) > .film-root {
+  pointer-events: none !important;
+}
+
+/* Preserve the mini-player's own floating layout */
+.watch-drawer-root.is-mini {
+  isolation: auto !important;
+}
+
+.watch-drawer-root.is-mini .watch-drawer-panel {
+  background: #000 !important;
+}
+
+/* Cinematic expansion must use the actual viewport height */
+.watch-drawer-root.is-expanding-root
+.watch-drawer-panel.is-expanding {
+  width: 100vw !important;
+  height: 100vh !important;
+  height: 100dvh !important;
+  max-height: none !important;
+  background: #000 !important;
+}
+
+.watch-drawer-root.is-expanding-root .watch-drawer-content {
+  background: #000 !important;
+}
+
