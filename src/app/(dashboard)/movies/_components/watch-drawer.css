@@ -658,3 +658,45 @@ pointer-events: auto !important;
   box-shadow: 0 24px 80px rgba(0,0,0,0.9)!important;
   pointer-events: none!important;
 }
+
+
+
+
+
+
+/* =========================================
+   CINEMATIC MINI-PLAYER EXPANSION
+   Keep this at the very bottom of the CSS
+   ========================================= */
+
+.watch-drawer-root.is-expanding-root .watch-drawer-panel.is-expanding {
+  position: fixed !important;
+  inset: 0 auto auto 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  max-width: none !important;
+  max-height: 100dvh !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border-radius: 0 !important;
+  overflow: hidden !important;
+  transform: none !important;
+  touch-action: manipulation !important;
+  z-index: 100000 !important;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.45) !important;
+}
+
+.watch-drawer-root.is-expanding-root .watch-drawer-backdrop {
+  opacity: 1 !important;
+  pointer-events: none !important;
+  transition: opacity 450ms ease !important;
+}
+
+.watch-drawer-root.is-expanding-root .watch-drawer-content {
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  border-radius: 0 !important;
+  overflow: auto !important;
+}
+

@@ -86,50 +86,92 @@ export default function WatchDrawer(){
   }, [showControls]);
 
   // === SMOOTH EXPAND ===
+  
+  // === CINEMATIC MINI-PLAYER EXPANSION ===
   const handleSmoothExpand = useCallback(() => {
     const panel = panelRef.current;
-    if (!panel ||!minimized) {
-      maximize();
+
+    if (!panel || !minimized || isExpanding) {
+      if (!minimized) maximize();
       return;
     }
-    const rect = panel.getBoundingClientRect();
 
-    // FLIP: lock to current rect
-    panel.style.transition = "none";
-    panel.style.left = `${rect.left}px`;
-    panel.style.top = `${rect.top}px`;
-    panel.style.width = `${rect.width}px`;
-    panel.style.height = `${rect.height}px`;
-    panel.style.borderRadius = "12px";
+   // Lock the mini-player's current position before React changes its mode.
+const rect = panel.getBoundingClientRect();
 
-    // force reflow
-    panel.getBoundingClientRect();
+panel.style.setProperty("position", "fixed", "important");
+panel.style.setProperty("left", `${rect.left}px`, "important");
+panel.style.setProperty("top", `${rect.top}px`, "important");
+panel.style.setProperty("right", "auto", "important");
+panel.style.setProperty("bottom", "auto", "important");
+panel.style.setProperty("width", `${rect.width}px`, "important");
+panel.style.setProperty("height", `${rect.height}px`, "important");
+panel.style.setProperty("transform", "none", "important");
+panel.style.setProperty("border-radius", "12px", "important");
 
-    setIsExpanding(true);
-    panel.classList.add("is-expanding");
+panel.getBoundingClientRect();
 
-    // animate to full
-    requestAnimationFrame(() => {
-      panel.style.transition = "left 0.52s cubic-bezier(0.16,1,0.3,1), top 0.52s cubic-bezier(0.16,1,0.3,1), width 0.52s cubic-bezier(0.16,1,0.3,1), height 0.52s cubic-bezier(0.16,1,0.3,1), border-radius 0.42s ease";
-      panel.style.left = "0px";
-      panel.style.top = "0px";
-      panel.style.width = "100%";
-      panel.style.height = "100%";
-      panel.style.borderRadius = "0px";
-    });
+setIsExpanding(true);
+panel.classList.add("is-expanding");
 
-    setTimeout(() => {
+requestAnimationFrame(() => {
+  // Re-lock the starting frame after React applies the expansion class.
+  panel.style.setProperty("left", `${rect.left}px`, "important");
+  panel.style.setProperty("top", `${rect.top}px`, "important");
+  panel.style.setProperty("width", `${rect.width}px`, "important");
+  panel.style.setProperty("height", `${rect.height}px`, "important");
+
+  panel.getBoundingClientRect();
+
+  panel.style.setProperty(
+    "transition",
+    "left 520ms cubic-bezier(0.16,1,0.3,1), top 520ms cubic-bezier(0.16,1,0.3,1), width 520ms cubic-bezier(0.16,1,0.3,1), height 520ms cubic-bezier(0.16,1,0.3,1), border-radius 420ms ease",
+    "important"
+  );
+
+  requestAnimationFrame(() => {
+    panel.style.setProperty("left", "0px", "important");
+    panel.style.setProperty("top", "0px", "important");
+    panel.style.setProperty("width", "100vw", "important");
+    panel.style.setProperty("height", "100dvh", "important");
+    panel.style.setProperty("border-radius", "0px", "important");
+  });
+});
+
+
+    const finish = () => {
       maximize();
       setIsExpanding(false);
       panel.classList.remove("is-expanding");
-      panel.style.transition = "";
-      panel.style.left = "";
-      panel.style.top = "";
-      panel.style.width = "";
-      panel.style.height = "";
-      panel.style.borderRadius = "";
-    }, 500);
-  }, [minimized, maximize]);
+
+      [
+        "transition",
+        "position",
+        "left",
+        "top",
+        "right",
+        "bottom",
+        "width",
+        "height",
+        "border-radius",
+        "transform",
+      ].forEach((property) => panel.style.removeProperty(property));
+    };
+
+    const timeout = window.setTimeout(finish, 650);
+
+    panel.addEventListener(
+      "transitionend",
+      (event) => {
+        if (event.target !== panel || event.propertyName !== "width") return;
+        window.clearTimeout(timeout);
+        finish();
+      },
+      { once: true }
+    );
+  }, [minimized, isExpanding, maximize]);
+
+
 
   if(!movieId) return null;
   if(!open &&!minimized &&!isClosing) return null;
