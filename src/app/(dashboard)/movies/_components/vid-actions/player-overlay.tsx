@@ -225,8 +225,8 @@ export default function PlayerOverlay({
   const skipButtonStyle = {
     position: "absolute" as const,
     top: "50%",
-    width: "56px",
-    height: "56px",
+    width: "40px",
+    height: "40px",
     padding: 0,
     border: "none",
     background: "transparent",

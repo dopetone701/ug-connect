@@ -41,10 +41,19 @@ export default function NextMovie({
         <button
           onClick={e=>{e.stopPropagation(); onToggleAutoPlay?.(!autoPlayOn);}}
           style={{
-            width:44,height:24,borderRadius:999,
-            background:autoPlayOn?"white":"rgba(255,255,255,0.35)",
-            border:"none",display:"flex",alignItems:"center",padding:2,cursor:"pointer"
-          }}
+  width: 44,
+  height: 22,
+  borderRadius: 999,
+  background: autoPlayOn
+    ? "rgba(255,255,255,0.16)"
+    : "rgba(255,255,255,0.06)",
+  border: "1px solid rgba(255,255,255,0.18)",
+  display: "flex",
+  alignItems: "center",
+  padding: 2,
+  cursor: "pointer",
+}}
+
         >
           <div style={{
             width:20,height:20,borderRadius:"50%",
