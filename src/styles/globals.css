@@ -186,3 +186,105 @@ html, body { overflow-x: hidden; }
 }
 
 /* DELETE is-mobile-locked completely - it breaks landscape */
+
+/* ============================================================
+   SAFE FULLSCREEN OVERRIDES - ONLY ACTIVE WHEN FULLSCREEN
+   These selectors ONLY match when .is-shell-full or 
+   html.is-fullscreen-active exists. No innocent area touched.
+   ============================================================ */
+
+/* html/body mint -> black ONLY in fullscreen */
+html.is-fullscreen-active,
+html:has(.is-shell-full) {
+  background: #000 !important;
+  min-height: 100dvh !important;
+  height: 100dvh !important;
+}
+
+html.is-fullscreen-active body,
+html:has(.is-shell-full) body {
+  background: #000 !important;
+  min-height: 100dvh !important;
+  height: 100dvh !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  overscroll-behavior: none !important;
+}
+
+/* google-shell safe-area padding -> 0 ONLY in fullscreen */
+html.is-fullscreen-active .google-shell,
+html:has(.is-shell-full) .google-shell {
+  padding-top: 0 !important;
+  background: #000 !important;
+  height: 100dvh !important;
+  width: 100vw !important;
+  inset: 0 !important;
+}
+
+/* giant-body/content-panel padding + radius -> 0 ONLY in fullscreen */
+html.is-fullscreen-active .giant-panel,
+html.is-fullscreen-active .giant-body,
+html.is-fullscreen-active .content-panel,
+html.is-fullscreen-active .content-scroll,
+html:has(.is-shell-full) .giant-panel,
+html:has(.is-shell-full) .giant-body,
+html:has(.is-shell-full) .content-panel,
+html:has(.is-shell-full) .content-scroll {
+  padding: 0 !important;
+  margin: 0 !important;
+  border-radius: 0 !important;
+  border: none !important;
+  background: #000 !important;
+  gap: 0 !important;
+  box-shadow: none !important;
+}
+
+/* top-bar safe-area -> 0 ONLY in fullscreen */
+html.is-fullscreen-active .top-bar,
+html:has(.is-shell-full) .top-bar {
+  display: none !important;
+}
+
+/* connect player fullscreen - fixed to viewport, escapes shell */
+.connect-root.is-shell-full {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  inset: 0 !important;
+  width: 100vw !important;
+  height: 100dvh !important;
+  max-width: 100vw !important;
+  max-height: 100dvh !important;
+  z-index: 2147483647 !important;
+  background: #000 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border-radius: 0 !important;
+  border: none !important;
+}
+
+.connect-root.is-shell-full .film-giant.inner-body {
+  width: 100% !important;
+  height: 100% !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  aspect-ratio: auto !important;
+  border-radius: 0 !important;
+  background: #000 !important;
+}
+
+.connect-root.is-shell-full .film-center,
+.connect-root.is-shell-full .center-cover,
+.connect-root.is-shell-full .connect-video {
+  width: 100% !important;
+  height: 100% !important;
+  background: #000 !important;
+}
+
+.connect-root.is-shell-full .connect-video {
+  object-fit: contain !important;
+}
