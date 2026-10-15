@@ -221,15 +221,11 @@ html:has(.is-shell-full) .google-shell {
   inset: 0 !important;
 }
 
-/* giant-body/content-panel padding + radius -> 0 ONLY in fullscreen */
+/* giant-body/content-panel -> 0 ONLY when html.is-fullscreen-active */
 html.is-fullscreen-active .giant-panel,
 html.is-fullscreen-active .giant-body,
 html.is-fullscreen-active .content-panel,
-html.is-fullscreen-active .content-scroll,
-html:has(.is-shell-full) .giant-panel,
-html:has(.is-shell-full) .giant-body,
-html:has(.is-shell-full) .content-panel,
-html:has(.is-shell-full) .content-scroll {
+html.is-fullscreen-active .content-scroll {
   padding: 0 !important;
   margin: 0 !important;
   border-radius: 0 !important;
@@ -239,11 +235,11 @@ html:has(.is-shell-full) .content-scroll {
   box-shadow: none !important;
 }
 
-/* top-bar safe-area -> 0 ONLY in fullscreen */
-html.is-fullscreen-active .top-bar,
-html:has(.is-shell-full) .top-bar {
+/* top-bar -> 0 ONLY when html.is-fullscreen-active */
+html.is-fullscreen-active .top-bar {
   display: none !important;
 }
+
 
 /* connect player fullscreen - fixed to viewport, escapes shell */
 .connect-root.is-shell-full {
@@ -295,49 +291,54 @@ html:has(.is-shell-full) .top-bar {
 
 
 
-/* ============================================================
-   PORTRAIT - MAKE VIDEO OCCUPY UPPER SAFE-AREA STRIP
-   Only affects watch drawer in mobile portrait, no desktop kill
-   ============================================================ */
+/* ===== SURGICAL FIX: RUBBER BAND = THEME BG, ONLY VIDEO = BLACK ===== */
 
-@media (max-width: 1024px) and (orientation: portrait) {
-  .watch-drawer-root.open:not(.is-mini) {
-    background: #000 !important;
-  }
-
-  .watch-drawer-root.open:not(.is-mini) .watch-drawer-panel {
-    top: 0 !important;
-    padding-top: 0 !important;
-    margin-top: 0 !important;
-    background: #000 !important;
-    /* pull panel into safe-area */
-    padding-top: env(safe-area-inset-top) !important;
-  }
-
-  .watch-drawer-root.open:not(.is-mini) .watch-drawer-content {
-    background: #000 !important;
-    padding-top: 0 !important;
-    margin-top: 0 !important;
-  }
-
-  .watch-drawer-root.open:not(.is-mini) .connect-root,
-  .watch-drawer-root.open:not(.is-mini) .film-giant.inner-body {
-    background: #000 !important;
-    /* video stage extends to very top */
-    margin-top: calc(-1 * env(safe-area-inset-top)) !important;
-    padding-top: env(safe-area-inset-top) !important;
-  }
-
-  .watch-drawer-root.open:not(.is-mini) .connect-video {
-    background: #000 !important;
-  }
-
-  /* keep back button below notch */
-  .watch-drawer-root.open:not(.is-mini) .connect-root .center-top,
-  .watch-drawer-root.open:not(.is-mini) .connect-root [style*="top: 12px"] {
-    top: calc(12px + env(safe-area-inset-top)) !important;
-  }
+/* 1. Force html/body to ALWAYS be theme bg, even with drawer open */
+html, body {
+  background: hsl(var(--bg)) !important;
+  background-color: hsl(var(--bg)) !important;
 }
 
+/* 2. Fullscreen = black ONLY when actually fullscreen-active, NOT :has */
+html.is-fullscreen-active {
+  background: #000 !important;
+}
+html.is-fullscreen-active body {
+  background: #000 !important;
+}
 
+/* 3. Delete this greedy selector completely - this is your black rubber band */
+/*
+html:has(.is-shell-full) { background: #000 !important; }  <- REMOVE
+html:has(.is-shell-full) body { background: #000 !important; } <- REMOVE
+*/
 
+/* 4. Only video stage black, not whole drawer */
+.watch-drawer-root.open:not(.is-mini) {
+  background: hsl(var(--bg)) !important; /* was #000 - this caused black at page end */
+}
+.watch-drawer-root.open:not(.is-mini) .watch-drawer-panel,
+.watch-drawer-root.open:not(.is-mini) .watch-drawer-content {
+  background: hsl(var(--bg)) !important; /* page bg */
+}
+
+.watch-drawer-root.open:not(.is-mini) .film-giant.inner-body,
+.watch-drawer-root.open:not(.is-mini) .connect-video {
+  background: #000 !important; /* ONLY video black */
+}
+
+/* 5. connect-root = theme bg, film-giant = black */
+.connect-root {
+  background: hsl(var(--bg)) !important;
+}
+.connect-root .film-giant.inner-body {
+  background: #000 !important;
+}
+
+/* 6. Fullscreen video = black (keeps your existing, but scoped) */
+.connect-root.is-shell-full {
+  background: #000 !important;
+}
+.connect-root.is-shell-full .film-giant.inner-body {
+  background: #000 !important;
+}
