@@ -237,7 +237,13 @@ const toggleFullscreen = useCallback(async () => {
 
   const savedTime = video.currentTime
   const wasPlaying = !video.paused
-  const isNative = (window as any).Capacitor?.isNativePlatform?.() || false
+
+  // Detect environment
+  const isNative = (window as any).Capacitor?.isNativePlatform?.() ? (window as any).Capacitor.isNativePlatform() : false
+  const isStandalonePWA = window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone === true
+  const isAndroid = /Android/i.test(navigator.userAgent)
+  const shouldUseConnectPlayer = isNative || isStandalonePWA || isAndroid
+
   let CapOrientation: any = null
   if (isNative) {
     try {
@@ -248,11 +254,17 @@ const toggleFullscreen = useCallback(async () => {
 
   try {
     if (!isFullScreen) {
-      // iOS Safari - must use video element for true fullscreen covering status bar
-      const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent)
-      if (isIOS && video.webkitEnterFullscreen) {
-        video.webkitEnterFullscreen()
+      if (!shouldUseConnectPlayer) {
+        // BROWSER ONLY: native player
+        if (video.webkitEnterFullscreen) {
+          video.webkitEnterFullscreen()
+        } else if (video.requestFullscreen) {
+          await video.requestFullscreen()
+        } else if (root.requestFullscreen) {
+          await root.requestFullscreen({ navigationUI: "hide" } as any)
+        }
       } else {
+        // PWA / ANDROID / APP: connect player fullscreen
         try { if (isNative) await CapOrientation?.unlock?.() } catch {}
         try { await (screen.orientation as any)?.unlock?.() } catch {}
         try {
@@ -269,7 +281,6 @@ const toggleFullscreen = useCallback(async () => {
       onFsChange?.(true)
       document.documentElement.classList.add('is-fullscreen-active')
       document.body.style.overflow = 'hidden'
-      // preserve time after fullscreen transition
       if (Math.abs(video.currentTime - savedTime) > 0.5) video.currentTime = savedTime
       if (wasPlaying) video.play().catch(()=>{})
     } else {
