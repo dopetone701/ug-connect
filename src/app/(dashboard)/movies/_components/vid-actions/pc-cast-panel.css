@@ -1,0 +1,165 @@
+/* PC CAST PANEL - THEME DNA - OVERLAYS SKIP BTNS (z 9999) + NO TIMEOUT */
+.pc-cast-wrapper {
+  position: fixed;
+  bottom: 88px;
+  right: 24px;
+  z-index: 10015;
+  pointer-events: auto;
+}
+
+.pc-cast-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 10014;
+  background: transparent;
+  pointer-events: auto;
+}
+
+.pc-cast-panel {
+  width: 380px;
+  max-width: 90vw;
+  max-height: 420px;
+  background: hsl(var(--surface));
+  border: 1px solid hsl(var(--border));
+  border-radius: 16px;
+  box-shadow: 0 16px 48px rgba(0,0,0,0.25);
+  overflow: hidden;
+  overflow-y: auto;
+  padding: 16px 18px 20px;
+  animation: pcCastFadeIn 0.18s ease forwards;
+  color: hsl(var(--text));
+  position: relative;
+  z-index: 10016;
+}
+
+@keyframes pcCastFadeIn {
+  from { opacity: 0; transform: translateY(8px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Keep controls visible while pc panel open - no timeout */
+body[data-pc-cast-open="true"] .connect-controls,
+body[data-pc-cast-open="true"] .center-top {
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+}
+body[data-pc-cast-open="true"] .center-controls-layer {
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+body[data-pc-cast-open="true"] .center-controls-layer button {
+  pointer-events: none !important; /* block skip btns when pc panel open, panel is over them */
+}
+
+.pc-cast-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.pc-cast-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: hsl(var(--text));
+  letter-spacing: -0.02em;
+}
+
+.pc-cast-close {
+  width: 24px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  background: transparent;
+  border: none;
+  color: hsl(var(--text));
+  cursor: pointer;
+  opacity: 0.7;
+  border-radius: 6px;
+}
+.pc-cast-close:hover { opacity: 1; background: hsl(var(--surface-hover)); }
+
+.pc-cast-subtitle {
+  font-size: 12px;
+  color: hsl(var(--text-muted));
+  margin-bottom: 14px;
+}
+
+.pc-cast-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.pc-cast-scan-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: hsl(var(--text-muted));
+  padding: 10px;
+}
+
+.pc-cast-scan-dot {
+  width: 8px;
+  height: 8px;
+  background: hsl(var(--primary));
+  border-radius: 50%;
+  animation: pcPulse 1s infinite;
+}
+
+@keyframes pcPulse {
+  0%,100% { opacity: 1 }
+  50% { opacity: 0.3 }
+}
+
+.pc-cast-device {
+  width: 100%;
+  text-align: left;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: hsl(var(--surface));
+  border: 1px solid hsl(var(--border));
+  color: hsl(var(--text));
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+.pc-cast-device:hover { background: hsl(var(--surface-hover)); }
+.pc-cast-device-primary {
+  background: hsl(var(--surface-hover));
+  border-color: hsl(var(--text));
+  border-width: 1.2px;
+}
+.pc-cast-device-name { font-size: 13px; font-weight: 600; }
+.pc-cast-device-type { font-size: 11px; color: hsl(var(--text-muted)); margin-top: 2px; }
+
+.pc-cast-empty {
+  padding: 20px 14px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  background: hsl(var(--surface));
+  border: 1px solid hsl(var(--border));
+  border-radius: 12px;
+}
+.pc-cast-empty-icon { color: hsl(var(--text-muted)); }
+.pc-cast-empty-title { font-weight: 600; font-size: 14px; color: hsl(var(--text)); }
+.pc-cast-empty-text { font-size: 12px; color: hsl(var(--text-muted)); line-height: 1.4; max-width: 280px; }
+.pc-cast-empty-tips { display: flex; flex-direction: column; gap: 3px; font-size: 11px; color: hsl(var(--text-muted)); text-align: left; margin-top: 6px; }
+.pc-cast-retry {
+  margin-top: 10px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  background: hsl(var(--text));
+  color: hsl(var(--surface));
+  border: 0;
+  font-weight: 600;
+  font-size: 12px;
+  cursor: pointer;
+  width: 100%;
+}
+.pc-cast-retry:hover { opacity: 0.9; }
+
