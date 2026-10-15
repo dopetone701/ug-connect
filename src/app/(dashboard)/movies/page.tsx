@@ -190,7 +190,7 @@ function StripCard({
       onPointerCancel={handlePointerCancel}
       onClick={handleClick}
     >
-      <img
+      <img 
         src={movie.cover}
         alt={movie.title}
         loading="lazy"
