@@ -234,34 +234,58 @@ const toggleFullscreen = useCallback(async () => {
   const video = videoRef.current as any
   const root = rootRef.current as any
   if (!video || !root) return
+
   const savedTime = video.currentTime
   const wasPlaying = !video.paused
   const isNative = (window as any).Capacitor?.isNativePlatform?.() || false
   let CapOrientation: any = null
   if (isNative) {
-    try { const mod = await import('@capacitor/screen-orientation'); CapOrientation = mod.ScreenOrientation } catch {}
+    try {
+      const mod = await import('@capacitor/screen-orientation');
+      CapOrientation = mod.ScreenOrientation
+    } catch {}
   }
+
   try {
     if (!isFullScreen) {
-      try { if (isNative) await CapOrientation?.unlock?.() } catch {}
-      try { await (screen.orientation as any)?.unlock?.() } catch {}
-      try {
-        if (root.requestFullscreen) { await root.requestFullscreen({ navigationUI: "hide" } as any) }
-        else if ((root as any).webkitRequestFullscreen) { await (root as any).webkitRequestFullscreen() }
-      } catch {}
-      try { if (isNative) await CapOrientation?.lock?.({ orientation: 'landscape' }) } catch {}
-      try { if (screen.orientation && (screen.orientation as any).lock) { await (screen.orientation as any).lock('landscape') } } catch {}
-      setIsFullScreen(true); onFsChange?.(true); document.body.style.overflow = 'hidden'
+      // iOS Safari - must use video element for true fullscreen covering status bar
+      const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent)
+      if (isIOS && video.webkitEnterFullscreen) {
+        video.webkitEnterFullscreen()
+      } else {
+        try { if (isNative) await CapOrientation?.unlock?.() } catch {}
+        try { await (screen.orientation as any)?.unlock?.() } catch {}
+        try {
+          if (root.requestFullscreen) {
+            await root.requestFullscreen({ navigationUI: "hide" } as any)
+          } else if ((root as any).webkitRequestFullscreen) {
+            await (root as any).webkitRequestFullscreen()
+          }
+        } catch {}
+        try { if (isNative) await CapOrientation?.lock?.({ orientation: 'landscape' }) } catch {}
+        try { if (screen.orientation && (screen.orientation as any).lock) { await (screen.orientation as any).lock('landscape') } } catch {}
+      }
+      setIsFullScreen(true)
+      onFsChange?.(true)
+      document.documentElement.classList.add('is-fullscreen-active')
+      document.body.style.overflow = 'hidden'
+      // preserve time after fullscreen transition
       if (Math.abs(video.currentTime - savedTime) > 0.5) video.currentTime = savedTime
       if (wasPlaying) video.play().catch(()=>{})
     } else {
       try { if (document.fullscreenElement) await document.exitFullscreen() } catch {}
       try { if ((document as any).webkitFullscreenElement) await (document as any).webkitExitFullscreen?.() } catch {}
-      setIsFullScreen(false); onFsChange?.(false); document.body.style.overflow = ''
+      try { if ((document as any).webkitExitFullscreen) await (document as any).webkitExitFullscreen?.() } catch {}
+      setIsFullScreen(false)
+      onFsChange?.(false)
+      document.documentElement.classList.remove('is-fullscreen-active')
+      document.body.style.overflow = ''
       try { if (isNative) await CapOrientation?.lock?.({ orientation: 'portrait' }) } catch {}
       try { if (screen.orientation && (screen.orientation as any).lock) { await (screen.orientation as any).lock('portrait') } } catch {}
     }
-  } catch { setIsFullScreen(v=>!v) }
+  } catch {
+    setIsFullScreen(v=>!v)
+  }
 }, [isFullScreen, onFsChange])
 
   const formatTime = useCallback((sec: number) => {
@@ -292,6 +316,7 @@ const toggleFullscreen = useCallback(async () => {
     const onFs = () => {
       const fs =!!document.fullscreenElement ||!!(document as any).webkitFullscreenElement;
       setIsFullScreen(fs); if(!fs) document.body.style.overflow = ''
+      if (!fs) document.documentElement.classList.remove('is-fullscreen-active')
     }
     document.addEventListener("fullscreenchange", onFs); document.addEventListener("webkitfullscreenchange", onFs as any)
     return () => { document.removeEventListener("fullscreenchange", onFs); document.removeEventListener("webkitfullscreenchange", onFs as any) }
@@ -504,4 +529,3 @@ useEffect(() => { setSharedSelectedQuality(quality); }, [quality, setSharedSelec
     </>
   )
 }
-
