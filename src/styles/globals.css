@@ -288,3 +288,53 @@ html:has(.is-shell-full) .top-bar {
 .connect-root.is-shell-full .connect-video {
   object-fit: contain !important;
 }
+
+
+
+
+
+
+
+/* ============================================================
+   PORTRAIT - MAKE VIDEO OCCUPY UPPER SAFE-AREA STRIP
+   Only affects watch drawer in mobile portrait, no desktop kill
+   ============================================================ */
+
+@media (max-width: 1024px) and (orientation: portrait) {
+  .watch-drawer-root.open:not(.is-mini) {
+    background: #000 !important;
+  }
+
+  .watch-drawer-root.open:not(.is-mini) .watch-drawer-panel {
+    top: 0 !important;
+    padding-top: 0 !important;
+    margin-top: 0 !important;
+    background: #000 !important;
+    /* pull panel into safe-area */
+    padding-top: env(safe-area-inset-top) !important;
+  }
+
+  .watch-drawer-root.open:not(.is-mini) .watch-drawer-content {
+    background: #000 !important;
+    padding-top: 0 !important;
+    margin-top: 0 !important;
+  }
+
+  .watch-drawer-root.open:not(.is-mini) .connect-root,
+  .watch-drawer-root.open:not(.is-mini) .film-giant.inner-body {
+    background: #000 !important;
+    /* video stage extends to very top */
+    margin-top: calc(-1 * env(safe-area-inset-top)) !important;
+    padding-top: env(safe-area-inset-top) !important;
+  }
+
+  .watch-drawer-root.open:not(.is-mini) .connect-video {
+    background: #000 !important;
+  }
+
+  /* keep back button below notch */
+  .watch-drawer-root.open:not(.is-mini) .connect-root .center-top,
+  .watch-drawer-root.open:not(.is-mini) .connect-root [style*="top: 12px"] {
+    top: calc(12px + env(safe-area-inset-top)) !important;
+  }
+}
