@@ -1,7 +1,8 @@
-
 "use client";
 
+
 import { useCallback, useEffect, useRef, useState } from "react";
+
 
 import BackBtn from "../back-btn";
 import PlayBtnIcon from "./../../../../../modal-generator/svg-icons/play-btn-icon";
@@ -10,6 +11,7 @@ import Replay10Icon from "./../../../../../modal-generator/svg-icons/plus-10-rev
 import QualitySettings from "./quality-settings";
 import NextMovie from "./next-movie";
 import VideoCastBtn from "./vide-cast";
+
 
 export default function PlayerOverlay({
   movie,
@@ -45,17 +47,22 @@ export default function PlayerOverlay({
 }: any) {
   const keepControlsVisible = () => onShowControls?.();
 
+
   const startInteraction = () => {
     onInteractionStart?.();
     keepControlsVisible();
   };
 
+
   const endInteraction = () => onInteractionEnd?.();
+
 
   const [miniActionsVisible, setMiniActionsVisible] = useState(true);
 
+
   const miniActionsTimerRef =
     useRef<ReturnType<typeof setTimeout> | null>(null);
+
 
   const clearMiniActionsTimer = useCallback(() => {
     if (miniActionsTimerRef.current !== null) {
@@ -64,15 +71,18 @@ export default function PlayerOverlay({
     }
   }, []);
 
+
   const showMiniActions = useCallback(() => {
     setMiniActionsVisible(true);
     clearMiniActionsTimer();
+
 
     miniActionsTimerRef.current = setTimeout(() => {
       setMiniActionsVisible(false);
       miniActionsTimerRef.current = null;
     }, 3000);
   }, [clearMiniActionsTimer]);
+
 
   useEffect(() => {
     if (!isMini) {
@@ -81,12 +91,15 @@ export default function PlayerOverlay({
       return;
     }
 
+
     showMiniActions();
+
 
     return () => {
       clearMiniActionsTimer();
     };
   }, [isMini, showMiniActions, clearMiniActionsTimer]);
+
 
     if (isMini) {
     return (
@@ -95,17 +108,15 @@ export default function PlayerOverlay({
           position: "absolute",
           inset: 0,
           zIndex: 9999,
-          pointerEvents: "auto", // MUST be auto to catch tap
+          pointerEvents: "auto",
           overflow: "visible",
         }}
         onPointerDown={(e) => {
-          // don't block drag - let it bubble to WatchDrawer
           if ((e.target as HTMLElement).closest("button")) return;
         }}
         onClick={(e) => {
           if ((e.target as HTMLElement).closest("button")) return;
           e.stopPropagation();
-          // tap on video = toggle play OR show controls
           if (!miniActionsVisible) {
             showMiniActions();
           } else {
@@ -134,7 +145,7 @@ export default function PlayerOverlay({
             cursor: "pointer",
             zIndex: 10002,
             pointerEvents: "auto",
-            opacity: miniActionsVisible ? 1 : 0, // fade but still there
+            opacity: miniActionsVisible ? 1 : 0,
             transition: "opacity 250ms ease",
           }}
           onPointerDown={(e) => e.stopPropagation()}
@@ -145,6 +156,7 @@ export default function PlayerOverlay({
         >
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" /></svg>
         </button>
+
 
         {/* Close */}
         <button
@@ -178,6 +190,7 @@ export default function PlayerOverlay({
         >
           <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="white" strokeWidth="1.8" strokeLinecap="round"><path d="M1 1L11 11M11 1L1 11" /></svg>
         </button>
+
 
                {/* Play - fades too */}
         <button
@@ -215,9 +228,14 @@ export default function PlayerOverlay({
           <PlayBtnIcon playing={playing} size={30} />
         </button>
 
+
       </div>
     );
   }
+
+
+
+
 
 
 
@@ -239,6 +257,7 @@ export default function PlayerOverlay({
     pointerEvents: "auto" as const,
   } as const;
 
+
   return (
     <>
       {!isFullScreen && (
@@ -248,7 +267,10 @@ export default function PlayerOverlay({
             top: "12px",
             left: "12px",
             zIndex: 10000,
-            pointerEvents: "auto",
+            pointerEvents: showControls ? "auto" : "none",
+            opacity: showControls ? 1 : 0,
+            visibility: showControls ? "visible" : "hidden",
+            transition: "opacity 250ms ease, visibility 250ms ease",
           }}
         >
           {isMobile ? (
@@ -281,6 +303,7 @@ export default function PlayerOverlay({
         </div>
       )}
 
+
       <div
         className={`center-top ${showControls ? "show" : ""}`}
         style={{ pointerEvents: showControls ? "auto" : "none" }}
@@ -296,16 +319,19 @@ export default function PlayerOverlay({
           </div>
         </div>
 
+
         <div className="fullscreen-logo top-right">
           <img src="/logo.png" alt="logo" />
         </div>
       </div>
+
 
       {isLoading && (
         <div className="connect-loader">
           <div className="connect-spinner" />
         </div>
       )}
+
 
       {showControls && !isLoading && (
         <div
@@ -330,6 +356,7 @@ export default function PlayerOverlay({
           >
             <Reverse10Icon />
           </button>
+
 
           <button
             type="button"
@@ -360,6 +387,7 @@ export default function PlayerOverlay({
             </span>
           </button>
 
+
           <button
             type="button"
             style={{
@@ -376,6 +404,7 @@ export default function PlayerOverlay({
         </div>
       )}
 
+
       <div
         className={`connect-controls ${showControls ? "show" : ""}`}
         style={{ pointerEvents: showControls ? "auto" : "none" }}
@@ -385,6 +414,7 @@ export default function PlayerOverlay({
           <span className="cc-left-time">
             {formatTime(currentTime)} / {formatTime(duration)}
           </span>
+
 
           <div
             className="cc-right-simple"
@@ -409,7 +439,9 @@ export default function PlayerOverlay({
               />
             </div>
 
+
             <VideoCastBtn />
+
 
             <div
               onClick={(e) => e.stopPropagation()}
@@ -418,6 +450,7 @@ export default function PlayerOverlay({
               {/* @ts-ignore */}
               <QualitySettings onQualityChange={onQualityChange} />
             </div>
+
 
             <button
               type="button"
@@ -447,6 +480,7 @@ export default function PlayerOverlay({
           </div>
         </div>
 
+
         <div className="cc-progress-bottom">
           <div
             className="starz-progress"
@@ -456,24 +490,31 @@ export default function PlayerOverlay({
               e.stopPropagation();
               startInteraction();
 
+
               const bar = e.currentTarget;
               bar.setPointerCapture(e.pointerId);
+
 
               const seekFromPointer = (clientX: number) => {
                 const bg = bar.querySelector(
                   ".starz-progress-bg"
                 ) as HTMLElement | null;
 
+
                 if (!bg) return;
+
 
                 onSeek?.(clientX, bg.getBoundingClientRect());
               };
 
+
               seekFromPointer(e.clientX);
+
 
               const handleMove = (ev: PointerEvent) => {
                 seekFromPointer(ev.clientX);
               };
+
 
               const handleUp = () => {
                 bar.removeEventListener("pointermove", handleMove);
@@ -481,6 +522,7 @@ export default function PlayerOverlay({
                 bar.removeEventListener("pointercancel", handleUp);
                 endInteraction();
               };
+
 
               bar.addEventListener("pointermove", handleMove);
               bar.addEventListener("pointerup", handleUp);

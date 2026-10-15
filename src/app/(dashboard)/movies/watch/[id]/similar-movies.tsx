@@ -5,8 +5,8 @@ import "../../latest-movies.css";
 import "./similar-movies.css";
 import { useMovieStore } from "../../../../../stores/use-movie-store";
 import { useWatchDrawer } from "@/stores/use-watch-drawer";
+import { useReelsDrawer } from "@/stores/use-reels-drawer";
 import { useGlobalSearch } from "@/stores/use-global-search";
-
 
 const API_URL = "https://movie-server-api.connectu89.workers.dev/api/movies";
 
@@ -20,6 +20,9 @@ type Movie = {
   video?: string;
   video_url?: string;
   desc?: string;
+  preview_urls?: string[];
+  preview_url?: string;
+  trailer_url?: string;
 };
 
 export default function SimilarMovies({ current }: { current: Movie }) {
@@ -28,31 +31,59 @@ export default function SimilarMovies({ current }: { current: Movie }) {
   const dragRef = useRef(false);
   const router = useRouter();
   const { addRecent } = useMovieStore();
-  const { openDrawer } = useWatchDrawer();
+  const { openDrawer, closeDrawer } = useWatchDrawer();
+  const { openReels } = useReelsDrawer();
 
   useEffect(() => {
     if (!current?.id) return;
     fetch(API_URL, { cache: "no-store" })
-     .then((r) => r.json())
-     .then((all: Movie[]) => {
-        const others = all.filter((m) => String(m.id)!== String(current.id));
-        let list = others.filter(
-          (m) => m.genre?.toLowerCase().trim() === current.genre?.toLowerCase().trim()
-        );
+      .then((r) => r.json())
+      .then((all: Movie[]) => {
+        const others = all.filter((m) => String(m.id) !== String(current.id));
+        let list = others.filter((m) => m.genre?.toLowerCase().trim() === current.genre?.toLowerCase().trim());
         if (list.length < 8 && current.vj) {
           const byVj = others.filter((m) => m.vj?.toLowerCase().trim() === current.vj?.toLowerCase().trim());
           const seen = new Set(list.map((x) => String(x.id)));
-          list = [...list,...byVj.filter((x) =>!seen.has(String(x.id)))];
+          list = [...list, ...byVj.filter((x) => !seen.has(String(x.id)))];
         }
         if (list.length < 8) {
           const seen = new Set(list.map((x) => String(x.id)));
-          list = [...list,...others.filter((x) =>!seen.has(String(x.id)))].slice(0, 12);
+          list = [...list, ...others.filter((x) => !seen.has(String(x.id)))].slice(0, 12);
         }
         setMovies(list.slice(0, 12));
       });
   }, [current]);
 
-  // SAME LOGIC AS MovieCard - STORE ROUTED WELL
+  const normalize = (x: any) => {
+    const preview = x?.preview_urls?.[0] || x?.preview_url || x?.trailer_url || x?.video_preview_url || x?.preview;
+    return {
+      ...x,
+      id: String(x.id),
+      cover: x.cover || x.cover_url,
+      cover_url: x.cover || x.cover_url,
+      video: x.video || x.video_url,
+      video_url: x.video || x.video_url,
+      preview_url: preview,
+      preview_urls: x.preview_urls || (preview ? [preview] : []),
+      trailer_url: x.trailer_url || preview,
+    };
+  };
+
+  // INSTANT STOP - same engine as watch-client preview btn
+  const stopAllVideosInstant = () => {
+    try {
+      document.querySelectorAll("video").forEach((v: any) => {
+        try {
+          v.pause();
+          v.muted = true;
+          v.currentTime = v.currentTime; // freeze frame
+        } catch {}
+      });
+    } catch {}
+    // close any watch drawer that might be playing underneath
+    try { closeDrawer?.(); } catch {}
+  };
+
   const openMovie = (m: Movie, t: "full" | "preview" = "full") => {
     if (dragRef.current) return;
     const id = String(m.id);
@@ -73,6 +104,22 @@ export default function SimilarMovies({ current }: { current: Movie }) {
       );
     } catch {}
 
+    if (t === "preview") {
+      // EXACTLY what preview btn does in watch-client
+      stopAllVideosInstant();
+
+      const rawList = movies.length ? movies : [m];
+      const hasClicked = rawList.some((x) => String(x.id) === String(id));
+      const finalRaw = hasClicked ? rawList : [m, ...rawList];
+      const list = finalRaw.map(normalize);
+      const idx = finalRaw.findIndex((x) => String(x.id) === String(id));
+
+      // open reels instantly - no delay, single engine
+      openReels(list, idx >= 0 ? idx : 0);
+      return;
+    }
+
+    // PLAY = connect player as before
     const isPC = window.innerWidth > 768;
     if (isPC) {
       router.push(`/movies/watch/${id}?t=${t}`);
@@ -83,17 +130,22 @@ export default function SimilarMovies({ current }: { current: Movie }) {
 
   const seeAll = () => {
     let q = (current.genre || current.vj || "").toLowerCase().trim();
-    if (q &&!q.includes("movies") && q.split(" ").length === 1) q = `${q} movies`;
+    if (q && !q.includes("movies") && q.split(" ").length === 1) q = `${q} movies`;
     if (!q) q = "action movies";
     useGlobalSearch.getState().setQuery(q);
     useGlobalSearch.getState().setSection(q);
   };
 
-  // drag scroll logic
   useEffect(() => {
     const el = trackRef.current;
     if (!el) return;
-    let isDown = false, startX = 0, scrollStart = 0, velocity = 0, lastX = 0, lastTime = 0, raf = 0;
+    let isDown = false,
+      startX = 0,
+      scrollStart = 0,
+      velocity = 0,
+      lastX = 0,
+      lastTime = 0,
+      raf = 0;
     const kill = () => cancelAnimationFrame(raf);
     const momentum = () => {
       cancelAnimationFrame(raf);
@@ -105,27 +157,70 @@ export default function SimilarMovies({ current }: { current: Movie }) {
       };
       raf = requestAnimationFrame(step);
     };
-    const down = (x: number) => { kill(); isDown = true; dragRef.current = false; startX = x; lastX = x; scrollStart = el.scrollLeft; lastTime = performance.now(); velocity = 0; el.classList.add("is-dragging"); };
+    const down = (x: number) => {
+      kill();
+      isDown = true;
+      dragRef.current = false;
+      startX = x;
+      lastX = x;
+      scrollStart = el.scrollLeft;
+      lastTime = performance.now();
+      velocity = 0;
+      el.classList.add("is-dragging");
+    };
     const move = (x: number, e?: Event) => {
       if (!isDown) return;
-      const now = performance.now(); const dx = x - startX; const dist = x - lastX; const dt = now - lastTime || 16;
+      const now = performance.now();
+      const dx = x - startX;
+      const dist = x - lastX;
+      const dt = now - lastTime || 16;
       if (Math.abs(dx) > 3) dragRef.current = true;
-      if (dragRef.current) { e?.preventDefault(); velocity = (dist / dt) * 16; el.scrollLeft = scrollStart - dx; }
-      lastX = x; lastTime = now;
+      if (dragRef.current) {
+        e?.preventDefault();
+        velocity = (dist / dt) * 16;
+        el.scrollLeft = scrollStart - dx;
+      }
+      lastX = x;
+      lastTime = now;
     };
-    const up = () => { if (!isDown) return; isDown = false; el.classList.remove("is-dragging"); if (Math.abs(velocity) > 2) { velocity = -velocity; momentum(); } setTimeout(() => { dragRef.current = false; }, 80); };
-    const md = (e: MouseEvent) => { if ((e.target as HTMLElement).closest(".l-a-btn")) return; down(e.pageX); };
+    const up = () => {
+      if (!isDown) return;
+      isDown = false;
+      el.classList.remove("is-dragging");
+      if (Math.abs(velocity) > 2) {
+        velocity = -velocity;
+        momentum();
+      }
+      setTimeout(() => {
+        dragRef.current = false;
+      }, 80);
+    };
+    const md = (e: MouseEvent) => {
+      if ((e.target as HTMLElement).closest(".l-a-btn")) return;
+      down(e.pageX);
+    };
     const mm = (e: MouseEvent) => move(e.pageX, e);
     const mu = () => up();
-    const td = (e: TouchEvent) => { if ((e.target as HTMLElement).closest(".l-a-btn")) return; down(e.touches[0].pageX); };
+    const td = (e: TouchEvent) => {
+      if ((e.target as HTMLElement).closest(".l-a-btn")) return;
+      down(e.touches[0].pageX);
+    };
     const tm = (e: TouchEvent) => move(e.touches[0].pageX, e);
     const tu = () => up();
-    el.addEventListener("mousedown", md); window.addEventListener("mousemove", mm as any); window.addEventListener("mouseup", mu);
-    el.addEventListener("touchstart", td as any, { passive: true } as any); el.addEventListener("touchmove", tm as any, { passive: false } as any); el.addEventListener("touchend", tu as any, { passive: true } as any);
+    el.addEventListener("mousedown", md);
+    window.addEventListener("mousemove", mm as any);
+    window.addEventListener("mouseup", mu);
+    el.addEventListener("touchstart", td as any, { passive: true } as any);
+    el.addEventListener("touchmove", tm as any, { passive: false } as any);
+    el.addEventListener("touchend", tu as any, { passive: true } as any);
     return () => {
       cancelAnimationFrame(raf);
-      el.removeEventListener("mousedown", md); window.removeEventListener("mousemove", mm as any); window.removeEventListener("mouseup", mu);
-      el.removeEventListener("touchstart", td as any); el.removeEventListener("touchmove", tm as any); el.removeEventListener("touchend", tu as any);
+      el.removeEventListener("mousedown", md);
+      window.removeEventListener("mousemove", mm as any);
+      window.removeEventListener("mouseup", mu);
+      el.removeEventListener("touchstart", td as any);
+      el.removeEventListener("touchmove", tm as any);
+      el.removeEventListener("touchend", tu as any);
     };
   }, [movies]);
 
@@ -155,3 +250,4 @@ export default function SimilarMovies({ current }: { current: Movie }) {
     </div>
   );
 }
+

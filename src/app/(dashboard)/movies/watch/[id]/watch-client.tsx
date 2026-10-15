@@ -350,25 +350,68 @@ const keepControlsVisible = useCallback(() => { setShowControls(true); cancelCon
 const startControlsInteraction = useCallback(() => { interactingRef.current = true; setShowControls(true); cancelControlsTimer(); }, [cancelControlsTimer]);
 const endControlsInteraction = useCallback(() => { interactingRef.current = false; scheduleControlsHide(); }, [scheduleControlsHide]);
 
-const handleFilmClick = useCallback((e: React.MouseEvent) => {
+const handleFilmClick = useCallback((e: React.MouseEvent | React.TouchEvent) => {
   const t = e.target as HTMLElement;
-  const isControl = !!t.closest('button, .cc-icon, .apple-full, .center-skip-btn, .play-apple, .starz-progress, .quality-settings, [data-control], .bubble-expand, .bubble-close');
+  // if tap is on a control button/progress - just keep visible and reset timer
+  const isControl = !!t.closest('button, .cc-icon, .apple-full, .center-skip-btn, .play-apple, .starz-progress, .quality-settings, [data-control], .bubble-expand, .bubble-close, .back-btn-timeout, [data-no-drag]');
   if (isControl) {
     setShowControls(true);
     scheduleControlsHide();
     return;
   }
+  // tap anywhere else on video - toggle
   if (!showControls) {
     setShowControls(true);
     scheduleControlsHide();
-    return;
+  } else {
+    setShowControls(false);
+    cancelControlsTimer();
   }
-  setShowControls(false);
-  cancelControlsTimer();
 }, [showControls, scheduleControlsHide, cancelControlsTimer]);
 
 useEffect(() => { scheduleControlsHide(); return () => { cancelControlsTimer(); }; }, [scheduleControlsHide, cancelControlsTimer]);
 useEffect(() => { return () => { interactingRef.current = false; cancelControlsTimer(); }; }, [cancelControlsTimer]);
+
+// NEW: Hide overlays instantly when user interacts outside video
+useEffect(() => {
+  if (!showControls) return;
+  const hideNow = () => {
+    setShowControls(false);
+    cancelControlsTimer();
+  };
+  const handleOutsidePointer = (e: Event) => {
+    const target = e.target as HTMLElement;
+    // if click is inside video player, let handleFilmClick handle it
+    const insideVideo = target.closest('.film-giant, .connect-player, .center-cover, .center-controls-layer, .connect-controls, .center-top, .back-btn-timeout, .connect-loader');
+    if (insideVideo) return;
+    // if click is on under-video area, episodes, similar, footer, etc -> hide instantly
+    const outsideArea = target.closest('.connect-under-section, .episodes-row, .similar-movies, .film-meta, footer, .footer-free');
+    if (outsideArea || !insideVideo) {
+      hideNow();
+    }
+  };
+  const handleScroll = () => {
+    // hide on any scroll outside video
+    if (window.scrollY > 10) hideNow();
+  };
+  const handleKeyOutside = (e: KeyboardEvent) => {
+    if (e.key === 'Escape') return;
+    const target = e.target as HTMLElement;
+    if (!target.closest('.film-giant')) hideNow();
+  };
+
+  window.addEventListener('pointerdown', handleOutsidePointer, { capture: true } as any);
+  window.addEventListener('touchstart', handleOutsidePointer, { capture: true } as any);
+  window.addEventListener('scroll', handleScroll, { passive: true });
+  window.addEventListener('wheel', handleScroll, { passive: true } as any);
+
+  return () => {
+    window.removeEventListener('pointerdown', handleOutsidePointer, { capture: true } as any);
+    window.removeEventListener('touchstart', handleOutsidePointer, { capture: true } as any);
+    window.removeEventListener('scroll', handleScroll);
+    window.removeEventListener('wheel', handleScroll as any);
+  };
+}, [showControls, cancelControlsTimer]);
 
   const searchEpId = search.get("ep") || search.get("e")
   const epId = isOverlay? overlayEpId || searchEpId : searchEpId
@@ -481,7 +524,7 @@ useEffect(() => { setSharedSelectedQuality(quality); }, [quality, setSharedSelec
                 }catch{}
                 if(lastTimeRef.current) vid.currentTime=lastTimeRef.current
               }}
-              onClick={(e)=> e.stopPropagation()}
+              onClick={(e)=> { e.stopPropagation(); (handleFilmClick as any)(e); }}
               onDoubleClick={()=> setVideoFit(v=> v==='contain' ? 'cover' : 'contain')}
               playsInline loop={isPreview} preload="auto" muted
               onEnded={handleEnded}
@@ -531,12 +574,14 @@ useEffect(() => { setSharedSelectedQuality(quality); }, [quality, setSharedSelec
             <VideoMetaInfo movie={movie} descExpanded={descExpanded} setDescExpanded={setDescExpanded} />
           </div>
         )}
-        {!isMini &&!isFullScreen && movie?.seasons?.length>0 && (
+               {!isMini &&!isFullScreen && movie?.seasons?.length>0 && (
           <EpisodesRow movie={movie} activeEpId={epId} onSelect={(ep:any)=>{ if(isOverlay){ setOverlayEpId(String(ep.id)) }else{ router.push(`${pathname}?t=full&ep=${ep.id}`) } }} />
         )}
         {!isMini && !isFullScreen && <SimilarMovies current={movie} />}
-        {!isMini && !isFullScreen && <FooterFree />}
       </div>
+
+      {/* FOOTER OUTSIDE connect-root = breathing space, no black line */}
+      {!isMini && !isFullScreen && <FooterFree />}
     </>
   )
 }

@@ -55,21 +55,61 @@
 
 /* MOBILE YOUTUBE TOP - ONLY .connect-root */
 @media(max-width:768px){
-.connect-root{padding:0!important;margin:0 auto!important;width:100%!important;max-width:100%!important;background:#000!important;border-radius:0!important;border:none!important}
-.connect-root .film-giant.inner-body{width:100%!important;max-width:100%!important;height:auto!important;aspect-ratio:16/9!important;max-height:none!important;border-radius:0!important;border:none!important;margin:0!important;background:#000!important}
-.connect-root .film-center,.connect-root .center-cover{border-radius:0!important;width:100%!important;height:100%!important;padding:0!important;margin:0!important}
-.connect-root .connect-video,.connect-root .connect-poster{border-radius:0!important;object-fit:contain!important;background:#000!important}
+.connect-root{
+  padding:0!important;
+  margin:0 auto!important;
+  width:100%!important;
+  max-width:100%!important;
+  background:hsl(var(--bg))!important;
+  border-radius:0!important;
+  border:none!important
+}
+.connect-root .film-giant.inner-body{
+  width:100%!important;
+  max-width:100%!important;
+  height:auto!important;
+  aspect-ratio:16/9!important;
+  max-height:none!important;
+  border-radius:0!important;
+  border:none!important;
+  margin:0!important;
+  background:#000!important
+}
+.connect-root .film-center,.connect-root .center-cover{
+  border-radius:0!important;
+  width:100%!important;
+  height:100%!important;
+  padding:0!important;
+  margin:0!important;
+  background:#000!important
+}
+.connect-root .connect-video,.connect-root .connect-poster{
+  border-radius:0!important;
+  object-fit:contain!important;
+  background:#000!important
+}
 .connect-root .vol-vertical{display:none!important}
 .connect-root .connect-controls{left:10px!important;right:10px!important;bottom:10px!important}
 .connect-root .pill-btn{padding:0 10px;font-size:9px;height:26px;min-height:26px}
 .connect-root .starz-progress,.connect-root .starz-time-out,.connect-root .cc-icon{height:26px}
 .connect-root .starz-time-out{display:none}
-.connect-root .details-panel.under-player{width:calc(100% - 24px)!important;margin:14px 12px 0 12px!important;border-radius:14px!important}
-.connect-root .similar-slot{padding:0 12px}
+.connect-root .details-panel.under-player{
+  width:calc(100% - 24px)!important;
+  margin:14px 12px 0 12px!important;
+  border-radius:14px!important;
+  background:hsl(var(--surface))!important;
+  border:1px solid hsl(var(--border))!important
+}
+.connect-root .similar-slot{
+  padding:0 12px;
+  background:hsl(var(--bg))!important;
+  border:none!important
+}
 .connect-root .action-pills-row,.connect-root .vol-vertical{display:none!important}
 .connect-root .fullscreen-logo.top-right{top:8px!important;right:8px!important;max-width:36px!important;max-height:36px!important}
 .connect-root .fullscreen-logo.top-right img{max-width:32px!important;max-height:32px!important;width:32px!important}
 }
+
 
 /* FULLSCREEN - SCOPED ONLY */
 .connect-root.is-shell-full{position:fixed!important;inset:0!important;width:100vw!important;height:100dvh!important;z-index:2147483647!important;background:#000!important;padding:0!important;margin:0!important;max-width:100vw!important}
@@ -934,4 +974,125 @@ html.is-fullscreen-active .google-shell,
   max-height: none !important;
   margin: 0 !important;
   aspect-ratio: auto !important;
+}
+
+
+
+
+
+/* OVERRIDE MOBILE BLACK GAP - PASTE AT VERY BOTTOM - PC STAYS SAME */
+@media(max-width:768px){
+  .connect-root{
+    background: hsl(var(--bg)) !important;
+    padding: 0 !important;
+    margin: 0 auto !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    border: none !important;
+    border-radius: 0 !important;
+  }
+
+  /* ONLY video stays black - like YouTube */
+  .connect-root .film-giant.inner-body,
+  .connect-root .film-center,
+  .connect-root .center-cover,
+  .connect-root .connect-video,
+  .connect-root .connect-poster{
+    background: #000 !important;
+    border-radius: 0 !important;
+    border: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Everything below video = page bg, no gap */
+  .connect-root .connect-under-section{
+    background: hsl(var(--bg)) !important;
+    margin: 0 auto !important;
+    padding: 14px 16px 0 16px !important;
+    border: none !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  .connect-root .connect-desc-block,
+  .connect-root .c-desc-wrap,
+  .connect-root .c-title,
+  .connect-root .c-meta-row{
+    background: transparent !important;
+    border: none !important;
+    margin-bottom: 0 !important;
+  }
+
+  .connect-root .details-panel.under-player{
+    background: hsl(var(--surface)) !important;
+    border: 1px solid hsl(var(--border)) !important;
+    width: calc(100% - 24px) !important;
+    margin: 14px 12px 0 12px !important;
+  }
+
+  /* KILL GAP BETWEEN DESC AND MORE ADVENTURE */
+  .connect-root .similar-slot,
+  .connect-root .latest-root,
+  .connect-root .sim-root,
+  .latest-root,
+  .sim-root{
+    background: hsl(var(--bg)) !important;
+    border: none !important;
+    border-top: none !important;
+    box-shadow: none !important;
+    margin-top: 0 !important;
+    padding-top: 12px !important;
+    padding-bottom: 2px !important;
+    width: 100% !important;
+  }
+
+  .latest-head,
+  .sim-head{
+    background: hsl(var(--bg)) !important;
+    border: none !important;
+    margin-bottom: 6px !important;
+  }
+
+  .latest-track,
+  .sim-track,
+  .latest-track-wrap,
+  .sim-track-wrap{
+    background: transparent !important;
+    border: none !important;
+  }
+
+  /* Kill any hr/divider */
+  hr, .divider, .section-divider, .connect-root hr{
+    display: none !important;
+    height: 0 !important;
+    border: none !important;
+  }
+}
+
+
+
+/* NO BLACK LINE BETWEEN SIMILAR AND FOOTER */
+.similar-movies,
+.latest-root,
+.sim-root,
+.similar-slot{
+  background: hsl(var(--bg)) !important;
+  border: none !important;
+  border-bottom: none !important;
+  box-shadow: none !important;
+  padding-bottom: 24px !important; /* breathing space */
+  margin-bottom: 0 !important;
+}
+
+.footer-free,
+.footer-root,
+footer{
+  background: hsl(var(--bg)) !important;
+  border: none !important;
+  border-top: none !important; /* <-- this was your black line */
+  box-shadow: none !important;
+  margin-top: 0 !important;
+  padding-top: 12px !important; /* breathing space */
+  padding-bottom: 48px !important;
 }
