@@ -248,6 +248,20 @@ export default function TopBar() {
     pathname === "/" ||
     pathname === "/dashboard";
 
+
+
+     // FIX: When any genre/see-all/vj/actor sets query, open drawer instantly
+useEffect(() => {
+  if (globalQuery && globalQuery.trim().length >= 1) {
+    if (isMobile) {
+      setDrawerMode("search")
+      setWaOpen(true)
+    } else {
+      openSearch() // PC
+    }
+  }
+}, [globalQuery, isMobile])
+
   /* =======================================================
      MOBILE / DESKTOP DETECTION
      ======================================================= */
@@ -853,8 +867,11 @@ export default function TopBar() {
     isAdminUser(user);
 
   
-  const isIslandActive =
-    globalQuery?.length > 1;
+  const isIslandActive = globalQuery?.length >= 1; 
+
+
+ 
+
 
   /* =======================================================
      TOP BAR

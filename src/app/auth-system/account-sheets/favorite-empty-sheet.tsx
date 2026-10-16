@@ -72,4 +72,3 @@ export default function FavoriteEmptySheet({ onBrowse }: Props) {
     </div>
   );
 }
-

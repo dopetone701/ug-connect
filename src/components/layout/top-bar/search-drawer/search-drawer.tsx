@@ -2,6 +2,7 @@
 import { useMemo, useState } from "react";
 import { useGlobalSearch } from "../../../../stores/use-global-search";
 import { useFadersDrawer } from "../../../../stores/use-faders-drawer";
+import { useMovieStore } from "../../../../stores/use-movie-store";
 import MovieCard from "../../../../app/(dashboard)/movies/_components/movie-card";
 import FadersDrawer from "../faders-drawer/faders-drawer";
 import "./search-drawer.css";
@@ -13,12 +14,20 @@ const getYear = (m: any) => {
   const raw = m.year || m.releaseYear || m.release_year || m.Year || m.release_date || m.created_at;
   if (!raw) return 0;
   const y = Number(String(raw).slice(0, 4));
-  return isNaN(y)? 0 : y;
+  return isNaN(y) ? 0 : y;
+};
+
+const getDate = (m: any) => {
+  const raw = m.created_at || m.createdAt || m.release_date || m.year;
+  if (!raw) return 0;
+  const d = new Date(raw).getTime();
+  return isNaN(d) ? getYear(m) : d;
 };
 
 export default function SearchDrawer() {
   const { allMovies, query } = useGlobalSearch() as any;
-  const { filterType, filterValue, timeRange, showFilterRow, select, selectTime, clear, selectGenre } = useFadersDrawer() as any;
+  const { filterType, filterValue, timeRange, showFilterRow, select, selectTime, selectGenre } = useFadersDrawer() as any;
+  const { lists, recentIds, favIds, watchLaterIds } = useMovieStore() as any;
   const [zoomed, setZoomed] = useState<any>(null);
 
   const allGenres = useMemo(() => {
@@ -54,6 +63,12 @@ export default function SearchDrawer() {
     return { allTimeRanges: all };
   }, [allMovies]);
 
+  // detect if current chamber is continue watching
+  const isContinueChamber = useMemo(() => {
+    const q = String(query||"").toLowerCase().trim();
+    return q.includes("continue watching") || q.includes("watch history") || q.includes("continue") && q.includes("watch") || q === "history" || q === "continue" || q === "continue watching" || q === "watch history";
+  }, [query]);
+
   const data = useMemo(() => {
     let list: any[] = allMovies || [];
     const q = String(query||"").toLowerCase().trim();
@@ -81,13 +96,61 @@ export default function SearchDrawer() {
       list = withYear;
     } else if (q.length >= 1){
       const qClean = q.replace(/\s*movies\s*$/,"").trim();
-      const words = qClean.split(" ").filter((w: any)=>w.length>=1);
-      list = list.filter((m: any)=>{
-        const hay = `${m.title||""} ${m.genre||""} ${m.vj||""} ${m.actors||""} ${getYear(m)}`.toLowerCase();
-        if(hay.includes(q)) return true;
-        if(words.length>1 && words.every((w: string)=>hay.includes(w))) return true;
-        return hay.includes(qClean);
-      });
+
+      const isTv = q.includes("tv series") || qClean === "tv" || qClean === "full" || qClean === "series" || q === "tv series";
+      const isMini = q.includes("mini series") || qClean === "mini" || q === "mini series";
+      const isLatest = q.includes("latest") || qClean === "latest";
+      const isMyList = q.includes("my list") || qClean === "my list" || qClean === "mylist" || q === "my-list";
+      const isContinue = q.includes("continue watching") || q.includes("watch history") || q.includes("continue") || q.includes("history") || qClean === "watch history" || qClean === "continue watching" || qClean === "history";
+      const isLiked = q.includes("liked") || qClean === "liked";
+      const isWatchLater = q.includes("watch later") || qClean === "watch later";
+
+      if (isMyList) {
+        const mainList = lists?.[0];
+        const ids: string[] = mainList?.movieIds?.map((x:any)=>String(x)) || [];
+        if (ids.length) {
+          list = list.filter((m:any)=> ids.includes(String(m.id)));
+        } else {
+          list = [];
+        }
+      } else if (isContinue) {
+        const ids: string[] = (recentIds || []).map((x:any)=>String(x));
+        if (ids.length) {
+          const seen = new Set<string>();
+          const ordered: any[] = [];
+          ids.forEach((id: string) => {
+            if (seen.has(id)) return;
+            seen.add(id);
+            const movie = allMovies.find((m:any) => String(m.id) === id);
+            if (movie) ordered.push(movie);
+          });
+          list = ordered.length ? ordered : list.filter((m:any)=> ids.includes(String(m.id)));
+        } else {
+          list = [];
+        }
+      } else if (isLiked) {
+        const ids: string[] = (favIds || []).map((x:any)=>String(x));
+        list = ids.length ? list.filter((m:any)=> ids.includes(String(m.id))) : [];
+      } else if (isWatchLater) {
+        const ids: string[] = (watchLaterIds || []).map((x:any)=>String(x));
+        const watchLaterList = lists?.find((l:any)=> l.id === "watch-later");
+        const allIds = ids.length ? ids : (watchLaterList?.movieIds?.map((x:any)=>String(x)) || []);
+        list = allIds.length ? list.filter((m:any)=> allIds.includes(String(m.id))) : [];
+      } else if (isLatest) {
+        list = [...list].sort((a:any,b:any)=> getDate(b) - getDate(a)).slice(0, 100);
+      } else if (isTv) {
+        list = list.filter((m:any) => String(m.type||"").toLowerCase() === "full");
+      } else if (isMini) {
+        list = list.filter((m:any) => String(m.type||"").toLowerCase() === "mini");
+      } else {
+        const words = qClean.split(" ").filter((w: any)=>w.length>=1);
+        list = list.filter((m: any)=>{
+          const hay = `${m.title||""} ${m.genre||""} ${m.vj||""} ${m.actors||""} ${m.type||""} ${getYear(m)}`.toLowerCase();
+          if(hay.includes(q)) return true;
+          if(words.length>1 && words.every((w: string)=>hay.includes(w))) return true;
+          return hay.includes(qClean);
+        });
+      }
     }
 
     if(filterType&&filterValue){
@@ -97,7 +160,7 @@ export default function SearchDrawer() {
       if(filterType==="time"&&timeRange) list = list.filter((m: any)=>{ const y=getYear(m); if(timeRange.end===9999) return y>=timeRange.start; return y>=timeRange.start&&y<timeRange.end; });
     }
     return list;
-  }, [allMovies, query, filterType, filterValue, timeRange]);
+  }, [allMovies, query, filterType, filterValue, timeRange, lists, recentIds, favIds, watchLaterIds]);
 
   const chipConfig = useMemo(() => {
     if(filterType==="vj") return { list: allVjs, title: "VJ", action: (v:string)=>select("vj",v) };
@@ -132,27 +195,22 @@ export default function SearchDrawer() {
       {isYearMode? (
         <>
           <div className="year-section-label">From {targetYear}</div>
-
-          {!exactExists && (
-            <div className="year-no-data">No movie available for {targetYear} — showing closest from {targetYear} to {targetYear+5}</div>
-          )}
-
+          {!exactExists && <div className="year-no-data">No movie available for {targetYear} — showing closest from {targetYear} to {targetYear+5}</div>}
           <div className="search-3col-grid">
             {fromList.map((m:any)=>(
               <div key={m.id} className="search-small-wrap" onClick={()=>setZoomed(m)}>
-                <MovieCard m={m} />
+                <MovieCard m={m} isContinueRow={isContinueChamber} />
                 <div className="card-year-label">{m._year}</div>
               </div>
             ))}
           </div>
-
           {beforeList.length>0 && (
             <>
               <div className="year-section-label">Before {targetYear}</div>
               <div className="search-3col-grid">
                 {beforeList.map((m:any)=>(
                   <div key={m.id} className="search-small-wrap" onClick={()=>setZoomed(m)}>
-                    <MovieCard m={m} />
+                    <MovieCard m={m} isContinueRow={isContinueChamber} />
                     <div className="card-year-label">{m._year}</div>
                   </div>
                 ))}
@@ -164,17 +222,17 @@ export default function SearchDrawer() {
         <div className="search-3col-grid">
           {data.map((m:any)=>(
             <div key={m.id} className="search-small-wrap" onClick={()=>setZoomed(m)}>
-              <MovieCard m={m} />
+              <MovieCard m={m as any} isContinueRow={isContinueChamber} />
             </div>
           ))}
         </div>
       )}
 
-      {data.length===0&&<div style={{padding:"40px 20px",textAlign:"center",opacity:0.5}}>No movies for {filterValue || query}</div>}
+      {data.length===0&&<div style={{padding:"40px 20px",textAlign:"center",opacity:0.5}}>No movies for {filterValue || query}{String(query).toLowerCase().includes("my list") ? " — your list is empty" : ""}{String(query).toLowerCase().includes("continue") || String(query).toLowerCase().includes("history") ? " — no watch history yet" : ""}</div>}
 
       {zoomed&&(
         <div className="search-zoom-overlay" onClick={()=>setZoomed(null)}>
-          <div className="search-zoom-card" onClick={(e)=>e.stopPropagation()}><MovieCard m={zoomed} /><div className="card-year-label" style={{marginTop:8}}>{getYear(zoomed)}</div></div>
+          <div className="search-zoom-card" onClick={(e)=>e.stopPropagation()}><MovieCard m={zoomed} isContinueRow={isContinueChamber} /><div className="card-year-label" style={{marginTop:8}}>{getYear(zoomed)}</div></div>
         </div>
       )}
 
@@ -184,3 +242,4 @@ export default function SearchDrawer() {
     </div>
   );
 }
+

@@ -11,6 +11,7 @@ import AppTipsIcon from "@/modal-generator/svg-icons/app-tips-icon";
 import { useGlobalCast } from "@/stores/use-global-cast";
 import SubscriptionIcon from "@/modal-generator/svg-icons/subscription-icon";
 import { useSideSheet } from "@/stores/use-side-sheet";
+import { useGlobalSearch } from "@/stores/use-global-search";
 
 const ADMIN_EMAIL = "connectu89@gmail.com";
 const customOrder = ['cast', 'lists', 'privacy', 'account', 'tips', 'subscription', 'invite', 'control-center'];
@@ -64,6 +65,35 @@ export default function SideBar({ onOpen }: { onOpen?: (id: string) => void }) {
     };
   }, []);
 
+  // SINGLE GOAT LOGIC: SEE ALL clicked -> close sidebar/account instantly AND open search bar
+  useEffect(() => {
+    const closeAndOpenSearch = () => {
+      // 1. CLOSE instantly
+      try { openSideSheet(null as any); } catch {}
+      window.dispatchEvent(new CustomEvent("ug-close-menu-panel"));
+      window.dispatchEvent(new CustomEvent("ug-close-account-sheet"));
+      window.dispatchEvent(new CustomEvent("ug-close-sheet"));
+      window.dispatchEvent(new CustomEvent("ug-close-cast"));
+      document.documentElement.classList.remove("is-sheet-open");
+
+      // 2. OPEN search bar normally (after close)
+      setTimeout(() => {
+        try {
+          const gs = (useGlobalSearch as any).getState?.();
+          gs?.openSearch?.();
+          gs?.setOpen?.(true);
+          gs?.setIsOpen?.(true);
+        } catch {}
+        // also trigger top-bar listeners
+        window.dispatchEvent(new CustomEvent("ug-open-search-bar"));
+        window.dispatchEvent(new CustomEvent("ug-open-search"));
+      }, 30);
+    };
+
+    window.addEventListener("ug-open-search-panel" as any, closeAndOpenSearch);
+    return () => window.removeEventListener("ug-open-search-panel" as any, closeAndOpenSearch);
+  }, [openSideSheet]);
+
   const sortedItems = [...SIDEBAR_ITEMS.filter((i: any) => {
     if ((i as any).admin) return isAdmin;
     return true;
@@ -79,12 +109,7 @@ export default function SideBar({ onOpen }: { onOpen?: (id: string) => void }) {
    const handleItemClick = (id: string) => {
     const isDesktop = typeof window !== "undefined" && window.innerWidth >= 1024;
     if (isDesktop) {
-      // toggle off if same selected
-      if (activeSheet === id) {
-        // optional: keep selected or close? close returns to movies
-        // openSideSheet(null) would close
-        return;
-      }
+      if (activeSheet === id) return;
       openSideSheet(id as any);
       return;
     }
@@ -120,10 +145,10 @@ export default function SideBar({ onOpen }: { onOpen?: (id: string) => void }) {
         {sortedItems.map((i) => {
           const isSelected = activeSheet === i.id;
           return (
-            <button 
-              key={i.id} 
-              onClick={() => handleItemClick(i.id)} 
-              className={`nav-item as-btn ${isSelected ? 'is-active' : ''}`} 
+            <button
+              key={i.id}
+              onClick={() => handleItemClick(i.id)}
+              className={`nav-item as-btn ${isSelected ? 'is-active' : ''}`}
               style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', position: 'relative' }}
             >
               <span className="nav-left" style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>

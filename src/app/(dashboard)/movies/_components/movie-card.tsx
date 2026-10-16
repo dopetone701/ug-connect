@@ -10,9 +10,11 @@ import { useReelsDrawer } from "@/stores/use-reels-drawer"
 export default function MovieCard({
   m,
   allMovies,
+  isContinueRow = false,
 }: {
   m: Movie
   allMovies?: Movie[]
+  isContinueRow?: boolean
 }) {
   const router = useRouter()
   const { addRecent } = useMovieStore()
@@ -115,26 +117,11 @@ export default function MovieCard({
   return true
 })()
 
-
-    /*
-     * DESKTOP
-     * Both PLAY and PRE use the Connect player page.
-     *
-     * PRE:
-     * /movies/watch/[id]?t=preview
-     *
-     * PLAY:
-     * /movies/watch/[id]?t=full
-     */
     if (isDesktop) {
       router.push(`/movies/watch/${id}?t=${type}`)
       return
     }
 
-    /*
-     * MOBILE
-     * PRE uses the Reels drawer.
-     */
     if (type === "preview") {
       const rawList =
         allMovies && allMovies.length
@@ -155,10 +142,6 @@ export default function MovieCard({
       return
     }
 
-    /*
-     * MOBILE
-     * PLAY uses the Watch drawer.
-     */
     openDrawer(id)
   }
 
@@ -204,7 +187,7 @@ export default function MovieCard({
             className="l-a-btn play on"
             onClick={openYT}
           >
-            PLAY
+            {isContinueRow ? "RESUME" : "PLAY"}
           </button>
 
           <button
@@ -218,4 +201,7 @@ export default function MovieCard({
       </div>
     </div>
   )
+
+
+
 }

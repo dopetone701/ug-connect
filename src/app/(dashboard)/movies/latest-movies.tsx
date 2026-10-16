@@ -4,19 +4,27 @@ import { useRouter } from "next/navigation";
 import "./latest-movies.css";
 import { useGlobalSearch } from "@/stores/use-global-search";
 
-type Movie = { 
-  id:number; 
-  title:string; 
-  genre:string; 
-  vj:string; 
-  cover:string; 
-  cover_url?:string; 
-  desc:string; 
-  video:string; 
-  video_url?:string; 
-  preview:string[]; 
-  preview_urls?:string[]; 
+type Movie = {
+  id:number;
+  title:string;
+  genre:string;
+  vj:string;
+  cover:string;
+  cover_url?:string;
+  desc:string;
+  video:string;
+  video_url?:string;
+  preview:string[];
+  preview_urls?:string[];
 };
+
+function isMobileDevice() {
+  if (typeof window === "undefined") return true;
+  const ua = navigator.userAgent || "";
+  if (/iPhone|iPod|Android.*Mobile|Windows Phone/i.test(ua)) return true;
+  if (typeof navigator !== "undefined" && (navigator as any).maxTouchPoints > 0 && window.innerWidth <= 1024) return true;
+  return false;
+}
 
 export default function LatestMovies({ movies = [] }: { movies?: Movie[] }) {
   const trackRef = useRef<HTMLDivElement>(null);
@@ -113,8 +121,28 @@ export default function LatestMovies({ movies = [] }: { movies?: Movie[] }) {
   if (!movies.length) return null;
 
   const handleSeeAll = () => {
-    useGlobalSearch.getState().setQuery("latest movies")
-  }
+    const clean = "latest movies";
+    const mobile = isMobileDevice();
+
+    const gs = useGlobalSearch.getState() as any;
+    gs.setQuery(clean);
+    gs.setSection?.(clean);
+    gs.openSearch?.();
+    gs.setOpen?.(true);
+    gs.setIsOpen?.(true);
+
+    // GOAT TRICK: mobile = drawer only, no PC sneak
+    if (mobile) {
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent("ug-open-search-panel"));
+      }
+      return;
+    }
+
+    // desktop only
+    const param = encodeURIComponent(clean);
+    router.push(`/search?q=${param}&filter=${param}&section=${param}`);
+  };
 
   const openMovie = (m: Movie, t: "full" | "preview") => {
     if (isDraggingRef.current) return;
@@ -124,7 +152,7 @@ export default function LatestMovies({ movies = [] }: { movies?: Movie[] }) {
   return (
     <div className="latest-root">
       <div className="latest-head">
-        <h3 className="latest-title" onClick={handleSeeAll}>latest movies</h3>
+        <h3 className="latest-title" onClick={handleSeeAll} style={{cursor:"pointer"}}>latest movies</h3>
         <button className="latest-see" onClick={handleSeeAll}>SEE ALL</button>
       </div>
 
