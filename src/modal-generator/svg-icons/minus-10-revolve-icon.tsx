@@ -1,25 +1,20 @@
 
 "use client";
 
-import React, { useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef } from "react";
 
 export default function Reverse10Icon() {
-  const [rotating, setRotating] = useState(false);
+  const arrowRef = useRef<SVGGElement | null>(null);
   const frameRef = useRef<number | null>(null);
+  const rotatingRef = useRef(false);
 
-  const handleClick = () => {
-    if (rotating) return;
+  const handleClick = useCallback(() => {
+    if (rotatingRef.current) return;
 
-    setRotating(true);
+    const arrow = arrowRef.current;
+    if (!arrow) return;
 
-    const arrow = document.querySelector(
-      ".replay-icon .replay-arrow"
-    );
-
-    if (!(arrow instanceof SVGGElement)) {
-      setRotating(false);
-      return;
-    }
+    rotatingRef.current = true;
 
     const duration = 600;
     const pivotX = 50;
@@ -27,7 +22,11 @@ export default function Reverse10Icon() {
     const startTime = performance.now();
 
     const spin = (now: number) => {
-      const progress = Math.min((now - startTime) / duration, 1);
+      const progress = Math.min(
+        (now - startTime) / duration,
+        1
+      );
+
       const angle = -360 * progress;
 
       arrow.setAttribute(
@@ -40,11 +39,31 @@ export default function Reverse10Icon() {
       } else {
         arrow.removeAttribute("transform");
         frameRef.current = null;
-        setRotating(false);
+        rotatingRef.current = false;
       }
     };
 
     frameRef.current = requestAnimationFrame(spin);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (frameRef.current !== null) {
+        cancelAnimationFrame(frameRef.current);
+      }
+    };
+  }, []);
+
+  const handleKeyDown = (
+    event: React.KeyboardEvent<SVGSVGElement>
+  ) => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+
+      if (!event.repeat) {
+        handleClick();
+      }
+    }
   };
 
   return (
@@ -59,22 +78,18 @@ export default function Reverse10Icon() {
       role="button"
       tabIndex={0}
       onClick={handleClick}
-      onKeyDown={(event) => {
-        if (event.key === "Enter" || event.key === " ") {
-          event.preventDefault();
-          handleClick();
-        }
-      }}
+      onKeyDown={handleKeyDown}
       style={{
         cursor: "pointer",
         userSelect: "none",
         WebkitUserSelect: "none",
         WebkitTapHighlightColor: "transparent",
         touchAction: "manipulation",
+        outline: "none",
       }}
     >
-      {/* Rotating arrow — pivot aligned with the center of 10 */}
-      <g className="replay-arrow">
+      {/* Rotating arrow */}
+      <g ref={arrowRef} className="replay-arrow">
         <path
           d="M27 28
              C18 35 13 45 13 56
