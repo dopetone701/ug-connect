@@ -3,7 +3,8 @@ import { useEffect, useRef, useState } from "react";
 import { attachNoonScroll } from "./noon-scroll";
 import "./genre-filter.css";
 
-const GENRES = [
+// SINGLE SOURCE OF TRUTH - export this
+export const GENRES = [
   { id: "all", label: "All", img: "/genre-filter-images/rango-all.PNG", fallback: "A" },
   { id: "action", label: "Action", img: "/genre-filter-images/action.JPG" },
   { id: "adventure", label: "Adventure", img: "/genre-filter-images/adventure.JPG" },
@@ -28,6 +29,20 @@ const GENRES = [
   { id: "war", label: "War", img: "/genre-filter-images/war.WEBP" },
 ];
 
+// export image map for others to import
+export const GENRE_IMAGE_MAP: Record<string, string> = GENRES.reduce((acc: any, g) => {
+  acc[g.id] = g.img;
+  acc[g.label.toLowerCase()] = g.img;
+  return acc;
+}, {} as Record<string, string>);
+
+// extra aliases for legacy
+GENRE_IMAGE_MAP["rango-all"] = "/genre-filter-images/rango-all.PNG";
+GENRE_IMAGE_MAP["scify"] = "/genre-filter-images/scify.PNG";
+GENRE_IMAGE_MAP["sci-fi"] = "/genre-filter-images/scify.PNG";
+GENRE_IMAGE_MAP["animation"] = "/genre-filter-images/animations.jpg";
+GENRE_IMAGE_MAP["romance"] = "/genre-filter-images/romantic.PNG";
+
 type Props = {
   onSelect?: (genre: string) => void;
 };
@@ -44,7 +59,6 @@ export default function GenreFilter({ onSelect }: Props) {
 
   const handleClick = (id: string) => {
     setActive(id);
-    // "all" clears, others become "action movies" in parent
     onSelect?.(id);
   };
 
