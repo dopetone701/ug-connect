@@ -7,10 +7,18 @@ export type UserList = {
   movieIds: any[]
 }
 
+export type WatchProgress = {
+  time: number
+  duration: number
+  percent: number
+  updatedAt: number
+}
+
 type MovieStore = {
   favIds: any[]
   recentIds: any[]
   lists: UserList[]
+  watchProgress: Record<string, WatchProgress>
   hydrated: boolean
   currentUserId: string
   _hydrate: () => void
@@ -22,6 +30,9 @@ type MovieStore = {
   toggleListMovie: (listId: string, movieId: any) => void
   addToMyList: (movieId: any) => void
   removeFromMyList: (movieId: any) => void
+  saveProgress: (movieId: any, time: number, duration: number) => void
+  getProgress: (movieId: any) => WatchProgress | null
+  clearProgress: (movieId: any) => void
   clearOnLogout: () => void
   mergeGuestIntoUser: (realUserId: string) => void
 }
@@ -29,6 +40,7 @@ type MovieStore = {
 const BASE_FAV = "ug-fav-ids"
 const BASE_RECENT = "ug-recent-ids"
 const BASE_LISTS = "ug-lists"
+const BASE_PROGRESS = "ug-watch-progress"
 
 function getUserId(): string {
   try{
@@ -61,6 +73,7 @@ export const useMovieStore = create<MovieStore>((set, get) => ({
   favIds: [],
   recentIds: [],
   lists: [{ id: "my-list", name: "My List", movieIds: [] }],
+  watchProgress: {},
   hydrated: false,
   currentUserId: "guest",
 
@@ -69,28 +82,25 @@ export const useMovieStore = create<MovieStore>((set, get) => ({
     const fav = readLS<any[]>(lsKey(BASE_FAV, uid), [])
     const recent = readLS<any[]>(lsKey(BASE_RECENT, uid), [])
     let lists = readLS<UserList[]>(lsKey(BASE_LISTS, uid), [])
+    const progress = readLS<Record<string, WatchProgress>>(lsKey(BASE_PROGRESS, uid), {})
 
-    // If new user and we have guest data, merge guest into him
     if(uid!=="guest"){
       const gFav = readLS<any[]>(lsKey(BASE_FAV, "guest"), [])
       const gRecent = readLS<any[]>(lsKey(BASE_RECENT, "guest"), [])
       const gLists = readLS<UserList[]>(lsKey(BASE_LISTS, "guest"), [])
+      const gProgress = readLS<Record<string, WatchProgress>>(lsKey(BASE_PROGRESS, "guest"), {})
 
-      // merge favs
       const mergedFav = [...new Set([...fav, ...gFav])]
-      // merge recent - guest recent first
       const mergedRecent = [...new Set([...gRecent, ...recent])].slice(0,20)
-      // merge lists
+      const mergedProgress = {...gProgress, ...progress}
       let mergedLists = lists
       if(lists.length===0 && gLists.length>0){
         mergedLists = gLists
       } else if(gLists.length>0){
-        // merge movieIds into my-list
         const my = lists.find(l=>l.id==="my-list")
         const gMy = gLists.find(l=>l.id==="my-list")
         if(my && gMy){
           mergedLists = lists.map(l=> l.id==="my-list"? {...l, movieIds:[...new Set([...gMy.movieIds, ...l.movieIds])]} : l)
-          // add custom guest lists that don't exist
           gLists.filter(l=>l.id!=="my-list").forEach(gl=>{
             if(!mergedLists.find(x=>x.name===gl.name)) mergedLists.push(gl)
           })
@@ -98,20 +108,20 @@ export const useMovieStore = create<MovieStore>((set, get) => ({
       }
       if(mergedLists.length===0) mergedLists=[{id:"my-list", name:"My List", movieIds:[]}]
 
-      set({ favIds: mergedFav, recentIds: mergedRecent, lists: mergedLists, hydrated:true, currentUserId:uid })
-      // save merged back to real user keys and clear guest
+      set({ favIds: mergedFav, recentIds: mergedRecent, lists: mergedLists, watchProgress: mergedProgress, hydrated:true, currentUserId:uid })
       writeLS(lsKey(BASE_FAV, uid), mergedFav)
       writeLS(lsKey(BASE_RECENT, uid), mergedRecent)
       writeLS(lsKey(BASE_LISTS, uid), mergedLists)
-      // clear guest after merge
+      writeLS(lsKey(BASE_PROGRESS, uid), mergedProgress)
       localStorage.removeItem(lsKey(BASE_FAV, "guest"))
       localStorage.removeItem(lsKey(BASE_RECENT, "guest"))
       localStorage.removeItem(lsKey(BASE_LISTS, "guest"))
+      localStorage.removeItem(lsKey(BASE_PROGRESS, "guest"))
       return
     }
 
     if(lists.length===0) lists=[{id:"my-list", name:"My List", movieIds:[]}]
-    set({ favIds: fav, recentIds: recent, lists, hydrated:true, currentUserId:uid })
+    set({ favIds: fav, recentIds: recent, lists, watchProgress: progress, hydrated:true, currentUserId:uid })
   },
 
   toggleFav: (id) => set((s)=>{
@@ -126,6 +136,45 @@ export const useMovieStore = create<MovieStore>((set, get) => ({
     const next = [id, ...s.recentIds.filter(x=>String(x)!==String(id))].slice(0,20)
     writeLS(lsKey(BASE_RECENT, uid), next)
     return { recentIds: next, currentUserId:uid }
+  }),
+
+  saveProgress: (movieId, time, duration) => set((s)=>{
+    const uid = getUserId()
+    const id = String(movieId)
+    if(!time || time < 2) return s
+    if(!duration || duration < 5) return s
+    const percent = Math.min(100, (time / duration) * 100)
+    if(percent < 1) return s
+
+    // If fully watched >95% → keep 100% but will be treated as completed
+    const finalPercent = percent >= 95 ? 100 : percent
+
+    const next = {
+      ...s.watchProgress,
+      [id]: { time, duration, percent: finalPercent, updatedAt: Date.now() }
+    }
+    writeLS(lsKey(BASE_PROGRESS, uid), next)
+
+    // Keep in recent for ordering
+    const nextRecent = [id, ...s.recentIds.filter(x=>String(x)!==String(id))].slice(0,20)
+    writeLS(lsKey(BASE_RECENT, uid), nextRecent)
+
+    return { watchProgress: next, recentIds: nextRecent, currentUserId:uid }
+  }),
+
+  getProgress: (movieId) => {
+    const s = get()
+    return s.watchProgress[String(movieId)] || null
+  },
+
+  clearProgress: (movieId) => set((s)=>{
+    const uid = getUserId()
+    const id = String(movieId)
+    const next = {...s.watchProgress}
+    delete next[id]
+    writeLS(lsKey(BASE_PROGRESS, uid), next)
+    // Keep in recent but progress cleared
+    return { watchProgress: next, currentUserId:uid }
   }),
 
   createList: (name) => set((s)=>{
@@ -177,24 +226,23 @@ export const useMovieStore = create<MovieStore>((set, get) => ({
 
   clearOnLogout: () => set((s)=>{
     const uid = getUserId()
-    // clear current user storage instantly
     localStorage.removeItem(lsKey(BASE_FAV, uid))
     localStorage.removeItem(lsKey(BASE_RECENT, uid))
     localStorage.removeItem(lsKey(BASE_LISTS, uid))
-    // also clear guest
+    localStorage.removeItem(lsKey(BASE_PROGRESS, uid))
     localStorage.removeItem(lsKey(BASE_FAV, "guest"))
     localStorage.removeItem(lsKey(BASE_RECENT, "guest"))
     localStorage.removeItem(lsKey(BASE_LISTS, "guest"))
+    localStorage.removeItem(lsKey(BASE_PROGRESS, "guest"))
     localStorage.removeItem("ug-all-movies")
-    return { favIds:[], recentIds:[], lists:[{id:"my-list", name:"My List", movieIds:[]}], hydrated:true, currentUserId:"guest" }
+    return { favIds:[], recentIds:[], lists:[{id:"my-list", name:"My List", movieIds:[]}], watchProgress:{}, hydrated:true, currentUserId:"guest" }
   }),
 
-  mergeGuestIntoUser: (realUserId) => {
-    get()._hydrate() // will auto merge
-  }
+  mergeGuestIntoUser: (realUserId) => { get()._hydrate() }
 }))
 
 if(typeof window!=="undefined"){
   setTimeout(()=>{ const s=useMovieStore.getState(); if(!s.hydrated) s._hydrate() }, 0)
   window.addEventListener("ug-auth-changed", ()=> useMovieStore.getState()._hydrate())
 }
+

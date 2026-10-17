@@ -19,6 +19,7 @@ import { useReelsDrawer } from "@/stores/use-reels-drawer"
 import FooterFree from "@/components/layout/curvy-pro-room/get-started-email/footer/footer"
 import { useVideoSettingsDrawer } from "@/stores/use-video-settings-drawer";
 import { useMiniPlayerFloating } from "../../_components/vid-actions/mini-player-floating-logic";
+import { useMovieStore } from "@/stores/use-movie-store";
 
 
 const API_URL = "https://movie-server-api.connectu89.workers.dev/api/movies"
@@ -136,13 +137,21 @@ const handleBack = useCallback(() => {
 
   if (isMobile) {
     const video = videoRef.current;
-    try {
+       try {
       if (video && effectiveId) {
+        const t = video.currentTime
+        const d = video.duration || 0
+        const pct = d ? (t / d) * 100 : 0
+        // per-user true progress
+        if (t > 2 && d > 5) {
+          try { useMovieStore.getState().saveProgress(effectiveId, t, d) } catch {}
+        }
         sessionStorage.setItem(`continue_${effectiveId}`, JSON.stringify({
-          time: video.currentTime, playing: !video.paused, type: isPreview ? "preview" : "full",
+          time: t, duration: d, percent: pct, playing: !video.paused, type: isPreview ? "preview" : "full",
         }))
       }
     } catch {}
+
     if (effectiveId) {
       store.openDrawer(String(effectiveId), isPreview ? "preview" : "full");
       store.minimize();
@@ -426,9 +435,16 @@ const [autoPlayOn, setAutoPlayOn] = useState(true)
 const goToEp = (ep:any) => { if(isOverlay){ setOverlayEpId(String(ep.id)) } else{ router.push(`${pathname}?t=full&ep=${ep.id}`) } }
 
 const handleEnded = () => {
+  try{
+    const v = videoRef.current
+    if(v && v.duration > 5){
+      useMovieStore.getState().saveProgress(effectiveId, v.duration, v.duration) // 100% for replay icon
+    }
+  }catch{}
   if (!autoPlayOn) return; if (!isSeries) return;
   const next = allEps[currentEpisodeIndex + 1]; if (next) goToEp(next);
 };
+
 
 const onNextEpisode = () => { const next = allEps[currentEpisodeIndex + 1]; if(next) goToEp(next) }
 const onPrevEpisode = () => { const prev = allEps[currentEpisodeIndex - 1]; if(prev) goToEp(prev) }
@@ -509,21 +525,46 @@ useEffect(() => { setSharedSelectedQuality(quality); }, [quality, setSharedSelec
               onLoadStart={()=>setIsLoading(true)} onWaiting={()=>setIsLoading(true)} onCanPlay={()=>setIsLoading(false)}
               onPlaying={()=>{ setIsLoading(false); setPlaying(true); setHasStarted(true) }}
               onPause={()=>setPlaying(false)}
-              onTimeUpdate={(e)=>{
+                           onTimeUpdate={(e)=>{
                 const v=e.currentTarget; setCurrentTime(v.currentTime); lastTimeRef.current=v.currentTime
-                if(v.duration){ setProgress((v.currentTime/v.duration)*100); setDuration(v.duration) }
+                if(v.duration){ 
+                  const pct = (v.currentTime/v.duration)*100
+                  setProgress(pct); setDuration(v.duration)
+                  // CLEAN: save per-user with duration for true bar dynamics
+                  if(v.currentTime > 2 && v.duration > 5){
+                    try { useMovieStore.getState().saveProgress(effectiveId, v.currentTime, v.duration) } catch {}
+                  }
+                }
                 updateBufferedProgress()
-                try{ sessionStorage.setItem(`continue_${effectiveId}`, JSON.stringify({ time:v.currentTime, playing:!v.paused, type:isPreview?"preview":"full" })) }catch{}
+                try{
+                  const pct = v.duration ? (v.currentTime / v.duration) * 100 : 0
+                  sessionStorage.setItem(`continue_${effectiveId}`, JSON.stringify({ time:v.currentTime, duration:v.duration, percent:pct, playing:!v.paused, type:isPreview?"preview":"full" }))
+                }catch{}
               }}
+
               onProgress={updateBufferedProgress}
-              onLoadedMetadata={(e)=>{
+                           onLoadedMetadata={(e)=>{
                 const vid=e.target as HTMLVideoElement; setDuration(vid.duration)
                 try{
+                  // 1st source: per-user true progress
+                  const st = useMovieStore.getState() as any
+                  const savedP = st.watchProgress?.[String(effectiveId)] || st.getProgress?.(String(effectiveId))
+                  if(savedP && savedP.percent < 95 && savedP.time > 2 && savedP.time < vid.duration-1){
+                    vid.currentTime=savedP.time; lastTimeRef.current=savedP.time; return
+                  }
+                  // 2nd fallback: sessionStorage
                   const saved=sessionStorage.getItem(`continue_${effectiveId}`)
-                  if(saved){ const parsed=JSON.parse(saved); const sameType=!parsed?.type || parsed.type===type; const time=parsed?.time; if(sameType && time && time>1 && time<vid.duration-1){ vid.currentTime=time; lastTimeRef.current=time; return } }
+                  if(saved){ 
+                    const parsed=JSON.parse(saved); 
+                    const sameType=!parsed?.type || parsed.type===type; 
+                    const time=parsed?.time; 
+                    const pct = parsed?.percent || 0
+                    if(pct < 95 && sameType && time && time>1 && time<vid.duration-1){ vid.currentTime=time; lastTimeRef.current=time; return }
+                  }
                 }catch{}
                 if(lastTimeRef.current) vid.currentTime=lastTimeRef.current
               }}
+
               onClick={(e)=> { e.stopPropagation(); (handleFilmClick as any)(e); }}
               onDoubleClick={()=> setVideoFit(v=> v==='contain' ? 'cover' : 'contain')}
               playsInline loop={isPreview} preload="auto" muted

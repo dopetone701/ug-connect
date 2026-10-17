@@ -1,11 +1,13 @@
 "use client"
 
-import { useRef } from "react"
+import { useRef, useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Movie } from "../_lib/types"
 import { useMovieStore } from "../../../../stores/use-movie-store"
 import { useWatchDrawer } from "@/stores/use-watch-drawer"
 import { useReelsDrawer } from "@/stores/use-reels-drawer"
+import ReplayArrowPlayIcon from "@/modal-generator/svg-icons/replay-arrow-play-icon"
+import "./movie-card-continue-watching.css"
 
 export default function MovieCard({
   m,
@@ -25,6 +27,64 @@ export default function MovieCard({
   const startXRef = useRef(0)
   const startYRef = useRef(0)
 
+  // FIXED: read from getState not hook closure, so works before/after hydrate
+   const [progressState, setProgressState] = useState(() => {
+    try {
+      const state = useMovieStore.getState() as any
+      const id = String((m as any).id)
+      const p = state.watchProgress?.[id] || state.getProgress?.(id)
+      if (p && p.percent > 0) return { percent: p.percent, time: p.time, duration: p.duration }
+    } catch {}
+    if (!isContinueRow) return { percent: 0, time: 0, duration: 0 }
+    return { percent: 8, time: 0, duration: 0 }
+  })
+
+  // AUTO-DETECT Continue Watching - pros way, no props needed
+  const hasRealProgress = progressState.percent > 0 && progressState.percent < 100
+  const autoIsContinue = isContinueRow || hasRealProgress || (progressState.percent >= 95)
+
+
+  useEffect(() => {
+    if (!isContinueRow) return
+    const id = String((m as any).id)
+   
+    const syncProgress = () => {
+      try {
+        const state = useMovieStore.getState() as any
+        const p = state.watchProgress?.[id] || state.getProgress?.(id)
+        if (p && p.percent > 0) {
+          setProgressState({ percent: p.percent, time: p.time, duration: p.duration })
+        }
+      } catch {}
+    }
+
+    syncProgress()
+   
+    let unsub: any = null
+    try {
+      unsub = useMovieStore.subscribe((s: any) => {
+        const p = s.watchProgress?.[id]
+        if (p && p.percent > 0) setProgressState({ percent: p.percent, time: p.time, duration: p.duration })
+      })
+    } catch {}
+   
+    window.addEventListener("focus", syncProgress)
+    window.addEventListener("storage", syncProgress)
+    // custom event when WatchPage saves progress
+    window.addEventListener("ug-progress-updated", syncProgress as any)
+
+    return () => {
+      try { unsub?.() } catch {}
+      window.removeEventListener("focus", syncProgress)
+      window.removeEventListener("storage", syncProgress)
+      window.removeEventListener("ug-progress-updated", syncProgress as any)
+    }
+  }, [isContinueRow, (m as any).id])
+
+   const progress = progressState.percent
+  const isFullyWatched = progress >= 95
+  const showAsContinue = isContinueRow || hasRealProgress || isFullyWatched
+
   const handlePointerDown = (e: React.PointerEvent) => {
     movedRef.current = false
     startXRef.current = e.clientX
@@ -34,7 +94,6 @@ export default function MovieCard({
   const handlePointerMove = (e: React.PointerEvent) => {
     const dx = Math.abs(e.clientX - startXRef.current)
     const dy = Math.abs(e.clientY - startYRef.current)
-
     if (dx > 6 || dy > 6) {
       movedRef.current = true
     }
@@ -75,6 +134,19 @@ export default function MovieCard({
 
     const nm = normalize(m)
 
+    if (isContinueRow && isFullyWatched && type === "full") {
+      try {
+        const store = useMovieStore.getState() as any
+        store.clearProgress?.(id)
+        sessionStorage.removeItem(`continue_${id}`)
+        localStorage.removeItem(`continue_${id}`)
+        sessionStorage.setItem(
+          `continue_${id}`,
+          JSON.stringify({ time: 0, duration: 0, percent: 0, playing: true, type })
+        )
+      } catch {}
+    }
+
     try {
       sessionStorage.setItem(
         "movies_home_scroll_v1",
@@ -98,24 +170,17 @@ export default function MovieCard({
     } catch {}
 
     const isDesktop = (() => {
-  if (typeof window === "undefined") return false
-
-  const ua = navigator.userAgent
-
-  const phoneUA =
-    /iPhone|iPod|Android.*Mobile|Windows Phone/i.test(ua)
-
-  const touchDevice =
-    navigator.maxTouchPoints > 0
-
-  const width = window.innerWidth
-
-  if (phoneUA) return false
-
-  if (touchDevice && width <= 1024) return false
-
-  return true
-})()
+      if (typeof window === "undefined") return false
+      const ua = navigator.userAgent
+      const phoneUA =
+        /iPhone|iPod|Android.*Mobile|Windows Phone/i.test(ua)
+      const touchDevice =
+        navigator.maxTouchPoints > 0
+      const width = window.innerWidth
+      if (phoneUA) return false
+      if (touchDevice && width <= 1024) return false
+      return true
+    })()
 
     if (isDesktop) {
       router.push(`/movies/watch/${id}?t=${type}`)
@@ -148,14 +213,12 @@ export default function MovieCard({
   const openYT = (e?: React.MouseEvent) => {
     e?.preventDefault()
     e?.stopPropagation()
-
     openMovie("full")
   }
 
   const openPreview = (e?: React.MouseEvent) => {
     e?.preventDefault()
     e?.stopPropagation()
-
     openMovie("preview")
   }
 
@@ -177,6 +240,16 @@ export default function MovieCard({
 
         <div className="l-card-fade" />
 
+        {/* FIXED: Always show for Continue row, with true dynamics */}
+       {showAsContinue && (
+          <div className="ug-progress-track">
+            <div
+              className="ug-progress-fill"
+              style={{ width: `${Math.max(3, Math.min(100, progress))}%` }}
+            />
+          </div>
+        )}
+
         <div className="l-card-vj-on">
           {m.vj}
         </div>
@@ -187,7 +260,20 @@ export default function MovieCard({
             className="l-a-btn play on"
             onClick={openYT}
           >
-            {isContinueRow ? "RESUME" : "PLAY"}
+           {showAsContinue ? (
+              isFullyWatched ? (
+                <>
+                  <span className="replay-icon-wrap">
+                    <ReplayArrowPlayIcon />
+                  </span>
+                  PLAY
+                </>
+              ) : (
+                "RESUME"
+              )
+            ) : (
+              "PLAY"
+            )}
           </button>
 
           <button
@@ -201,7 +287,5 @@ export default function MovieCard({
       </div>
     </div>
   )
-
-
-
 }
+

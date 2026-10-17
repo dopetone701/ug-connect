@@ -1,7 +1,9 @@
 "use client";
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { useGlobalSearch } from "../../../../stores/use-global-search";
 import { useFadersDrawer } from "../../../../stores/use-faders-drawer";
+import { useMovieStore } from "@/stores/use-movie-store";
+import { getSections } from "@/app/(dashboard)/movies/_lib/sections.config";
 import MovieCard from "../../../../app/(dashboard)/movies/_components/movie-card";
 import FadersDrawer from "../faders-drawer/faders-drawer";
 import "./search-drawer.css";
@@ -11,11 +13,9 @@ import FilteredContent from "./filtered-content";
 
 // FIXED: Same as VideoMetaInfo - handles right movie time from drive
 const getYear = (m: any) => {
-  // Priority: movie.year like VideoMetaInfo does, then all drive variants
   const raw = m.year || m.Year || m.releaseYear || m.release_year || m.release_date || m.created_at || m.date;
   if (!raw) return 0;
   const str = String(raw);
-  // Extract 4-digit year from any format: "2024", "2024-05-12", "12/05/2024"
   const match = str.match(/(19|20)\d{2}/);
   if (match) return parseInt(match[0], 10);
   const y = Number(str.slice(0, 4));
@@ -23,9 +23,59 @@ const getYear = (m: any) => {
 };
 
 export default function SearchDrawer() {
-  const { allMovies, query } = useGlobalSearch() as any;
+  const { allMovies, query, activeSection } = useGlobalSearch() as any;
   const { filterType, filterValue, timeRange, showFilterRow, select, selectTime, clear, selectGenre } = useFadersDrawer() as any;
+  const { favIds, recentIds } = useMovieStore() as any;
   const [zoomed, setZoomed] = useState<any>(null);
+
+  // FIX 1: KNOW LISTS + CONTINUE WATCHING - synced from drive store like home rows
+ const baseSections = useMemo(() => getSections(allMovies, { favIds, recentIds }), [allMovies, favIds, recentIds]);
+
+  const isMyListView = useMemo(() => {
+    if (!activeSection) return false;
+    const a = activeSection.toLowerCase().trim();
+    return a.includes("my list") || a.includes("favorite") || a.includes("favourite") || a.includes("watchlist");
+  }, [activeSection]);
+
+  const isContinueView = useMemo(() => {
+    if (!activeSection) return false;
+    const a = activeSection.toLowerCase().trim();
+    return a.includes("continue") || a.includes("history");
+  }, [activeSection]);
+
+  const isPersonalListView = isMyListView || isContinueView;
+
+  // FIX 2: NEVER OPEN KEYBOARD ON MOBILE IF OPENED BY SECTION TITLES / FADERS
+  // Only open keyboard if opened by search icon
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const isMobile = window.innerWidth <= 1024 || navigator.maxTouchPoints > 0;
+    if (!isMobile) return;
+    
+    // If opened by section titles, faders, or filters (not by search icon), blur everything
+    const openedBySection = !!activeSection || !!filterType || showFilterRow;
+    const openedBySearchIcon = !openedBySection && !!query;
+    
+    if (openedBySection) {
+      // Blur after short delay to kill keyboard
+      const t1 = setTimeout(() => {
+        if (document.activeElement instanceof HTMLElement) {
+          document.activeElement.blur();
+        }
+        const inputs = document.querySelectorAll('input[type="text"], input[type="search"], input');
+        inputs.forEach((el) => (el as HTMLElement).blur());
+      }, 50);
+      const t2 = setTimeout(() => {
+        if (document.activeElement instanceof HTMLElement) {
+          document.activeElement.blur();
+        }
+      }, 300);
+      return () => {
+        clearTimeout(t1);
+        clearTimeout(t2);
+      };
+    }
+  }, [activeSection, filterType, showFilterRow, query]);
 
   const allGenres = useMemo(() => {
     const s = new Set<string>();
@@ -66,6 +116,57 @@ export default function SearchDrawer() {
     const yearOnly = q.replace(/\s*movies\s*$/,"").trim();
     const isYearQuery = /^(19|20)\d{2}$/.test(yearOnly);
 
+    // FIX 1: HANDLE LISTS + CONTINUE WATCHING when opened by section titles
+    if (activeSection) {
+      const activeLower = activeSection.toLowerCase().trim();
+      const activeClean = activeLower.replace(/\s*movies\s*$/,"").trim();
+
+           // Continue Watching = watch history
+      if (isContinueView) {
+        const sec = baseSections.find((s:any) => s.title.toLowerCase().includes("continue"));
+        if (sec?.data?.length) return sec.data;
+        if (recentIds?.length) {
+          const recentMovies = recentIds.map((id:string) => allMovies.find((m:any) => String(m.id) === String(id))).filter(Boolean);
+          if (recentMovies.length) return recentMovies;
+        }
+      }
+
+      // My List = favourites - NOT fallback to time
+      if (isMyListView) {
+        const sec = baseSections.find((s:any) => s.title.toLowerCase().includes("my list") || s.title.toLowerCase().includes("favorite") || s.id === "my-list");
+        if (sec?.data?.length) return sec.data;
+        if (favIds?.length) {
+          const favMovies = allMovies.filter((m:any) => favIds.includes(String(m.id)));
+          if (favMovies.length) return favMovies;
+        }
+      }
+
+
+      // My List / Favorites / Lists
+      if (activeLower.includes("my list") || activeLower.includes("favorites") || activeLower.includes("favourite") || activeLower.includes("watchlist")) {
+        const sec = baseSections.find((s:any) => s.title.toLowerCase().includes("my list") || s.title.toLowerCase().includes("favorite"));
+        if (sec) return sec.data;
+      }
+
+      // Check baseSections for exact match (covers all home rows including lists)
+      const sec = baseSections.find((s:any) => s.id === activeSection || s.title.toLowerCase() === activeSection.toLowerCase() || s.title.toLowerCase() === activeClean);
+      if (sec) return sec.data;
+
+      // Fallback: title contains
+      const fallback = baseSections.find((s:any) => s.title.toLowerCase().includes(activeClean));
+      if (fallback) return fallback.data;
+
+      // TV Series / Mini Series
+      const isTvQuery = activeLower.includes("tv series") || activeLower === "tv" || activeLower === "full" || activeLower === "series";
+      const isMiniQuery = activeLower.includes("mini series") || activeLower === "mini";
+      if (isTvQuery) {
+        return (allMovies as any[]).filter((m: any) => (m.type || "").toLowerCase() === "full");
+      }
+      if (isMiniQuery) {
+        return (allMovies as any[]).filter((m: any) => (m.type || "").toLowerCase() === "mini");
+      }
+    }
+
     // YEAR SEARCH MODE - synced from drive year
     if (isYearQuery) {
       const targetYear = parseInt(yearOnly, 10);
@@ -92,12 +193,22 @@ export default function SearchDrawer() {
       const isTv = q.includes("tv series") || qClean === "tv" || qClean === "full" || qClean === "series" || q === "tv series";
       const isMini = q.includes("mini series") || qClean === "mini" || q === "mini series";
 
-      if (isTv) {
+      // Handle lists and continue watching via query too
+      if (qClean.includes("continue")) {
+        const sec = baseSections.find((s:any) => s.title.toLowerCase().includes("continue"));
+        if (sec) {
+          list = sec.data;
+        }
+      } else if (qClean.includes("my list") || qClean.includes("favorite") || qClean.includes("watchlist")) {
+        const sec = baseSections.find((s:any) => s.title.toLowerCase().includes("my list") || s.title.toLowerCase().includes("favorite"));
+        if (sec) {
+          list = sec.data;
+        }
+      } else if (isTv) {
         list = list.filter((m:any) => String(m.type||"").toLowerCase() === "full");
       } else if (isMini) {
         list = list.filter((m:any) => String(m.type||"").toLowerCase() === "mini");
       } else {
-        // DON'T filter by time query - let timeRange handle it from drive
         const isTimeQuery = qClean.includes("-present") || /^\d{4}-\d{4}$/.test(qClean) || /^\d{4}-present$/.test(qClean);
         if (!isTimeQuery) {
           const words = qClean.split(" ").filter((w: any)=>w.length>=1);
@@ -111,22 +222,25 @@ export default function SearchDrawer() {
       }
     }
 
-    // FILTERS SYNCED FROM DRIVE - time now works!
-    if(filterType&&filterValue){
+       // FILTERS SYNCED FROM DRIVE - but NOT for my list / continue
+    if(!isPersonalListView && filterType&&filterValue){
+
       if(filterType==="genre") list = list.filter((m: any)=>String(m.genre||"").toLowerCase().includes(filterValue.toLowerCase()));
       if(filterType==="vj") list = list.filter((m: any)=>String(m.vj||"").toLowerCase().includes(filterValue.toLowerCase()));
       if(filterType==="actor") list = list.filter((m: any)=>String(m.actors||"").toLowerCase().includes(filterValue.toLowerCase()));
       if(filterType==="time"&&timeRange) {
-        list = list.filter((m: any)=>{ 
-          const y=getYear(m); 
+        list = list.filter((m: any)=>{
+          const y=getYear(m);
           if(!y) return false;
-          if(timeRange.end===9999) return y>=timeRange.start; 
-          return y>=timeRange.start&&y<timeRange.end; 
+          if(timeRange.end===9999) return y>=timeRange.start;
+          return y>=timeRange.start&&y<timeRange.end;
         });
       }
     }
     return list;
-  }, [allMovies, query, filterType, filterValue, timeRange]);
+ }, [allMovies, query, activeSection, filterType, filterValue, timeRange, baseSections, favIds, recentIds, isMyListView, isContinueView, isPersonalListView]);
+
+  const shouldShowFilterRow = showFilterRow && !isPersonalListView;
 
   const chipConfig = useMemo(() => {
     if(filterType==="vj") return { list: allVjs, title: "VJ", action: (v:string)=>select("vj",v) };
@@ -146,7 +260,7 @@ export default function SearchDrawer() {
 
   return (
     <div className="search-drawer-root">
-      {showFilterRow && (
+     {shouldShowFilterRow && (
         <div className="search-filter-row">
           <div className="filter-chips">
 <button className={!filterValue?"chip active":"chip"} onClick={()=>{ const fd:any=(useFadersDrawer as any).getState?.(); fd?.select?.(filterType, ""); }} type="button">All</button>
@@ -199,7 +313,7 @@ export default function SearchDrawer() {
         </div>
       )}
 
-      {data.length===0&&<div style={{padding:"40px 20px",textAlign:"center",opacity:0.5}}>No movies for {filterValue || query}</div>}
+      {data.length===0&&<div style={{padding:"40px 20px",textAlign:"center",opacity:0.5}}>No movies for {filterValue || query || activeSection}</div>}
 
       {zoomed&&(
         <div className="search-zoom-overlay" onClick={()=>setZoomed(null)}>
