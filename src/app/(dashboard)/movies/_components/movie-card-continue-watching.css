@@ -1,0 +1,54 @@
+/* movie-card-continue-watching.css - FORCE VISIBLE */
+
+.l-card-cover {
+  position: relative !important;
+  overflow: visible !important;
+}
+
+.ug-progress-track {
+  position: absolute !important;
+  bottom: 48px !important;
+  left: 6px !important;
+  right: 6px !important;
+  height: 5px !important;
+  background: rgba(255, 255, 255, 0.4) !important;
+  border-radius: 10px !important;
+  overflow: hidden !important;
+  z-index: 999 !important;
+  display: block !important;
+  pointer-events: none !important;
+}
+
+.ug-progress-fill {
+  height: 100% !important;
+  background: linear-gradient(90deg, #ff1a1a 0%, #ff3b3b 100%) !important;
+  border-radius: 10px !important;
+  display: block !important;
+  transition: width 0.4s ease !important;
+}
+
+.replay-icon-wrap {
+  display: inline-flex !important;
+  width: 14px !important;
+  height: 14px !important;
+  margin-right: 4px !important;
+  vertical-align: middle !important;
+}
+
+.replay-icon-wrap svg {
+  width: 14px !important;
+  height: 14px !important;
+  fill: currentColor !important;
+}
+
+.l-a-btn.play {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 4px !important;
+}
+
+.l-card-fade { z-index: 5 !important; }
+.l-card-vj-on { z-index: 6 !important; }
+.l-card-actions { z-index: 10 !important; }
+
