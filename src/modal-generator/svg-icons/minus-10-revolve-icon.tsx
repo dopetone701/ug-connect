@@ -1,18 +1,50 @@
+
 "use client";
 
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 
 export default function Reverse10Icon() {
   const [rotating, setRotating] = useState(false);
+  const frameRef = useRef<number | null>(null);
 
   const handleClick = () => {
     if (rotating) return;
 
     setRotating(true);
 
-    setTimeout(() => {
+    const arrow = document.querySelector(
+      ".replay-icon .replay-arrow"
+    );
+
+    if (!(arrow instanceof SVGGElement)) {
       setRotating(false);
-    }, 600);
+      return;
+    }
+
+    const duration = 600;
+    const pivotX = 50;
+    const pivotY = 55;
+    const startTime = performance.now();
+
+    const spin = (now: number) => {
+      const progress = Math.min((now - startTime) / duration, 1);
+      const angle = -360 * progress;
+
+      arrow.setAttribute(
+        "transform",
+        `rotate(${angle} ${pivotX} ${pivotY})`
+      );
+
+      if (progress < 1) {
+        frameRef.current = requestAnimationFrame(spin);
+      } else {
+        arrow.removeAttribute("transform");
+        frameRef.current = null;
+        setRotating(false);
+      }
+    };
+
+    frameRef.current = requestAnimationFrame(spin);
   };
 
   return (
@@ -25,26 +57,24 @@ export default function Reverse10Icon() {
       height={80}
       aria-label="Reverse 10 seconds"
       role="button"
+      tabIndex={0}
       onClick={handleClick}
+      onKeyDown={(event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          handleClick();
+        }
+      }}
       style={{
         cursor: "pointer",
         userSelect: "none",
         WebkitUserSelect: "none",
         WebkitTapHighlightColor: "transparent",
+        touchAction: "manipulation",
       }}
     >
-      {/* Outer reverse arrow */}
-      <g
-        className={rotating ? "replay-arrow rotating" : "replay-arrow"}
-        style={{
-          transformBox: "view-box",
-          transformOrigin: "50px 50px",
-          transition: "transform 0.6s linear",
-          willChange: "transform",
-          transform: rotating ? "rotate(-360deg)" : "rotate(0deg)",
-        }}
-      >
-        {/* Circular reverse line */}
+      {/* Rotating arrow — pivot aligned with the center of 10 */}
+      <g className="replay-arrow">
         <path
           d="M27 28
              C18 35 13 45 13 56
@@ -56,7 +86,6 @@ export default function Reverse10Icon() {
           strokeLinecap="round"
         />
 
-        {/* Closed left-facing triangle */}
         <path
           d="M58 8
              L58 28
@@ -66,7 +95,7 @@ export default function Reverse10Icon() {
         />
       </g>
 
-      {/* 10 stays completely stationary */}
+      {/* Stationary number */}
       <text
         x="50"
         y="65"
