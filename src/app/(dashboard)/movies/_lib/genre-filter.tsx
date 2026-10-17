@@ -8,11 +8,24 @@ const GENRES = [
   { id: "action", label: "Action", img: "/genre-filter-images/action.JPG" },
   { id: "adventure", label: "Adventure", img: "/genre-filter-images/adventure.JPG" },
   { id: "animations", label: "Animation", img: "/genre-filter-images/animations.jpg" },
+  { id: "cartoon", label: "Cartoon", img: "/genre-filter-images/cartoon.WEBP" },
+  { id: "comedy", label: "Comedy", img: "/genre-filter-images/comedy.webp" },
   { id: "crime", label: "Crime", img: "/genre-filter-images/crime.PNG" },
+  { id: "drama", label: "Drama", img: "/genre-filter-images/drama.webp" },
+  { id: "family", label: "Family", img: "/genre-filter-images/family.webp" },
+  { id: "fantasy", label: "Fantasy", img: "/genre-filter-images/fantasy.webp" },
+  { id: "high-school", label: "High School", img: "/genre-filter-images/high-school.JPG" },
+  { id: "history", label: "History", img: "/genre-filter-images/history.webp" },
   { id: "horror", label: "Horror", img: "/genre-filter-images/horror.PNG" },
+  { id: "love-story", label: "Love Story", img: "/genre-filter-images/love-story.webp" },
+  { id: "mystery", label: "Mystery", img: "/genre-filter-images/mystery.webp" },
+  { id: "detective", label: "Detective", img: "/genre-filter-images/detective.JPG" },
+  { id: "race", label: "Race", img: "/genre-filter-images/race.AVIF" },
   { id: "romantic", label: "Romance", img: "/genre-filter-images/romantic.PNG" },
   { id: "scifi", label: "Sci-Fi", img: "/genre-filter-images/scify.PNG" },
   { id: "thriller", label: "Thriller", img: "/genre-filter-images/thriller.jpg" },
+  { id: "true-story", label: "True Story", img: "/genre-filter-images/true-story.AVIF" },
+  { id: "war", label: "War", img: "/genre-filter-images/war.WEBP" },
 ];
 
 type Props = {
@@ -54,7 +67,7 @@ export default function GenreFilter({ onSelect }: Props) {
                   (e.target as HTMLImageElement).style.display = "none";
                 }}
               />
-              <span className="genre-fallback">{g.fallback || g.label[0]}</span>
+              <span className="genre-fallback">{(g as any).fallback || g.label[0]}</span>
             </div>
             <span className="genre-label">{g.label}</span>
           </button>
@@ -63,3 +76,4 @@ export default function GenreFilter({ onSelect }: Props) {
     </div>
   );
 }
+
