@@ -1,35 +1,56 @@
 
 "use client";
 
-import React, {
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
+import React, { useCallback, useEffect, useRef } from "react";
 
 export default function Replay10Icon() {
-  const [rotating, setRotating] = useState(false);
+  const arrowRef = useRef<SVGGElement | null>(null);
+  const frameRef = useRef<number | null>(null);
   const rotatingRef = useRef(false);
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const handleClick = useCallback(() => {
     if (rotatingRef.current) return;
 
-    rotatingRef.current = true;
-    setRotating(true);
+    const arrow = arrowRef.current;
+    if (!arrow) return;
 
-    timerRef.current = setTimeout(() => {
-      rotatingRef.current = false;
-      setRotating(false);
-      timerRef.current = null;
-    }, 600);
+    rotatingRef.current = true;
+
+    const duration = 600;
+    const pivotX = 50;
+    const pivotY = 55;
+    const startTime = performance.now();
+
+    const spin = (now: number) => {
+      const progress = Math.min(
+        (now - startTime) / duration,
+        1
+      );
+
+      // Plus rotates clockwise; Minus rotates counterclockwise.
+      const angle = 360 * progress;
+
+      arrow.setAttribute(
+        "transform",
+        `rotate(${angle} ${pivotX} ${pivotY})`
+      );
+
+      if (progress < 1) {
+        frameRef.current = requestAnimationFrame(spin);
+      } else {
+        arrow.removeAttribute("transform");
+        frameRef.current = null;
+        rotatingRef.current = false;
+      }
+    };
+
+    frameRef.current = requestAnimationFrame(spin);
   }, []);
 
   useEffect(() => {
     return () => {
-      if (timerRef.current !== null) {
-        clearTimeout(timerRef.current);
+      if (frameRef.current !== null) {
+        cancelAnimationFrame(frameRef.current);
       }
     };
   }, []);
@@ -70,16 +91,7 @@ export default function Replay10Icon() {
       }}
     >
       {/* Rotating replay arrow */}
-      <g
-        className={rotating ? "replay-arrow rotating" : "replay-arrow"}
-        style={{
-          transformBox: "view-box",
-          transformOrigin: "50px 50px",
-          transition: "transform 0.6s linear",
-          willChange: "transform",
-          transform: rotating ? "rotate(360deg)" : "rotate(0deg)",
-        }}
-      >
+      <g ref={arrowRef} className="replay-arrow">
         <path
           d="M73 28
              C82 35 87 45 87 56
