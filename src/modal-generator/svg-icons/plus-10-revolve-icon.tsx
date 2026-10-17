@@ -1,18 +1,49 @@
+
 "use client";
 
-import React, { useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 
 export default function Replay10Icon() {
   const [rotating, setRotating] = useState(false);
+  const rotatingRef = useRef(false);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const handleClick = () => {
-    if (rotating) return;
+  const handleClick = useCallback(() => {
+    if (rotatingRef.current) return;
 
+    rotatingRef.current = true;
     setRotating(true);
 
-    setTimeout(() => {
+    timerRef.current = setTimeout(() => {
+      rotatingRef.current = false;
       setRotating(false);
+      timerRef.current = null;
     }, 600);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (timerRef.current !== null) {
+        clearTimeout(timerRef.current);
+      }
+    };
+  }, []);
+
+  const handleKeyDown = (
+    event: React.KeyboardEvent<SVGSVGElement>
+  ) => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+
+      if (!event.repeat) {
+        handleClick();
+      }
+    }
   };
 
   return (
@@ -25,15 +56,20 @@ export default function Replay10Icon() {
       height={80}
       aria-label="Replay 10 seconds"
       role="button"
+      tabIndex={0}
       onClick={handleClick}
+      onKeyDown={handleKeyDown}
       style={{
         cursor: "pointer",
         userSelect: "none",
         WebkitUserSelect: "none",
         WebkitTapHighlightColor: "transparent",
+        touchAction: "manipulation",
+        outline: "none",
+        boxShadow: "none",
       }}
     >
-      {/* Outer replay arrow */}
+      {/* Rotating replay arrow */}
       <g
         className={rotating ? "replay-arrow rotating" : "replay-arrow"}
         style={{
@@ -44,7 +80,6 @@ export default function Replay10Icon() {
           transform: rotating ? "rotate(360deg)" : "rotate(0deg)",
         }}
       >
-        {/* Circular replay line */}
         <path
           d="M73 28
              C82 35 87 45 87 56
@@ -56,7 +91,6 @@ export default function Replay10Icon() {
           strokeLinecap="round"
         />
 
-        {/* Closed triangular arrowhead */}
         <path
           d="M42 8
              L42 28
@@ -66,7 +100,7 @@ export default function Replay10Icon() {
         />
       </g>
 
-      {/* 10 stays completely stationary */}
+      {/* Stationary number */}
       <text
         x="50"
         y="65"
