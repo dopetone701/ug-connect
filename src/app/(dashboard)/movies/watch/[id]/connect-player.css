@@ -1102,3 +1102,20 @@ footer{
   from { opacity: 0; transform: translateY(8px) scale(0.98); }
   to { opacity: 1; transform: translateY(0) scale(1); }
 }
+
+
+
+
+
+
+/* PRO ZOOM - only fullscreen mobile connect player */
+.connect-root.is-shell-full.is-mobile-layout .connect-video {
+  will-change: transform;
+  touch-action: none;
+}
+/* portrait + mini = no zoom */
+.connect-root:not(.is-shell-full) .connect-video,
+.connect-root.is-mini-player .connect-video {
+  transform: none !important;
+  touch-action: auto !important;
+}

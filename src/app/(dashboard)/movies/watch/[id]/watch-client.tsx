@@ -83,10 +83,30 @@ export default function WatchPage({
   const [mounted, setMounted] = useState(false)
   const [isFullScreen, setIsFullScreen] = useState(false)
   const [quality, setQuality] = useState("auto")
-  const [videoFit, setVideoFit] = useState<'contain'|'cover'>('contain')
+   const [videoFit, setVideoFit] = useState<'contain'|'cover'>('contain')
+  const [zoomScale, setZoomScale] = useState(1)
+  const [pan, setPan] = useState({ x: 0, y: 0 })
   const [bufferedProgress, setBufferedProgress] = useState(0)
-  const [isMobile, setIsMobile] = useState(true)
+
+  // --- PRO ZOOM REFS (no re-render lag) ---
+  const zoomRef = useRef({ scale: 1, x: 0, y: 0, startDist: 0, startScale: 1, startX: 0, startY: 0, lastTouchX: 0, lastTouchY: 0, lastTap: 0 })
+
+  // reset when exit fullscreen
+  useEffect(() => {
+    if (!isFullScreen) {
+      setZoomScale(1)
+      setPan({ x: 0, y: 0 })
+      zoomRef.current.scale = 1
+      zoomRef.current.x = 0
+      zoomRef.current.y = 0
+      setVideoFit('contain')
+    }
+  }, [isFullScreen])
+
+   const [isMobile, setIsMobile] = useState(true)
   const [isLoading, setIsLoading] = useState(true)
+  const isZoomable = isMobile && isFullScreen && !isMini
+
   const [descExpanded, setDescExpanded] = useState(false)
   const maximize = useWatchDrawer((s) => s.maximize)
   const drawerState = useWatchDrawer() as any
@@ -521,7 +541,15 @@ useEffect(() => { setSharedSelectedQuality(quality); }, [quality, setSharedSelec
             <video
               key={`${movie.id}-${quality}-${activeEp?.id || 'default'}-${videoFit}`}
               ref={videoRef} src={videoUrl} className={`connect-video ${videoFit}`}
-              style={{ objectFit: videoFit as any, width:'100%', height:'100%', background:'#000' }}
+             style={{ 
+                objectFit: videoFit as any, 
+                width:'100%', 
+                height:'100%', 
+                background:'#000',
+                transform: isZoomable ? `scale(${zoomScale}) translate(${pan.x / zoomScale}px, ${pan.y / zoomScale}px)` : 'none',
+                transformOrigin: 'center center',
+                transition: zoomRef.current.startDist ? 'none' : 'transform 0.22s cubic-bezier(0.32,0.72,0,1)'
+              }}
               onLoadStart={()=>setIsLoading(true)} onWaiting={()=>setIsLoading(true)} onCanPlay={()=>setIsLoading(false)}
               onPlaying={()=>{ setIsLoading(false); setPlaying(true); setHasStarted(true) }}
               onPause={()=>setPlaying(false)}
@@ -565,9 +593,81 @@ useEffect(() => { setSharedSelectedQuality(quality); }, [quality, setSharedSelec
                 if(lastTimeRef.current) vid.currentTime=lastTimeRef.current
               }}
 
-              onClick={(e)=> { e.stopPropagation(); (handleFilmClick as any)(e); }}
-              onDoubleClick={()=> setVideoFit(v=> v==='contain' ? 'cover' : 'contain')}
+                           onClick={(e)=> { e.stopPropagation(); (handleFilmClick as any)(e); }}
               playsInline loop={isPreview} preload="auto" muted
+              onTouchStart={(e) => {
+                if (!isZoomable) return
+                const t = e.touches
+                if (t.length === 2) {
+                  const dx = t[0].clientX - t[1].clientX
+                  const dy = t[0].clientY - t[1].clientY
+                  zoomRef.current.startDist = Math.hypot(dx, dy)
+                  zoomRef.current.startScale = zoomRef.current.scale
+                } else if (t.length === 1) {
+                  zoomRef.current.lastTouchX = t[0].clientX
+                  zoomRef.current.lastTouchY = t[0].clientY
+                  zoomRef.current.startX = zoomRef.current.x
+                  zoomRef.current.startY = zoomRef.current.y
+
+                  // double tap to toggle contain / cover (YouTube style)
+                  const now = Date.now()
+                  if (now - zoomRef.current.lastTap < 300) {
+                    const nextFit = videoFit === 'contain' ? 'cover' : 'contain'
+                    setVideoFit(nextFit)
+                    // reset zoom when toggling back to contain
+                    if (nextFit === 'contain') {
+                      zoomRef.current.scale = 1
+                      zoomRef.current.x = 0
+                      zoomRef.current.y = 0
+                      setZoomScale(1)
+                      setPan({ x: 0, y: 0 })
+                    }
+                  }
+                  zoomRef.current.lastTap = now
+                }
+              }}
+              onTouchMove={(e) => {
+                if (!isZoomable) return
+                const t = e.touches
+                if (t.length === 2) {
+                  e.preventDefault()
+                  const dx = t[0].clientX - t[1].clientX
+                  const dy = t[0].clientY - t[1].clientY
+                  const dist = Math.hypot(dx, dy)
+                  if (zoomRef.current.startDist > 0) {
+                    let newScale = zoomRef.current.startScale * (dist / zoomRef.current.startDist)
+                    // pro limit like YouTube - not too much
+                    newScale = Math.max(1, Math.min(3, newScale))
+                    // pinch only works when in cover mode, else stay contain
+                    if (videoFit === 'contain' && newScale > 1.05) setVideoFit('cover')
+                    zoomRef.current.scale = newScale
+                    setZoomScale(newScale)
+                  }
+                } else if (t.length === 1 && zoomRef.current.scale > 1) {
+                  e.preventDefault()
+                  const deltaX = t[0].clientX - zoomRef.current.lastTouchX
+                  const deltaY = t[0].clientY - zoomRef.current.lastTouchY
+                  // limit pan to avoid white gaps
+                  const maxPan = (zoomRef.current.scale - 1) * 120
+                  let nx = zoomRef.current.startX + deltaX
+                  let ny = zoomRef.current.startY + deltaY
+                  nx = Math.max(-maxPan, Math.min(maxPan, nx))
+                  ny = Math.max(-maxPan, Math.min(maxPan, ny))
+                  zoomRef.current.x = nx
+                  zoomRef.current.y = ny
+                  setPan({ x: nx, y: ny })
+                }
+              }}
+              onTouchEnd={(e) => {
+                if (e.touches.length === 0 && zoomRef.current.scale < 1.05) {
+                  zoomRef.current.scale = 1
+                  zoomRef.current.x = 0
+                  zoomRef.current.y = 0
+                  setZoomScale(1)
+                  setPan({ x: 0, y: 0 })
+                }
+              }}
+
               onEnded={handleEnded}
               autoPlay={autoPlayOn}
             />
