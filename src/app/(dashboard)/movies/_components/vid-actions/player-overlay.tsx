@@ -424,7 +424,7 @@ export default function PlayerOverlay({
               />
             </div>
 
-            <VideoCastBtn />
+{!(isMobile && isFullScreen) && <VideoCastBtn />}
 
             <div
               onClick={(e) => e.stopPropagation()}

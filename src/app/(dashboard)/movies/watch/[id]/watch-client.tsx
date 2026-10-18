@@ -1288,7 +1288,7 @@ export default function WatchPage({
         >
           <div className="film-center">
             <div
-              onTouchStart={(e) => {
+             onTouchStart={(e) => {
   if (!isZoomable || e.touches.length !== 2) return;
 
   const dx = e.touches[0].clientX - e.touches[1].clientX;
@@ -1307,7 +1307,9 @@ onTouchMove={(e) => {
   const dx = e.touches[0].clientX - e.touches[1].clientX;
   const dy = e.touches[0].clientY - e.touches[1].clientY;
   const distance = Math.hypot(dx, dy);
+
   const startDistance = zoomRef.current.startDist;
+  const startFit = zoomRef.current.startFit;
 
   if (
     startDistance <= 0 ||
@@ -1318,15 +1320,15 @@ onTouchMove={(e) => {
 
   const ratio = distance / startDistance;
 
-  // Pinch OUT: Fit -> Fill.
-  if (ratio > 1.08 && videoFit === "contain") {
+  // Pinch outward: Fit -> Fill.
+  if (ratio > 1.08 && startFit === "contain") {
     zoomRef.current.pinchChanged = true;
     setVideoFit("cover");
     showZoomLabel("Fill");
   }
 
-  // Pinch IN: Fill -> Fit.
-  else if (ratio < 0.92 && videoFit === "cover") {
+  // Pinch inward: Fill -> Fit.
+  else if (ratio < 0.92 && startFit === "cover") {
     zoomRef.current.pinchChanged = true;
     setVideoFit("contain");
     showZoomLabel("Fit");
@@ -1339,6 +1341,12 @@ onTouchEnd={(e) => {
     zoomRef.current.pinchChanged = false;
   }
 }}
+
+onTouchCancel={() => {
+  zoomRef.current.startDist = 0;
+  zoomRef.current.pinchChanged = false;
+}}
+
 
             >
               <video
