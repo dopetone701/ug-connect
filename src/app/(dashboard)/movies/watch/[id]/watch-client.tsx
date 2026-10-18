@@ -92,8 +92,8 @@ export default function WatchPage({
     zoomLabelTimer.current = setTimeout(()=> setZoomLabel(null), 900)
   }, [])
 
-  // --- SIMPLE FIT/COVER REFS ---
-  const zoomRef = useRef({ lastTap: 0, startDist: 0 })
+  // --- FIT/COVER ONLY ---
+  const zoomRef = useRef({ lastTap: 0, startDist: 0, startY: 0 })
 
   const [isMobile, setIsMobile] = useState(true)
   const [isLoading, setIsLoading] = useState(true)
@@ -105,6 +105,27 @@ export default function WatchPage({
       zoomRef.current.startDist = 0
     }
   }, [isFullScreen])
+
+  // KILL drag-up exit fullscreen - block native gestures when fullscreen
+  useEffect(() => {
+    if (!isFullScreen) return
+    const prevent = (e: TouchEvent) => {
+      // prevent pull-to-refresh and swipe-up dismiss
+      if (isZoomable) {
+        e.preventDefault()
+      }
+    }
+    document.addEventListener('touchmove', prevent, { passive: false } as any)
+    // @ts-ignore
+    document.body.style.overscrollBehavior = 'none'
+    document.documentElement.style.overscrollBehavior = 'none'
+    return () => {
+      document.removeEventListener('touchmove', prevent as any)
+      // @ts-ignore
+      document.body.style.overscrollBehavior = ''
+      document.documentElement.style.overscrollBehavior = ''
+    }
+  }, [isFullScreen, isZoomable])
 
   const [descExpanded, setDescExpanded] = useState(false)
   const maximize = useWatchDrawer((s) => s.maximize)
@@ -512,17 +533,23 @@ useEffect(() => { setSharedSelectedQuality(quality); }, [quality, setSharedSelec
           onClick={handleFilmClick}
           onMouseMove={()=> { if(!isMobile) { setShowControls(true); scheduleControlsHide(); } }}
           onMouseLeave={()=> playing &&!isMobile && setShowControls(false)}
-          style={{ touchAction: isZoomable ? 'none' : 'auto' } as any}
+          style={{ touchAction: isZoomable ? 'none' : 'auto', overscrollBehavior: 'none' } as any}
         >
 
           <div className="film-center"><div className="center-cover"
+            style={{ touchAction: 'none', overscrollBehavior: 'none' } as any}
             onTouchStart={(e) => {
               if (!isZoomable) return
               const t = e.touches
               if (t.length === 2) {
+                e.preventDefault()
+                e.stopPropagation()
                 const dx = t[0].clientX - t[1].clientX
                 const dy = t[0].clientY - t[1].clientY
                 zoomRef.current.startDist = Math.hypot(dx, dy)
+              } else if (t.length === 1) {
+                // block swipe-up exit - record Y but don't allow native scroll
+                zoomRef.current.startY = t[0].clientY
               }
             }}
             onTouchMove={(e) => {
@@ -530,30 +557,40 @@ useEffect(() => { setSharedSelectedQuality(quality); }, [quality, setSharedSelec
               const t = e.touches
               if (t.length === 2) {
                 e.preventDefault()
+                e.stopPropagation()
                 const dx = t[0].clientX - t[1].clientX
                 const dy = t[0].clientY - t[1].clientY
                 const dist = Math.hypot(dx, dy)
                 if (zoomRef.current.startDist > 0) {
                   const diff = dist - zoomRef.current.startDist
-                  if (videoFit === 'contain' && diff > 30) {
+                  if (videoFit === 'contain' && diff > 25) {
                     setVideoFit('cover')
                     showZoomLabel('Cover')
                     zoomRef.current.startDist = dist
-                  } else if (videoFit === 'cover' && diff < -30) {
+                  } else if (videoFit === 'cover' && diff < -25) {
                     setVideoFit('contain')
                     showZoomLabel('Fit')
                     zoomRef.current.startDist = dist
                   }
                 }
+              } else if (t.length === 1) {
+                // KILL drag-up to exit fullscreen
+                const deltaY = t[0].clientY - zoomRef.current.startY
+                if (Math.abs(deltaY) > 10) {
+                  e.preventDefault()
+                  e.stopPropagation()
+                }
               }
             }}
             onTouchEnd={(e) => {
+              if (!isZoomable) return
               const t = e.touches
               if (t.length === 0 && e.changedTouches.length === 1) {
                 const now = Date.now()
                 const dt = now - zoomRef.current.lastTap
                 if (dt < 300 && dt > 50) {
                   e.preventDefault()
+                  e.stopPropagation()
                   if (videoFit === 'contain') {
                     setVideoFit('cover')
                     showZoomLabel('Cover')
@@ -578,8 +615,6 @@ useEffect(() => { setSharedSelectedQuality(quality); }, [quality, setSharedSelec
                 width:'100%',
                 height:'100%',
                 background:'#000',
-                transform: 'none',
-                transition: 'none'
               }}
               onLoadStart={()=>setIsLoading(true)} onWaiting={()=>setIsLoading(true)} onCanPlay={()=>setIsLoading(false)}
               onPlaying={()=>{ setIsLoading(false); setPlaying(true); setHasStarted(true) }}
@@ -626,16 +661,15 @@ useEffect(() => { setSharedSelectedQuality(quality); }, [quality, setSharedSelec
               onEnded={handleEnded}
               autoPlay={autoPlayOn}
             />
-            {/* ZOOM LABEL - Fit / Cover */}
             {isZoomable && zoomLabel && (
               <div style={{
                 position:'absolute', left:'50%', top:'50%', transform:'translate(-50%,-50%)',
-                background:'rgba(0,0,0,0.65)', color:'#fff', padding:'6px 14px', borderRadius:20,
-                fontSize:13, fontWeight:700, letterSpacing:0.5, pointerEvents:'none', zIndex:30,
+                background:'rgba(0,0,0,0.7)', color:'#fff', padding:'6px 14px', borderRadius:20,
+                fontSize:13, fontWeight:700, letterSpacing:0.5, pointerEvents:'none', zIndex:50,
                 animation:'zoomFade 0.9s ease forwards'
               }}>{zoomLabel}</div>
             )}
-            <style>{`@keyframes zoomFade{0%{opacity:0;transform:translate(-50%,-50%) scale(0.8)}15%{opacity:1;transform:translate(-50%,-50%) scale(1)}80%{opacity:1}100%{opacity:0;transform:translate(-50%,-50%) scale(1.05)}}`}</style>
+            <style>{`@keyframes zoomFade{0%{opacity:0;transform:translate(-50%,-50%) scale(0.8)}15%{opacity:1;transform:translate(-50%,-50%) scale(1)}80%{opacity:1}100%{opacity:0;transform:translate(-50%,-50%) scale(1.05)}} .center-cover{overscroll-behavior:none;}`}</style>
 
             <PlayerOverlay
               movie={movie}
