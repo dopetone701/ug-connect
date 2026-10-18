@@ -85,6 +85,14 @@ export default function WatchPage({
   const [zoomScale, setZoomScale] = useState(1)
   const [pan, setPan] = useState({ x: 0, y: 0 })
   const [bufferedProgress, setBufferedProgress] = useState(0)
+  const [zoomLabel, setZoomLabel] = useState<string|null>(null)
+  const zoomLabelTimer = useRef<any>(null)
+
+  const showZoomLabel = useCallback((text:string) => {
+    setZoomLabel(text)
+    if(zoomLabelTimer.current) clearTimeout(zoomLabelTimer.current)
+    zoomLabelTimer.current = setTimeout(()=> setZoomLabel(null), 900)
+  }, [])
 
   // --- PRO ZOOM REFS (no re-render lag) ---
   const zoomRef = useRef({ scale: 1, x: 0, y: 0, startDist: 0, startScale: 1, startX: 0, startY: 0, lastTouchX: 0, lastTouchY: 0, lastTap: 0 })
@@ -123,7 +131,6 @@ export default function WatchPage({
   })
 
 const handleBack = useCallback(() => {
-  // MINI PLAYER X = CLOSE MINI
   if (isMini) {
     try {
       const v = videoRef.current;
@@ -161,7 +168,6 @@ const handleBack = useCallback(() => {
         const t = video.currentTime
         const d = video.duration || 0
         const pct = d ? (t / d) * 100 : 0
-        // per-user true progress
         if (t > 2 && d > 5) {
           try { useMovieStore.getState().saveProgress(effectiveId, t, d) } catch {}
         }
@@ -256,8 +262,6 @@ const handleBack = useCallback(() => {
     }else{ videoRef.current.pause(); setPlaying(false) }
   }, [])
 
-// handleFilmClick moved below to fix TDZ
-
 const toggleFullscreen = useCallback(async () => {
   const video = videoRef.current as any
   const root = rootRef.current as any
@@ -266,7 +270,6 @@ const toggleFullscreen = useCallback(async () => {
   const savedTime = video.currentTime
   const wasPlaying = !video.paused
 
-  // Detect environment
   const isNative = (window as any).Capacitor?.isNativePlatform?.() ? (window as any).Capacitor.isNativePlatform() : false
   const isStandalonePWA = window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone === true
   const isAndroid = /Android/i.test(navigator.userAgent)
@@ -283,7 +286,6 @@ const toggleFullscreen = useCallback(async () => {
   try {
     if (!isFullScreen) {
       if (!shouldUseConnectPlayer) {
-        // BROWSER ONLY: native player
         if (video.webkitEnterFullscreen) {
           video.webkitEnterFullscreen()
         } else if (video.requestFullscreen) {
@@ -292,7 +294,6 @@ const toggleFullscreen = useCallback(async () => {
           await root.requestFullscreen({ navigationUI: "hide" } as any)
         }
       } else {
-        // PWA / ANDROID / APP: connect player fullscreen
         try { if (isNative) await CapOrientation?.unlock?.() } catch {}
         try { await (screen.orientation as any)?.unlock?.() } catch {}
         try {
@@ -381,25 +382,22 @@ const endControlsInteraction = useCallback(() => { interactingRef.current = fals
 const handleFilmClick = useCallback((e: React.MouseEvent | React.TouchEvent) => {
   const t = e.target as HTMLElement;
 
-  // PRO: in fullscreen mobile, don't toggle controls on double-tap or when zoomed
   if (isZoomable) {
     const now = Date.now()
     if (now - zoomRef.current.lastTap < 350) {
       return
     }
-    if (zoomRef.current.scale > 1.1) {
+    if (zoomRef.current.scale > 1.15) {
       return
     }
   }
 
-  // if tap is on a control button/progress - just keep visible and reset timer
   const isControl = !!t.closest('button, .cc-icon, .apple-full, .center-skip-btn, .play-apple, .starz-progress, .quality-settings, [data-control], .bubble-expand, .bubble-close, .back-btn-timeout, [data-no-drag]');
   if (isControl) {
     setShowControls(true);
     scheduleControlsHide();
     return;
   }
-  // tap anywhere else on video - toggle
   if (!showControls) {
     setShowControls(true);
     scheduleControlsHide();
@@ -412,7 +410,6 @@ const handleFilmClick = useCallback((e: React.MouseEvent | React.TouchEvent) => 
 useEffect(() => { scheduleControlsHide(); return () => { cancelControlsTimer(); }; }, [scheduleControlsHide, cancelControlsTimer]);
 useEffect(() => { return () => { interactingRef.current = false; cancelControlsTimer(); }; }, [cancelControlsTimer]);
 
-// NEW: Hide overlays instantly when user interacts outside video
 useEffect(() => {
   if (!showControls) return;
   const hideNow = () => {
@@ -421,17 +418,14 @@ useEffect(() => {
   };
   const handleOutsidePointer = (e: Event) => {
     const target = e.target as HTMLElement;
-    // if click is inside video player, let handleFilmClick handle it
     const insideVideo = target.closest('.film-giant, .connect-player, .center-cover, .center-controls-layer, .connect-controls, .center-top, .back-btn-timeout, .connect-loader');
     if (insideVideo) return;
-    // if click is on under-video area, episodes, similar, footer, etc -> hide instantly
     const outsideArea = target.closest('.connect-under-section, .episodes-row, .similar-movies, .film-meta, footer, .footer-free');
     if (outsideArea || !insideVideo) {
       hideNow();
     }
   };
   const handleScroll = () => {
-    // hide on any scroll outside video
     if (window.scrollY > 10) hideNow();
   };
   const handleKeyOutside = (e: KeyboardEvent) => {
@@ -469,13 +463,12 @@ const handleEnded = () => {
   try{
     const v = videoRef.current
     if(v && v.duration > 5){
-      useMovieStore.getState().saveProgress(effectiveId, v.duration, v.duration) // 100% for replay icon
+      useMovieStore.getState().saveProgress(effectiveId, v.duration, v.duration)
     }
   }catch{}
   if (!autoPlayOn) return; if (!isSeries) return;
   const next = allEps[currentEpisodeIndex + 1]; if (next) goToEp(next);
 };
-
 
 const onNextEpisode = () => { const next = allEps[currentEpisodeIndex + 1]; if(next) goToEp(next) }
 const onPrevEpisode = () => { const prev = allEps[currentEpisodeIndex - 1]; if(prev) goToEp(prev) }
@@ -546,9 +539,9 @@ useEffect(() => { setSharedSelectedQuality(quality); }, [quality, setSharedSelec
     <>
       <div ref={rootRef} className={`film-root connect-root ${isOverlay?'yt-overlay-root':''} ${isFullScreen?'is-shell-full':''} ${isMobile?'is-mobile-layout':'is-desktop-layout'}`}>
 
-        <div className="film-giant connect-player inner-body" 
-          onClick={handleFilmClick} 
-          onMouseMove={()=> { if(!isMobile) { setShowControls(true); scheduleControlsHide(); } }} 
+        <div className="film-giant connect-player inner-body"
+          onClick={handleFilmClick}
+          onMouseMove={()=> { if(!isMobile) { setShowControls(true); scheduleControlsHide(); } }}
           onMouseLeave={()=> playing &&!isMobile && setShowControls(false)}
           onTouchStart={(e)=>{
             if(isZoomable && e.touches.length >= 1 && (e.touches.length === 2 || zoomRef.current.scale > 1)){
@@ -560,7 +553,7 @@ useEffect(() => { setSharedSelectedQuality(quality); }, [quality, setSharedSelec
         >
 
           <div className="film-center"><div className="center-cover"
-            onTouchStart={(e) => {
+                onTouchStart={(e) => {
               if (!isZoomable) return
               const t = e.touches
               if (t.length === 2) {
@@ -568,22 +561,14 @@ useEffect(() => { setSharedSelectedQuality(quality); }, [quality, setSharedSelec
                 const dy = t[0].clientY - t[1].clientY
                 zoomRef.current.startDist = Math.hypot(dx, dy)
                 zoomRef.current.startScale = zoomRef.current.scale
+                if(zoomRef.current.scale === 1 && videoFit === 'contain'){
+                  zoomRef.current.startScale = 1
+                }
               } else if (t.length === 1) {
                 zoomRef.current.lastTouchX = t[0].clientX
                 zoomRef.current.lastTouchY = t[0].clientY
                 zoomRef.current.startX = zoomRef.current.x
                 zoomRef.current.startY = zoomRef.current.y
-                const now = Date.now()
-                if (now - zoomRef.current.lastTap < 300) {
-                  e.preventDefault()
-                  const nextFit = videoFit === 'contain' ? 'cover' : 'contain'
-                  setVideoFit(nextFit)
-                  if (nextFit === 'contain') {
-                    zoomRef.current.scale = 1; zoomRef.current.x = 0; zoomRef.current.y = 0
-                    setZoomScale(1); setPan({ x: 0, y: 0 })
-                  }
-                }
-                zoomRef.current.lastTap = now
               }
             }}
             onTouchMove={(e) => {
@@ -596,16 +581,33 @@ useEffect(() => { setSharedSelectedQuality(quality); }, [quality, setSharedSelec
                 const dist = Math.hypot(dx, dy)
                 if (zoomRef.current.startDist > 0) {
                   let newScale = zoomRef.current.startScale * (dist / zoomRef.current.startDist)
-                  newScale = Math.max(1, Math.min(3, newScale))
-                  if (videoFit === 'contain' && newScale > 1.05) setVideoFit('cover')
-                  zoomRef.current.scale = newScale
-                  setZoomScale(newScale)
+
+                  if (videoFit === 'contain') {
+                    if (newScale > 1.08) {
+                      setVideoFit('cover')
+                      zoomRef.current.scale = 1
+                      setZoomScale(1)
+                      zoomRef.current.startDist = dist
+                      zoomRef.current.startScale = 1
+                      showZoomLabel('Cover')
+                      return
+                    }
+                  } else {
+                    newScale = Math.max(1, Math.min(3, newScale))
+                    if (newScale < 1.2) newScale = 1
+                    zoomRef.current.scale = newScale
+                    setZoomScale(newScale)
+                    if (newScale === 1) showZoomLabel('Cover')
+                    else if (newScale < 1.6) showZoomLabel('1x')
+                    else if (newScale < 2.4) showZoomLabel('2x')
+                    else showZoomLabel('3x')
+                  }
                 }
               } else if (t.length === 1 && zoomRef.current.scale > 1) {
                 e.preventDefault()
                 const deltaX = t[0].clientX - zoomRef.current.lastTouchX
                 const deltaY = t[0].clientY - zoomRef.current.lastTouchY
-                const maxPan = (zoomRef.current.scale - 1) * 120
+                const maxPan = (zoomRef.current.scale - 1) * 140
                 let nx = zoomRef.current.startX + deltaX
                 let ny = zoomRef.current.startY + deltaY
                 nx = Math.max(-maxPan, Math.min(maxPan, nx))
@@ -615,12 +617,43 @@ useEffect(() => { setSharedSelectedQuality(quality); }, [quality, setSharedSelec
               }
             }}
             onTouchEnd={(e) => {
+              const t = e.touches
+              if (t.length === 0 && e.changedTouches.length === 1) {
+                const now = Date.now()
+                const dt = now - zoomRef.current.lastTap
+                if (dt < 300 && dt > 50) {
+                  e.preventDefault()
+                  if (videoFit === 'contain') {
+                    setVideoFit('cover')
+                    showZoomLabel('Cover')
+                  } else if (zoomRef.current.scale > 1.1) {
+                    zoomRef.current.scale = 1; zoomRef.current.x = 0; zoomRef.current.y = 0
+                    setZoomScale(1); setPan({x:0,y:0})
+                    showZoomLabel('Cover')
+                  } else {
+                    setVideoFit('contain')
+                    zoomRef.current.scale = 1; zoomRef.current.x = 0; zoomRef.current.y = 0
+                    setZoomScale(1); setPan({x:0,y:0})
+                    showZoomLabel('Fit')
+                  }
+                  zoomRef.current.lastTap = 0
+                  zoomRef.current.startDist = 0
+                  return
+                }
+                zoomRef.current.lastTap = now
+              }
+
               zoomRef.current.startDist = 0
-              if (e.touches.length === 0 && zoomRef.current.scale < 1.05) {
-                zoomRef.current.scale = 1; zoomRef.current.x = 0; zoomRef.current.y = 0
-                setZoomScale(1); setPan({ x: 0, y: 0 })
+              if (e.touches.length === 0) {
+                if (zoomRef.current.scale < 1.08) {
+                  if (videoFit === 'contain') {
+                    zoomRef.current.scale = 1; zoomRef.current.x = 0; zoomRef.current.y = 0
+                    setZoomScale(1); setPan({ x: 0, y: 0 })
+                  }
+                }
               }
             }}
+
           >
             <video
               key={`${movie.id}-${quality}-${activeEp?.id || 'default'}`}
@@ -642,7 +675,6 @@ useEffect(() => { setSharedSelectedQuality(quality); }, [quality, setSharedSelec
                 if(v.duration){
                   const pct = (v.currentTime/v.duration)*100
                   setProgress(pct); setDuration(v.duration)
-                  // CLEAN: save per-user with duration for true bar dynamics
                   if(v.currentTime > 2 && v.duration > 5){
                     try { useMovieStore.getState().saveProgress(effectiveId, v.currentTime, v.duration) } catch {}
                   }
@@ -658,13 +690,11 @@ useEffect(() => { setSharedSelectedQuality(quality); }, [quality, setSharedSelec
               onLoadedMetadata={(e)=>{
                 const vid=e.target as HTMLVideoElement; setDuration(vid.duration)
                 try{
-                  // 1st source: per-user true progress
                   const st = useMovieStore.getState() as any
                   const savedP = st.watchProgress?.[String(effectiveId)] || st.getProgress?.(String(effectiveId))
                   if(savedP && savedP.percent < 95 && savedP.time > 2 && savedP.time < vid.duration-1){
                     vid.currentTime=savedP.time; lastTimeRef.current=savedP.time; return
                   }
-                  // 2nd fallback: sessionStorage
                   const saved=sessionStorage.getItem(`continue_${effectiveId}`)
                   if(saved){
                     const parsed=JSON.parse(saved);
@@ -682,6 +712,17 @@ useEffect(() => { setSharedSelectedQuality(quality); }, [quality, setSharedSelec
               onEnded={handleEnded}
               autoPlay={autoPlayOn}
             />
+            {/* ZOOM LABEL - fade instantly */}
+            {isZoomable && zoomLabel && (
+              <div style={{
+                position:'absolute', left:'50%', top:'50%', transform:'translate(-50%,-50%)',
+                background:'rgba(0,0,0,0.6)', color:'#fff', padding:'6px 14px', borderRadius:20,
+                fontSize:13, fontWeight:700, letterSpacing:0.5, pointerEvents:'none', zIndex:30,
+                animation:'zoomFade 0.9s ease forwards'
+              }}>{zoomLabel}</div>
+            )}
+            <style>{`@keyframes zoomFade{0%{opacity:0;transform:translate(-50%,-50%) scale(0.8)}15%{opacity:1;transform:translate(-50%,-50%) scale(1)}80%{opacity:1}100%{opacity:0;transform:translate(-50%,-50%) scale(1.05)}}`}</style>
+
             <PlayerOverlay
               movie={movie}
               showControls={showControls}
@@ -732,7 +773,6 @@ useEffect(() => { setSharedSelectedQuality(quality); }, [quality, setSharedSelec
         {!isMini && !isFullScreen && <SimilarMovies current={movie} />}
       </div>
 
-      {/* FOOTER OUTSIDE connect-root = breathing space, no black line */}
       {!isMini && !isFullScreen && <FooterFree />}
     </>
   )
