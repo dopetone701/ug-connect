@@ -539,7 +539,7 @@ useEffect(() => { setSharedSelectedQuality(quality); }, [quality, setSharedSelec
 
           <div className="film-center"><div className="center-cover">
             <video
-              key={`${movie.id}-${quality}-${activeEp?.id || 'default'}-${videoFit}`}
+key={`${movie.id}-${quality}-${activeEp?.id || 'default'}`}
               ref={videoRef} src={videoUrl} className={`connect-video ${videoFit}`}
              style={{ 
                 objectFit: videoFit as any, 
@@ -658,8 +658,10 @@ useEffect(() => { setSharedSelectedQuality(quality); }, [quality, setSharedSelec
                   setPan({ x: nx, y: ny })
                 }
               }}
-              onTouchEnd={(e) => {
+                           onTouchEnd={(e) => {
+                zoomRef.current.startDist = 0
                 if (e.touches.length === 0 && zoomRef.current.scale < 1.05) {
+
                   zoomRef.current.scale = 1
                   zoomRef.current.x = 0
                   zoomRef.current.y = 0
