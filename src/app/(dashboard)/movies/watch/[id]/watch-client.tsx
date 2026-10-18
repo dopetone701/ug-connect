@@ -82,8 +82,6 @@ export default function WatchPage({
   const [isFullScreen, setIsFullScreen] = useState(false)
   const [quality, setQuality] = useState("auto")
   const [videoFit, setVideoFit] = useState<'contain'|'cover'>('contain')
-  const [zoomScale, setZoomScale] = useState(1)
-  const [pan, setPan] = useState({ x: 0, y: 0 })
   const [bufferedProgress, setBufferedProgress] = useState(0)
   const [zoomLabel, setZoomLabel] = useState<string|null>(null)
   const zoomLabelTimer = useRef<any>(null)
@@ -94,23 +92,17 @@ export default function WatchPage({
     zoomLabelTimer.current = setTimeout(()=> setZoomLabel(null), 900)
   }, [])
 
-  // --- PRO ZOOM REFS (no re-render lag) ---
-  const zoomRef = useRef({ scale: 1, x: 0, y: 0, startDist: 0, startScale: 1, startX: 0, startY: 0, lastTouchX: 0, lastTouchY: 0, lastTap: 0 })
+  // --- SIMPLE FIT/COVER REFS ---
+  const zoomRef = useRef({ lastTap: 0, startDist: 0 })
 
   const [isMobile, setIsMobile] = useState(true)
   const [isLoading, setIsLoading] = useState(true)
   const isZoomable = isMobile && isFullScreen && !isMini
 
-  // reset when exit fullscreen
   useEffect(() => {
     if (!isFullScreen) {
-      setZoomScale(1)
-      setPan({ x: 0, y: 0 })
-      zoomRef.current.scale = 1
-      zoomRef.current.x = 0
-      zoomRef.current.y = 0
-      zoomRef.current.startDist = 0
       setVideoFit('contain')
+      zoomRef.current.startDist = 0
     }
   }, [isFullScreen])
 
@@ -140,10 +132,8 @@ const handleBack = useCallback(() => {
     else { closeDrawer?.(); }
     return;
   }
-
   if (isFullScreen) return;
   const store = useWatchDrawer.getState();
-
   if (isMobile && isOverlay) {
     const video = videoRef.current;
     const wasPlaying = video ? !video.paused : playing;
@@ -160,7 +150,6 @@ const handleBack = useCallback(() => {
     });
     return;
   }
-
   if (isMobile) {
     const video = videoRef.current;
        try {
@@ -176,7 +165,6 @@ const handleBack = useCallback(() => {
         }))
       }
     } catch {}
-
     if (effectiveId) {
       store.openDrawer(String(effectiveId), isPreview ? "preview" : "full");
       store.minimize();
@@ -184,7 +172,6 @@ const handleBack = useCallback(() => {
     router.replace("/movies");
     return;
   }
-
   if (isOverlay) {
     if (onClose) { onClose(); } else { closeDrawer(); }
   } else {
@@ -266,15 +253,12 @@ const toggleFullscreen = useCallback(async () => {
   const video = videoRef.current as any
   const root = rootRef.current as any
   if (!video || !root) return
-
   const savedTime = video.currentTime
   const wasPlaying = !video.paused
-
   const isNative = (window as any).Capacitor?.isNativePlatform?.() ? (window as any).Capacitor.isNativePlatform() : false
   const isStandalonePWA = window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone === true
   const isAndroid = /Android/i.test(navigator.userAgent)
   const shouldUseConnectPlayer = isNative || isStandalonePWA || isAndroid
-
   let CapOrientation: any = null
   if (isNative) {
     try {
@@ -282,7 +266,6 @@ const toggleFullscreen = useCallback(async () => {
       CapOrientation = mod.ScreenOrientation
     } catch {}
   }
-
   try {
     if (!isFullScreen) {
       if (!shouldUseConnectPlayer) {
@@ -381,17 +364,10 @@ const endControlsInteraction = useCallback(() => { interactingRef.current = fals
 
 const handleFilmClick = useCallback((e: React.MouseEvent | React.TouchEvent) => {
   const t = e.target as HTMLElement;
-
   if (isZoomable) {
     const now = Date.now()
-    if (now - zoomRef.current.lastTap < 350) {
-      return
-    }
-    if (zoomRef.current.scale > 1.15) {
-      return
-    }
+    if (now - zoomRef.current.lastTap < 350) return
   }
-
   const isControl = !!t.closest('button, .cc-icon, .apple-full, .center-skip-btn, .play-apple, .starz-progress, .quality-settings, [data-control], .bubble-expand, .bubble-close, .back-btn-timeout, [data-no-drag]');
   if (isControl) {
     setShowControls(true);
@@ -428,17 +404,10 @@ useEffect(() => {
   const handleScroll = () => {
     if (window.scrollY > 10) hideNow();
   };
-  const handleKeyOutside = (e: KeyboardEvent) => {
-    if (e.key === 'Escape') return;
-    const target = e.target as HTMLElement;
-    if (!target.closest('.film-giant')) hideNow();
-  };
-
   window.addEventListener('pointerdown', handleOutsidePointer, { capture: true } as any);
   window.addEventListener('touchstart', handleOutsidePointer, { capture: true } as any);
   window.addEventListener('scroll', handleScroll, { passive: true });
   window.addEventListener('wheel', handleScroll, { passive: true } as any);
-
   return () => {
     window.removeEventListener('pointerdown', handleOutsidePointer, { capture: true } as any);
     window.removeEventListener('touchstart', handleOutsidePointer, { capture: true } as any);
@@ -543,32 +512,17 @@ useEffect(() => { setSharedSelectedQuality(quality); }, [quality, setSharedSelec
           onClick={handleFilmClick}
           onMouseMove={()=> { if(!isMobile) { setShowControls(true); scheduleControlsHide(); } }}
           onMouseLeave={()=> playing &&!isMobile && setShowControls(false)}
-          onTouchStart={(e)=>{
-            if(isZoomable && e.touches.length >= 1 && (e.touches.length === 2 || zoomRef.current.scale > 1)){
-              return
-            }
-            setShowControls(true)
-          }}
           style={{ touchAction: isZoomable ? 'none' : 'auto' } as any}
         >
 
           <div className="film-center"><div className="center-cover"
-                onTouchStart={(e) => {
+            onTouchStart={(e) => {
               if (!isZoomable) return
               const t = e.touches
               if (t.length === 2) {
                 const dx = t[0].clientX - t[1].clientX
                 const dy = t[0].clientY - t[1].clientY
                 zoomRef.current.startDist = Math.hypot(dx, dy)
-                zoomRef.current.startScale = zoomRef.current.scale
-                if(zoomRef.current.scale === 1 && videoFit === 'contain'){
-                  zoomRef.current.startScale = 1
-                }
-              } else if (t.length === 1) {
-                zoomRef.current.lastTouchX = t[0].clientX
-                zoomRef.current.lastTouchY = t[0].clientY
-                zoomRef.current.startX = zoomRef.current.x
-                zoomRef.current.startY = zoomRef.current.y
               }
             }}
             onTouchMove={(e) => {
@@ -580,40 +534,17 @@ useEffect(() => { setSharedSelectedQuality(quality); }, [quality, setSharedSelec
                 const dy = t[0].clientY - t[1].clientY
                 const dist = Math.hypot(dx, dy)
                 if (zoomRef.current.startDist > 0) {
-                  let newScale = zoomRef.current.startScale * (dist / zoomRef.current.startDist)
-
-                  if (videoFit === 'contain') {
-                    if (newScale > 1.08) {
-                      setVideoFit('cover')
-                      zoomRef.current.scale = 1
-                      setZoomScale(1)
-                      zoomRef.current.startDist = dist
-                      zoomRef.current.startScale = 1
-                      showZoomLabel('Cover')
-                      return
-                    }
-                  } else {
-                    newScale = Math.max(1, Math.min(3, newScale))
-                    if (newScale < 1.2) newScale = 1
-                    zoomRef.current.scale = newScale
-                    setZoomScale(newScale)
-                    if (newScale === 1) showZoomLabel('Cover')
-                    else if (newScale < 1.6) showZoomLabel('1x')
-                    else if (newScale < 2.4) showZoomLabel('2x')
-                    else showZoomLabel('3x')
+                  const diff = dist - zoomRef.current.startDist
+                  if (videoFit === 'contain' && diff > 30) {
+                    setVideoFit('cover')
+                    showZoomLabel('Cover')
+                    zoomRef.current.startDist = dist
+                  } else if (videoFit === 'cover' && diff < -30) {
+                    setVideoFit('contain')
+                    showZoomLabel('Fit')
+                    zoomRef.current.startDist = dist
                   }
                 }
-              } else if (t.length === 1 && zoomRef.current.scale > 1) {
-                e.preventDefault()
-                const deltaX = t[0].clientX - zoomRef.current.lastTouchX
-                const deltaY = t[0].clientY - zoomRef.current.lastTouchY
-                const maxPan = (zoomRef.current.scale - 1) * 140
-                let nx = zoomRef.current.startX + deltaX
-                let ny = zoomRef.current.startY + deltaY
-                nx = Math.max(-maxPan, Math.min(maxPan, nx))
-                ny = Math.max(-maxPan, Math.min(maxPan, ny))
-                zoomRef.current.x = nx; zoomRef.current.y = ny
-                setPan({ x: nx, y: ny })
               }
             }}
             onTouchEnd={(e) => {
@@ -626,14 +557,8 @@ useEffect(() => { setSharedSelectedQuality(quality); }, [quality, setSharedSelec
                   if (videoFit === 'contain') {
                     setVideoFit('cover')
                     showZoomLabel('Cover')
-                  } else if (zoomRef.current.scale > 1.1) {
-                    zoomRef.current.scale = 1; zoomRef.current.x = 0; zoomRef.current.y = 0
-                    setZoomScale(1); setPan({x:0,y:0})
-                    showZoomLabel('Cover')
                   } else {
                     setVideoFit('contain')
-                    zoomRef.current.scale = 1; zoomRef.current.x = 0; zoomRef.current.y = 0
-                    setZoomScale(1); setPan({x:0,y:0})
                     showZoomLabel('Fit')
                   }
                   zoomRef.current.lastTap = 0
@@ -642,18 +567,8 @@ useEffect(() => { setSharedSelectedQuality(quality); }, [quality, setSharedSelec
                 }
                 zoomRef.current.lastTap = now
               }
-
               zoomRef.current.startDist = 0
-              if (e.touches.length === 0) {
-                if (zoomRef.current.scale < 1.08) {
-                  if (videoFit === 'contain') {
-                    zoomRef.current.scale = 1; zoomRef.current.x = 0; zoomRef.current.y = 0
-                    setZoomScale(1); setPan({ x: 0, y: 0 })
-                  }
-                }
-              }
             }}
-
           >
             <video
               key={`${movie.id}-${quality}-${activeEp?.id || 'default'}`}
@@ -663,9 +578,8 @@ useEffect(() => { setSharedSelectedQuality(quality); }, [quality, setSharedSelec
                 width:'100%',
                 height:'100%',
                 background:'#000',
-                transform: isZoomable ? `scale(${zoomScale}) translate(${pan.x / zoomScale}px, ${pan.y / zoomScale}px)` : 'none',
-                transformOrigin: 'center center',
-                transition: zoomRef.current.startDist ? 'none' : 'transform 0.22s cubic-bezier(0.32,0.72,0,1)'
+                transform: 'none',
+                transition: 'none'
               }}
               onLoadStart={()=>setIsLoading(true)} onWaiting={()=>setIsLoading(true)} onCanPlay={()=>setIsLoading(false)}
               onPlaying={()=>{ setIsLoading(false); setPlaying(true); setHasStarted(true) }}
@@ -712,11 +626,11 @@ useEffect(() => { setSharedSelectedQuality(quality); }, [quality, setSharedSelec
               onEnded={handleEnded}
               autoPlay={autoPlayOn}
             />
-            {/* ZOOM LABEL - fade instantly */}
+            {/* ZOOM LABEL - Fit / Cover */}
             {isZoomable && zoomLabel && (
               <div style={{
                 position:'absolute', left:'50%', top:'50%', transform:'translate(-50%,-50%)',
-                background:'rgba(0,0,0,0.6)', color:'#fff', padding:'6px 14px', borderRadius:20,
+                background:'rgba(0,0,0,0.65)', color:'#fff', padding:'6px 14px', borderRadius:20,
                 fontSize:13, fontWeight:700, letterSpacing:0.5, pointerEvents:'none', zIndex:30,
                 animation:'zoomFade 0.9s ease forwards'
               }}>{zoomLabel}</div>
@@ -743,7 +657,6 @@ useEffect(() => { setSharedSelectedQuality(quality); }, [quality, setSharedSelec
               isMini={isMini}
               onClose={onClose || closeDrawer}
               onExpand={maximize}
-
               onShowControls={keepControlsVisible}
               onInteractionStart={startControlsInteraction}
               onInteractionEnd={endControlsInteraction}
@@ -767,7 +680,7 @@ useEffect(() => { setSharedSelectedQuality(quality); }, [quality, setSharedSelec
             <VideoMetaInfo movie={movie} descExpanded={descExpanded} setDescExpanded={setDescExpanded} />
           </div>
         )}
-               {!isMini &&!isFullScreen && movie?.seasons?.length>0 && (
+        {!isMini &&!isFullScreen && movie?.seasons?.length>0 && (
           <EpisodesRow movie={movie} activeEpId={epId} onSelect={(ep:any)=>{ if(isOverlay){ setOverlayEpId(String(ep.id)) }else{ router.push(`${pathname}?t=full&ep=${ep.id}`) } }} />
         )}
         {!isMini && !isFullScreen && <SimilarMovies current={movie} />}
