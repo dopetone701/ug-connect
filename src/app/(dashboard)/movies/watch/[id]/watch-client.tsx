@@ -93,26 +93,7 @@ export default function WatchPage({
   const settingsOpen = useVideoSettingsDrawer((s) => s.isOpen);
   const closeVideoSettings = useVideoSettingsDrawer((s) => s.close);
 
- useEffect(() => { if (externalFs!== undefined) setIsFullScreen(externalFs) }, [externalFs])
-
-  // KILL SWIPE EXIT - CONNECT PLAYER ONLY, KEEP BROWSER NATIVE
-  useEffect(() => {
-    if (!isFullScreen) return;
-    const isNative = (window as any).Capacitor?.isNativePlatform?.() ? (window as any).Capacitor.isNativePlatform() : false
-    const isStandalonePWA = window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone === true
-    const isAndroid = /Android/i.test(navigator.userAgent)
-    const shouldUseConnectPlayer = isNative || isStandalonePWA || isAndroid
-    if (!shouldUseConnectPlayer) return; // keep browser native swipe
-
-    const onMove = (e: TouchEvent) => {
-      e.preventDefault();
-    };
-    const root = rootRef.current;
-    root?.addEventListener('touchmove', onMove as any, { passive: false } as any);
-    return () => {
-      root?.removeEventListener('touchmove', onMove as any);
-    };
-  }, [isFullScreen]);
+  useEffect(() => { if (externalFs!== undefined) setIsFullScreen(externalFs) }, [externalFs])
 
   const [overlayEpId, setOverlayEpId] = useState<string | null>(() => {
     try {
@@ -645,3 +626,5 @@ useEffect(() => { setSharedSelectedQuality(quality); }, [quality, setSharedSelec
     </>
   )
 }
+
+

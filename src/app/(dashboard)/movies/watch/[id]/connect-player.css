@@ -1104,25 +1104,3 @@ footer{
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-/* KILL SWIPE - CONNECT PLAYER ONLY */
-.is-shell-full {
-  touch-action: none !important;
-  overscroll-behavior: none !important;
-}
-.is-shell-full .film-giant,
-.is-shell-full .center-cover,
-.is-shell-full .connect-video {
-  touch-action: none !important;
-  overscroll-behavior: none !important;
-}
