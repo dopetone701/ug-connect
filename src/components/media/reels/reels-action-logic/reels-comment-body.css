@@ -1,0 +1,864 @@
+
+/* =========================================================
+   UG-CONNECT — PRO REELS COMMENTS
+   TIKTOK-STYLE THREADS • ZERO NESTED INDENTATION
+   THEME DNA • VERTICAL SCROLL • INPUT AT BOTTOM
+   ========================================================= */
+
+
+/* =========================================================
+   COMMENTS PANEL
+   ========================================================= */
+
+.reels-c-body {
+  display: flex !important;
+  flex-direction: column !important;
+
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+
+  height: 100% !important;
+  min-height: 0 !important;
+  flex: 1 1 auto !important;
+
+  overflow: hidden !important;
+  background: hsl(var(--bg)) !important;
+
+  box-sizing: border-box !important;
+}
+
+
+/* =========================================================
+   COMMENT LIST — THE ONLY SCROLLABLE AREA
+   ========================================================= */
+
+.reels-c-list {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 0 !important;
+
+  flex: 1 1 0 !important;
+  min-height: 0 !important;
+  min-width: 0 !important;
+
+  width: 100% !important;
+  max-width: 100% !important;
+
+  padding: 12px 12px 8px !important;
+
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+
+  overscroll-behavior: contain !important;
+  -webkit-overflow-scrolling: touch !important;
+
+  box-sizing: border-box !important;
+}
+
+
+/* =========================================================
+   COMMENT ITEM
+   ========================================================= */
+
+.reels-c-item {
+  position: relative !important;
+
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+
+  flex-shrink: 0 !important;
+
+  margin: 0 !important;
+  padding: 12px 0 !important;
+
+  box-sizing: border-box !important;
+}
+
+
+/* =========================================================
+   COMMENT THREAD WRAPPER
+   Replies stay in the same full-width column.
+   ========================================================= */
+
+.reels-c-thread {
+  display: flex !important;
+  flex-direction: column !important;
+
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+
+  margin: 0 !important;
+  padding: 0 !important;
+
+  box-sizing: border-box !important;
+}
+
+
+/* =========================================================
+   AVATAR + COMMENT CONTENT
+   ========================================================= */
+
+.reels-c-bubble-wrap {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: flex-start !important;
+  gap: 10px !important;
+
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+
+  margin: 0 !important;
+  box-sizing: border-box !important;
+}
+
+
+/* Avatar */
+
+.reels-c-avatar {
+  display: grid !important;
+  place-items: center !important;
+
+  width: 32px !important;
+  height: 32px !important;
+
+  min-width: 32px !important;
+  max-width: 32px !important;
+
+  flex: 0 0 32px !important;
+
+  border-radius: 50% !important;
+
+  background: hsl(var(--primary)) !important;
+  color: hsl(var(--primary-text)) !important;
+
+  font-size: 12px !important;
+  font-weight: 800 !important;
+
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+}
+
+
+/* Comment content */
+
+.reels-c-content {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-start !important;
+
+  flex: 1 1 0 !important;
+
+  width: 0 !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+
+  margin: 0 !important;
+  box-sizing: border-box !important;
+}
+
+
+/* =========================================================
+   COMMENT BUBBLE
+   ========================================================= */
+
+.reels-c-bubble {
+  position: relative !important;
+
+  display: inline-block !important;
+
+  width: fit-content !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+
+  padding: 10px 14px !important;
+
+  background: hsl(var(--surface)) !important;
+  border: 1px solid hsl(var(--border)) !important;
+  border-radius: 18px !important;
+
+  overflow-wrap: anywhere !important;
+  word-break: break-word !important;
+
+  box-sizing: border-box !important;
+}
+
+
+/* Username */
+
+.reels-c-user {
+  display: block !important;
+
+  margin: 0 0 4px !important;
+
+  color: hsl(var(--text)) !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+
+  opacity: 0.9 !important;
+
+  overflow-wrap: anywhere !important;
+  word-break: break-word !important;
+}
+
+
+/* Comment text */
+
+.reels-c-text {
+  margin: 0 !important;
+
+  color: hsl(var(--text)) !important;
+
+  font-size: 14px !important;
+  line-height: 1.4 !important;
+
+  white-space: pre-wrap !important;
+  overflow-wrap: anywhere !important;
+  word-break: break-word !important;
+}
+
+
+/* Reaction attached to the bubble */
+
+.reels-c-my-emoji {
+  position: absolute !important;
+  right: -8px !important;
+  bottom: -10px !important;
+
+  padding: 2px 6px !important;
+
+  background: hsl(var(--bg)) !important;
+  border: 1px solid hsl(var(--border)) !important;
+  border-radius: 20px !important;
+
+  color: hsl(var(--text)) !important;
+  font-size: 12px !important;
+
+  box-sizing: border-box !important;
+}
+
+
+/* =========================================================
+   COMMENT ACTIONS
+   ========================================================= */
+
+.reels-c-actions {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  flex-wrap: wrap !important;
+  gap: 12px !important;
+
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+
+  margin-top: 8px !important;
+
+  box-sizing: border-box !important;
+}
+
+
+.reels-c-time {
+  color: hsl(var(--text-muted)) !important;
+  font-size: 11px !important;
+  opacity: 0.8 !important;
+}
+
+
+.reels-c-like,
+.reels-c-reply-btn,
+.reels-c-emoji-trigger,
+.reels-c-tail-share {
+  display: inline-flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 4px !important;
+
+  flex-shrink: 0 !important;
+
+  margin: 0 !important;
+  padding: 0 !important;
+
+  background: transparent !important;
+  border: 0 !important;
+
+  color: hsl(var(--text-muted)) !important;
+
+  font-size: 11px !important;
+  font-weight: 700 !important;
+
+  cursor: pointer !important;
+}
+
+
+/* Liked state uses the active theme accent */
+
+.reels-c-like.liked {
+  color: hsl(var(--primary)) !important;
+  opacity: 1 !important;
+}
+
+
+/* Comment options */
+
+.reels-c-dots-wrap {
+  position: relative !important;
+  flex-shrink: 0 !important;
+  margin-left: auto !important;
+}
+
+
+.reels-c-dots-btn {
+  display: grid !important;
+  place-items: center !important;
+
+  width: 28px !important;
+  height: 28px !important;
+
+  margin-left: auto !important;
+  padding: 0 !important;
+
+  border: 0 !important;
+  border-radius: 50% !important;
+
+  background: transparent !important;
+  color: hsl(var(--text-muted)) !important;
+
+  opacity: 0.8 !important;
+  cursor: pointer !important;
+
+  flex-shrink: 0 !important;
+}
+
+
+/* =========================================================
+   EMOJI PICKER
+   ========================================================= */
+
+.reels-c-emoji-picker {
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  gap: 6px !important;
+
+  width: fit-content !important;
+  max-width: min(280px, 90vw) !important;
+  min-width: 0 !important;
+
+  margin-top: 8px !important;
+  padding: 8px 12px !important;
+
+  background: hsl(var(--surface)) !important;
+  border: 1px solid hsl(var(--border)) !important;
+  border-radius: 24px !important;
+
+  box-sizing: border-box !important;
+}
+
+
+.reels-c-emoji-picker button {
+  display: grid !important;
+  place-items: center !important;
+
+  width: 32px !important;
+  height: 32px !important;
+
+  flex: 0 0 32px !important;
+
+  padding: 0 !important;
+
+  background: transparent !important;
+  border: 0 !important;
+  border-radius: 50% !important;
+
+  color: hsl(var(--text)) !important;
+  font-size: 20px !important;
+
+  cursor: pointer !important;
+}
+
+
+/* =========================================================
+   COMMENT MENU
+   ========================================================= */
+
+.reels-c-menu-dropdown {
+  position: absolute !important;
+  top: 28px !important;
+  right: 0 !important;
+
+  min-width: 160px !important;
+  max-width: min(220px, 80vw) !important;
+
+  overflow: hidden !important;
+
+  background: hsl(var(--bg)) !important;
+  border: 1px solid hsl(var(--border)) !important;
+  border-radius: 12px !important;
+
+  box-shadow: 0 8px 24px hsl(0 0% 0% / 0.25) !important;
+
+  z-index: 50 !important;
+  box-sizing: border-box !important;
+}
+
+
+.reels-c-menu-item {
+  display: block !important;
+
+  width: 100% !important;
+  max-width: 100% !important;
+
+  margin: 0 !important;
+  padding: 12px 14px !important;
+
+  background: transparent !important;
+  border: 0 !important;
+  border-bottom: 1px solid hsl(var(--border) / 0.5) !important;
+
+  color: hsl(var(--text)) !important;
+  text-align: left !important;
+
+  font-size: 13px !important;
+  font-weight: 500 !important;
+
+  cursor: pointer !important;
+  box-sizing: border-box !important;
+}
+
+
+.reels-c-menu-item:last-child {
+  border-bottom: 0 !important;
+}
+
+
+/* Destructive menu action uses theme accent */
+
+.reels-c-menu-item.danger {
+  color: hsl(var(--primary)) !important;
+}
+
+
+/* =========================================================
+   REPLIES — ONE STRING, NO HORIZONTAL INDENTATION
+   Every reply level starts at the same left edge.
+   No nested borders, padding, or cumulative margins.
+   ========================================================= */
+
+
+/* =========================================================
+   REPLY THREAD — CONTINUOUS CONNECTOR
+   Theme-aware • No cumulative indentation
+   ========================================================= */
+
+.reels-c-replies {
+  --reels-thread-offset: 14px;
+
+  position: relative !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 0 !important;
+
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+
+  margin: 8px 0 0 !important;
+  padding: 0 !important;
+
+  border: 0 !important;
+  box-sizing: border-box !important;
+}
+
+/* One continuous line for the entire visible reply group */
+
+.reels-c-replies::before {
+  content: "" !important;
+  position: absolute !important;
+
+  top: 0 !important;
+  bottom: 0 !important;
+  left: 15px !important;
+
+  width: 0.5px !important;
+  background: hsl(var(--border) / 0.65) !important;
+
+  pointer-events: none !important;
+  z-index: 0 !important;
+}
+
+
+/* No individual borders: the parent draws the continuous line */
+.reels-c-replies > .reels-c-item {
+  position: relative !important;
+
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+
+  flex-shrink: 0 !important;
+
+  margin: 0 !important;
+  padding: 10px 0 10px var(--reels-thread-offset) !important;
+
+  border: 0 !important;
+  box-sizing: border-box !important;
+}
+
+/* Keep nested reply groups aligned with the same thread axis.
+   Cancel the current reply item's 14px padding at each level. */
+.reels-c-replies .reels-c-replies {
+  width: calc(100% + var(--reels-thread-offset)) !important;
+  max-width: none !important;
+  min-width: 0 !important;
+
+  margin: 8px 0 0 calc(-1 * var(--reels-thread-offset)) !important;
+  padding: 0 !important;
+
+  border: 0 !important;
+}
+
+/* Keep comment content from forcing horizontal overflow */
+.reels-c-replies .reels-c-bubble-wrap {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: flex-start !important;
+  gap: 10px !important;
+
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+}
+
+.reels-c-replies .reels-c-content {
+  flex: 1 1 0 !important;
+  width: 0 !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+}
+
+/* Keep the connector behind comment content */
+.reels-c-replies > .reels-c-item > .reels-c-thread {
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+/* Show/hide replies */
+.reels-c-show-replies {
+  display: inline-flex !important;
+  align-items: center !important;
+  align-self: flex-start !important;
+
+  max-width: calc(100% - 42px) !important;
+  min-width: 0 !important;
+
+  margin: 8px 0 !important;
+  padding: 0 0 0 42px !important;
+
+  background: transparent !important;
+  border: 0 !important;
+
+  color: hsl(var(--primary)) !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  text-align: left !important;
+
+  overflow-wrap: anywhere !important;
+  cursor: pointer !important;
+}
+
+/* Disable legacy connectors without hiding our new parent line */
+.reels-c-tree-line,
+.reels-c-replies > .reels-c-item::before,
+.reels-c-replies > .reels-c-item::after {
+  display: none !important;
+  content: none !important;
+}
+
+
+
+/* Prevent old tree connectors from returning */
+
+.reels-c-tree-line,
+.reels-c-replies > .reels-c-item::before,
+.reels-c-replies > .reels-c-item::after,
+.reels-c-replies .reels-c-item::before,
+.reels-c-replies .reels-c-item::after {
+  display: none !important;
+  content: none !important;
+}
+
+
+/* Show replies / hide replies control */
+
+.reels-c-show-replies {
+  display: inline-flex !important;
+  align-items: center !important;
+
+  align-self: flex-start !important;
+
+  max-width: calc(100% - 42px) !important;
+  min-width: 0 !important;
+
+  margin: 8px 0 8px 42px !important;
+  padding: 0 !important;
+
+  background: transparent !important;
+  border: 0 !important;
+
+  color: hsl(var(--primary)) !important;
+
+  font-size: 12px !important;
+  font-weight: 700 !important;
+
+  text-align: left !important;
+  overflow-wrap: anywhere !important;
+
+  cursor: pointer !important;
+}
+
+
+/* =========================================================
+   INPUT BAR — STAYS BELOW THE SCROLLING LIST
+   ========================================================= */
+
+.reels-c-input-bar {
+  position: relative !important;
+  inset: auto !important;
+
+  display: flex !important;
+  flex-direction: column !important;
+
+  flex: 0 0 auto !important;
+  flex-shrink: 0 !important;
+
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+
+  margin: 0 !important;
+
+  padding:
+    10px
+    12px
+    calc(10px + env(safe-area-inset-bottom))
+    !important;
+
+  background: hsl(var(--bg)) !important;
+  border-top: 1px solid hsl(var(--border)) !important;
+
+  z-index: 10 !important;
+
+  box-sizing: border-box !important;
+}
+
+
+/* Reply target banner */
+
+.reels-c-replying-to {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 8px !important;
+
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+
+  margin: 0 0 8px !important;
+  padding: 6px 10px !important;
+
+  background: hsl(var(--surface)) !important;
+  border: 1px solid hsl(var(--border)) !important;
+  border-radius: 8px !important;
+
+  color: hsl(var(--text)) !important;
+  font-size: 12px !important;
+
+  opacity: 0.9 !important;
+
+  box-sizing: border-box !important;
+}
+
+
+/* Input row */
+
+.reels-c-input-wrap {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 8px !important;
+
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+
+  margin: 0 !important;
+
+  box-sizing: border-box !important;
+}
+
+
+/* Text input */
+
+.reels-c-input-wrap input {
+  flex: 1 1 0 !important;
+
+  width: 0 !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+
+  height: 42px !important;
+
+  margin: 0 !important;
+  padding: 0 14px !important;
+
+  border: 1px solid hsl(var(--border)) !important;
+  border-radius: 24px !important;
+
+  background: hsl(var(--surface)) !important;
+  color: hsl(var(--text)) !important;
+
+  font-size: 14px !important;
+
+  outline: none !important;
+  box-shadow: none !important;
+
+  box-sizing: border-box !important;
+}
+
+
+.reels-c-input-wrap input::placeholder {
+  color: hsl(var(--text-muted)) !important;
+  opacity: 1 !important;
+}
+
+
+.reels-c-input-wrap input:focus {
+  border-color: hsl(var(--primary)) !important;
+}
+
+
+/* Send button */
+
+.reels-c-input-wrap button {
+  display: grid !important;
+  place-items: center !important;
+
+  width: 38px !important;
+  height: 38px !important;
+  min-width: 38px !important;
+
+  flex: 0 0 38px !important;
+
+  margin: 0 !important;
+  padding: 0 !important;
+
+  border: 0 !important;
+  border-radius: 50% !important;
+
+  background: hsl(var(--primary)) !important;
+  color: hsl(var(--primary-text)) !important;
+
+  font-weight: 800 !important;
+
+  cursor: pointer !important;
+  box-sizing: border-box !important;
+}
+
+
+/* =========================================================
+   EMPTY STATE
+   ========================================================= */
+
+.reels-c-empty {
+  width: 100% !important;
+  max-width: 100% !important;
+
+  margin: 0 !important;
+  padding: 40px 20px !important;
+
+  color: hsl(var(--text-muted)) !important;
+
+  text-align: center !important;
+  font-size: 13px !important;
+
+  opacity: 0.9 !important;
+
+  box-sizing: border-box !important;
+}
+
+
+/* =========================================================
+   TOAST
+   ========================================================= */
+
+.reels-c-toast {
+  position: fixed !important;
+
+  bottom: calc(90px + env(safe-area-inset-bottom)) !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+
+  width: max-content !important;
+  max-width: calc(100vw - 32px) !important;
+
+  margin: 0 !important;
+  padding: 8px 16px !important;
+
+  background: hsl(var(--surface)) !important;
+  border: 1px solid hsl(var(--border)) !important;
+  border-radius: 20px !important;
+
+  color: hsl(var(--text)) !important;
+
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  text-align: center !important;
+
+  overflow-wrap: anywhere !important;
+
+  z-index: 100 !important;
+  box-sizing: border-box !important;
+}
+
+
+/* =========================================================
+   GLOBAL WIDTH SAFETY
+   Do not globally constrain SVG or icon dimensions.
+   ========================================================= */
+
+.reels-c-body *,
+.reels-c-body *::before,
+.reels-c-body *::after {
+  box-sizing: border-box !important;
+}
+
+
+.reels-c-body img,
+.reels-c-body video {
+  max-width: 100% !important;
+}
+
+
+/* Keep flex descendants from forcing horizontal overflow */
+
+.reels-c-body,
+.reels-c-list,
+.reels-c-thread,
+.reels-c-replies,
+.reels-c-item,
+.reels-c-bubble-wrap,
+.reels-c-content,
+.reels-c-actions,
+.reels-c-input-bar,
+.reels-c-input-wrap {
+  min-width: 0 !important;
+}
+

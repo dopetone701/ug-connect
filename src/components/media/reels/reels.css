@@ -1,0 +1,174 @@
+.reel-root{
+  position:absolute!important;
+  inset:0!important;
+  width:100%!important;
+  height:100%!important;
+  z-index:50!important;
+  overflow:hidden;
+  display:flex!important;
+  flex-direction:column;
+  background:hsl(var(--bg));
+}
+.reel-swiper{
+  position:relative;
+  flex:1;
+  width:100%;
+  height:100%;
+  overflow:hidden!important;
+}
+.reels-tiktok-container{
+  width:100vw;
+  height:100%!important;
+  height:100dvh!important;
+  height:-webkit-fill-available!important;
+  overflow-y:scroll!important;
+  overflow-x:hidden!important;
+  scroll-snap-type:y mandatory;
+  scroll-snap-stop:always;
+  -webkit-overflow-scrolling:touch;
+  scrollbar-width:none;
+}
+.reels-tiktok-item{
+  position:relative;
+  width:100vw;
+  height:100%!important;
+  height:100dvh!important;
+  height:-webkit-fill-available!important;
+  scroll-snap-align:start;
+  scroll-snap-stop:always;
+  overflow:hidden;
+}
+.reel-video{
+  position:absolute;
+  inset:0;
+  width:100%!important;
+  height:100%!important;
+  object-fit:cover!important;
+  z-index:0;
+}
+.reel-gradient{
+  position:absolute;
+  bottom:0; left:0; right:0;
+  height:62%;
+  background:linear-gradient(to top, hsl(var(--bg) / 0.9) 0%, transparent 100%);
+  pointer-events:none;
+  z-index:1;
+}
+.reel-top-bar{
+  position:absolute!important;
+  top:0!important;
+  left:0!important;
+  right:0!important;
+  height:calc(52px + env(safe-area-inset-top, 14px))!important;
+  z-index:30;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:env(safe-area-inset-top, 14px) 12px 0 12px!important;
+  box-sizing:border-box!important;
+  pointer-events:none;
+}
+.reel-close-v, .reel-search{
+  pointer-events:auto;
+  width:36px; height:36px;
+  border-radius:50%;
+  display:grid; place-items:center;
+  border:1px solid hsl(var(--border));
+  background:hsl(var(--surface));
+  backdrop-filter:blur(10px);
+  margin-top:env(safe-area-inset-top, 0px)!important;
+}
+.reel-actions{
+  position:absolute;
+  right:10px;
+  bottom:calc(98px + env(safe-area-inset-bottom, 20px))!important;
+  display:flex;
+  flex-direction:column;
+  gap:18px;
+  z-index:20;
+}
+.ra-btn{ background:none; border:0; display:flex; flex-direction:column; align-items:center; gap:4px; }
+.ra-icon-bg{
+  width:48px; height:48px; border-radius:50%;
+  background:hsl(var(--surface));
+  border:1px solid hsl(var(--border));
+  display:grid; place-items:center;
+}
+.ra-label{ font-size:11px; font-weight:600; }
+.reel-info{
+  position:absolute;
+  left:12px; right:84px;
+  bottom:calc(92px + env(safe-area-inset-bottom, 20px))!important;
+  z-index:10;
+}
+.reel-info h3{ font-size:16px; font-weight:800; margin:0 0 6px; }
+.reel-desc{ font-size:13px; opacity:.85; margin:0 0 10px; }
+.reel-pills{ display:flex; gap:6px; margin-bottom:12px; }
+.reel-pills span{ font-size:10px; padding:4px 10px; border-radius:20px; background:hsl(var(--surface)); border:1px solid hsl(var(--border)); }
+.reel-watch-full{
+  display:block; width:100%; border:0; border-radius:10px;
+  padding:12px 18px; font-weight:800;
+  background:hsl(var(--primary)); color:hsl(var(--primary-text));
+}
+.reel-comment-bar{
+  position:absolute!important;
+  left:0!important; right:0!important; bottom:0!important;
+  min-height:calc(56px + env(safe-area-inset-bottom, 20px))!important;
+  display:flex!important; align-items:center!important; gap:10px!important;
+  padding:8px 12px calc(12px + env(safe-area-inset-bottom, 20px)) 12px!important;
+  background:hsl(var(--surface))!important;
+  border-top:1px solid hsl(var(--border))!important;
+  z-index:9999!important;
+}
+.reel-comment-input{
+  flex:1!important; height:44px!important; border-radius:24px!important;
+  padding:0 16px!important; font-size:16px!important;
+  background:hsl(var(--bg))!important; color:hsl(var(--text))!important;
+  border:1px solid hsl(var(--border))!important;
+}
+.reel-comment-send{
+  width:44px!important; height:44px!important; min-width:44px!important;
+  border-radius:50%!important; display:grid!important; place-items:center!important;
+  background:transparent; color:hsl(var(--primary));
+}
+.apple-play-pure{ position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); z-index:20; pointer-events:none; }
+.ra-heart-pop{ animation: heartPop 0.32s cubic-bezier(0.175,0.885,0.32,1.275); }
+@keyframes heartPop{ 0%{transform:scale(1)} 50%{transform:scale(1.4)} 100%{transform:scale(1)} }
+.reel-root.reels-has-comments{ background:#000!important; }
+.reel-root.reels-has-comments .reels-tiktok-container{ overflow:hidden!important; pointer-events:none!important; }
+.reel-root.reels-has-comments .reels-tiktok-item{ display:none!important; }
+.reel-root.reels-has-comments .reels-tiktok-item.active{
+  display:block!important;
+  transform:scale(0.92) translateY(-7%)!important;
+  border-radius:18px!important;
+  overflow:hidden!important;
+  transition:transform 0.45s cubic-bezier(0.32,0.72,0,1), border-radius 0.45s ease!important;
+  pointer-events:none!important;
+}
+.reel-root.reels-has-comments .reel-actions,
+.reel-root.reels-has-comments .reel-info,
+.reel-root.reels-has-comments .reel-comment-bar,
+.reel-root.reels-has-comments .reel-top-bar{ opacity:0!important; pointer-events:none!important; transition:opacity 0.25s ease!important; }
+.reels-comment-backdrop{ position:fixed!important; inset:0!important; background:rgba(0,0,0,0.4)!important; z-index:49!important; animation:reelsFadeIn 0.3s ease!important; }
+.reels-comment-panel{
+  position:fixed!important;
+  bottom:0!important;
+  left:0!important;
+  right:0!important;
+  height:72vh!important;
+  max-height:75vh!important;
+  background:hsl(var(--bg))!important;
+  border-radius:20px 20px 0 0!important;
+  z-index:50!important;
+  transform:translateY(100%)!important;
+  transition:transform 0.45s cubic-bezier(0.32,0.72,0,1)!important;
+  display:flex!important;
+  flex-direction:column!important;
+  overflow:hidden!important;
+  box-shadow:0 -10px 40px rgba(0,0,0,0.6)!important;
+}
+.reels-comment-panel.open{ transform:translateY(0)!important; }
+.reels-comment-handle{ width:40px!important; height:4px!important; background:hsl(var(--border))!important; border-radius:10px!important; margin:12px auto 0!important; }
+.reels-comment-header{ display:flex!important; justify-content:space-between!important; align-items:center!important; padding:12px 16px!important; border-bottom:1px solid hsl(var(--border))!important; font-weight:700!important; font-size:15px!important; }
+.reels-comment-close{ width:32px!important; height:32px!important; border-radius:50%!important; background:hsl(var(--surface))!important; border:1px solid hsl(var(--border))!important; display:grid!important; place-items:center!important; }
+@keyframes reelsFadeIn{ from{opacity:0} to{opacity:1} }
