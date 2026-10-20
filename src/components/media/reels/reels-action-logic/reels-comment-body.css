@@ -1,10 +1,8 @@
-
 /* =========================================================
    UG-CONNECT — PRO REELS COMMENTS
    TIKTOK-STYLE THREADS • ZERO NESTED INDENTATION
    THEME DNA • VERTICAL SCROLL • INPUT AT BOTTOM
    ========================================================= */
-
 
 /* =========================================================
    COMMENTS PANEL
@@ -27,7 +25,6 @@
 
   box-sizing: border-box !important;
 }
-
 
 /* =========================================================
    COMMENT LIST — THE ONLY SCROLLABLE AREA
@@ -56,7 +53,6 @@
   box-sizing: border-box !important;
 }
 
-
 /* =========================================================
    COMMENT ITEM
    ========================================================= */
@@ -76,10 +72,8 @@
   box-sizing: border-box !important;
 }
 
-
 /* =========================================================
    COMMENT THREAD WRAPPER
-   Replies stay in the same full-width column.
    ========================================================= */
 
 .reels-c-thread {
@@ -95,7 +89,6 @@
 
   box-sizing: border-box !important;
 }
-
 
 /* =========================================================
    AVATAR + COMMENT CONTENT
@@ -114,9 +107,6 @@
   margin: 0 !important;
   box-sizing: border-box !important;
 }
-
-
-/* Avatar */
 
 .reels-c-avatar {
   display: grid !important;
@@ -142,9 +132,6 @@
   box-sizing: border-box !important;
 }
 
-
-/* Comment content */
-
 .reels-c-content {
   display: flex !important;
   flex-direction: column !important;
@@ -159,7 +146,6 @@
   margin: 0 !important;
   box-sizing: border-box !important;
 }
-
 
 /* =========================================================
    COMMENT BUBBLE
@@ -186,9 +172,6 @@
   box-sizing: border-box !important;
 }
 
-
-/* Username */
-
 .reels-c-user {
   display: block !important;
 
@@ -204,9 +187,6 @@
   word-break: break-word !important;
 }
 
-
-/* Comment text */
-
 .reels-c-text {
   margin: 0 !important;
 
@@ -219,9 +199,6 @@
   overflow-wrap: anywhere !important;
   word-break: break-word !important;
 }
-
-
-/* Reaction attached to the bubble */
 
 .reels-c-my-emoji {
   position: absolute !important;
@@ -239,7 +216,6 @@
 
   box-sizing: border-box !important;
 }
-
 
 /* =========================================================
    COMMENT ACTIONS
@@ -261,13 +237,11 @@
   box-sizing: border-box !important;
 }
 
-
 .reels-c-time {
   color: hsl(var(--text-muted)) !important;
   font-size: 11px !important;
   opacity: 0.8 !important;
 }
-
 
 .reels-c-like,
 .reels-c-reply-btn,
@@ -294,23 +268,16 @@
   cursor: pointer !important;
 }
 
-
-/* Liked state uses the active theme accent */
-
 .reels-c-like.liked {
   color: hsl(var(--primary)) !important;
   opacity: 1 !important;
 }
-
-
-/* Comment options */
 
 .reels-c-dots-wrap {
   position: relative !important;
   flex-shrink: 0 !important;
   margin-left: auto !important;
 }
-
 
 .reels-c-dots-btn {
   display: grid !important;
@@ -335,12 +302,9 @@
   height: 22px !important;
 }
 
-/* if your icon uses 3 circles, make them bigger */
 .reels-c-dots-btn svg circle {
   r: 3.2 !important;
 }
-
-
 
 /* =========================================================
    EMOJI PICKER
@@ -367,7 +331,6 @@
   box-sizing: border-box !important;
 }
 
-
 .reels-c-emoji-picker button {
   display: grid !important;
   place-items: center !important;
@@ -388,7 +351,6 @@
 
   cursor: pointer !important;
 }
-
 
 /* =========================================================
    COMMENT MENU
@@ -414,7 +376,6 @@
   box-sizing: border-box !important;
 }
 
-
 .reels-c-menu-item {
   display: block !important;
 
@@ -438,29 +399,16 @@
   box-sizing: border-box !important;
 }
 
-
 .reels-c-menu-item:last-child {
   border-bottom: 0 !important;
 }
-
-
-/* Destructive menu action uses theme accent */
 
 .reels-c-menu-item.danger {
   color: hsl(var(--primary)) !important;
 }
 
-
-/* =========================================================
-   REPLIES — ONE STRING, NO HORIZONTAL INDENTATION
-   Every reply level starts at the same left edge.
-   No nested borders, padding, or cumulative margins.
-   ========================================================= */
-
-
 /* =========================================================
    REPLY THREAD — CONTINUOUS CONNECTOR
-   Theme-aware • No cumulative indentation
    ========================================================= */
 
 .reels-c-replies {
@@ -482,8 +430,6 @@
   box-sizing: border-box !important;
 }
 
-/* One continuous line for the entire visible reply group */
-
 .reels-c-replies::before {
   content: "" !important;
   position: absolute !important;
@@ -499,8 +445,6 @@
   z-index: 0 !important;
 }
 
-
-/* No individual borders: the parent draws the continuous line */
 .reels-c-replies > .reels-c-item {
   position: relative !important;
 
@@ -517,8 +461,6 @@
   box-sizing: border-box !important;
 }
 
-/* Keep nested reply groups aligned with the same thread axis.
-   Cancel the current reply item's 14px padding at each level. */
 .reels-c-replies .reels-c-replies {
   width: calc(100% + var(--reels-thread-offset)) !important;
   max-width: none !important;
@@ -530,7 +472,6 @@
   border: 0 !important;
 }
 
-/* Keep comment content from forcing horizontal overflow */
 .reels-c-replies .reels-c-bubble-wrap {
   display: flex !important;
   flex-direction: row !important;
@@ -549,13 +490,11 @@
   min-width: 0 !important;
 }
 
-/* Keep the connector behind comment content */
 .reels-c-replies > .reels-c-item > .reels-c-thread {
   position: relative !important;
   z-index: 1 !important;
 }
 
-/* Show/hide replies */
 .reels-c-show-replies {
   display: inline-flex !important;
   align-items: center !important;
@@ -579,17 +518,12 @@
   cursor: pointer !important;
 }
 
-/* Disable legacy connectors without hiding our new parent line */
 .reels-c-tree-line,
 .reels-c-replies > .reels-c-item::before,
 .reels-c-replies > .reels-c-item::after {
   display: none !important;
   content: none !important;
 }
-
-
-
-/* Prevent old tree connectors from returning */
 
 .reels-c-tree-line,
 .reels-c-replies > .reels-c-item::before,
@@ -599,9 +533,6 @@
   display: none !important;
   content: none !important;
 }
-
-
-/* Show replies / hide replies control */
 
 .reels-c-show-replies {
   display: inline-flex !important;
@@ -628,7 +559,6 @@
 
   cursor: pointer !important;
 }
-
 
 /* =========================================================
    INPUT BAR — STAYS BELOW THE SCROLLING LIST
@@ -664,9 +594,6 @@
   box-sizing: border-box !important;
 }
 
-
-/* Reply target banner */
-
 .reels-c-replying-to {
   display: flex !important;
   flex-direction: row !important;
@@ -693,9 +620,6 @@
   box-sizing: border-box !important;
 }
 
-
-/* Input row */
-
 .reels-c-input-wrap {
   display: flex !important;
   flex-direction: row !important;
@@ -710,9 +634,6 @@
 
   box-sizing: border-box !important;
 }
-
-
-/* Text input */
 
 .reels-c-input-wrap input {
   flex: 1 1 0 !important;
@@ -740,19 +661,14 @@
   box-sizing: border-box !important;
 }
 
-
 .reels-c-input-wrap input::placeholder {
   color: hsl(var(--text-muted)) !important;
   opacity: 1 !important;
 }
 
-
 .reels-c-input-wrap input:focus {
   border-color: hsl(var(--primary)) !important;
 }
-
-
-/* Send button */
 
 .reels-c-input-wrap button {
   display: grid !important;
@@ -779,7 +695,6 @@
   box-sizing: border-box !important;
 }
 
-
 /* =========================================================
    EMPTY STATE
    ========================================================= */
@@ -800,7 +715,6 @@
 
   box-sizing: border-box !important;
 }
-
 
 /* =========================================================
    TOAST
@@ -835,11 +749,7 @@
   box-sizing: border-box !important;
 }
 
-
-/* =========================================================
-   GLOBAL WIDTH SAFETY
-   Do not globally constrain SVG or icon dimensions.
-   ========================================================= */
+/* GLOBAL SAFETY */
 
 .reels-c-body *,
 .reels-c-body *::before,
@@ -847,14 +757,10 @@
   box-sizing: border-box !important;
 }
 
-
 .reels-c-body img,
 .reels-c-body video {
   max-width: 100% !important;
 }
-
-
-/* Keep flex descendants from forcing horizontal overflow */
 
 .reels-c-body,
 .reels-c-list,

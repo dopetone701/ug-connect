@@ -4,7 +4,7 @@ import { ReelsCommentBody } from "./reels-action-logic/reels-comment-body-full"
 import "./reels.css"
 
 export function ReelsCommentPanel() {
-  const { isOpen, close, movieId } = useCommentPanel()
+  const { isOpen, close, movieId, movie } = useCommentPanel() as any
 
   if (!isOpen || !movieId) return null
 
@@ -21,7 +21,7 @@ export function ReelsCommentPanel() {
             </svg>
           </button>
         </div>
-        <ReelsCommentBody movieId={movieId} />
+        <ReelsCommentBody movieId={movieId} movie={movie} />
       </div>
     </>
   )
