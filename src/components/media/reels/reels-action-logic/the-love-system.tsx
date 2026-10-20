@@ -32,8 +32,8 @@ function setLocalLike(movieId: string, liked: boolean) {
   else localStorage.removeItem(`ugc_heart_${movieId}`)
 }
 
-export function TheLoveSystem({ movieId, initialCount = 1, size = 22 }: Props) {
-  const [count, setCount] = useState(() => Math.max(initialCount, 1))
+export function TheLoveSystem({ movieId, initialCount = 0, size = 22 }: Props) {
+  const [count, setCount] = useState(initialCount)
   const [liked, setLiked] = useState(false)
   const [pop, setPop] = useState(false)
   const [busy, setBusy] = useState(false)
@@ -43,7 +43,7 @@ export function TheLoveSystem({ movieId, initialCount = 1, size = 22 }: Props) {
   }, [movieId])
 
   useEffect(() => {
-    setCount(Math.max(initialCount, 1))
+    setCount(initialCount)
   }, [initialCount])
 
   const toggle = useCallback(async () => {
@@ -52,10 +52,10 @@ export function TheLoveSystem({ movieId, initialCount = 1, size = 22 }: Props) {
     const newLiked = !liked
     const deviceId = getDeviceId()
 
-    // Optimistic UI
+    // Optimistic - real count, 0 allowed
     setLiked(newLiked)
     setLocalLike(movieId, newLiked)
-    setCount((c) => (newLiked ? c + 1 : Math.max(1, c - 1)))
+    setCount((c) => (newLiked ? c + 1 : Math.max(0, c - 1)))
     setPop(true)
     setTimeout(() => setPop(false), 320)
 
@@ -66,8 +66,8 @@ export function TheLoveSystem({ movieId, initialCount = 1, size = 22 }: Props) {
         body: JSON.stringify({ movieId, deviceId, action: newLiked ? "like" : "unlike" }),
       })
       const data = await res.json()
-      if (data?.heart_count) {
-        setCount(Math.max(data.heart_count, 1))
+      if (typeof data?.heart_count === "number") {
+        setCount(data.heart_count)
       }
     } catch (e) {
       console.error("heart sync failed", e)
@@ -96,4 +96,3 @@ export function TheLoveSystem({ movieId, initialCount = 1, size = 22 }: Props) {
 
 export const LoveSystem = TheLoveSystem
 export default TheLoveSystem
-

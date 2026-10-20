@@ -134,17 +134,36 @@
 .apple-play-pure{ position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); z-index:20; pointer-events:none; }
 .ra-heart-pop{ animation: heartPop 0.32s cubic-bezier(0.175,0.885,0.32,1.275); }
 @keyframes heartPop{ 0%{transform:scale(1)} 50%{transform:scale(1.4)} 100%{transform:scale(1)} }
-.reel-root.reels-has-comments{ background:#000!important; }
-.reel-root.reels-has-comments .reels-tiktok-container{ overflow:hidden!important; pointer-events:none!important; }
+.reel-root.reels-has-comments{ 
+  background:#000!important; 
+  height:100dvh!important;
+  height:100svh!important;
+  overflow:hidden!important;
+}
+.reel-root.reels-has-comments .reels-tiktok-container{ 
+  overflow:hidden!important; 
+  pointer-events:none!important; 
+  height:100dvh!important;
+  height:100svh!important;
+}
 .reel-root.reels-has-comments .reels-tiktok-item{ display:none!important; }
 .reel-root.reels-has-comments .reels-tiktok-item.active{
   display:block!important;
-  transform:scale(0.92) translateY(-7%)!important;
+  position:absolute!important;
+  top:0!important;
+  left:50%!important;
+  width:92%!important;
+  height:28vh!important;
+  min-height:160px!important;
+  max-height:28vh!important;
+  transform:translateX(-50%) scale(1)!important;
   border-radius:18px!important;
   overflow:hidden!important;
-  transition:transform 0.45s cubic-bezier(0.32,0.72,0,1), border-radius 0.45s ease!important;
+  z-index:10!important;
   pointer-events:none!important;
+  transition:all 0.45s cubic-bezier(0.32,0.72,0,1)!important;
 }
+
 .reel-root.reels-has-comments .reel-actions,
 .reel-root.reels-has-comments .reel-info,
 .reel-root.reels-has-comments .reel-comment-bar,
@@ -156,17 +175,30 @@
   left:0!important;
   right:0!important;
   height:72vh!important;
-  max-height:75vh!important;
+  max-height:calc(100dvh - 28vh)!important;
+  top:auto!important;
+  bottom:0!important;
   background:hsl(var(--bg))!important;
   border-radius:20px 20px 0 0!important;
   z-index:50!important;
   transform:translateY(100%)!important;
-  transition:transform 0.45s cubic-bezier(0.32,0.72,0,1)!important;
+  transition:transform 0.45s cubic-bezier(0.32,0.72,0,1), height 0.25s ease, max-height 0.25s ease!important;
   display:flex!important;
   flex-direction:column!important;
   overflow:hidden!important;
   box-shadow:0 -10px 40px rgba(0,0,0,0.6)!important;
 }
+/* WHEN KEYBOARD OPEN - SHOW VIDEO + 2 COMMENTS + INPUT */
+.reels-comment-panel:focus-within{
+  height:42vh!important;
+  max-height:42vh!important;
+}
+.reels-comment-panel:focus-within .reels-comment-list{
+  max-height:calc(42vh - 110px)!important;
+  overflow-y:auto!important;
+  -webkit-overflow-scrolling:touch!important;
+}
+
 .reels-comment-panel.open{ transform:translateY(0)!important; }
 .reels-comment-handle{ width:40px!important; height:4px!important; background:hsl(var(--border))!important; border-radius:10px!important; margin:12px auto 0!important; }
 .reels-comment-header{ display:flex!important; justify-content:space-between!important; align-items:center!important; padding:12px 16px!important; border-bottom:1px solid hsl(var(--border))!important; font-weight:700!important; font-size:15px!important; }
@@ -233,3 +265,12 @@
 }
 
 
+@supports (-webkit-touch-callout: none) {
+  .reel-root.reels-has-comments .reels-tiktok-item.active{
+    height:28svh!important;
+    max-height:28svh!important;
+  }
+  .reels-comment-panel{
+    max-height:calc(100svh - 28svh)!important;
+  }
+}
