@@ -32,27 +32,40 @@ export default function UserAccountPage({ onEdit, onSelect }: Props) {
   const prevIsGuestRef = useRef(false);
 
   const loadUser = async () => {
-    try {
-      const raw = localStorage.getItem("ug_user");
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        setUser(parsed);
+  try {
+    const raw = localStorage.getItem("ug_user");
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      setUser(parsed);
+      // SYNC account id for comments - THIS IS THE FIX
+      if (parsed.id && !parsed.isGuest) {
+        localStorage.setItem("ugc_account_id", parsed.id);
+        localStorage.setItem("account_id", parsed.id);
+        localStorage.setItem("user_id", parsed.id);
       }
-      const token = localStorage.getItem("ug_token");
-      if (!token) return;
-      const res = await fetch(`${WORKER_URL}/api/user/me`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (res.ok) {
-        const data = await res.json();
-        const fresh = data.user || data;
-        setUser(fresh);
-        localStorage.setItem("ug_user", JSON.stringify(fresh));
-      }
-    } catch (e) {
-      console.log("loadUser failed", e);
     }
-  };
+    const token = localStorage.getItem("ug_token");
+    if (!token) return;
+    const res = await fetch(`${WORKER_URL}/api/user/me`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (res.ok) {
+      const data = await res.json();
+      const fresh = data.user || data;
+      setUser(fresh);
+      localStorage.setItem("ug_user", JSON.stringify(fresh));
+      // SYNC again after fresh fetch
+      if (fresh.id && !fresh.isGuest) {
+        localStorage.setItem("ugc_account_id", fresh.id);
+        localStorage.setItem("account_id", fresh.id);
+        localStorage.setItem("user_id", fresh.id);
+      }
+    }
+  } catch (e) {
+    console.log("loadUser failed", e);
+  }
+};
+
 
   // auto open real edit when guest -> real user (after signin)
   useEffect(() => {

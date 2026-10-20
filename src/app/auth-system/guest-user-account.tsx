@@ -27,18 +27,22 @@ export function createGuestUser(): GuestUser {
 
 export function saveGuestSession() {
   const guest = createGuestUser();
-  
+ 
   // YOUR OLD KEYS (keep for compat)
   localStorage.setItem("ug_user", JSON.stringify(guest));
   localStorage.setItem("ug_guest", "1");
   localStorage.setItem("ug_guest_id", guest.id);
-  
-  // FIX: THIS IS THE KEY NOX V5 CHECKS - THIS WAS MISSING
   localStorage.setItem("ug_guest_session", JSON.stringify(guest));
   
+  // FIX: SYNC FOR COMMENTS - guest can delete his own comments on same device
+  localStorage.setItem("ugc_account_id", guest.id);
+  localStorage.setItem("account_id", guest.id);
+  localStorage.setItem("user_id", guest.id);
+  localStorage.setItem("ugc_username", guest.name);
+ 
   // clear force auth lock
   sessionStorage.removeItem("ug_nox_force_auth");
-  
+ 
   window.dispatchEvent(new CustomEvent("ug-auth-changed"));
   window.dispatchEvent(new CustomEvent("ug-guest-continue" as any));
   return guest;
@@ -49,6 +53,9 @@ export function clearGuestSession() {
   localStorage.removeItem("ug_guest_id");
   localStorage.removeItem("ug_guest_session");
   localStorage.removeItem("ug_user");
+  localStorage.removeItem("ugc_account_id");
+  localStorage.removeItem("account_id");
+  localStorage.removeItem("user_id");
   sessionStorage.removeItem("ug_nox_force_auth");
 }
 

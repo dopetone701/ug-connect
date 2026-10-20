@@ -315,24 +315,31 @@
 .reels-c-dots-btn {
   display: grid !important;
   place-items: center !important;
-
-  width: 28px !important;
-  height: 28px !important;
-
+  width: 36px !important;
+  height: 36px !important;
+  min-width: 36px !important;
+  min-height: 36px !important;
   margin-left: auto !important;
   padding: 0 !important;
-
   border: 0 !important;
   border-radius: 50% !important;
-
-  background: transparent !important;
-  color: hsl(var(--text-muted)) !important;
-
-  opacity: 0.8 !important;
+  background: hsl(var(--surface)) !important;
+  color: hsl(var(--text)) !important;
+  opacity: 1 !important;
   cursor: pointer !important;
-
   flex-shrink: 0 !important;
 }
+
+.reels-c-dots-btn svg {
+  width: 22px !important;
+  height: 22px !important;
+}
+
+/* if your icon uses 3 circles, make them bigger */
+.reels-c-dots-btn svg circle {
+  r: 3.2 !important;
+}
+
 
 
 /* =========================================================
