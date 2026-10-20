@@ -97,8 +97,14 @@ export function ReelsActions({
         localStorage.setItem(`reels_comment_draft_${movieId}`, comment)
       } catch {}
     }
+       const tempId = `temp-${Date.now()}`
+    try { localStorage.setItem(`reels_last_sent_${movieId}`, tempId) } catch {}
     open(movieId, movie)
     setComment("")
+    setTimeout(() => {
+      document.querySelector('.reels-c-list, .reels-comment-list')?.scrollTo({ top: 0, behavior: 'smooth' })
+    }, 400)
+
     onCommentClick?.()
   }
 
@@ -109,6 +115,7 @@ export function ReelsActions({
     if (sending) return
     setSending(true)
     setLiveCommentCount(prev => prev + 1)
+    const tempId = `temp-${Date.now()}`
     try {
       const res = await fetch(`${WORKER_URL}/comments`, {
         method: "POST",
@@ -117,7 +124,18 @@ export function ReelsActions({
       })
       if (!res.ok) throw new Error("failed")
       localStorage.setItem(`reels_comments_updated_${movieId}`, Date.now().toString())
+      localStorage.setItem(`reels_last_sent_${movieId}`, tempId)
       window.dispatchEvent(new CustomEvent(`reels_comments_updated_${movieId}`))
+      
+      // OPEN PANEL AND SCROLL TO HIS COMMENT
+      open(movieId, movie)
+      setTimeout(() => {
+        const list = document.querySelector('.reels-c-list, .reels-comment-list') as HTMLElement
+        if (list) {
+          list.scrollTo({ top: 0, behavior: 'smooth' }) // new comments at top
+        }
+      }, 400)
+
     } catch {
       setLiveCommentCount(prev => Math.max(0, prev - 1))
       try { sessionStorage.setItem(`reels_comment_draft_${movieId}`, genreChip) } catch {}
@@ -126,6 +144,7 @@ export function ReelsActions({
       setTimeout(() => setSending(false), 500)
     }
   }
+
 
   return (
     <>

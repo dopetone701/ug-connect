@@ -1,6 +1,8 @@
+
 "use client"
+
 import "./reels-comment-body.css"
-import { useState, useRef, useEffect } from "react"
+import { useState, useRef, useEffect, useCallback } from "react"
 import { useCommentLoader } from "./reels-comment-section-logic/handle-load"
 import { useSendComment } from "./reels-comment-section-logic/send-comment"
 import { useDeleteComment } from "./reels-comment-section-logic/delete-comment"
@@ -19,89 +21,251 @@ export function ReelsCommentBody({ movieId, movie, onCountChange }: Props) {
   const [text, setText] = useState("")
   const [replyTo, setReplyTo] = useState<any>(null)
   const [toast, setToast] = useState("")
-  const inputRef = useRef<HTMLInputElement>(null)
-  const deletedIdsRef = useRef<Set<string>>(new Set())
 
-  const showToast = (msg: string) => { setToast(msg); setTimeout(() => setToast(""), 2000) }
-  const { load, processQueue } = useCommentLoader(movieId, deletedIdsRef, setComments, onCountChange)
-  const { send } = useSendComment({ movieId, setComments, replyTo, setReplyTo, text, setText, load })
-  const { handleDelete } = useDeleteComment({ movieId, deletedIdsRef, setComments, onCountChange, showToast })
+  const inputRef = useRef<HTMLInputElement>(null)
+  const listRef = useRef<HTMLDivElement>(null)
+  const deletedIdsRef = useRef<Set<string>>(new Set())
+  const sendingRef = useRef(false)
+  const mountedRef = useRef(true)
+
+  const showToast = useCallback((msg: string) => {
+    setToast(msg)
+    setTimeout(() => {
+      if (mountedRef.current) setToast("")
+    }, 2000)
+  }, [])
+
+  const { load, processQueue } = useCommentLoader(
+    movieId,
+    deletedIdsRef,
+    setComments,
+    onCountChange
+  )
+
+  const { send: originalSend } = useSendComment({
+    movieId,
+    setComments,
+    replyTo,
+    setReplyTo,
+    text,
+    setText,
+    load,
+  })
+
+  const { handleDelete } = useDeleteComment({
+    movieId,
+    deletedIdsRef,
+    setComments,
+    onCountChange,
+    showToast,
+  })
+
+  // Scroll only when explicitly requested after sending.
+  // Never scroll in response to background comment updates.
+  const scrollToTopOnSend = useCallback(() => {
+    requestAnimationFrame(() => {
+      const list = listRef.current
+      if (list) list.scrollTop = 0
+    })
+  }, [])
 
   useEffect(() => {
-    deletedIdsRef.current.clear(); load(); processQueue()
-    const i = setInterval(processQueue, 5000)
-    return () => clearInterval(i)
+    mountedRef.current = true
+    deletedIdsRef.current.clear()
+
+    void load()
+    void processQueue()
+
+    const interval = setInterval(() => {
+      void processQueue()
+    }, 5000)
+
+    return () => {
+      mountedRef.current = false
+      clearInterval(interval)
+    }
   }, [movieId, load, processQueue])
 
-  // INSTANT POST - CLICK BUNDLE = POST INSTANTLY
+  // Send a normal comment or reply.
+  const handleSendWrapper = async () => {
+    if (!text.trim() || sendingRef.current) return
+
+    sendingRef.current = true
+
+    // Trigger scrolling only because the user pressed Send.
+    scrollToTopOnSend()
+
+    try {
+      await originalSend()
+      scrollToTopOnSend()
+    } finally {
+      sendingRef.current = false
+    }
+  }
+
+  // Send an emoji instantly and put it at the top.
   const handleFactoryInstantPost = async (emoji: string) => {
-    // Optimistic - add instantly to UI
-    const tempId = `temp-${Date.now()}`
+    if (sendingRef.current) return
+
+    sendingRef.current = true
+
+    const parentId = replyTo?.id ?? replyTo?._id ?? null
+    const tempId = `temp-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`
+
     const optimisticComment = {
       id: tempId,
       text: emoji,
       username: "You",
       userId: "me",
       createdAt: new Date().toISOString(),
-      replyTo: replyTo?.id || null,
+      replyTo: parentId,
+      parentId,
       likes: 0,
       liked: false,
+      replies: [],
+      _optimistic: true,
     }
 
-    setComments(prev => replyTo ? prev : [optimisticComment, ...prev])
+    // Immediately insert at the top.
+    setComments(previous => [
+      optimisticComment,
+      ...previous.filter(comment => comment.id !== tempId),
+    ])
+
+    // Scroll only because the emoji was tapped.
+    scrollToTopOnSend()
 
     try {
-      // Send via your existing send logic but with emoji directly
-      const res = await fetch(`/api/movies/${movieId}/comments`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          text: emoji,
-          parentId: replyTo?.id || null,
-        })
+      const response = await fetch(
+        `/api/movies/${encodeURIComponent(movieId)}/comments`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            text: emoji,
+            parentId,
+          }),
+        }
+      )
+
+      if (!response.ok) throw new Error("Failed to send comment")
+
+      const payload = await response.json()
+      const saved = payload.comment ?? payload
+      const realId = String(saved.id ?? saved._id ?? tempId)
+
+      setComments(previous => {
+        const withoutDuplicate = previous.filter(
+          comment =>
+            comment.id !== tempId &&
+            String(comment.id ?? comment._id) !== realId
+        )
+
+        // Replies belong to their parent, not the top-level list.
+        if (parentId) {
+          const attachReply = (items: any[]): any[] =>
+            items.map(item => {
+              if (String(item.id ?? item._id) === String(parentId)) {
+                const replies = Array.isArray(item.replies)
+                  ? item.replies
+                  : []
+
+                return {
+                  ...item,
+                 replies: [
+  { ...optimisticComment, ...saved, id: realId },
+  ...replies.filter((existingReply: any) =>
+    String(existingReply.id ?? existingReply._id) !== realId
+  ),
+],
+
+                }
+              }
+
+              if (Array.isArray(item.replies)) {
+                return { ...item, replies: attachReply(item.replies) }
+              }
+
+              return item
+            })
+
+          return attachReply(withoutDuplicate)
+        }
+
+        // A new top-level comment always goes first.
+        return [
+          { ...optimisticComment, ...saved, id: realId },
+          ...withoutDuplicate,
+        ]
       })
-      
-      if (!res.ok) throw new Error("Failed")
-      
-      const saved = await res.json()
-      
-      // Replace temp with real
-      setComments(prev => prev.map(c => c.id === tempId ? { ...saved, ...saved.comment || saved } : c))
+
       onCountChange?.(1)
-      
-      // Clear reply after posting
+
       if (replyTo) setReplyTo(null)
-      
-    } catch (e) {
-      // Remove optimistic on fail and fallback to text insert
-      setComments(prev => prev.filter(c => c.id !== tempId))
-      setText((prev) => (prev ? `${prev} ${emoji}` : emoji))
+
+      // No effect-based auto-scroll. Only the send action scrolls.
+      scrollToTopOnSend()
+    } catch {
+      setComments(previous =>
+        previous.filter(comment => comment.id !== tempId)
+      )
+
+      setText(previous => (previous ? `${previous} ${emoji}` : emoji))
       inputRef.current?.focus()
+      showToast("Comment failed to send. Please try again.")
+    } finally {
+      sendingRef.current = false
     }
   }
 
-  // Get genre emojis
   const pack = movie ? getEmojisForMovie(movie) : null
 
   return (
     <div className="reels-c-body">
-      <div className="reels-c-list">
-        <RenderCommentList comments={comments} onReply={(cm: any) => { setReplyTo(cm); setTimeout(() => inputRef.current?.focus(), 100) }} onDelete={handleDelete} onShare={showToast} />
+      <div
+        ref={listRef}
+        className="reels-c-list"
+        style={{
+          overflowY: "auto",
+          WebkitOverflowScrolling: "touch",
+        }}
+      >
+        <RenderCommentList
+          comments={comments}
+          onReply={(comment: any) => {
+            setReplyTo(comment)
+            setTimeout(() => inputRef.current?.focus(), 100)
+          }}
+          onDelete={handleDelete}
+          onShare={showToast}
+        />
       </div>
 
       <div className="reels-c-input-bar">
-        {replyTo && <div className="reels-c-replying-to"><span>Replying to <b>{replyTo.username}</b></span><button onClick={() => setReplyTo(null)} type="button">×</button></div>}
-        
-        {/* EMOJI BUNDLE - INSIDE INPUT AREA - CLICK = INSTANT POST */}
+        {replyTo && (
+          <div className="reels-c-replying-to">
+            <span>
+              Replying to <b>{replyTo.username}</b>
+            </span>
+            <button
+              onClick={() => setReplyTo(null)}
+              type="button"
+            >
+              ×
+            </button>
+          </div>
+        )}
+
         {pack && (
           <div className="emoji-factory-bar-in-input">
             <div className="emoji-factory-scroll">
-              {pack.emojis.map((emojiSet, idx) => (
+              {pack.emojis.map((emojiSet: string, index: number) => (
                 <button
-                  key={`factory-${idx}`}
+                  key={`factory-${index}`}
                   type="button"
                   className="emoji-factory-chip-instant"
-                  onClick={() => handleFactoryInstantPost(emojiSet)}
+                  onClick={() => void handleFactoryInstantPost(emojiSet)}
+                  disabled={sendingRef.current}
                 >
                   {emojiSet}
                 </button>
@@ -111,10 +275,36 @@ export function ReelsCommentBody({ movieId, movie, onCountChange }: Props) {
         )}
 
         <div className="reels-c-input-wrap">
-          <input ref={inputRef} value={text} onChange={(e) => setText(e.target.value)} onKeyDown={(e) => e.key === "Enter" && send()} placeholder={replyTo ? `Reply to ${replyTo.username}...` : "Add a comment..."} />
-          <button onClick={send} disabled={!text.trim()} type="button"><SendIcon size={22} /></button>
+          <input
+            ref={inputRef}
+            value={text}
+            onChange={event => setText(event.target.value)}
+            onKeyDown={event => {
+              if (
+                event.key === "Enter" &&
+                !event.nativeEvent.isComposing
+              ) {
+                event.preventDefault()
+                void handleSendWrapper()
+              }
+            }}
+            placeholder={
+              replyTo
+                ? `Reply to ${replyTo.username}...`
+                : "Add a comment..."
+            }
+          />
+
+          <button
+            onClick={() => void handleSendWrapper()}
+            disabled={!text.trim()}
+            type="button"
+          >
+            <SendIcon size={22} />
+          </button>
         </div>
       </div>
+
       {toast && <div className="reels-c-toast">{toast}</div>}
     </div>
   )
