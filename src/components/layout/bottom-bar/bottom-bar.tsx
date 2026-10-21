@@ -14,12 +14,14 @@ export default function BottomBar() {
 
   if (watchOpen && !watchMinimized) return null;
 
+  // Don't render bottom bar on info pages
+  if (pathname?.startsWith("/info")) return null;
+
   const type = getBarType(pathname);
 
   if (type === "universal-hidden") return null;
   if (type === "universal" && universalEnabled) return <UniversalBottomBar />;
   if (type === "movies") return <MoviesBottomBar />;
 
-  // launch fallback
   return <MoviesBottomBar />;
 }
