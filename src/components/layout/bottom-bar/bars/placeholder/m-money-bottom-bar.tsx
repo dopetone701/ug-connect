@@ -1,2 +1,4 @@
 'use client';
-export default function m-moneyBottomBar(){ return null; }
+export default function MMoneyBottomBar(){ 
+  return null; 
+}

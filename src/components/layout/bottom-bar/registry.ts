@@ -5,9 +5,11 @@ export const SERVICE_PREFIXES = {
   jobs: "/jobs",
   food: "/ug-foods",
   mmoney: "/mobile-money",
-};
+} as const;
 
-export function get-bar-type(pathname: string) {
+export type BarType = "movies" | "jobs" | "food" | "mmoney" | "universal" | "universal-hidden";
+
+export function getBarType(pathname: string): BarType {
   if (!UNIVERSAL_ENABLED) {
     if (pathname === "/" || pathname.startsWith("/services")) return "universal-hidden";
     return "movies";
@@ -19,3 +21,7 @@ export function get-bar-type(pathname: string) {
   if (pathname === "/" || pathname === "/services") return "universal";
   return "movies";
 }
+
+// backward alias if you imported the old hyphen name somewhere
+export const getBarTypeAlias = getBarType;
+

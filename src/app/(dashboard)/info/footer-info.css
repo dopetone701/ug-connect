@@ -1,0 +1,108 @@
+.info-page-root {
+  min-height: 100vh;
+  background: hsl(var(--bg));
+  color: hsl(var(--text));
+}
+
+.info-chips-wrap {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  background: hsl(var(--bg));
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid hsl(var(--border));
+  padding: 10px 0;
+}
+
+.info-chips-scroll {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 0 16px 2px;
+  scrollbar-width: none;
+}
+.info-chips-scroll::-webkit-scrollbar { display: none; }
+
+.info-chip {
+  white-space: nowrap;
+  padding: 8px 16px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 500;
+  border: 1px solid hsl(var(--border));
+  background: hsl(var(--surface));
+  color: hsl(var(--text));
+  flex-shrink: 0;
+  transition: all .2s;
+  cursor: pointer;
+}
+.info-chip:hover {
+  background: hsl(var(--surface-hover, var(--border)));
+}
+.info-chip.active {
+  background: hsl(var(--text));
+  color: hsl(var(--bg));
+  border-color: hsl(var(--text));
+}
+
+.info-sections {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-width: 900px;
+  margin: 0 auto;
+  padding-bottom: 120px;
+}
+
+.info-section {
+  scroll-margin-top: 70px;
+  background: hsl(var(--surface));
+  border: 1px solid hsl(var(--border));
+  border-radius: 12px;
+  padding: 16px;
+  overflow: hidden;
+}
+
+.info-section h2 {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: hsl(var(--text));
+  letter-spacing: -0.1px;
+}
+
+.info-section p, .info-section li {
+  font-size: 13px;
+  line-height: 1.5;
+  color: hsl(var(--text));
+}
+.info-section p {
+  color: hsl(var(--text-muted, var(--text)));
+}
+.info-section ul { margin-top: 8px; padding-left: 18px; }
+.info-section strong { color: hsl(var(--text)); }
+
+.info-detail-btn {
+  margin-top: 12px;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 10px 16px;
+  border-radius: 12px;
+  background: hsl(var(--surface));
+  border: 1px solid hsl(var(--border));
+  color: hsl(var(--text));
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: background 0.12s;
+}
+.info-detail-btn:hover {
+  background: hsl(var(--surface-hover, var(--border)));
+}
+.info-detail-btn:active {
+  transform: scale(0.98);
+}
+
