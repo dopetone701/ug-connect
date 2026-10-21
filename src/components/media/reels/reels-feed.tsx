@@ -1,5 +1,4 @@
-
-'use client'
+"use client"
 
 import { useEffect, useRef, useState, useCallback } from "react"
 import { useRouter } from "next/navigation"
@@ -21,6 +20,7 @@ export function ReelsFeed({
 
   const [active, setActive] = useState(0)
   const [isPlaying, setIsPlaying] = useState(true)
+  const [autoScroll, setAutoScroll] = useState(false)
 
   const rawList = movies?.length ? movies : currentMovie ? [currentMovie] : []
 
@@ -30,6 +30,25 @@ export function ReelsFeed({
   })
 
   const safeStart = Math.min(startIndex, Math.max(0, list.length - 1))
+
+  // ---- AUTO SCROLL STATE ----
+  useEffect(() => {
+    try {
+      const v = localStorage.getItem("ugc_auto_scroll")
+      setAutoScroll(v === "true")
+    } catch {}
+    const onChanged = (e: any) => {
+      const next = e?.detail !== undefined ? !!e.detail : (localStorage.getItem("ugc_auto_scroll") === "true")
+      setAutoScroll(next)
+    }
+    window.addEventListener("ugc_auto_scroll_changed" as any, onChanged)
+    window.addEventListener("storage", (ev: StorageEvent) => {
+      if (ev.key === "ugc_auto_scroll") setAutoScroll(ev.newValue === "true")
+    })
+    return () => {
+      window.removeEventListener("ugc_auto_scroll_changed" as any, onChanged)
+    }
+  }, [])
 
   useEffect(() => {
     const c = containerRef.current
@@ -58,6 +77,56 @@ export function ReelsFeed({
     Array.from(c.children).forEach((child) => obs.observe(child))
     return () => obs.disconnect()
   }, [list.length])
+
+  // ---- AUTO SCROLL ACTIVATION / DEACTIVATION ----
+  const scrollToIndex = useCallback((idx: number) => {
+    const c = containerRef.current
+    if (!c) return
+    if (idx < 0 || idx >= list.length) return
+    c.scrollTo({ top: c.clientHeight * idx, behavior: "smooth" as any })
+    setActive(idx)
+    setIsPlaying(true)
+  }, [list.length])
+
+  const scrollToNext = useCallback(() => {
+    if (active < list.length - 1) {
+      scrollToIndex(active + 1)
+    }
+  }, [active, list.length, scrollToIndex])
+
+  useEffect(() => {
+    if (!autoScroll) return
+    const c = containerRef.current
+    if (!c) return
+
+    // Listen for video ended on active reel
+    const handleEnded = () => {
+      // Small delay like TikTok / Reels
+      setTimeout(() => {
+        scrollToNext()
+      }, 800)
+    }
+
+    const attach = () => {
+      const activeVideo = document.querySelector('.reels-tiktok-item.active .reel-video') as HTMLVideoElement
+      if (!activeVideo) return null
+      activeVideo.addEventListener('ended', handleEnded)
+      return activeVideo
+    }
+
+    let video = attach()
+    // Re-attach when active changes (mutation observer on active class)
+    const mo = new MutationObserver(() => {
+      if (video) video.removeEventListener('ended', handleEnded)
+      video = attach()
+    })
+    mo.observe(c, { attributes: true, subtree: true, attributeFilter: ['class'] })
+
+    return () => {
+      if (video) video.removeEventListener('ended', handleEnded)
+      mo.disconnect()
+    }
+  }, [autoScroll, active, scrollToNext])
 
   const handleTogglePlay = useCallback(() => {
     setIsPlaying((prev) => !prev)
@@ -100,6 +169,7 @@ export function ReelsFeed({
 
             <ReelsActions
               movieId={String(m.id)}
+              movie={m}
               heartCount={(m as any).heart_count || 1}
               commentCount={(m as any).comment_count || 0}
               onClose={onClose}

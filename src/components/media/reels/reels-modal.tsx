@@ -1,8 +1,31 @@
-'use client'
+"use client"
 import { useRouter } from "next/navigation"
 import { useWatchDrawer } from "@/stores/use-watch-drawer"
 import { useReelsDrawer } from "@/stores/use-reels-drawer"
 import { useMovieStore } from "@/stores/use-movie-store"
+
+function cleanVj(raw: any): string {
+  if (!raw) return ""
+  let s = String(raw).trim()
+  s = s.replace(/^VJ\s+/i, "").replace(/^VJ$/i, "").trim()
+  s = s.replace(/^VJ\.\s*/i, "").trim()
+  return s
+}
+
+function getRealVj(movie: any): string {
+  if (!movie) return "UG"
+  const raw = movie.vj || movie.translatedBy || movie.vjs?.[0] || movie.channel || movie.narrator || movie.vjs || movie.VJ || ""
+  const cleaned = cleanVj(raw)
+  if (cleaned && cleaned.toUpperCase() !== "UG") return cleaned
+  try {
+    const ls = localStorage.getItem("ugc_current_vj") || localStorage.getItem("ugc_last_reel_vj")
+    if (ls) {
+      const lsClean = cleanVj(ls)
+      if (lsClean && lsClean.toUpperCase() !== "UG") return lsClean
+    }
+  } catch {}
+  return cleaned || "UG"
+}
 
 export function ReelsModal({ current, onWatchFull }: any) {
   const router = useRouter()
@@ -12,12 +35,19 @@ export function ReelsModal({ current, onWatchFull }: any) {
 
   if(!current) return null
 
+  const realVj = getRealVj(current)
+  const displayVj = realVj && realVj.toUpperCase() !== "UG" ? realVj : ""
+
   const handleClick = () => {
     const id = String(current.id)
-    const preview = (current as any).preview_urls?.[0] || (current as any).preview_url || (current as any).trailer_url
+    const preview = (current as any).preview_urls?.[0] || (current as any).preview_url || (current as any).trailer_url || (current as any).video_preview_url
 
     try{
       addRecent?.(id)
+      if (realVj && realVj.toUpperCase() !== "UG") {
+        localStorage.setItem("ugc_current_vj", realVj)
+        localStorage.setItem("ugc_last_reel_vj", realVj)
+      }
       sessionStorage.setItem(`movie_preload_${id}`, JSON.stringify({
         id,
         title: current.title,
@@ -26,19 +56,17 @@ export function ReelsModal({ current, onWatchFull }: any) {
         preview_url: preview,
         preview_urls: current.preview_urls || (preview? [preview] : []),
         genre: current.genre,
-        vj: current.vj,
+        vj: realVj,
         description: current.description || current.desc
       }))
     }catch{}
 
-    // PC -> use parent push
     if (typeof window!== "undefined" && window.innerWidth > 768) {
       if (onWatchFull) onWatchFull()
       else router.push(`/movies/watch/${id}?t=full`)
       return
     }
 
-    // MOBILE -> open watch drawer like MovieCard
     closeReels?.()
     setTimeout(() => openDrawer(id), 120)
   }
@@ -49,7 +77,7 @@ export function ReelsModal({ current, onWatchFull }: any) {
       <p className="reel-desc">{current.description? `${current.description.slice(0,110)}...` : ""}</p>
       <div className="reel-pills">
         {current.genre && <span style={{ background:"hsl(var(--surface))", border:"1px solid hsl(var(--border))", color:"hsl(var(--text))"}}>{current.genre}</span>}
-        {current.vj && <span style={{ background:"hsl(var(--surface))", border:"1px solid hsl(var(--border))", color:"hsl(var(--text))"}}>{current.vj}</span>}
+        {displayVj && <span style={{ background:"hsl(var(--surface))", border:"1px solid hsl(var(--border))", color:"hsl(var(--text))"}}>VJ {displayVj}</span>}
       </div>
       <button
         type="button"
@@ -62,3 +90,4 @@ export function ReelsModal({ current, onWatchFull }: any) {
     </div>
   )
 }
+

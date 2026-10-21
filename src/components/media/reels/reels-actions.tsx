@@ -8,6 +8,7 @@ import { useCommentPanel } from "@/stores/use-comment-panel"
 import { briefNumber } from "@/stores/use-brief-numbers"
 import { getEmojisForMovie } from "./reels-action-logic/reels-comment-section-logic/emoji-factory"
 import { MyListSystem } from "./reels-action-logic/my-list-sytem"
+import { useDotsPanel } from "@/stores/use-dots-panel"
 import { shareReel, getReelShareUrl } from "./reels-action-logic/share-system"
 
 const WORKER_URL = "https://comment-actions-server-api.connectu89.workers.dev"
@@ -61,6 +62,7 @@ export function ReelsActions({
   const [sending, setSending] = useState(false)
   const [sharing, setSharing] = useState(false)
   const { open } = useCommentPanel()
+  const { open: openDots } = useDotsPanel()
 
   useEffect(() => { setLiveCommentCount(commentCount) }, [commentCount])
   useEffect(() => { setLiveShareCount(shareCount) }, [shareCount])
@@ -223,7 +225,7 @@ export function ReelsActions({
           </span>
           <span className="ra-label">{liveShareCount > 0 ? briefNumber(liveShareCount) : "Share"}</span>
         </button>
-        <button type="button" className="ra-btn" aria-label="More options">
+        <button type="button" className="ra-btn" aria-label="More options" onClick={() => openDots(movieId, movie)}>
           <span className="ra-icon-bg"><svg viewBox="0 0 24 24" width="22" height="22" fill="hsl(var(--text))"><circle cx="12" cy="12" r="1.8" /><circle cx="19.5" cy="12" r="1.8" /><circle cx="4.5" cy="12" r="1.8" /></svg></span>
         </button>
       </div>

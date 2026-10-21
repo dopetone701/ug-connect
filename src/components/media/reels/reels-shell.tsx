@@ -3,6 +3,7 @@ import { useEffect } from "react"
 import "./reels.css"
 import { useCommentPanel } from "@/stores/use-comment-panel"
 import { ReelsCommentPanel } from "./reels-comment-panel"
+import { DotsPanel } from "./reels-action-logic/dots-menu-logic/dots-panel"
 
 export function ReelsShell({
   children,
@@ -37,6 +38,7 @@ export function ReelsShell({
     <div className={`reel-root ${isOpen ? "reels-has-comments" : ""}`}>
       <div className="reel-swiper">{children}</div>
       <ReelsCommentPanel />
+      <DotsPanel />
     </div>
   )
 }
