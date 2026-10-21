@@ -2,12 +2,13 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-
 import ChatIcon from "@/modal-generator/svg-icons/message-bubble-square"
 import { TheLoveSystem } from "./reels-action-logic/the-love-system"
 import { useCommentPanel } from "@/stores/use-comment-panel"
 import { briefNumber } from "@/stores/use-brief-numbers"
 import { getEmojisForMovie } from "./reels-action-logic/reels-comment-section-logic/emoji-factory"
+import { MyListSystem } from "./reels-action-logic/my-list-sytem"
+import { shareReel, getReelShareUrl } from "./reels-action-logic/share-system"
 
 const WORKER_URL = "https://comment-actions-server-api.connectu89.workers.dev"
 
@@ -21,14 +22,17 @@ function getDeviceId() {
   return id
 }
 
+type ShareMode = "reel" | "video"
+
 type ReelsActionsProps = {
   onClose?: () => void
   movieId: string
   movie?: any
   heartCount?: number
   commentCount?: number
+  shareCount?: number
   onCommentClick?: () => void
-  onShareClick?: () => void
+  mode?: ShareMode
 }
 
 export function SendIcon({ size = 22 }: { size?: number }) {
@@ -46,41 +50,52 @@ export function ReelsActions({
   movie,
   heartCount = 0,
   commentCount = 0,
+  shareCount = 0,
   onCommentClick,
-  onShareClick,
+  mode = "reel",
 }: ReelsActionsProps) {
   const router = useRouter()
   const [comment, setComment] = useState("")
   const [liveCommentCount, setLiveCommentCount] = useState(commentCount)
+  const [liveShareCount, setLiveShareCount] = useState(shareCount)
   const [sending, setSending] = useState(false)
+  const [sharing, setSharing] = useState(false)
   const { open } = useCommentPanel()
 
   useEffect(() => { setLiveCommentCount(commentCount) }, [commentCount])
+  useEffect(() => { setLiveShareCount(shareCount) }, [shareCount])
 
+  // Fetch live counts (comments + shares)
   useEffect(() => {
     if (!movieId) return
-    const fetchCount = async () => {
+    const fetchCounts = async () => {
       try {
         const res = await fetch(`${WORKER_URL}/comments?movieId=${movieId}&deviceId=${getDeviceId()}`)
         const data = await res.json()
         if (typeof data.count === "number") setLiveCommentCount(data.count)
+        if (typeof data.shareCount === "number") setLiveShareCount(data.shareCount)
+        else if (typeof data.shares === "number") setLiveShareCount(data.shares)
         else if (Array.isArray(data.comments)) {
           const countTree = (list: any[]): number => list.reduce((acc, c) => acc + 1 + (c.replies ? countTree(c.replies) : 0), 0)
           setLiveCommentCount(countTree(data.comments))
         }
       } catch {}
     }
-    fetchCount()
-    const interval = setInterval(fetchCount, 8000)
-    const onStorage = (e: StorageEvent) => { if (e.key === `reels_comments_updated_${movieId}`) fetchCount() }
-    const onCustom = () => fetchCount()
+    fetchCounts()
+    const interval = setInterval(fetchCounts, 8000)
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === `reels_comments_updated_${movieId}` || e.key === `reels_shares_updated_${movieId}`) fetchCounts()
+    }
+    const onCustom = () => fetchCounts()
     window.addEventListener("storage", onStorage)
     window.addEventListener(`reels_comments_updated_${movieId}` as any, onCustom)
+    window.addEventListener(`reels_shares_updated_${movieId}` as any, onCustom)
     window.addEventListener("reels_comment_deleted" as any, onCustom)
     return () => {
       clearInterval(interval)
       window.removeEventListener("storage", onStorage)
       window.removeEventListener(`reels_comments_updated_${movieId}` as any, onCustom)
+      window.removeEventListener(`reels_shares_updated_${movieId}` as any, onCustom)
       window.removeEventListener("reels_comment_deleted" as any, onCustom)
     }
   }, [movieId])
@@ -97,14 +112,13 @@ export function ReelsActions({
         localStorage.setItem(`reels_comment_draft_${movieId}`, comment)
       } catch {}
     }
-       const tempId = `temp-${Date.now()}`
+    const tempId = `temp-${Date.now()}`
     try { localStorage.setItem(`reels_last_sent_${movieId}`, tempId) } catch {}
     open(movieId, movie)
     setComment("")
     setTimeout(() => {
       document.querySelector('.reels-c-list, .reels-comment-list')?.scrollTo({ top: 0, behavior: 'smooth' })
     }, 400)
-
     onCommentClick?.()
   }
 
@@ -126,16 +140,11 @@ export function ReelsActions({
       localStorage.setItem(`reels_comments_updated_${movieId}`, Date.now().toString())
       localStorage.setItem(`reels_last_sent_${movieId}`, tempId)
       window.dispatchEvent(new CustomEvent(`reels_comments_updated_${movieId}`))
-      
-      // OPEN PANEL AND SCROLL TO HIS COMMENT
       open(movieId, movie)
       setTimeout(() => {
         const list = document.querySelector('.reels-c-list, .reels-comment-list') as HTMLElement
-        if (list) {
-          list.scrollTo({ top: 0, behavior: 'smooth' }) // new comments at top
-        }
+        if (list) list.scrollTo({ top: 0, behavior: 'smooth' })
       }, 400)
-
     } catch {
       setLiveCommentCount(prev => Math.max(0, prev - 1))
       try { sessionStorage.setItem(`reels_comment_draft_${movieId}`, genreChip) } catch {}
@@ -145,6 +154,45 @@ export function ReelsActions({
     }
   }
 
+  // ---- SAFE SHARE WITH COUNT ----
+  const handleShare = async () => {
+    if (sharing) return
+    setSharing(true)
+
+    // Get current time for deep link (receiver will start at same second)
+    let currentTime = 0
+    try {
+      const vid = document.querySelector('.reels-tiktok-item.active .reel-video') as HTMLVideoElement
+      if (vid && Number.isFinite(vid.currentTime)) currentTime = vid.currentTime
+    } catch {}
+
+    const result = await shareReel(movieId, movie, mode, currentTime)
+
+    if (result.shared) {
+      // Optimistic +1
+      setLiveShareCount(prev => prev + 1)
+
+      // Persist for backend counting
+      try {
+        localStorage.setItem(`reels_shares_updated_${movieId}`, Date.now().toString())
+        window.dispatchEvent(new CustomEvent(`reels_shares_updated_${movieId}`))
+      } catch {}
+
+      // Fire to worker - SAFE, no blocking UI
+      fetch(`${WORKER_URL}/shares`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          movieId,
+          deviceId: getDeviceId(),
+          mode,
+          time: Math.floor(currentTime),
+        }),
+      }).catch(() => {})
+    }
+
+    setTimeout(() => setSharing(false), 800)
+  }
 
   return (
     <>
@@ -163,9 +211,17 @@ export function ReelsActions({
           <span className="ra-icon-bg"><ChatIcon size={22} style={{ color: "hsl(var(--text))" }} /></span>
           <span className="ra-label">{liveCommentCount > 0 ? briefNumber(liveCommentCount) : "0"}</span>
         </button>
-        <button type="button" className="ra-btn" onClick={onShareClick}>
-          <span className="ra-icon-bg"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="hsl(var(--text))" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d="M12 16V3" /><path d="M7 8l5-5 5 5" /><path d="M5 12v7a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-7" /></svg></span>
-          <span className="ra-label">Share</span>
+        {/* MY LIST + -> TICK - INSERTED, NO LOGIC REMOVED */}
+        <MyListSystem movieId={movieId} movie={movie} size={22} variant="reels" />
+        <button type="button" className="ra-btn" onClick={handleShare} disabled={sharing} aria-label="Share">
+          <span className="ra-icon-bg">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="hsl(var(--text))" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 16V3" />
+              <path d="M7 8l5-5 5 5" />
+              <path d="M5 12v7a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-7" />
+            </svg>
+          </span>
+          <span className="ra-label">{liveShareCount > 0 ? briefNumber(liveShareCount) : "Share"}</span>
         </button>
         <button type="button" className="ra-btn" aria-label="More options">
           <span className="ra-icon-bg"><svg viewBox="0 0 24 24" width="22" height="22" fill="hsl(var(--text))"><circle cx="12" cy="12" r="1.8" /><circle cx="19.5" cy="12" r="1.8" /><circle cx="4.5" cy="12" r="1.8" /></svg></span>
@@ -193,7 +249,6 @@ export function ReelsActions({
             {genreChip}
           </button>
         </div>
-
         <button type="button" className="reel-comment-send" onClick={handleSendComment} aria-label="Send comment">
           <SendIcon size={22} />
         </button>
