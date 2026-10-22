@@ -264,8 +264,9 @@ export default function MovieCard({
               isFullyWatched ? (
                 <>
                   <span className="replay-icon-wrap">
-                    <ReplayArrowPlayIcon />
-                  </span>
+  <ReplayArrowPlayIcon size={14} />
+</span>
+
                   PLAY
                 </>
               ) : (

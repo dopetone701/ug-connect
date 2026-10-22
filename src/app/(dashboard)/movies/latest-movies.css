@@ -41,9 +41,4 @@
 }
 
 
-.latest-root{
-  margin-top:10px;  /* <- this creates a 10px gap */
-  padding:0;
-  background: transparent; /* <- gap shows parent black bg */
-}
 

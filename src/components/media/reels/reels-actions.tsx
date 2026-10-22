@@ -10,6 +10,7 @@ import { getEmojisForMovie } from "./reels-action-logic/reels-comment-section-lo
 import { MyListSystem } from "./reels-action-logic/my-list-sytem"
 import { useDotsPanel } from "@/stores/use-dots-panel"
 import { shareReel, getReelShareUrl } from "./reels-action-logic/share-system"
+import { ReelsProgressBar } from "./reels-action-logic/reels-progress-bar/reels-progress-bar-ligic"
 
 const WORKER_URL = "https://comment-actions-server-api.connectu89.workers.dev"
 
@@ -155,9 +156,19 @@ export function ReelsActions({
       setTimeout(() => setSending(false), 500)
     }
   }
+ const handleSearchClick = () => {
+    try {
+      if (onClose) onClose();
+      else router.back();
+    } catch {}
+    setTimeout(() => {
+      window.dispatchEvent(new CustomEvent("ug-open-search-panel"));
+    }, 300);
+  };
 
   // ---- SAFE SHARE WITH COUNT ----
   const handleShare = async () => {
+
     if (sharing) return
     setSharing(true)
 
@@ -200,10 +211,12 @@ export function ReelsActions({
     <>
       <div className="reel-top-bar">
         <button type="button" className="reel-close-v" onClick={() => (onClose ? onClose() : router.back())} aria-label="Close preview">
-          <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9l6 6 6-6" /></svg>
+          <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="hsl(var(--text))"
+ strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M6 9l6 6 6-6" /></svg>
         </button>
-        <button type="button" className="reel-search" onClick={() => router.push("/search")} aria-label="Search">
-          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="6" /><path d="M21 21l-3.8-3.8" /></svg>
+       <button type="button" className="reel-search" onClick={handleSearchClick} aria-label="Search">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="hsl(var(--text))"
+ strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="6" /><path d="M21 21l-3.8-3.8" /></svg>
         </button>
       </div>
 
@@ -228,9 +241,14 @@ export function ReelsActions({
         <button type="button" className="ra-btn" aria-label="More options" onClick={() => openDots(movieId, movie)}>
           <span className="ra-icon-bg"><svg viewBox="0 0 24 24" width="22" height="22" fill="hsl(var(--text))"><circle cx="12" cy="12" r="1.8" /><circle cx="19.5" cy="12" r="1.8" /><circle cx="4.5" cy="12" r="1.8" /></svg></span>
         </button>
+           </div>
+
+     <div className="reels-progress-wrap" onClick={(e) => { e.preventDefault(); e.stopPropagation(); }} style={{ position: 'absolute', bottom: '58px', left: '12px', right: '12px', zIndex: 9999, pointerEvents: 'auto' }}>
+        <ReelsProgressBar movieId={movieId} />
       </div>
 
       <div className="reel-comment-bar">
+
         <div className="reel-input-wrap">
           <input
             type="text"

@@ -27,28 +27,57 @@
   transition: width 0.4s ease !important;
 }
 
+
+
+/* REPLAY ICON — preserve original button height */
 .replay-icon-wrap {
-  display: inline-flex !important;
-  width: 14px !important;
-  height: 14px !important;
-  margin-right: 4px !important;
-  vertical-align: middle !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 12px;
+  height: 1px;
+  flex: 0 0 12px;
+  margin: 0 4px 0 0;
+  padding: 0;
+  background: transparent;
+  border: none;
+  line-height: 0;
+  vertical-align: middle;
 }
+
+/* Move only the icon, not the button */
+.replay-icon-wrap svg {
+  display: block;
+  width: 12px;
+  height: 12px;
+  flex: 0 0 12px;
+  transform: translateY(-2px);
+}
+
+/* Prevent PLAY from wrapping */
+.l-a-btn.play.on {
+  white-space: nowrap;
+}
+
+
 
 .replay-icon-wrap svg {
-  width: 14px !important;
-  height: 14px !important;
-  fill: currentColor !important;
+  display: block;
+  width: 12px;
+  height: 12px;
+  flex: 0 0 12px;
 }
 
-.l-a-btn.play {
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  gap: 4px !important;
+/* Keep icon + PLAY on one line */
+.l-a-btn.play.on {
+  white-space: nowrap;
 }
 
-.l-card-fade { z-index: 5 !important; }
-.l-card-vj-on { z-index: 6 !important; }
-.l-card-actions { z-index: 10 !important; }
+/* Keep the icon and label together */
+.l-a-btn.play.on .replay-icon-wrap {
+  white-space: nowrap;
+}
+
+
+
 

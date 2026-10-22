@@ -4,9 +4,8 @@ import React from "react";
 
 export default function SettingsGearIcon() {
   return (
-    <button
-      type="button"
-      aria-label="Settings"
+    <span
+      aria-hidden="true"
       style={{
         width: 240,
         height: 240,
@@ -18,8 +17,7 @@ export default function SettingsGearIcon() {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        cursor: "pointer",
-        WebkitTapHighlightColor: "transparent",
+        pointerEvents: "none",
         userSelect: "none",
       }}
     >
@@ -33,7 +31,6 @@ export default function SettingsGearIcon() {
           overflow: "visible",
         }}
       >
-        {/* Outer Gear */}
         <path
           d="
             M 50 5
@@ -96,21 +93,20 @@ export default function SettingsGearIcon() {
             Z
           "
           fill="none"
-          stroke="black"
+          stroke="hsl(var(--text))"
           strokeWidth="6"
           strokeLinejoin="round"
         />
-
-        {/* Central Circle */}
         <circle
           cx="55"
           cy="51"
           r="22"
           fill="none"
-          stroke="black"
+          stroke="hsl(var(--text))"
           strokeWidth="6"
         />
       </svg>
-    </button>
+    </span>
   );
 }
+
