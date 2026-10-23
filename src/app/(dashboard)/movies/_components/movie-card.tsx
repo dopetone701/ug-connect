@@ -28,7 +28,7 @@ export default function MovieCard({
   const startYRef = useRef(0)
 
   // FIXED: read from getState not hook closure, so works before/after hydrate
-   const [progressState, setProgressState] = useState(() => {
+  const [progressState, setProgressState] = useState(() => {
     try {
       const state = useMovieStore.getState() as any
       const id = String((m as any).id)
@@ -39,11 +39,7 @@ export default function MovieCard({
     return { percent: 8, time: 0, duration: 0 }
   })
 
-  // AUTO-DETECT Continue Watching - pros way, no props needed
-  const hasRealProgress = progressState.percent > 0 && progressState.percent < 100
-  const autoIsContinue = isContinueRow || hasRealProgress || (progressState.percent >= 95)
-
-
+  // ONLY Continue Watching row shows progress
   useEffect(() => {
     if (!isContinueRow) return
     const id = String((m as any).id)
@@ -81,9 +77,9 @@ export default function MovieCard({
     }
   }, [isContinueRow, (m as any).id])
 
-   const progress = progressState.percent
+  const progress = progressState.percent
   const isFullyWatched = progress >= 95
-  const showAsContinue = isContinueRow || hasRealProgress || isFullyWatched
+  const showAsContinue = isContinueRow
 
   const handlePointerDown = (e: React.PointerEvent) => {
     movedRef.current = false
@@ -240,8 +236,8 @@ export default function MovieCard({
 
         <div className="l-card-fade" />
 
-        {/* FIXED: Always show for Continue row, with true dynamics */}
-       {showAsContinue && (
+        {/* FIXED: Only show for Continue row */}
+        {showAsContinue && (
           <div className="ug-progress-track">
             <div
               className="ug-progress-fill"
@@ -264,9 +260,8 @@ export default function MovieCard({
               isFullyWatched ? (
                 <>
                   <span className="replay-icon-wrap">
-  <ReplayArrowPlayIcon size={14} />
-</span>
-
+                    <ReplayArrowPlayIcon />
+                  </span>
                   PLAY
                 </>
               ) : (
