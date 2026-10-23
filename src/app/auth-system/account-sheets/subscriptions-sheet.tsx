@@ -8,6 +8,7 @@ const ALL_VJS = ["VJ JUNIOR","VJ JINGO","VJ ICE P","VJ EMMY","VJ KEVO","VJ MUBA"
 
 export default function SubscriptionsSheet(){
   const [pricing, setPricing] = useState<ReturnType<typeof getPricing> | null>(null)
+  const [loadingType, setLoadingType] = useState<"monthly" | "yearly" | null>(null)
   const flow = useSubscriptionFlow()
 
   useEffect(()=>{
@@ -24,9 +25,36 @@ export default function SubscriptionsSheet(){
     return shuffled.slice(0,3)
   },[])
 
-  const openPro = () => flow.open("monthly")
-  const openPlus = () => flow.open("yearly")
-  const openDiscover = () => flow.open("monthly")
+  const closeAccountSheetPro = () => {
+    window.dispatchEvent(new CustomEvent("ug-close-account-sheet" as any))
+    window.dispatchEvent(new CustomEvent("ug-close-sheet" as any))
+    window.dispatchEvent(new CustomEvent("ug-close-menu-panel" as any))
+    window.dispatchEvent(new CustomEvent("ug-close-account-drawer" as any))
+    document.documentElement.classList.remove("is-sheet-open")
+    document.body.style.overflow = ""
+    try { (require("@/stores/use-side-sheet") as any).useSideSheet.getState().open(null) } catch {}
+  }
+
+  const openWithInjectedFeel = (type: "monthly" | "yearly") => {
+    if (loadingType) return
+    // 1. INJECT VISUAL IMMEDIATELY - user sees click
+    setLoadingType(type)
+
+    // 2. DELAY CLOSE ON PURPOSE - let him feel progress (220ms)
+    setTimeout(() => {
+      closeAccountSheetPro()
+
+      // 3. WAIT FOR DRAWER TO SLIDE DOWN (320ms) THEN OPEN FLOW
+      setTimeout(() => {
+        flow.open(type)
+        setLoadingType(null)
+      }, 320)
+    }, 220)
+  }
+
+  const openPro = () => openWithInjectedFeel("monthly")
+  const openPlus = () => openWithInjectedFeel("yearly")
+  const openDiscover = () => openWithInjectedFeel("monthly")
 
   const monthlyText = pricing?.monthlyFormatted || "AED 10"
   const yearlyText = pricing?.yearlyFormatted || "AED 100"
@@ -54,7 +82,9 @@ export default function SubscriptionsSheet(){
           </div>
           <button className="discover-btn" onClick={openDiscover}>Discover More <span></span></button>
         </div>
-        <button className="sub-now" onClick={openPro}>Subscribe Now - {monthlyText}</button>
+        <button className="sub-now" onClick={openPro} disabled={!!loadingType}>
+          {loadingType === "monthly" ? " loading..." : `Subscribe Now - ${monthlyText}`}
+        </button>
       </div>
 
       <div className="sub-card plus">
@@ -75,7 +105,9 @@ export default function SubscriptionsSheet(){
           </div>
           <button className="discover-btn" onClick={openDiscover}>Discover More <span></span></button>
         </div>
-        <button className="sub-now gold" onClick={openPlus}>Subscribe Yearly - {yearlyText} - Save {saveText}</button>
+        <button className="sub-now gold" onClick={openPlus} disabled={!!loadingType}>
+          {loadingType === "yearly" ? " loading..." : `Subscribe Yearly - ${yearlyText} - Save ${saveText}`}
+        </button>
       </div>
     </div>
   )
