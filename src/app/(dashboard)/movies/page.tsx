@@ -20,6 +20,8 @@ import GenreFilter from "./_lib/genre-filter"
 import TvSeriesRow from "./_lib/tv-series-row"
 import MiniSeriesRow from "./_lib/mini-series-row"
 import { useGlobalSearch } from "@/stores/use-global-search"
+import { useWatchDrawer } from "@/stores/use-watch-drawer"
+import { useReelsDrawer } from "@/stores/use-reels-drawer"
 
 type ApiMovie = {
   id: any
@@ -40,12 +42,7 @@ type ApiMovie = {
   created_at?: string
 }
 
-const API_URL =
-  "https://movie-server-api.connectu89.workers.dev/api/movies"
-
-/* -------------------------------------------------------
-   HOME CACHE
-   ------------------------------------------------------- */
+const API_URL = "https://movie-server-api.connectu89.workers.dev/api/movies"
 
 const MOVIES_CACHE_KEY = "movies_home_cache_v1"
 const MOVIES_SCROLL_KEY = "movies_home_scroll_v1"
@@ -58,10 +55,6 @@ function isMobileDevice() {
   return false
 }
 
-/* -------------------------------------------------------
-   CLICK / SWIPE GUARD
-   ------------------------------------------------------- */
-
 function SwipeSafeButton({
   children,
   className,
@@ -71,34 +64,21 @@ function SwipeSafeButton({
   const movedRef = useRef(false)
   const startXRef = useRef(0)
   const startYRef = useRef(0)
-
   const handlePointerDown = (e: React.PointerEvent<HTMLButtonElement>) => {
     movedRef.current = false
     startXRef.current = e.clientX
     startYRef.current = e.clientY
   }
-
   const handlePointerMove = (e: React.PointerEvent<HTMLButtonElement>) => {
     const dx = Math.abs(e.clientX - startXRef.current)
     const dy = Math.abs(e.clientY - startYRef.current)
-    if (dx > 8 || dy > 8) {
-      movedRef.current = true
-    }
+    if (dx > 8 || dy > 8) movedRef.current = true
   }
-
-  const handlePointerCancel = () => {
-    movedRef.current = true
-  }
-
+  const handlePointerCancel = () => { movedRef.current = true }
   const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-    if (movedRef.current) {
-      e.preventDefault()
-      e.stopPropagation()
-      return
-    }
+    if (movedRef.current) { e.preventDefault(); e.stopPropagation(); return }
     onClick?.(e)
   }
-
   return (
     <button
       {...props}
@@ -113,10 +93,6 @@ function SwipeSafeButton({
   )
 }
 
-/* -------------------------------------------------------
-   MOVIE STRIP CARD - FIXED to be accurate
-   ------------------------------------------------------- */
-
 function StripCard({
   movie,
   onSelect,
@@ -127,34 +103,21 @@ function StripCard({
   const movedRef = useRef(false)
   const startXRef = useRef(0)
   const startYRef = useRef(0)
-
   const handlePointerDown = (e: React.PointerEvent<HTMLButtonElement>) => {
     movedRef.current = false
     startXRef.current = e.clientX
     startYRef.current = e.clientY
   }
-
   const handlePointerMove = (e: React.PointerEvent<HTMLButtonElement>) => {
     const dx = Math.abs(e.clientX - startXRef.current)
     const dy = Math.abs(e.clientY - startYRef.current)
-    if (dx > 8 || dy > 8) {
-      movedRef.current = true
-    }
+    if (dx > 8 || dy > 8) movedRef.current = true
   }
-
-  const handlePointerCancel = () => {
-    movedRef.current = true
-  }
-
+  const handlePointerCancel = () => { movedRef.current = true }
   const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-    if (movedRef.current) {
-      e.preventDefault()
-      e.stopPropagation()
-      return
-    }
+    if (movedRef.current) { e.preventDefault(); e.stopPropagation(); return }
     onSelect(movie)
   }
-
   return (
     <button
       type="button"
@@ -164,13 +127,7 @@ function StripCard({
       onPointerCancel={handlePointerCancel}
       onClick={handleClick}
     >
-      <img
-        src={movie.cover}
-        alt={movie.title}
-        loading="lazy"
-        decoding="async"
-        draggable={false}
-      />
+      <img src={movie.cover} alt={movie.title} loading="lazy" decoding="async" draggable={false} />
     </button>
   )
 }
@@ -187,16 +144,11 @@ export default function MoviesPage() {
   const playTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const addTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  const { favIds, recentIds, lists, createList } =
-    useMovieStore() as any
-
+  const { favIds, recentIds, lists, createList } = useMovieStore() as any
   const store = useMovieStore() as any
   const router = useRouter()
- 
-
-  /* -------------------------------------------------------
-     MAP API MOVIES
-     ------------------------------------------------------- */
+  const { openDrawer } = useWatchDrawer() as any
+  const { openReels } = useReelsDrawer() as any
 
   const mapMovies = useCallback(
     (data: ApiMovie[]): LibMovie[] => {
@@ -209,16 +161,9 @@ export default function MoviesPage() {
         desc: m.description,
         video: m.video_url,
         preview: m.preview_urls,
-        views:
-          typeof m.views === "number"
-            ? m.views
-            : 0,
-        likes:
-          typeof m.likes === "number"
-            ? m.likes
-            : 0,
-        isEditorsPick:
-          m.is_editors_pick || false,
+        views: typeof m.views === "number" ? m.views : 0,
+        likes: typeof m.likes === "number" ? m.likes : 0,
+        isEditorsPick: m.is_editors_pick || false,
         createdAt: m.created_at,
         type: m.type || "Single",
         year: m.year,
@@ -229,16 +174,11 @@ export default function MoviesPage() {
     []
   )
 
-  /* -------------------------------------------------------
-     LOAD HOME CACHE IMMEDIATELY
-     ------------------------------------------------------- */
-
-   useEffect(() => {
+  useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
     checkMobile();
     window.addEventListener("resize", checkMobile);
     let cancelled = false
-
     try {
       const cached = sessionStorage.getItem(MOVIES_CACHE_KEY)
       if (cached) {
@@ -251,7 +191,6 @@ export default function MoviesPage() {
     } catch (error) {
       console.warn("Failed to restore movie cache:", error)
     }
-
     async function load() {
       try {
         const res = await fetch(API_URL, { cache: "no-store" })
@@ -270,18 +209,12 @@ export default function MoviesPage() {
         console.error("Failed to load movies:", error)
       }
     }
-
     load()
-
     return () => {
       cancelled = true
       window.removeEventListener("resize", checkMobile);
     }
   }, [mapMovies])
-
-  /* -------------------------------------------------------
-     RESTORE EXACT HOME SCROLL POSITION
-     ------------------------------------------------------- */
 
   useEffect(() => {
     let cancelled = false
@@ -304,10 +237,6 @@ export default function MoviesPage() {
     restoreHomeScroll()
     return () => { cancelled = true }
   }, [])
-
-  /* -------------------------------------------------------
-     SAVE HOME SCROLL
-     ------------------------------------------------------- */
 
   const saveHomeScroll = useCallback(() => {
     try {
@@ -334,10 +263,6 @@ export default function MoviesPage() {
 
   const movies = useMemo(() => allMovies.slice(0, 6), [allMovies])
 
-  /* -------------------------------------------------------
-     HERO AUTO ROTATION
-     ------------------------------------------------------- */
-
   useEffect(() => {
     if (!movies.length) return
     const t = setInterval(() => {
@@ -345,10 +270,6 @@ export default function MoviesPage() {
     }, 30000)
     return () => clearInterval(t)
   }, [movies])
-
-  /* -------------------------------------------------------
-     FULL / PREVIEW AUTO ROTATION
-     ------------------------------------------------------- */
 
   useEffect(() => {
     const t = setInterval(() => {
@@ -366,10 +287,6 @@ export default function MoviesPage() {
   const m = movies[active]
 
   const isInMyList = useMemo(() => lists?.[0]?.movieIds?.includes(m?.id), [lists, m])
-
-  /* -------------------------------------------------------
-     MY LIST
-     ------------------------------------------------------- */
 
   const handleAddToList = useCallback(() => {
     if (!m) return
@@ -392,10 +309,6 @@ export default function MoviesPage() {
     addTimerRef.current = setTimeout(() => { setJustAdded(false) }, 1200)
   }, [m, lists, createList, store, isInMyList])
 
-  /* -------------------------------------------------------
-     SHARE
-     ------------------------------------------------------- */
-
   const handleShare = useCallback(async () => {
     if (!m) return
     const url = `${window.location.origin}` + `/movies/watch/${m.id}?t=${anchor}`
@@ -406,22 +319,42 @@ export default function MoviesPage() {
     }
   }, [m, anchor])
 
-  /* -------------------------------------------------------
-     PLAY
-     ------------------------------------------------------- */
+  const normalizeReels = (x: any) => {
+    const preview = x.preview?.[0] || x.preview_urls?.[0] || x.preview || x.trailer_url
+    return {
+      ...x,
+      id: String(x.id),
+      cover: x.cover || x.cover_url,
+      cover_url: x.cover || x.cover_url,
+      video: x.video || x.video_url,
+      video_url: x.video || x.video_url,
+      preview_url: preview,
+      preview_urls: x.preview || x.preview_urls || (preview ? [preview] : []),
+      trailer_url: x.trailer_url || preview,
+    }
+  }
 
   const handlePlay = useCallback(() => {
     if (!m) return
     saveHomeScroll()
+
+    // MOBILE FIX: hero movie -> watch drawer, preview -> reels drawer
+    if (isMobile) {
+      if (anchor === "preview") {
+        const list = movies.map(normalizeReels)
+        openReels(list, active)
+      } else {
+        openDrawer(String(m.id))
+      }
+      return
+    }
+
+    // DESKTOP: keep original page push
     setClicking(true)
     if (playTimerRef.current) clearTimeout(playTimerRef.current)
     playTimerRef.current = setTimeout(() => { setClicking(false) }, 420)
     router.push(`/movies/watch/${m.id}?t=${anchor}`, { scroll: false })
-  }, [m, anchor, router, saveHomeScroll])
-
-  /* -------------------------------------------------------
-     CLEANUP TIMERS
-     ------------------------------------------------------- */
+  }, [m, anchor, router, saveHomeScroll, isMobile, movies, active, openDrawer, openReels])
 
   useEffect(() => {
     return () => {
@@ -429,10 +362,6 @@ export default function MoviesPage() {
       if (addTimerRef.current) clearTimeout(addTimerRef.current)
     }
   }, [])
-
-  /* -------------------------------------------------------
-     DYNAMIC SEE ALL - FIXED: mobile = drawer only, genre circles open like global rows
-     ------------------------------------------------------- */
 
   const handleSeeAll = useCallback((value: string) => {
     try {
@@ -446,48 +375,32 @@ export default function MoviesPage() {
       if (!clean.includes("movies") && clean.split(" ").length === 1) {
         clean = `${clean} movies`
       }
-
-      // set global search
       s.setQuery?.(clean)
       s.setSection?.(clean)
       s.openSearch?.()
       if (s.setOpen) s.setOpen(true)
       else if (s.setIsOpen) s.setIsOpen(true)
       else if (s.openDrawer) s.openDrawer()
-
       const mobile = isMobileDevice()
-
-      // GOAT TRICK: mobile = search drawer only, no PC sneak
       if (mobile) {
         if (typeof window !== "undefined") {
           window.dispatchEvent(new CustomEvent("ug-open-search-panel"))
         }
         return
       }
-
-      // desktop: go to search page
       const param = encodeURIComponent(clean)
       router.push(`/search?q=${param}&filter=${param}&section=${param}`)
     } catch {}
   }, [router])
 
-  /* -------------------------------------------------------
-     FIX: accurate movie selection from strips - finds by id not by duplicated index
-     ------------------------------------------------------- */
-
   const handleStripSelect = useCallback((selectedMovie: LibMovie) => {
     const idx = movies.findIndex((x) => String(x.id) === String(selectedMovie.id))
     if (idx !== -1) setActive(idx)
     else {
-      // fallback: try by cover/title if id mismatch
       const fallback = movies.findIndex((x) => x.cover === selectedMovie.cover || x.title === selectedMovie.title)
       if (fallback !== -1) setActive(fallback)
     }
   }, [movies])
-
-  /* -------------------------------------------------------
-     SECTIONS
-     ------------------------------------------------------- */
 
   const sections = useMemo(() => getSections(allMovies, { favIds, recentIds }), [allMovies, favIds, recentIds])
 
@@ -519,15 +432,15 @@ export default function MoviesPage() {
         </div>
 
         <div className="film-center">
-          <div className="center-cover">
+          <div className="center-cover" onClick={() => { if (isMobile) handlePlay() }} style={{ cursor: isMobile ? "pointer" : "default" }}>
             <img src={m.cover} alt={m.title} loading="eager" fetchPriority="high" decoding="async" />
             <div className="center-fade" />
             <div className="center-top">
-              <span className="c-pill" style={{ cursor: "pointer" }} onClick={() => handleSeeAll(m.genre)}>{m.genre}</span>
-              <span className="c-pill muted" style={{ cursor: "pointer" }} onClick={() => handleSeeAll(m.vj)}>{m.vj}</span>
+              <span className="c-pill" style={{ cursor: "pointer" }} onClick={(e) => { e.stopPropagation(); handleSeeAll(m.genre)}}>{m.genre}</span>
+              <span className="c-pill muted" style={{ cursor: "pointer" }} onClick={(e) => { e.stopPropagation(); handleSeeAll(m.vj)}}>{m.vj}</span>
             </div>
             <div className="center-desc">
-              <div className="c-title" style={{ cursor: "pointer" }} onClick={() => handleSeeAll(m.title)}>{m.title}</div>
+              <div className="c-title" style={{ cursor: "pointer" }} onClick={(e) => { e.stopPropagation(); handleSeeAll(m.title)}}>{m.title}</div>
               <div className="c-meta">{m.genre} • {m.vj}</div>
               <div className="c-text">{m.desc}</div>
             </div>

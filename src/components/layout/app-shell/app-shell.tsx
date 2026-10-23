@@ -33,6 +33,8 @@ import SigninModals from "@/app/auth-system/signin-modals";
 import { useNoxSpy } from "@/app/auth-system/nox-spy";
 import { useVideoSettingsDrawer } from "@/stores/use-video-settings-drawer";
 
+import SubscriptionFlowHost from "@/components/subscription/flow/flow-host";
+
 function hasValidSession() {
   if (typeof window === "undefined") return false;
   const token = localStorage.getItem("ug_token");
@@ -149,7 +151,6 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
   const showPcInline = isDesktop && !!active;
   const showSideBarInShell = isDesktop && !isServicesPage;
 
-  // FIX: PC Faders should be standalone inside scroll, not with children
   const showPcFadersInline = isDesktop && isPcOpen;
 
   return (
@@ -168,17 +169,14 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
             <main className="content-panel">
               <div className="content-scroll" style={{ overscrollBehavior: "contain" }}>
-                {/* PC FADERS - STANDALONE INSIDE SCROLL, NOT OVERLAY */}
                 {showPcFadersInline ? (
                   <PcFaders />
                 ) : (
                   <>
-                    {/* NORMAL PAGE CONTENT */}
                     <div style={{ display: showPcInline ? "none" : "block", minHeight: "100%" }}>
                       {children}
                     </div>
 
-                    {/* DESKTOP SIDE SHEET */}
                     <div style={{ display: showPcInline ? "block" : "none", minHeight: "100%" }}>
                       <PcSheetHost />
                     </div>
@@ -206,6 +204,9 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
             <Cast />
           </CastSwipeClose>
         ) : null}
+
+        {/* SURGICAL INJECT: Subscription Flow - overlays everything */}
+        <SubscriptionFlowHost />
       </div>
 
       <SigninModals
