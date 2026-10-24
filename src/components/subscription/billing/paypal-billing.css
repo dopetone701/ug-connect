@@ -1,0 +1,48 @@
+/* src/components/subscription/billing/paypal-billing.css - Theme DNA */
+.paypal-wrap{
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 20px;
+  background: hsl(var(--bg));
+  color: hsl(var(--text));
+  border-radius: 16px;
+  border: 1px solid hsl(var(--border));
+  width: 100%;
+  box-sizing: border-box;
+}
+.paypal-header{ display:flex; flex-direction:column; gap:6px; }
+.paypal-plan-badge{
+  align-self:flex-start;
+  padding:4px 10px;
+  border-radius:999px;
+  background:hsl(var(--surface));
+  border:1px solid hsl(var(--border));
+  font-size:11px; font-weight:700; letter-spacing:0.6px;
+  color:hsl(var(--text) / 0.8);
+}
+.paypal-title{ font-size:20px; font-weight:700; margin:0; color:hsl(var(--text)); letter-spacing:-0.2px; }
+.paypal-desc{ font-size:13px; opacity:0.7; margin:0; color:hsl(var(--text)); }
+.paypal-status{
+  padding:10px 14px; border-radius:10px;
+  background:hsl(var(--surface)); border:1px solid hsl(var(--border));
+  font-size:13px; color:hsl(var(--text) / 0.85);
+}
+.paypal-error{
+  padding:12px 14px; border-radius:10px;
+  background:hsl(0 80% 50% / 0.1); border:1px solid hsl(0 80% 50% / 0.2);
+  color:hsl(0 70% 60%); font-size:13px;
+}
+.paypal-success{
+  padding:12px 14px; border-radius:10px;
+  background:hsl(142 76% 36% / 0.12); border:1px solid hsl(142 76% 36% / 0.2);
+  color:hsl(142 76% 36%); font-size:13px; font-weight:600;
+}
+.paypal-buttons{ min-height:120px; padding-top:4px; }
+.paypal-footer{
+  display:flex; justify-content:space-between; align-items:center;
+  padding-top:12px; border-top:1px solid hsl(var(--border) / 0.5);
+  font-size:11px; color:hsl(var(--text) / 0.5);
+}
+.paypal-secure{ font-weight:600; }
+

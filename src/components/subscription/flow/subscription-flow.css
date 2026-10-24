@@ -127,3 +127,121 @@
 }
 
 @keyframes spin { to { transform: rotate(360deg); } }
+
+
+
+
+
+
+
+
+
+ /* Add to your existing subscription-flow.css - WRAPPED APP STYLE - obeys DNA */
+
+.flow-billing-inject{
+  padding: 0 16px 16px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.flow-title-wrap{
+  padding: 0 20px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.flow-title-badge{
+  align-self: flex-start;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: hsl(var(--surface));
+  border: 1px solid hsl(var(--border));
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  color: hsl(var(--text) / 0.7);
+}
+
+.flow-title{
+  font-size: 22px;
+  font-weight: 700;
+  color: hsl(var(--text));
+  letter-spacing: -0.3px;
+}
+
+.flow-subtitle{
+  font-size: 13px;
+  color: hsl(var(--text) / 0.6);
+  margin: 0;
+}
+
+.flow-trust{
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 20px 20px;
+  font-size: 11px;
+  color: hsl(var(--text) / 0.5);
+  border-top: 1px solid hsl(var(--border) / 0.5);
+  margin-top: 8px;
+}
+
+.billing-placeholder{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 24px 20px;
+  background: hsl(var(--surface));
+  border: 1px solid hsl(var(--border));
+  border-radius: 16px;
+  text-align: center;
+}
+
+.billing-placeholder h4{
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: hsl(var(--text));
+}
+
+.billing-placeholder p{
+  margin: 0;
+  font-size: 13px;
+  color: hsl(var(--text) / 0.7);
+}
+
+.billing-icon{
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: hsl(var(--bg));
+  border: 1px solid hsl(var(--border));
+  display: grid;
+  place-items: center;
+  font-size: 22px;
+}
+
+.billing-submit{
+  width: 100%;
+  margin-top: 8px;
+  padding: 14px;
+  border-radius: 12px;
+  background: hsl(var(--text));
+  color: hsl(var(--bg));
+  border: none;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.1s;
+}
+
+.billing-submit:active{
+  transform: scale(0.98);
+}
+
+.billing-submit:hover{
+  opacity: 0.9;
+}
+
