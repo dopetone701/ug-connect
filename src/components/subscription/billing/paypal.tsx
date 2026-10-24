@@ -3,8 +3,9 @@ import React, { useState } from "react";
 import { PayPalButtons, PayPalScriptProvider } from "@paypal/react-paypal-js";
 import "./paypal-billing.css";
 
-const BILLING_URL = process.env.NEXT_PUBLIC_BILLING_URL || "https://pay-pal-billing-server.connectu89.workers.dev";
-const PAYPAL_CLIENT_ID = process.env.NEXT_PUBLIC_PAYPAL_CLIENT_ID || "";
+const BILLING_URL = "https://pay-pal-billing-server.connectu89.workers.dev";
+const PAYPAL_CLIENT_ID = "AclG3ZrH-saUXVNYbG9644z9EpRUHESFbmOB6v1RM4GFdKWKYLYrHq9kBLM0iWOpaRcqJ4T47S00yH8D";
+
 
 type PlanId = "weekly" | "monthly" | "yearly";
 
