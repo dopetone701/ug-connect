@@ -1,0 +1,64 @@
+/* =========================================================
+   REELS COMMENTS + KEYBOARD
+   Everything is sized from the VISIBLE viewport (--vvh / --vv-top, set by
+   useKeyboardViewport) so the video and the input bar never leave the screen.
+   Import this AFTER reels.css.
+   ========================================================= */
+
+:root {
+  --vvh: 100dvh;
+  --vv-top: 0px;
+  --reels-video-share: 0.28; /* video takes this share of the visible height */
+}
+
+body.reels-kb-open { --reels-video-share: 0.22; }
+
+/* root: exactly the visible area */
+body.reels-open .reel-root.reels-has-comments {
+  position: fixed !important;
+  top: var(--vv-top) !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: auto !important;
+  width: 100% !important;
+  height: var(--vvh) !important;
+  max-height: var(--vvh) !important;
+}
+
+/* video: top share of the visible area */
+body.reels-open .reel-root.reels-has-comments .reels-tiktok-item.active {
+  height: calc(var(--vvh) * var(--reels-video-share)) !important;
+}
+
+/* panel: the rest of the visible area, bottom edge sits on the keyboard */
+body.reels-open .reels-comment-panel,
+body.reels-open .reels-comment-panel:focus-within {
+  top: calc(var(--vv-top) + var(--vvh) * var(--reels-video-share)) !important;
+  bottom: auto !important;
+  height: calc(var(--vvh) * (1 - var(--reels-video-share))) !important;
+  max-height: none !important;
+  padding-bottom: 0 !important;
+}
+
+/* input bar: home-indicator padding only when there is no keyboard.
+   With the keyboard up the safe area sits under the keyboard, not under the bar. */
+body.reels-kb-open .reels-c-input-bar {
+  padding-bottom: 10px !important;
+}
+
+/* iOS zooms the whole page when an input is under 16px, which shoves the layout */
+.reels-c-input-wrap input {
+  font-size: 16px !important;
+}
+
+/* keep the toast visible above the keyboard */
+body.reels-kb-open .reels-c-toast {
+  bottom: auto !important;
+  top: calc(var(--vv-top) + var(--vvh) - 130px) !important;
+}
+
+/* hide the emoji quick-post row above the comment input */
+.emoji-factory-bar-in-input {
+  display: none !important;
+}
+
