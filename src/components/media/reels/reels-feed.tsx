@@ -1,12 +1,17 @@
 "use client"
 
-import { useEffect, useRef, useState, useCallback } from "react"
+
+import { useEffect, useLayoutEffect, useRef, useState, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import { ReelsPlayer } from "./reels-player"
 import { ReelsActions } from "./reels-actions"
 import { ReelsModal } from "./reels-modal"
 import { useCommentPanel } from "@/stores/use-comment-panel"
 import "./reels.css"
+
+// useLayoutEffect warns during server render, so fall back to useEffect there.
+const useIsoLayoutEffect = typeof window !== "undefined" ? useLayoutEffect : useEffect
+
 
 export function ReelsFeed({
   movies,
@@ -18,18 +23,29 @@ export function ReelsFeed({
   const containerRef = useRef<HTMLDivElement>(null)
   const { isOpen, open } = useCommentPanel()
 
+
   const [active, setActive] = useState(0)
   const [isPlaying, setIsPlaying] = useState(true)
   const [autoScroll, setAutoScroll] = useState(false)
 
+  // Refs so the observer and the restore effect always see the latest values.
+  const isOpenRef = useRef(isOpen)
+  const activeRef = useRef(0)
+  const wasOpenRef = useRef(false)
+  activeRef.current = active
+
+
   const rawList = movies?.length ? movies : currentMovie ? [currentMovie] : []
+
 
   const list = rawList.filter((m: any) => {
     const preview = m.preview_urls?.[0] || m.preview_url || m.trailer_url || m.video_preview_url
     return !!preview
   })
 
+
   const safeStart = Math.min(startIndex, Math.max(0, list.length - 1))
+
 
   // ---- AUTO SCROLL STATE ----
   useEffect(() => {
@@ -50,6 +66,7 @@ export function ReelsFeed({
     }
   }, [])
 
+
   useEffect(() => {
     const c = containerRef.current
     if (!c) return
@@ -59,12 +76,16 @@ export function ReelsFeed({
     return () => clearTimeout(timer)
   }, [safeStart])
 
+
   useEffect(() => {
     const c = containerRef.current
     if (!c) return
     const obs = new IntersectionObserver(
       (entries) => {
         entries.forEach((e) => {
+          // While comments are open the other reels are display:none and the feed is
+          // collapsed, so intersection results are meaningless. Ignore them.
+          if (isOpenRef.current) return
           if (e.isIntersecting && e.intersectionRatio > 0.75) {
             const newActive = Number((e.target as HTMLElement).dataset.index)
             setActive(newActive)
@@ -78,6 +99,28 @@ export function ReelsFeed({
     return () => obs.disconnect()
   }, [list.length])
 
+
+  // ---- KEEP THE SAME REEL WHEN COMMENTS CLOSE ----
+  // Opening comments collapses the feed and the browser resets its scroll to 0.
+  // On close, scroll straight back to the reel that was active, before paint,
+  // with snapping off so the browser does not re-snap to a different reel.
+  useIsoLayoutEffect(() => {
+    isOpenRef.current = isOpen
+    if (wasOpenRef.current && !isOpen) {
+      const c = containerRef.current
+      if (c) {
+        const top = c.clientHeight * activeRef.current
+        c.style.scrollSnapType = "none"
+        c.scrollTop = top
+        requestAnimationFrame(() => {
+          c.scrollTop = top
+          requestAnimationFrame(() => { c.style.scrollSnapType = "" })
+        })
+      }
+    }
+    wasOpenRef.current = isOpen
+  }, [isOpen])
+
   // ---- AUTO SCROLL ACTIVATION / DEACTIVATION ----
   const scrollToIndex = useCallback((idx: number) => {
     const c = containerRef.current
@@ -88,16 +131,19 @@ export function ReelsFeed({
     setIsPlaying(true)
   }, [list.length])
 
+
   const scrollToNext = useCallback(() => {
     if (active < list.length - 1) {
       scrollToIndex(active + 1)
     }
   }, [active, list.length, scrollToIndex])
 
+
   useEffect(() => {
     if (!autoScroll) return
     const c = containerRef.current
     if (!c) return
+
 
     // Listen for video ended on active reel
     const handleEnded = () => {
@@ -107,12 +153,14 @@ export function ReelsFeed({
       }, 800)
     }
 
+
     const attach = () => {
       const activeVideo = document.querySelector('.reels-tiktok-item.active .reel-video') as HTMLVideoElement
       if (!activeVideo) return null
       activeVideo.addEventListener('ended', handleEnded)
       return activeVideo
     }
+
 
     let video = attach()
     // Re-attach when active changes (mutation observer on active class)
@@ -122,15 +170,18 @@ export function ReelsFeed({
     })
     mo.observe(c, { attributes: true, subtree: true, attributeFilter: ['class'] })
 
+
     return () => {
       if (video) video.removeEventListener('ended', handleEnded)
       mo.disconnect()
     }
   }, [autoScroll, active, scrollToNext])
 
+
   const handleTogglePlay = useCallback(() => {
     setIsPlaying((prev) => !prev)
   }, [])
+
 
   const handleWatchFull = useCallback(
     (m: any) => {
@@ -140,7 +191,9 @@ export function ReelsFeed({
     [onClose, router]
   )
 
+
   if (!list.length) return null
+
 
   return (
     <div
@@ -151,6 +204,7 @@ export function ReelsFeed({
       {list.map((m: any, i: number) => {
         const previewUrl = m.preview_urls?.[0] || m.preview_url || m.trailer_url || m.video_preview_url
         const isActive = active === i
+
 
         return (
           <div key={`${m.id}-${i}`} data-index={i} className={`reels-tiktok-item ${isActive ? 'active' : ''}`}>
@@ -167,14 +221,16 @@ export function ReelsFeed({
               <div className="reel-video" style={{ background: "#000", width: "100%", height: "100%" }} />
             )}
 
+
             <ReelsActions
               movieId={String(m.id)}
               movie={m}
               heartCount={(m as any).heart_count || 1}
               commentCount={(m as any).comment_count || 0}
               onClose={onClose}
-              onCommentClick={() => open(String(m.id))}
+              onCommentClick={() => open(String(m.id), m)}
             />
+
 
             <ReelsModal current={m} onWatchFull={() => handleWatchFull(m)} />
           </div>
@@ -183,4 +239,9 @@ export function ReelsFeed({
     </div>
   )
 }
+
+
+
+
+
 

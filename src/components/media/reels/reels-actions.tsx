@@ -1,18 +1,24 @@
 "use client"
 
+
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import ChatIcon from "@/modal-generator/svg-icons/message-bubble-square"
+import GridIcon from "@/modal-generator/svg-icons/grid-menu-icon"
 import { TheLoveSystem } from "./reels-action-logic/the-love-system"
 import { useCommentPanel } from "@/stores/use-comment-panel"
 import { briefNumber } from "@/stores/use-brief-numbers"
 import { getEmojisForMovie } from "./reels-action-logic/reels-comment-section-logic/emoji-factory"
 import { MyListSystem } from "./reels-action-logic/my-list-sytem"
 import { useDotsPanel } from "@/stores/use-dots-panel"
+import { useEpisodesPanel } from "@/stores/use-episodes-panel"
+import { getEpisodeInfo } from "./reels-action-logic/reels-episodes-logic/episodes-info"
 import { shareReel, getReelShareUrl } from "./reels-action-logic/share-system"
 import { ReelsProgressBar } from "./reels-action-logic/reels-progress-bar/reels-progress-bar-ligic"
 
+
 const WORKER_URL = "https://comment-actions-server-api.connectu89.workers.dev"
+
 
 function getDeviceId() {
   if (typeof window === "undefined") return "dev"
@@ -24,7 +30,9 @@ function getDeviceId() {
   return id
 }
 
+
 type ShareMode = "reel" | "video"
+
 
 type ReelsActionsProps = {
   onClose?: () => void
@@ -37,6 +45,7 @@ type ReelsActionsProps = {
   mode?: ShareMode
 }
 
+
 export function SendIcon({ size = 22 }: { size?: number }) {
   return (
     <svg viewBox="0 0 24 24" width={size} height={size} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -45,6 +54,7 @@ export function SendIcon({ size = 22 }: { size?: number }) {
     </svg>
   )
 }
+
 
 export function ReelsActions({
   onClose,
@@ -64,9 +74,14 @@ export function ReelsActions({
   const [sharing, setSharing] = useState(false)
   const { open } = useCommentPanel()
   const { open: openDots } = useDotsPanel()
+  const { open: openEpisodes } = useEpisodesPanel()
+  // Episodes button only for series (FORCE_SHOW in episodes-info.ts overrides while testing)
+  const showEpisodes = getEpisodeInfo(movie).isSeries
+
 
   useEffect(() => { setLiveCommentCount(commentCount) }, [commentCount])
   useEffect(() => { setLiveShareCount(shareCount) }, [shareCount])
+
 
   // Fetch live counts (comments + shares)
   useEffect(() => {
@@ -103,10 +118,12 @@ export function ReelsActions({
     }
   }, [movieId])
 
+
   const handleOpenComments = () => {
     open(movieId, movie)
     onCommentClick?.()
   }
+
 
   const handleSendComment = () => {
     if (comment.trim()) {
@@ -125,8 +142,10 @@ export function ReelsActions({
     onCommentClick?.()
   }
 
+
   const pack = getEmojisForMovie(movie)
   const genreChip = pack.emojis[0] || "💀💀💀"
+
 
   const handleInstantSend = async () => {
     if (sending) return
@@ -166,11 +185,14 @@ export function ReelsActions({
     }, 300);
   };
 
+
   // ---- SAFE SHARE WITH COUNT ----
   const handleShare = async () => {
 
+
     if (sharing) return
     setSharing(true)
+
 
     // Get current time for deep link (receiver will start at same second)
     let currentTime = 0
@@ -179,17 +201,21 @@ export function ReelsActions({
       if (vid && Number.isFinite(vid.currentTime)) currentTime = vid.currentTime
     } catch {}
 
+
     const result = await shareReel(movieId, movie, mode, currentTime)
+
 
     if (result.shared) {
       // Optimistic +1
       setLiveShareCount(prev => prev + 1)
+
 
       // Persist for backend counting
       try {
         localStorage.setItem(`reels_shares_updated_${movieId}`, Date.now().toString())
         window.dispatchEvent(new CustomEvent(`reels_shares_updated_${movieId}`))
       } catch {}
+
 
       // Fire to worker - SAFE, no blocking UI
       fetch(`${WORKER_URL}/shares`, {
@@ -204,8 +230,10 @@ export function ReelsActions({
       }).catch(() => {})
     }
 
+
     setTimeout(() => setSharing(false), 800)
   }
+
 
   return (
     <>
@@ -219,6 +247,7 @@ export function ReelsActions({
  strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="6" /><path d="M21 21l-3.8-3.8" /></svg>
         </button>
       </div>
+
 
       <div className="reel-actions">
         <TheLoveSystem movieId={movieId} initialCount={heartCount} size={22} />
@@ -238,16 +267,25 @@ export function ReelsActions({
           </span>
           <span className="ra-label">{liveShareCount > 0 ? briefNumber(liveShareCount) : "Share"}</span>
         </button>
+        {showEpisodes && (
+          <button type="button" className="ra-btn" aria-label="Episodes" onClick={() => openEpisodes(movieId, movie)}>
+            <span className="ra-icon-bg"><GridIcon size={22} color="hsl(var(--text))" strokeWidth={1.9} /></span>
+            <span className="ra-label">Episodes</span>
+          </button>
+        )}
         <button type="button" className="ra-btn" aria-label="More options" onClick={() => openDots(movieId, movie)}>
           <span className="ra-icon-bg"><svg viewBox="0 0 24 24" width="22" height="22" fill="hsl(var(--text))"><circle cx="12" cy="12" r="1.8" /><circle cx="19.5" cy="12" r="1.8" /><circle cx="4.5" cy="12" r="1.8" /></svg></span>
         </button>
            </div>
 
-     <div className="reels-progress-wrap" onClick={(e) => { e.preventDefault(); e.stopPropagation(); }} style={{ position: 'absolute', bottom: '58px', left: '12px', right: '12px', zIndex: 9999, pointerEvents: 'auto' }}>
+
+     <div className="reels-progress-wrap" onClick={(e) => { e.preventDefault(); e.stopPropagation(); }} style={{ position: 'absolute', bottom: 'calc(66px + env(safe-area-inset-bottom, 0px))', left: '12px', right: '12px', zIndex: 9999, pointerEvents: 'auto' }}>
         <ReelsProgressBar movieId={movieId} />
       </div>
 
+
       <div className="reel-comment-bar">
+
 
         <div className="reel-input-wrap">
           <input
@@ -276,4 +314,9 @@ export function ReelsActions({
     </>
   )
 }
+
+
+
+
+
 

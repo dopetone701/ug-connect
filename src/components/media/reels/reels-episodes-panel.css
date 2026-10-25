@@ -1,0 +1,284 @@
+/* Episodes panel. Prefix `reps-` so it never collides with the comment styles. */
+
+.reps-backdrop {
+  position: fixed !important;
+  inset: 0 !important;
+  background: rgba(0, 0, 0, 0.5) !important;
+  z-index: 10000 !important;
+  opacity: 0 !important;
+  transition: opacity 0.3s ease !important;
+}
+.reps-backdrop.open { opacity: 1 !important; }
+
+.reps-panel {
+  /* VIP accent: the only colour not in your theme DNA (no gold token exists).
+     To use the theme instead, set this to: var(--primary) */
+  --reps-vip: 38 60% 46%;
+
+  position: fixed !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  height: 88dvh !important;
+  display: flex !important;
+  flex-direction: column !important;
+  background: hsl(var(--bg)) !important;
+  color: hsl(var(--text)) !important;
+  border-radius: 20px 20px 0 0 !important;
+  z-index: 10001 !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+  box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.6) !important;
+  transform: translateY(100%) !important;
+  transition: transform 0.35s cubic-bezier(0.32, 0.72, 0, 1) !important;
+}
+.reps-panel.open { transform: translateY(0) !important; }
+
+.reps-top {
+  flex: 0 0 auto !important;
+  padding: 10px 12px 0 !important;
+}
+.reps-close:active { background: hsl(var(--surface-hover)) !important; }
+.reps-close {
+  display: grid !important;
+  place-items: center !important;
+  width: 40px !important;
+  height: 40px !important;
+  background: transparent !important;
+  border: 0 !important;
+  color: hsl(var(--text)) !important;
+}
+
+.reps-head {
+  flex: 0 0 auto !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  padding: 8px 16px 16px !important;
+}
+.reps-poster {
+  width: 52px !important;
+  height: 70px !important;
+  flex: 0 0 52px !important;
+  border-radius: 6px !important;
+  object-fit: cover !important;
+  background: hsl(var(--surface)) !important;
+}
+.reps-meta { flex: 1 1 0 !important; min-width: 0 !important; }
+.reps-title {
+  font-size: 18px !important;
+  font-weight: 700 !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+.reps-sub {
+  margin-top: 4px !important;
+  font-size: 14px !important;
+  color: hsl(var(--text-muted)) !important;
+}
+.reps-add {
+  flex: 0 0 auto !important;
+  padding: 10px 18px !important;
+  border: 0 !important;
+  border-radius: 6px !important;
+  background: hsl(var(--primary)) !important;
+  color: hsl(var(--primary-text)) !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  white-space: nowrap !important;
+}
+.reps-add.added {
+  background: hsl(var(--surface)) !important;
+  color: hsl(var(--text)) !important;
+  border: 1px solid hsl(var(--border)) !important;
+}
+
+.reps-tabs {
+  flex: 0 0 auto !important;
+  display: flex !important;
+  gap: 28px !important;
+  padding: 0 16px !important;
+  border-bottom: 1px solid hsl(var(--border)) !important;
+}
+.reps-tab {
+  position: relative !important;
+  padding: 10px 2px 12px !important;
+  background: transparent !important;
+  border: 0 !important;
+  color: hsl(var(--text-muted)) !important;
+  font-size: 17px !important;
+  font-weight: 700 !important;
+}
+.reps-tab.active { color: hsl(var(--text)) !important; }
+.reps-tab.active::after {
+  content: "" !important;
+  position: absolute !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: -1px !important;
+  height: 3px !important;
+  background: hsl(var(--primary)) !important;
+}
+
+.reps-ranges {
+  flex: 0 0 auto !important;
+  display: flex !important;
+  gap: 20px !important;
+  padding: 16px 16px 8px !important;
+  overflow-x: auto !important;
+}
+.reps-range {
+  background: transparent !important;
+  border: 0 !important;
+  padding: 0 !important;
+  color: hsl(var(--text-muted)) !important;
+  font-size: 17px !important;
+  font-weight: 700 !important;
+  white-space: nowrap !important;
+}
+.reps-range.active { color: hsl(var(--primary)) !important; }
+
+.reps-scroll {
+  flex: 1 1 0 !important;
+  min-height: 0 !important;
+  overflow-y: auto !important;
+  overscroll-behavior: contain !important;
+  -webkit-overflow-scrolling: touch !important;
+  padding: 8px 16px calc(72px + env(safe-area-inset-bottom, 0px)) !important;
+}
+
+.reps-grid {
+  display: grid !important;
+  grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+  gap: 10px 22px !important;
+}
+.reps-ep {
+  position: relative !important;
+  display: block !important;
+  width: 100% !important;
+  height: clamp(60px, 18vw, 76px) !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  border: 1px solid transparent !important;
+  border-radius: 8px !important;
+  background: hsl(var(--surface)) !important;
+  color: hsl(var(--text)) !important;
+  box-sizing: border-box !important;
+}
+/* number sits in the top area, always clear of the VIP strip */
+.reps-ep-num {
+  position: absolute !important;
+  left: 0 !important;
+  right: 0 !important;
+  top: 0 !important;
+  bottom: 22px !important;
+  display: grid !important;
+  place-items: center !important;
+  font-size: 22px !important;
+  font-weight: 400 !important;
+  line-height: 1 !important;
+}
+/* free tiles have no strip, so the number centres in the whole tile */
+.reps-ep:not(.vip) .reps-ep-num { bottom: 0 !important; }
+/* VIP strip pinned to the tile bottom, fixed height so it is never clipped */
+.reps-ep-vip {
+  position: absolute !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  height: 22px !important;
+  display: grid !important;
+  place-items: center !important;
+  background: hsl(var(--reps-vip) / 0.16) !important;
+  color: hsl(var(--reps-vip)) !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  line-height: 1 !important;
+}
+.reps-ep:active { background: hsl(var(--surface-hover)) !important; }
+.reps-ep.current {
+  border-color: hsl(var(--primary)) !important;
+  color: hsl(var(--primary)) !important;
+}
+
+.reps-intro {
+  margin: 0 !important;
+  font-size: 15px !important;
+  line-height: 1.5 !important;
+  color: hsl(var(--text)) !important;
+  white-space: pre-wrap !important;
+}
+
+/* Introduction tab (cast + pills) */
+.reps-intro-wrap { display: block !important; }
+.reps-intro-pills {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 6px !important;
+  margin: 0 0 12px !important;
+}
+.reps-intro-pill {
+  padding: 4px 10px !important;
+  border-radius: 20px !important;
+  background: hsl(var(--surface)) !important;
+  border: 1px solid hsl(var(--border)) !important;
+  color: hsl(var(--text)) !important;
+  font-size: 11px !important;
+  font-weight: 600 !important;
+}
+.reps-intro-pill.muted { color: hsl(var(--text-muted)) !important; }
+
+.reps-cast { margin-top: 18px !important; }
+.reps-cast-header {
+  margin-bottom: 8px !important;
+  color: hsl(var(--text)) !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+}
+.reps-cast-list {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 10px !important;
+}
+.reps-cast-item {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 10px !important;
+  width: 100% !important;
+}
+.reps-cast-avatar {
+  flex: 0 0 40px !important;
+  width: 40px !important;
+  height: 40px !important;
+  display: grid !important;
+  place-items: center !important;
+  overflow: hidden !important;
+  border-radius: 50% !important;
+  background: hsl(var(--surface)) !important;
+  border: 1px solid hsl(var(--border)) !important;
+}
+.reps-cast-img {
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+}
+.reps-cast-fallback {
+  color: hsl(var(--text)) !important;
+  font-size: 16px !important;
+  font-weight: 700 !important;
+  line-height: 1 !important;
+}
+.reps-cast-name {
+  min-width: 0 !important;
+  overflow: hidden !important;
+  color: hsl(var(--text) / 0.9) !important;
+  font-size: 13px !important;
+  line-height: 1.2 !important;
+  text-transform: capitalize !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+

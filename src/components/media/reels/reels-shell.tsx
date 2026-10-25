@@ -3,7 +3,9 @@ import { useEffect } from "react"
 import "./reels.css"
 import { useCommentPanel } from "@/stores/use-comment-panel"
 import { ReelsCommentPanel } from "./reels-comment-panel"
+import { ReelsEpisodesPanel } from "./reels-episodes-panel"
 import { DotsPanel } from "./reels-action-logic/dots-menu-logic/dots-panel"
+
 
 export function ReelsShell({
   children,
@@ -13,6 +15,7 @@ export function ReelsShell({
   onClose?: () => void
 }) {
   const { isOpen } = useCommentPanel()
+
 
   useEffect(() => {
     const silentClose = () => { if (onClose) onClose() }
@@ -24,22 +27,27 @@ export function ReelsShell({
     }
   }, [onClose])
 
+
   useEffect(() => {
     ;(window as any).__UG_REELS_READY_FOR_DESKTOP__ = true
     return () => { delete (window as any).__UG_REELS_READY_FOR_DESKTOP__ }
   }, [])
+
 
   useEffect(() => {
     document.body.classList.add("reels-open")
     return () => document.body.classList.remove("reels-open")
   }, [])
 
+
   return (
     <div className={`reel-root ${isOpen ? "reels-has-comments" : ""}`}>
       <div className="reel-swiper">{children}</div>
       <ReelsCommentPanel />
+      <ReelsEpisodesPanel />
       <DotsPanel />
     </div>
   )
 }
+
 
