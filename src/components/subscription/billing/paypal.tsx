@@ -6,7 +6,6 @@ import "./paypal-billing.css";
 const BILLING_URL = "https://pay-pal-billing-server.connectu89.workers.dev";
 const PAYPAL_CLIENT_ID = "AclG3ZrH-saUXVNYbG9644z9EpRUHESFbmOB6v1RM4GFdKWKYLYrHq9kBLM0iWOpaRcqJ4T47S00yH8D";
 
-
 type PlanId = "weekly" | "monthly" | "yearly";
 
 interface Props {
@@ -107,8 +106,8 @@ export default function PayPalBilling({ planId, onSuccess, onError, onClose }: P
               }
             }}
             onCancel={() => {
+              // FIX: only reset status, don't call onClose - prevents cancel modal sneak on PayPal popup close
               setStatus("idle");
-              onClose?.();
             }}
             onError={(err: any) => {
               console.error("PayPal error", err);

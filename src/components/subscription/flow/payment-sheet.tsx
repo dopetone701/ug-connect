@@ -3,11 +3,12 @@ import React from "react";
 import "./subscription-flow.css";
 import { useSubscriptionFlow } from "@/stores/use-subscription-flow";
 import PayPalBilling from "../billing/paypal";
+import MtnMomo from "../billing/mtn-momo";
 
 type Props = { onClose: () => void };
 
 export default function PaymentSheet({ onClose }: Props) {
-  const { planId, method, back, goProcessing, goSuccess } = useSubscriptionFlow() as any;
+  const { planId, method, back, goSuccess } = useSubscriptionFlow() as any;
 
   return (
     <>
@@ -24,26 +25,17 @@ export default function PaymentSheet({ onClose }: Props) {
           <div className="flow-subtitle">Method: <b>{method}</b> • Secure payment</div>
         </div>
 
-        {/* PAYPAL WELL INJECTED HERE - wrapped in app */}
         <div className="flow-billing-inject">
           {method === "paypal" ? (
-            <PayPalBilling
-              planId={planId as any}
-              onSuccess={() => {
-                goSuccess?.();
-                onClose();
-              }}
-              onClose={onClose}
-              onError={(e) => console.error(e)}
-            />
+            <PayPalBilling planId={planId as any} onSuccess={(sub) => goSuccess?.(sub)} onClose={onClose} onError={(e) => console.error(e)} />
+          ) : method === "mtn" || method === "mtn-momo" || method === "momo" ? (
+            <MtnMomo planId={planId as any} onSuccess={(sub) => goSuccess?.(sub)} onError={(e) => console.error(e)} />
           ) : (
             <div className="billing-placeholder">
               <div className="billing-icon">💳</div>
               <h4>{String(method || "BILLING").toUpperCase()}</h4>
               <p>Pay {planId} securely</p>
-              <button onClick={goProcessing} className="billing-submit">
-                Submit {planId}
-              </button>
+              <button onClick={onClose} className="billing-submit">Close</button>
             </div>
           )}
         </div>
