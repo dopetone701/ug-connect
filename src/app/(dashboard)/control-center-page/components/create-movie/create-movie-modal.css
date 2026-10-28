@@ -1,0 +1,21 @@
+
+/* ===== ACTORS (up to 5, with headshots) ===== */
+.act-wrap { display: flex; flex-direction: column; gap: 10px; min-width: 0; margin-top: 16px; }
+.act-head { display: flex; align-items: center; justify-content: space-between; }
+.act-title { font-size: 11px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; color: hsl(var(--text-muted)); }
+.act-count { font-size: 11px; font-weight: 700; color: hsl(var(--text-muted)); }
+.act-empty { padding: 12px 14px; border: 1px dashed hsl(var(--border)); border-radius: 12px; background: hsl(var(--bg)); font-size: 12px; color: hsl(var(--text-muted)); }
+
+.act-row { display: flex; align-items: center; gap: 10px; min-width: 0; padding: 8px 10px; border: 1px solid hsl(var(--border)); border-radius: 14px; background: hsl(var(--bg)); }
+.act-photo { position: relative; display: grid; place-items: center; flex: 0 0 52px; width: 52px; height: 52px; overflow: hidden; border-radius: 50%; border: 1px dashed hsl(var(--border)); background: hsl(var(--surface)); color: hsl(var(--text-muted)); cursor: pointer; }
+.act-photo img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.act-photo input { display: none; }
+
+.act-name { flex: 1 1 0; min-width: 0; height: 42px; padding: 0 12px; border: 1px solid hsl(var(--border)); border-radius: 12px; outline: none; background: hsl(var(--surface)); color: hsl(var(--text)); font-size: 16px; }
+.act-name:focus { border-color: hsl(var(--primary)); }
+
+.act-remove { flex: 0 0 32px; width: 32px; height: 32px; border: 1px solid hsl(var(--border)); border-radius: 50%; background: hsl(var(--surface-hover)); color: hsl(var(--text)); cursor: pointer; }
+.act-add { height: 42px; border: 1px dashed hsl(var(--border)); border-radius: 12px; background: transparent; color: hsl(var(--text)); font-size: 13px; font-weight: 700; cursor: pointer; }
+.act-add:disabled, .act-remove:disabled { opacity: 0.5; cursor: default; }
+
+

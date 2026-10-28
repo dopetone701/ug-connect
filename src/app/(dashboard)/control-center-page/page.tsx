@@ -1,8 +1,11 @@
 ﻿"use client";
 import { useState } from "react";
 import "./control-center.css";
-import CreateMovieModal from "./components/create-movie-modal";
-import EditMovieModal from "./components/edit-movie-modal";
+
+import CreateMovieModal from "./components/create-movie/create-movie-modal";
+
+
+import EditMovieModal from "./components/edit-movie/edit-movie-modal";
 import AppLogoManager from "./components/app-logo-manager";
 
 const tabs = ["Overview", "Users", "Orders", "Settings", "Create", "Edit Movie", "Logo"];

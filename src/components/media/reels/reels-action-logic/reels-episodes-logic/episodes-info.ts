@@ -40,11 +40,17 @@ function hasSeriesType(movie: any): boolean {
   })
 }
 
+// The create-movie modal saves type as "Single" | "Mini" (Mini-Series) | "Full" (TV Series).
+function hasSeriesTypeValue(movie: any): boolean {
+  const t = String(movie?.type ?? "").trim().toLowerCase()
+  return t === "mini" || t === "full"
+}
+
 export function isSeriesMovie(movie: any): boolean {
   if (!movie) return false
   const allEps = getAllEpisodes(movie)
   const hasEpisodes = movie?.seasons?.length > 0 && allEps.length > 1
-  return hasEpisodes || hasSeriesType(movie)
+  return hasEpisodes || hasSeriesTypeValue(movie) || hasSeriesType(movie)
 }
 
 export function getEpisodeInfo(movie: any): EpisodeInfo {

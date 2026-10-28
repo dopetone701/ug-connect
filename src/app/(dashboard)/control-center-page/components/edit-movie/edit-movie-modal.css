@@ -1,0 +1,300 @@
+/* ===== CONTROL CENTER MODAL - FULL SOLID CSS - MOBILE + OVERFLOW FIX ===== */
+
+/* When modal open, hide top bar + bottom bar + lock body scroll */
+body:has(.cc-modal-bg) {
+  overflow: hidden !important;
+  overscroll-behavior: none;
+}
+
+body:has(.cc-modal-bg) .top-bar,
+body:has(.cc-modal-bg) [class*="top-bar"],
+body:has(.cc-modal-bg) [class*="dynamic-top-bar"],
+body:has(.cc-modal-bg) header {
+  display: none !important;
+}
+
+body:has(.cc-modal-bg) .bottom-bar,
+body:has(.cc-modal-bg) [class*="bottom-bar"],
+body:has(.cc-modal-bg) [class*="movies-bottom-bar"] {
+  display: none !important;
+}
+
+.cc-modal-bg {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.85);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 0;
+  overflow: hidden;
+}
+
+.cc-modal {
+  background: hsl(var(--bg));
+  color: hsl(var(--text));
+  border: 1px solid hsl(var(--border));
+  width: 100%;
+  height: 100%;
+  max-width: 1000px;
+  max-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+}
+
+@media (min-width: 768px) {
+  .cc-modal-bg { padding: 16px; }
+  .cc-modal {
+    border-radius: 20px;
+    max-height: 92vh;
+    height: auto;
+  }
+}
+
+.cc-modal-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 1px solid hsl(var(--border));
+  background: hsl(var(--surface));
+  flex-shrink: 0;
+  min-width: 0;
+}
+
+.cc-modal-head h3 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+  flex: 1;
+  padding-right: 12px;
+}
+
+.cc-close {
+  background: hsl(var(--bg));
+  border: 1px solid hsl(var(--border));
+  color: hsl(var(--text));
+  font-size: 18px;
+  cursor: pointer;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+
+.cc-modal-body {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 16px;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  min-width: 0;
+}
+
+.cc-modal-body::-webkit-scrollbar { width: 4px; }
+.cc-modal-body::-webkit-scrollbar-thumb { background: hsl(var(--border)); border-radius: 99px; }
+
+.cc-modal-foot {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border-top: 1px solid hsl(var(--border));
+  background: hsl(var(--surface));
+  flex-shrink: 0;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.cc-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  min-width: 0;
+}
+
+.cc-form-grid > div { min-width: 0; }
+
+.cc-form-grid label {
+  display: block;
+  font-size: 10px;
+  font-weight: 700;
+  margin-bottom: 5px;
+  color: hsl(var(--text));
+  opacity: 0.7;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.cc-form-grid input,
+.cc-form-grid select,
+.cc-form-grid textarea {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  padding: 10px 12px;
+  background: hsl(var(--bg));
+  border: 1px solid hsl(var(--border));
+  border-radius: 10px;
+  color: hsl(var(--text));
+  font-size: 16px; /* 16px = no iOS zoom */
+  outline: none;
+  box-sizing: border-box;
+}
+
+.cc-form-grid input:focus,
+.cc-form-grid select:focus,
+.cc-form-grid textarea:focus {
+  border-color: hsl(var(--primary));
+  box-shadow: 0 0 0 3px hsl(var(--primary) / 0.15);
+}
+
+.cc-upload-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 16px;
+  min-width: 0;
+}
+
+.cc-up-box {
+  background: hsl(var(--surface));
+  border: 1px solid hsl(var(--border));
+  border-radius: 12px;
+  padding: 10px;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.cc-up-box label {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  margin-bottom: 6px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cc-up-box input[type="file"] {
+  width: 100%;
+  font-size: 12px;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.cc-btn {
+  border: none;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all .15s;
+  white-space: nowrap;
+  flex-shrink: 0;
+  min-width: 0;
+}
+
+.cc-btn.primary {
+  background: hsl(var(--primary));
+  color: hsl(var(--primary-text));
+}
+
+.cc-btn.ghost {
+  background: hsl(var(--bg));
+  color: hsl(var(--text));
+  border: 1px solid hsl(var(--border));
+}
+
+.cc-btn:disabled { opacity: 0.5; pointer-events: none; }
+
+.prog { margin-top: 8px; }
+.prog-bar {
+  width: 100%;
+  height: 6px;
+  background: hsl(var(--border));
+  border-radius: 99px;
+  overflow: hidden;
+}
+.prog-fill { height: 100%; background: hsl(var(--primary)); transition: width .2s; }
+.prog-text { font-size: 10px; opacity: 0.6; margin-top: 4px; display: block; }
+
+/* Series manager mobile fix */
+.series-manager { min-width: 0; overflow: hidden; }
+.season-block { min-width: 0; overflow: hidden; }
+.episode-grid { min-width: 0; }
+
+/* ===== MOBILE FIXES ===== */
+@media (max-width: 640px) {
+  .cc-form-grid,
+  .cc-upload-grid {
+    grid-template-columns: 1fr !important;
+  }
+  
+  .cc-modal-head { padding: 12px; }
+  .cc-modal-head h3 { font-size: 14px; }
+  
+  .cc-modal-body { padding: 12px; }
+  
+  .cc-modal-foot {
+    padding: 10px 12px;
+    justify-content: stretch;
+  }
+  
+  .cc-modal-foot .cc-btn {
+    flex: 1;
+    min-width: 0;
+    padding: 10px 8px;
+    font-size: 12px;
+  }
+  
+  /* Episode row on mobile - stack */
+  .episode-row {
+    flex-direction: column !important;
+    gap: 8px !important;
+  }
+  
+  .ep-file-grid {
+    grid-template-columns: 1fr !important;
+  }
+  
+  .season-header {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  
+  .season-name-input {
+    min-width: 0;
+    width: 100%;
+  }
+}
+
+
+/* FIX: Save Keep ID ... ellipsis when overflow */
+.cc-modal-foot .cc-btn.primary:last-child {
+  max-width: 160px;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: inline-block;
+  flex-shrink: 1 !important;
+}
+
+@media (max-width: 640px) {
+  .cc-modal-foot .cc-btn.primary:last-child {
+    max-width: 120px;
+  }
+}

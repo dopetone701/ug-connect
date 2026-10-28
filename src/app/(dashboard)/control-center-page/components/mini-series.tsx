@@ -4,8 +4,9 @@ import type { SeasonDraft } from "./tv-series";
 
 export default function MiniSeriesManager(props: {
   seasons: SeasonDraft[],
-  setSeasons: (s: SeasonDraft[]) => void
+  setSeasons: React.Dispatch<React.SetStateAction<SeasonDraft[]>>
 }) {
+  // label="Part" makes it show "Part 1, Part 2" instead of "Season 1, 2"
   return <SeasonManager {...props} label="Part" />;
 }
 
