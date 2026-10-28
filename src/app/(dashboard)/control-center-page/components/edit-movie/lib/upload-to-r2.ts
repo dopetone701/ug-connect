@@ -1,4 +1,4 @@
-// edit-movie/lib/upload-to-r2.ts - SOLID R2 uploader with progress
+// edit-movie/lib/upload-to-r2.ts - SOLID R2 uploader with progress - iPhone fixed
 
 import { WORKER_URL, CHUNK_SIZE, SINGLE_LIMIT } from "../constants";
 
@@ -9,8 +9,17 @@ export async function uploadToR2(
 ): Promise<string> {
   onProgress(0);
 
-  // SINGLE PUT for files < 90MB
+  if (!file || file.size === 0) {
+    throw new Error(`File empty size=${file?.size || 0} - iCloud? Download original first`);
+  }
+
+  // SINGLE PUT for files < 90MB - FIXED FOR iPHONE
   if (file.size < SINGLE_LIMIT) {
+    const fileBuffer = await file.arrayBuffer();
+    if (fileBuffer.byteLength === 0) {
+      throw new Error(`File buffer empty - iCloud video not downloaded`);
+    }
+
     return new Promise<string>((resolve, reject) => {
       const xhr = new XMLHttpRequest();
       xhr.upload.onprogress = (e) => {
@@ -37,11 +46,11 @@ export async function uploadToR2(
         "Content-Type",
         file.type || "application/octet-stream"
       );
-      xhr.send(file);
+      xhr.send(fileBuffer);
     });
   }
 
-  // MULTIPART for large files
+  // MULTIPART for large files - FIXED FOR iPHONE
   const createRes = await fetch(`${WORKER_URL}/create-multipart`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -57,12 +66,27 @@ export async function uploadToR2(
 
   try {
     for (let i = 0; i < totalParts; i++) {
-      const chunk = file.slice(i * CHUNK_SIZE, (i + 1) * CHUNK_SIZE);
+      const blobChunk = file.slice(i * CHUNK_SIZE, (i + 1) * CHUNK_SIZE);
+
+      if (blobChunk.size === 0) {
+        throw new Error(`Part ${i + 1} empty - iPhone slice failed`);
+      }
+
+      const bufferChunk = await blobChunk.arrayBuffer();
+
+      if (bufferChunk.byteLength === 0) {
+        throw new Error(`Part ${i + 1} buffer empty`);
+      }
+
       const res = await fetch(
         `${WORKER_URL}/multipart/upload-part?key=${encodeURIComponent(
           key
         )}&uploadId=${encodeURIComponent(uploadId)}&partNumber=${i + 1}`,
-        { method: "POST", body: chunk }
+        { 
+          method: "POST", 
+          headers: { "Content-Type": "application/octet-stream" },
+          body: bufferChunk 
+        }
       );
       if (!res.ok) throw new Error(`part ${i + 1} failed: ${await res.text()}`);
       
@@ -76,7 +100,7 @@ export async function uploadToR2(
       if (!etag) throw new Error(`part ${i + 1} missing etag`);
       
       parts.push({ partNumber: i + 1, etag: etag.replaceAll('"', "") });
-      uploaded += chunk.size;
+      uploaded += blobChunk.size;
       onProgress(Math.round((uploaded / file.size) * 100));
     }
 
