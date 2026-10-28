@@ -1,7 +1,7 @@
 "use client";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import "./edit-movie-modal.css";
-import { API_URL, cleanKey, getR2Url, getRawKey, FALLBACK, safeId, WORKER_URL } from "./constants";
+import { API_URL, cleanKey, getR2Url, FALLBACK, safeId, WORKER_URL } from "./constants";
 import { useEditMovieForm } from "./hooks/use-edit-movie-form";
 import { useEditMovieUpload } from "./hooks/use-edit-movie-upload";
 import { uploadToR2 } from "./lib/upload-to-r2";
@@ -14,11 +14,10 @@ import type { MoviePayload } from "./types";
 
 type Props = { open: boolean; onClose: () => void; onUpdated?: () => void };
 
-// ===== DELETE HELPER - DELETES OLD R2 FILE =====
 async function deleteR2File(oldUrlOrKey: string | null | undefined): Promise<void> {
   if (!oldUrlOrKey) return;
   let key = oldUrlOrKey;
-  if (key.includes("/r2/")) key = key.split("/r2/")[1];
+  if (key.includes("/r2/")) key = key.split("/r2/")[1].split("?")[0];
   if (key.startsWith("http")) {
     try {
       key = decodeURIComponent(new URL(key).pathname.replace("/r2/", "").replace(/^\/+/, ""));
@@ -29,6 +28,21 @@ async function deleteR2File(oldUrlOrKey: string | null | undefined): Promise<voi
     await fetch(`${WORKER_URL}/r2-delete/${encodeURIComponent(key)}`, { method: "DELETE" });
     console.log("🗑️ R2 Deleted:", key);
   } catch {}
+}
+
+function extractKey(urlOrKey: string | null | undefined): string | null {
+  if (!urlOrKey) return null;
+  if (typeof urlOrKey !== "string") return null;
+  let s = urlOrKey;
+  if (s.includes("/r2/")) return s.split("/r2/")[1].split("?")[0];
+  if (s.startsWith("http")) {
+    try {
+      return decodeURIComponent(new URL(s).pathname.replace("/r2/", "").replace(/^\/+/, ""));
+    } catch {
+      return s;
+    }
+  }
+  return s;
 }
 
 export default function EditMovieModal({ open, onClose, onUpdated }: Props) {
@@ -83,8 +97,8 @@ export default function EditMovieModal({ open, onClose, onUpdated }: Props) {
       
       setFullMovie(payload);
       
-      upload.setCurrentCoverKey(getRawKey(payload, "cover_url"));
-      upload.setCurrentMainKey(getRawKey(payload, "main_url") || getRawKey(payload, "video_url"));
+      upload.setCurrentCoverKey(extractKey(payload.cover_url));
+      upload.setCurrentMainKey(extractKey(payload.main_url) || extractKey(payload.video_url));
       upload.setCoverPreview(getR2Url(payload.cover_url));
       upload.setMoviePreview(getR2Url(payload.main_url || payload.video_url));
       
@@ -106,9 +120,8 @@ export default function EditMovieModal({ open, onClose, onUpdated }: Props) {
     }
   };
 
-  // ===== DELETE EVERYTHING =====
   const handleDeleteCover = async () => {
-    if (!confirm("Delete cover?")) return;
+    if (!confirm("Delete cover? This will delete from R2.")) return;
     const oldKey = upload.currentCoverKey;
     if (oldKey) await deleteR2File(oldKey);
     upload.setCoverPreview(null);
@@ -117,7 +130,7 @@ export default function EditMovieModal({ open, onClose, onUpdated }: Props) {
   };
 
   const handleDeleteMain = async () => {
-    if (!confirm("Delete main movie?")) return;
+    if (!confirm("Delete main movie? This will delete from R2.")) return;
     const oldKey = upload.currentMainKey;
     if (oldKey) await deleteR2File(oldKey);
     upload.setMoviePreview(null);
@@ -131,7 +144,7 @@ export default function EditMovieModal({ open, onClose, onUpdated }: Props) {
     upload.setPreviewVideos(prev => prev.filter(p => p.id !== id));
   };
 
-  const handleClearAllText = async () => {
+  const handleClearAllText = () => {
     if (!confirm("Clear ALL text fields? Title, description, genre, VJ, actors?")) return;
     form.setTitle("");
     form.setGenre("");
@@ -147,7 +160,6 @@ export default function EditMovieModal({ open, onClose, onUpdated }: Props) {
     
     upload.setUploading(true);
     try {
-      // 1. Upload cast photos - DELETE OLD if replaced
       let finalCast = [...form.cast];
       for (let i = 0; i < finalCast.length; i++) {
         const member: any = finalCast[i];
@@ -156,15 +168,11 @@ export default function EditMovieModal({ open, onClose, onUpdated }: Props) {
         if (member._file) {
           const key = `actors/${selected.id}-${cleanKey(member.name)}-${Date.now()}-${cleanKey(member._file.name)}`;
           const uploadedKey = await uploadToR2(member._file, key, () => {});
-          // delete old headshot if different
           if (oldPhotoKey && oldPhotoKey !== uploadedKey) await deleteR2File(oldPhotoKey);
           finalCast[i] = { name: member.name, photo: uploadedKey };
-        } else if (member.photo && member.photo.startsWith("blob:")) {
-          finalCast[i] = { name: member.name, photo: member.photo };
         }
       }
 
-      // 2. Upload cover/main if new files - DELETE OLD if replaced
       let coverKey = upload.currentCoverKey;
       let mainKey = upload.currentMainKey;
       
@@ -184,19 +192,13 @@ export default function EditMovieModal({ open, onClose, onUpdated }: Props) {
         if (oldKey && oldKey !== mainKey) await deleteR2File(oldKey);
       }
 
-      // 3. Upload preview videos (handles delete inside)
       const finalPreviewKeys = await uploadPreviewVideosForEdit(
         selected.id,
         upload.previewVideos,
         (id, pct) => upload.updatePreviewProgress(id, pct)
       );
 
-      // 4. Upload seasons if series (handles delete inside)
       let finalSeasons = form.seasons;
-      if (form.type !== "Full" && form.type !== "Mini") {
-        // if switched from series to single, delete all series R2?
-        // keep logic simple: if old was series, user should manually delete episodes via UI
-      }
       if (form.type !== "Single") {
         finalSeasons = await uploadSeasonsForEdit(
           selected.id,
@@ -207,7 +209,6 @@ export default function EditMovieModal({ open, onClose, onUpdated }: Props) {
         );
       }
 
-      // 5. Build payload - EVERYTHING CAN BE EMPTY NOW
       const payload: MoviePayload = {
         title: form.title.trim(),
         genre: form.genre.trim(),
@@ -217,10 +218,10 @@ export default function EditMovieModal({ open, onClose, onUpdated }: Props) {
         actors: form.actors.trim(),
         cast: finalCast,
         description: form.description.trim(),
-        cover_url: coverKey || "", // empty = deleted
-        main_url: mainKey || undefined, // undefined = deleted
-        preview_urls: finalPreviewKeys, // [] = deleted all
-        seasons: finalSeasons, // [] = deleted all
+        cover_url: coverKey || "",
+        main_url: mainKey || undefined,
+        preview_urls: finalPreviewKeys,
+        seasons: finalSeasons,
       };
 
       await updateMovie(selected.id, payload);
@@ -278,29 +279,32 @@ export default function EditMovieModal({ open, onClose, onUpdated }: Props) {
                   actors={form.actors} setActors={form.setActors}
                   cast={form.cast} setCast={form.setCast}
                   description={form.description} setDescription={form.setDescription}
-                  // pass delete handler for actors
-                  onDeleteActorPhoto={deleteR2File}
                 />
 
                 {!isSeries ? (
-                  <SingleMovieUploads
-                    coverPreview={upload.coverPreview}
-                    moviePreview={upload.moviePreview}
-                    currentCoverKey={upload.currentCoverKey}
-                    currentMainKey={upload.currentMainKey}
-                    coverProg={upload.coverProg}
-                    mainProg={upload.mainProg}
-                    previewVideos={upload.previewVideos}
-                    setPreviewVideos={upload.setPreviewVideos}
-                    coverRef={upload.coverRef}
-                    mainRef={upload.mainRef}
-                    onCoverFile={(f) => { upload.setCoverPreview(URL.createObjectURL(f)); upload.setCoverProg(0); }}
-                    onMainFile={(f) => { upload.setMoviePreview(URL.createObjectURL(f)); upload.setMainProg(0); }}
-                    getR2Url={getR2Url}
-                    onDeleteCover={handleDeleteCover}
-                    onDeleteMain={handleDeleteMain}
-                    onDeletePreview={handleDeletePreview}
-                  />
+                  <>
+                    <SingleMovieUploads
+                      coverPreview={upload.coverPreview}
+                      moviePreview={upload.moviePreview}
+                      currentCoverKey={upload.currentCoverKey}
+                      currentMainKey={upload.currentMainKey}
+                      coverProg={upload.coverProg}
+                      mainProg={upload.mainProg}
+                      previewVideos={upload.previewVideos}
+                      setPreviewVideos={upload.setPreviewVideos}
+                      coverRef={upload.coverRef}
+                      mainRef={upload.mainRef}
+                      onCoverFile={(f) => { upload.setCoverPreview(URL.createObjectURL(f)); upload.setCoverProg(0); }}
+                      onMainFile={(f) => { upload.setMoviePreview(URL.createObjectURL(f)); upload.setMainProg(0); }}
+                      getR2Url={getR2Url}
+                    />
+                    {/* DELETE BUTTONS ADDED HERE - OUTSIDE component to avoid prop errors */}
+                    <div style={{ display: "flex", gap: 8, marginTop: 10, flexWrap: "wrap" }}>
+                      {upload.coverPreview && <button onClick={handleDeleteCover} className="cc-btn ghost" style={{ color: "#ff4444", fontSize: 12 }}>🗑️ Delete Cover (R2)</button>}
+                      {upload.moviePreview && <button onClick={handleDeleteMain} className="cc-btn ghost" style={{ color: "#ff4444", fontSize: 12 }}>🗑️ Delete Main Movie (R2)</button>}
+                      {upload.previewVideos.map(pv => pv.existingKey ? <button key={pv.id} onClick={() => handleDeletePreview(pv.id, pv.existingKey)} className="cc-btn ghost" style={{ color: "#ffaa44", fontSize: 12 }}>🗑️ Delete Preview {pv.existingKey.slice(0, 15)}</button> : null)}
+                    </div>
+                  </>
                 ) : (
                   <div className="cc-up-box" style={{ marginTop: 14 }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -316,7 +320,7 @@ export default function EditMovieModal({ open, onClose, onUpdated }: Props) {
                   </div>
                 )}
 
-                <SeriesSection type={form.type} seasons={form.seasons} setSeasons={form.setSeasons} onDeleteR2={deleteR2File} />
+                <SeriesSection type={form.type} seasons={form.seasons} setSeasons={form.setSeasons} />
               </>
             )}
           </div>
@@ -324,7 +328,7 @@ export default function EditMovieModal({ open, onClose, onUpdated }: Props) {
 
         {selected && (
           <div className="cc-modal-foot">
-            <button onClick={async () => { if (confirm(`Delete ${selected.title}? This will NOT delete R2 files automatically, use individual deletes first.`)) { await fetch(`${API_URL}/${selected.id}`, { method: "DELETE" }); setSelected(null); setFullMovie(null); fetchMovies(); } }} className="cc-btn ghost" style={{ color: "#ff4444", marginRight: "auto" }}>🗑️ Delete Movie</button>
+            <button onClick={async () => { if (confirm(`Delete ${selected.title}?`)) { await fetch(`${API_URL}/${selected.id}`, { method: "DELETE" }); setSelected(null); setFullMovie(null); fetchMovies(); } }} className="cc-btn ghost" style={{ color: "#ff4444", marginRight: "auto" }}>🗑️ Delete Movie</button>
             <button onClick={onClose} disabled={upload.uploading} className="cc-btn ghost">Cancel</button>
             <button disabled={upload.uploading} onClick={handleUpdate} className="cc-btn primary">{upload.uploading ? "Uploading..." : `💾 Save Keep ID ${safeId(selected.id)}`}</button>
           </div>
