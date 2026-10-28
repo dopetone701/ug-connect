@@ -26,7 +26,6 @@ async function deleteR2File(oldUrlOrKey: string | null | undefined): Promise<voi
   if (!key || key.includes("blob:") || key === "/movie.jpg" || key.length < 3) return;
   try {
     await fetch(`${WORKER_URL}/r2-delete/${encodeURIComponent(key)}`, { method: "DELETE" });
-    console.log("🗑️ R2 Deleted:", key);
   } catch {}
 }
 
@@ -130,7 +129,7 @@ export default function EditMovieModal({ open, onClose, onUpdated }: Props) {
   };
 
   const handleDeleteMain = async () => {
-    if (!confirm("Delete main movie? This will delete from R2.")) return;
+    if (!confirm("Delete global preview? This will delete from R2.")) return;
     const oldKey = upload.currentMainKey;
     if (oldKey) await deleteR2File(oldKey);
     upload.setMoviePreview(null);
@@ -185,9 +184,10 @@ export default function EditMovieModal({ open, onClose, onUpdated }: Props) {
       }
       
       const nm = upload.mainRef.current?.files?.[0];
-      if (nm && form.type === "Single") {
+      if (nm) {
         const oldKey = mainKey;
-        const k = `movies/${selected.id}-${cleanKey(form.title)}-${cleanKey(nm.name)}`;
+        const prefix = form.type === "Single" ? "movies" : "series-previews";
+        const k = `${prefix}/${selected.id}-${cleanKey(form.title)}-${cleanKey(nm.name)}`;
         mainKey = await uploadToR2(nm, k, (p) => upload.setMainProg(p));
         if (oldKey && oldKey !== mainKey) await deleteR2File(oldKey);
       }
@@ -298,7 +298,6 @@ export default function EditMovieModal({ open, onClose, onUpdated }: Props) {
                       onMainFile={(f) => { upload.setMoviePreview(URL.createObjectURL(f)); upload.setMainProg(0); }}
                       getR2Url={getR2Url}
                     />
-                    {/* DELETE BUTTONS ADDED HERE - OUTSIDE component to avoid prop errors */}
                     <div style={{ display: "flex", gap: 8, marginTop: 10, flexWrap: "wrap" }}>
                       {upload.coverPreview && <button onClick={handleDeleteCover} className="cc-btn ghost" style={{ color: "#ff4444", fontSize: 12 }}>🗑️ Delete Cover (R2)</button>}
                       {upload.moviePreview && <button onClick={handleDeleteMain} className="cc-btn ghost" style={{ color: "#ff4444", fontSize: 12 }}>🗑️ Delete Main Movie (R2)</button>}
@@ -306,18 +305,38 @@ export default function EditMovieModal({ open, onClose, onUpdated }: Props) {
                     </div>
                   </>
                 ) : (
-                  <div className="cc-up-box" style={{ marginTop: 14 }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                      <label>🖼️ SERIES COVER</label>
-                      <div style={{ display: "flex", gap: 6 }}>
-                        {upload.currentCoverKey && <button onClick={() => window.open(getR2Url(upload.currentCoverKey) + "?download=1", "_blank")} className="cc-btn ghost" style={{ fontSize: 12 }}>⬇️ Download</button>}
-                        {upload.coverPreview && <button onClick={handleDeleteCover} className="cc-btn ghost" style={{ fontSize: 12, color: "#ff4444" }}>🗑️ Delete Cover</button>}
+                  <>
+                    {/* SERIES COVER - existing + replaceable */}
+                    <div className="cc-up-box" style={{ marginTop: 14 }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                        <label>🖼️ SERIES COVER (Universal)</label>
+                        <div style={{ display: "flex", gap: 6 }}>
+                          {upload.currentCoverKey && <button onClick={() => window.open(getR2Url(upload.currentCoverKey) || "", "_blank")} className="cc-btn ghost" style={{ fontSize: 12 }}>⬇️ View</button>}
+                          {upload.coverPreview && <button onClick={handleDeleteCover} className="cc-btn ghost" style={{ fontSize: 12, color: "#ff4444" }}>🗑️ Delete Cover</button>}
+                        </div>
                       </div>
+                      <input type="file" ref={upload.coverRef} accept="image/*" onChange={(e) => { const f = e.target.files?.[0]; if (f) { if(upload.coverPreview?.startsWith("blob:")) URL.revokeObjectURL(upload.coverPreview); upload.setCoverPreview(URL.createObjectURL(f)); upload.setCoverProg(0); } }} />
+                      <div className="prog" style={{ display: upload.coverProg > 0 ? "block" : "none", marginTop: 10 }}><div className="prog-bar"><div className="prog-fill" style={{ width: upload.coverProg + "%" }}></div></div><span className="prog-text">{upload.coverProg}%</span></div>
+                      {upload.coverPreview && <img src={upload.coverPreview} style={{ width: "100%", marginTop: 10, borderRadius: 8, maxHeight: 180, objectFit: "cover" }} />}
+                      {!upload.coverPreview && upload.currentCoverKey && <div style={{ fontSize: 12, color: "#888", marginTop: 6 }}>✅ Existing Cover: {upload.currentCoverKey.slice(0, 50)}</div>}
                     </div>
-                    <input type="file" ref={upload.coverRef} accept="image/*" onChange={(e) => { const f = e.target.files?.[0]; if (f) { upload.setCoverPreview(URL.createObjectURL(f)); upload.setCoverProg(0); } }} />
-                    <div className="prog" style={{ display: upload.coverProg > 0 ? "block" : "none", marginTop: 10 }}><div className="prog-bar"><div className="prog-fill" style={{ width: upload.coverProg + "%" }}></div></div><span className="prog-text">{upload.coverProg}%</span></div>
-                    {upload.coverPreview && <img src={upload.coverPreview} style={{ width: "100%", marginTop: 10, borderRadius: 8, maxHeight: 180, objectFit: "cover" }} />}
-                  </div>
+
+                    {/* GLOBAL SERIES PREVIEW - LIKE COVER, existing + replaceable */}
+                    <div className="cc-up-box" style={{ marginTop: 14 }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                        <label>🎞️ SERIES PREVIEW (Universal Trailer)</label>
+                        <div style={{ display: "flex", gap: 6 }}>
+                          {upload.currentMainKey && <button onClick={() => window.open(getR2Url(upload.currentMainKey) || "", "_blank")} className="cc-btn ghost" style={{ fontSize: 12 }}>⬇️ View Existing</button>}
+                          {(upload.moviePreview || upload.currentMainKey) && <button onClick={handleDeleteMain} className="cc-btn ghost" style={{ fontSize: 12, color: "#ff4444" }}>🗑️ Delete Preview</button>}
+                        </div>
+                      </div>
+                      <input type="file" ref={upload.mainRef} accept="video/*" onChange={(e) => { const f = e.target.files?.[0]; if (f) { if(upload.moviePreview?.startsWith("blob:")) URL.revokeObjectURL(upload.moviePreview); upload.setMoviePreview(URL.createObjectURL(f)); upload.setMainProg(0); } }} />
+                      <div className="prog" style={{ display: upload.mainProg > 0 ? "block" : "none", marginTop: 10 }}><div className="prog-bar"><div className="prog-fill" style={{ width: upload.mainProg + "%" }}></div></div><span className="prog-text">{upload.mainProg}%</span></div>
+                      {upload.moviePreview && <video src={upload.moviePreview} style={{ width: "100%", marginTop: 10, borderRadius: 8, maxHeight: 180 }} controls muted playsInline />}
+                      {!upload.moviePreview && upload.currentMainKey && <div style={{ fontSize: 12, color: "hsl(var(--primary))", marginTop: 6 }}>✅ Existing Global Preview: {upload.currentMainKey.slice(0, 50)}...</div>}
+                      <small style={{ color: "#888", fontSize: 11, marginTop: 6, display: "block" }}>This is universal trailer for whole series. Individual episode previews are below in tiles.</small>
+                    </div>
+                  </>
                 )}
 
                 <SeriesSection type={form.type} seasons={form.seasons} setSeasons={form.setSeasons} />
