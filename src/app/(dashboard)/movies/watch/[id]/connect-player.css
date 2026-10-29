@@ -1104,3 +1104,18 @@ footer{
 }
 
 
+
+
+
+
+
+/* ===== split of the old under-section: buttons slot + scroll area ===== */
+.connect-root .connect-actions-slot{width:100%;max-width:1280px;margin:0 auto;padding:14px 16px 0;background:hsl(var(--bg));box-sizing:border-box;flex-direction:column}
+.connect-root .connect-scroll-area{display:contents}
+.connect-root .connect-scroll-area > .connect-under-section{padding-top:16px !important}
+.connect-root.is-shell-full .connect-actions-slot,
+.connect-root.is-mini-player .connect-actions-slot{display:none !important}
+@media(max-width:768px){
+  .connect-root .connect-actions-slot{max-width:100%;padding:14px 16px 0 16px}
+}
+

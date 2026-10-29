@@ -791,3 +791,63 @@ pointer-events: auto !important;
   background: #000 !important;
 }
 
+
+
+
+
+
+
+/* =========================================================
+   WATCH DRAWER - VIDEO + BUTTONS FIXED, REST SCROLLS
+   Driven by the .is-fixed-layout class (set in watch-drawer.tsx:
+   portrait, not mini, not fullscreen, not expanding).
+   ========================================================= */
+.watch-drawer-root.is-fixed-layout:not(.is-mini):not(.is-fullscreen) .watch-drawer-panel {
+  overflow: hidden !important;
+}
+
+.watch-drawer-root.is-fixed-layout:not(.is-mini):not(.is-fullscreen) .watch-drawer-content {
+  display: flex !important;
+  flex-direction: column !important;
+  height: 100% !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+}
+
+.watch-drawer-root.is-fixed-layout:not(.is-mini):not(.is-fullscreen) .connect-root:not(.is-shell-full) {
+  flex: 1 1 0 !important;
+  min-height: 0 !important;
+  height: auto !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+}
+
+/* the video never moves */
+.watch-drawer-root.is-fixed-layout:not(.is-mini):not(.is-fullscreen) .connect-root:not(.is-shell-full) .film-giant.inner-body {
+  flex: 0 0 auto !important;
+}
+
+/* the buttons never move */
+.watch-drawer-root.is-fixed-layout:not(.is-mini):not(.is-fullscreen) .connect-root:not(.is-shell-full) .connect-actions-slot {
+  flex: 0 0 auto !important;
+  padding-bottom: 10px !important;
+  border-bottom: 1px solid hsl(var(--border) / 0.6);
+  z-index: 5;
+}
+
+/* only this part scrolls */
+.watch-drawer-root.is-fixed-layout:not(.is-mini):not(.is-fullscreen) .connect-root:not(.is-shell-full) .connect-scroll-area {
+  display: block !important;
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.watch-drawer-root.is-mini .connect-actions-slot { display: none !important; }
+

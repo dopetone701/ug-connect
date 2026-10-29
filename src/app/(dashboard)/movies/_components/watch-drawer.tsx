@@ -5,6 +5,7 @@ import WatchClient from "../watch/[id]/watch-client";
 import { useMiniPlayerFloating } from "../_components/vid-actions/mini-player-floating-logic";
 import "./watch-drawer.css";
 
+
 function detectMobileDevice() {
   if (typeof window === "undefined") return true;
   const isPhoneUA = /iPhone|iPod|Android.*Mobile|Windows Phone/i.test(navigator.userAgent || "");
@@ -13,6 +14,7 @@ function detectMobileDevice() {
   if (isTouch && window.innerWidth <= 1024) return true;
   return false;
 }
+
 
 export default function WatchDrawer(){
   const router = useRouter();
@@ -29,13 +31,25 @@ export default function WatchDrawer(){
   const [showControls, setShowControls] = useState(false);
   const [isMobile, setIsMobile] = useState(true);
   const [isExpanding, setIsExpanding] = useState(false);
+  const [isPortrait, setIsPortrait] = useState(true);
+  useEffect(() => {
+    const mq = window.matchMedia("(orientation: portrait)");
+    const update = () => setIsPortrait(mq.matches);
+    update();
+    mq.addEventListener?.("change", update);
+    return () => mq.removeEventListener?.("change", update);
+  }, []);
+  // video + buttons fixed, rest scrolls: only in portrait, never mini / fullscreen / expanding
+  const fixedLayout = !minimized && !isFullscreen && !isExpanding && isPortrait;
   const floating = useMiniPlayerFloating(panelRef, minimized &&!isExpanding);
+
 
   const triggerFsBtn = useCallback(() => {
     const btn = panelRef.current?.querySelector(".cc-icon.apple-full") as HTMLButtonElement | null;
     if(btn) btn.click();
     else setIsFullscreen(v=>!v);
   }, []);
+
 
   useEffect(()=>{
     const check = () => setIsMobile(detectMobileDevice());
@@ -47,6 +61,7 @@ export default function WatchDrawer(){
       window.removeEventListener("orientationchange", check);
     }
   },[]);
+
 
   useEffect(()=>{
     let timeout: any = null;
@@ -79,25 +94,30 @@ export default function WatchDrawer(){
     }
   }, [open, minimized, movieId, playType, isClosing, closeDrawer, router, isFullscreen]);
 
+
   useEffect(()=>{
     if(!showControls) return;
     const t = setTimeout(()=> setShowControls(false), 3000);
     return ()=> clearTimeout(t);
   }, [showControls]);
 
+
   // === SMOOTH EXPAND ===
-  
+ 
   // === CINEMATIC MINI-PLAYER EXPANSION ===
   const handleSmoothExpand = useCallback(() => {
     const panel = panelRef.current;
+
 
     if (!panel || !minimized || isExpanding) {
       if (!minimized) maximize();
       return;
     }
 
+
    // Lock the mini-player's current position before React changes its mode.
 const rect = panel.getBoundingClientRect();
+
 
 panel.style.setProperty("position", "fixed", "important");
 panel.style.setProperty("left", `${rect.left}px`, "important");
@@ -109,10 +129,13 @@ panel.style.setProperty("height", `${rect.height}px`, "important");
 panel.style.setProperty("transform", "none", "important");
 panel.style.setProperty("border-radius", "12px", "important");
 
+
 panel.getBoundingClientRect();
+
 
 setIsExpanding(true);
 panel.classList.add("is-expanding");
+
 
 requestAnimationFrame(() => {
   // Re-lock the starting frame after React applies the expansion class.
@@ -121,13 +144,16 @@ requestAnimationFrame(() => {
   panel.style.setProperty("width", `${rect.width}px`, "important");
   panel.style.setProperty("height", `${rect.height}px`, "important");
 
+
   panel.getBoundingClientRect();
+
 
   panel.style.setProperty(
     "transition",
     "left 520ms cubic-bezier(0.16,1,0.3,1), top 520ms cubic-bezier(0.16,1,0.3,1), width 520ms cubic-bezier(0.16,1,0.3,1), height 520ms cubic-bezier(0.16,1,0.3,1), border-radius 420ms ease",
     "important"
   );
+
 
   requestAnimationFrame(() => {
     panel.style.setProperty("left", "0px", "important");
@@ -139,10 +165,13 @@ requestAnimationFrame(() => {
 });
 
 
+
+
     const finish = () => {
       maximize();
       setIsExpanding(false);
       panel.classList.remove("is-expanding");
+
 
       [
         "transition",
@@ -158,7 +187,9 @@ requestAnimationFrame(() => {
       ].forEach((property) => panel.style.removeProperty(property));
     };
 
+
     const timeout = window.setTimeout(finish, 650);
+
 
     panel.addEventListener(
       "transitionend",
@@ -173,9 +204,13 @@ requestAnimationFrame(() => {
 
 
 
+
+
+
   if(!movieId) return null;
   if(!open &&!minimized &&!isClosing) return null;
   if(!isMobile && open &&!minimized) return null;
+
 
   const handleClose = () => {
     if(isFullscreen){ triggerFsBtn(); return; }
@@ -183,11 +218,13 @@ requestAnimationFrame(() => {
     setTimeout(()=> { closeDrawer(); setIsClosing(false); setIsFullscreen(false); document.body.style.overflow = ''; }, 380);
   };
 
+
   const getIsVideoZone = (clientY: number) => {
     if(isFullscreen) return false;
     const videoH = window.innerWidth * 0.5625 + 20;
     return clientY < videoH;
   };
+
 
   const onDown = (e: any) => {
     if(!isMobile) return;
@@ -199,8 +236,13 @@ requestAnimationFrame(() => {
     startTime.current = Date.now();
     dragYRef.current = 0;
     setDragging(true);
-    dragModeRef.current = isFullscreen? "exit-fs" : (getIsVideoZone(y)? "to-mini" : "to-fs");
+    // the pull-down-to-fullscreen gesture only starts when the scrolling area is at the very top,
+    // otherwise scrolling back up through a long page would trigger fullscreen
+    const scroller = panelRef.current?.querySelector(".connect-scroll-area") as HTMLElement | null;
+    const scrolledDown = Math.max(scroller?.scrollTop ?? 0, panelRef.current?.scrollTop ?? 0) > 0;
+    dragModeRef.current = isFullscreen? "exit-fs" : (getIsVideoZone(y)? "to-mini" : (scrolledDown? "none" : "to-fs"));
   };
+
 
   const onMove = (e: any) => {
     if(!isMobile) return;
@@ -217,7 +259,7 @@ requestAnimationFrame(() => {
     else if(dragModeRef.current === "to-fs"){
       if(dy < 0) return;
       dragYRef.current = dy;
-      setDragY(Math.min(dy * 0.08, 32));
+      setDragY(fixedLayout ? 0 : Math.min(dy * 0.08, 32));
     }
     else if(dragModeRef.current === "exit-fs"){
       if(dy > 0) return;
@@ -225,6 +267,7 @@ requestAnimationFrame(() => {
       setDragY(dy * 0.7);
     }
   };
+
 
   const onUp = () => {
     if(!isMobile) return;
@@ -249,10 +292,12 @@ requestAnimationFrame(() => {
     dragModeRef.current = "none";
   };
 
+
   const progress = Math.min(Math.abs(dragY)/400, 1);
 
+
   return(
-    <div className={`watch-drawer-root ${open?"open":""} ${minimized?"is-mini":""} ${dragging?"is-dragging":""} ${isClosing?"closing":""} ${isFullscreen?"is-fullscreen":""} ${showControls?"show-controls":""} ${isExpanding?"is-expanding-root":""}`}>
+    <div className={`watch-drawer-root ${open?"open":""} ${minimized?"is-mini":""} ${dragging?"is-dragging":""} ${isClosing?"closing":""} ${isFullscreen?"is-fullscreen":""} ${showControls?"show-controls":""} ${isExpanding?"is-expanding-root":""} ${fixedLayout?"is-fixed-layout":""}`}>
       <div className="watch-drawer-backdrop" style={{
         background: "rgba(0,0,0,0.6)",
         backdropFilter: "blur(2px)",
@@ -286,3 +331,7 @@ requestAnimationFrame(() => {
     </div>
   )
 }
+
+
+
+
