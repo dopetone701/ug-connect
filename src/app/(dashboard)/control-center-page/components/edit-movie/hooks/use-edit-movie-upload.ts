@@ -1,5 +1,4 @@
 // edit-movie/hooks/use-edit-movie-upload.ts - upload state for edit
-
 "use client";
 import { useState, useRef } from "react";
 
@@ -13,8 +12,8 @@ export interface PreviewVideoDraft {
 }
 
 export function useEditMovieUpload(initialPreviewUrls: string[] = []) {
-  const [coverPreview, setCoverPreview] = useState("");
-  const [moviePreview, setMoviePreview] = useState("");
+  const [coverPreview, setCoverPreview] = useState<string | null>("");
+  const [moviePreview, setMoviePreview] = useState<string | null>("");
   const [currentCoverKey, setCurrentCoverKey] = useState<string | null>(null);
   const [currentMainKey, setCurrentMainKey] = useState<string | null>(null);
   const [previewVideos, setPreviewVideos] = useState<PreviewVideoDraft[]>(() =>
@@ -73,14 +72,18 @@ export function useEditMovieUpload(initialPreviewUrls: string[] = []) {
   };
 
   const resetUploadState = () => {
-    setCoverPreview("");
-    setMoviePreview("");
+    if (coverPreview && coverPreview.startsWith("blob:")) URL.revokeObjectURL(coverPreview);
+    if (moviePreview && moviePreview.startsWith("blob:")) URL.revokeObjectURL(moviePreview);
+    setCoverPreview(null);
+    setMoviePreview(null);
     setCurrentCoverKey(null);
     setCurrentMainKey(null);
     setPreviewVideos([]);
     setCoverProg(0);
     setMainProg(0);
     setUploading(false);
+    if (coverRef.current) coverRef.current.value = "";
+    if (mainRef.current) mainRef.current.value = "";
   };
 
   return {

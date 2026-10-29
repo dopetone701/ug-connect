@@ -1,20 +1,9 @@
 /**
  * Series detection + episode data for the reels episodes panel.
- *
- * Detection mirrors the watch page exactly:
- *   allEps   = movie.seasons.flatMap(s => s.episodes || [])
- *   isSeries = movie.seasons.length > 0 && allEps.length > 1
- *
- * DUMB MODE: the reels movie has no episode count yet, so the panel shows
- * placeholder numbers. Flip these flags when real data is available.
  */
 
-// Show the panel for every movie (ignore series detection). Handy for testing.
 export const FORCE_SHOW = false
-// Placeholder count used when the movie has no real episodes.
 export const DUMB_TOTAL_EPISODES = 65
-// Episodes up to this number are free; the rest show the VIP badge.
-// 5 = episodes 1-5 free, VIP banner from episode 6 onward.
 export const DUMB_FREE_EPISODES = 5
 
 export type EpisodeInfo = {
@@ -26,11 +15,19 @@ export type EpisodeInfo = {
   freeEpisodes: number
 }
 
-export function getAllEpisodes(movie: any): any[] {
-  return movie?.seasons?.flatMap((s: any) => s.episodes || []) || []
+function parseSeasons(movie: any): any[] {
+  let seasons: any = movie?.seasons
+  if (typeof seasons === "string") {
+    try { seasons = JSON.parse(seasons) } catch { seasons = [] }
+  }
+  return Array.isArray(seasons) ? seasons : []
 }
 
-// Fields that may hold "TV Series" / "Mini Series" on a movie. Edit to match your data.
+export function getAllEpisodes(movie: any): any[] {
+  const seasons = parseSeasons(movie)
+  return seasons.flatMap((s: any) => s.episodes || []) || []
+}
+
 const TYPE_FIELDS = ["type", "category", "kind", "media_type", "content_type", "format"]
 
 function hasSeriesType(movie: any): boolean {
@@ -40,7 +37,6 @@ function hasSeriesType(movie: any): boolean {
   })
 }
 
-// The create-movie modal saves type as "Single" | "Mini" (Mini-Series) | "Full" (TV Series).
 function hasSeriesTypeValue(movie: any): boolean {
   const t = String(movie?.type ?? "").trim().toLowerCase()
   return t === "mini" || t === "full"
@@ -49,7 +45,8 @@ function hasSeriesTypeValue(movie: any): boolean {
 export function isSeriesMovie(movie: any): boolean {
   if (!movie) return false
   const allEps = getAllEpisodes(movie)
-  const hasEpisodes = movie?.seasons?.length > 0 && allEps.length > 1
+  const seasons = parseSeasons(movie)
+  const hasEpisodes = seasons.length > 0 && allEps.length > 1
   return hasEpisodes || hasSeriesTypeValue(movie) || hasSeriesType(movie)
 }
 
@@ -65,4 +62,3 @@ export function getEpisodeInfo(movie: any): EpisodeInfo {
     freeEpisodes: DUMB_FREE_EPISODES,
   }
 }
-

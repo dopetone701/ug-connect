@@ -19,27 +19,20 @@ async function deleteR2File(oldUrlOrKey: string | null | undefined): Promise<voi
   let key = oldUrlOrKey;
   if (key.includes("/r2/")) key = key.split("/r2/")[1].split("?")[0];
   if (key.startsWith("http")) {
-    try {
-      key = decodeURIComponent(new URL(key).pathname.replace("/r2/", "").replace(/^\/+/, ""));
-    } catch {}
+    try { key = decodeURIComponent(new URL(key).pathname.replace("/r2/", "").replace(/^\/+/, "")); } catch {}
   }
   if (!key || key.includes("blob:") || key === "/movie.jpg" || key.length < 3) return;
-  try {
-    await fetch(`${WORKER_URL}/r2-delete/${encodeURIComponent(key)}`, { method: "DELETE" });
-  } catch {}
+  try { await fetch(`${WORKER_URL}/r2-delete/${encodeURIComponent(key)}`, { method: "DELETE" }); } catch {}
 }
 
 function extractKey(urlOrKey: string | null | undefined): string | null {
   if (!urlOrKey) return null;
   if (typeof urlOrKey !== "string") return null;
-  let s = urlOrKey;
-  if (s.includes("/r2/")) return s.split("/r2/")[1].split("?")[0];
+  let s = urlOrKey.trim();
+  if (!s) return null;
+  if (s.includes("/r2/")) return s.split("/r2/")[1].split("?")[0] || null;
   if (s.startsWith("http")) {
-    try {
-      return decodeURIComponent(new URL(s).pathname.replace("/r2/", "").replace(/^\/+/, ""));
-    } catch {
-      return s;
-    }
+    try { return decodeURIComponent(new URL(s).pathname.replace("/r2/", "").replace(/^\/+/, "")); } catch { return s; }
   }
   return s;
 }
@@ -64,12 +57,7 @@ export default function EditMovieModal({ open, onClose, onUpdated }: Props) {
   };
 
   useEffect(() => {
-    if (open) {
-      fetchMovies();
-      setSelected(null);
-      setFullMovie(null);
-      setSearch("");
-    }
+    if (open) { fetchMovies(); setSelected(null); setFullMovie(null); setSearch(""); }
   }, [open]);
 
   useEffect(() => {
@@ -82,7 +70,7 @@ export default function EditMovieModal({ open, onClose, onUpdated }: Props) {
     setLoadingFull(true);
     try {
       const full = await fetchMovieById(m.id);
-      let cast = full.cast || full["cast"] || [];
+      let cast = (full as any).cast || (full as any)["cast"] || [];
       if (typeof cast === "string") { try { cast = JSON.parse(cast); } catch { cast = []; } }
       
       const payload: any = {
@@ -95,26 +83,23 @@ export default function EditMovieModal({ open, onClose, onUpdated }: Props) {
       
       setFullMovie(payload);
       
-      // COVER
-      upload.setCurrentCoverKey(extractKey(payload.cover_url));
+      // COVER - universal
+      const coverKey = extractKey(payload.cover_url);
+      upload.setCurrentCoverKey(coverKey ?? null);
       upload.setCoverPreview(getR2Url(payload.cover_url) || "");
 
-      // GLOBAL PREVIEW - FIX FOR SERIES/MINI - CHECK BOTH main_url AND preview_urls[0]
+      // GLOBAL TRAILER - main_url (optional, not cubes)
       let globalPreviewKey: string | null = null;
       let globalPreviewUrl: string | null = null;
-
       if (payload.main_url || payload.video_url) {
-        globalPreviewKey = extractKey(payload.main_url || payload.video_url);
-        globalPreviewUrl = getR2Url(payload.main_url || payload.video_url) || (globalPreviewKey ? `${WORKER_URL}/r2/${globalPreviewKey}` : null);
-      } else if (payload.preview_urls && payload.preview_urls.length > 0 && (payload.type === "Full" || payload.type === "Mini")) {
-        globalPreviewKey = extractKey(payload.preview_urls[0]);
-        globalPreviewUrl = getR2Url(payload.preview_urls[0]) || (globalPreviewKey ? `${WORKER_URL}/r2/${globalPreviewKey}` : null);
-        payload.preview_urls = payload.preview_urls.slice(1);
+        const raw = payload.main_url || payload.video_url;
+        globalPreviewKey = extractKey(raw);
+        globalPreviewUrl = getR2Url(raw) || (globalPreviewKey ? `${WORKER_URL}/r2/${globalPreviewKey}` : null);
       }
-
-      upload.setCurrentMainKey(globalPreviewKey);
-      upload.setMoviePreview(globalPreviewUrl);
+      upload.setCurrentMainKey(globalPreviewKey ?? null);
+      upload.setMoviePreview(globalPreviewUrl ?? null);
       
+      // UNLIMITED GLOBAL PREVIEWS - CUBES - for ALL types Single/Full/Mini
       const previews = payload.preview_urls || [];
       upload.setPreviewVideos(previews.map((k: string) => ({
         id: crypto.randomUUID(),
@@ -143,7 +128,7 @@ export default function EditMovieModal({ open, onClose, onUpdated }: Props) {
   };
 
   const handleDeleteMain = async () => {
-    if (!confirm("Delete global preview? This will delete from R2.")) return;
+    if (!confirm("Delete global trailer? This will delete from R2.")) return;
     const oldKey = upload.currentMainKey;
     if (oldKey) await deleteR2File(oldKey);
     upload.setMoviePreview(null);
@@ -159,12 +144,7 @@ export default function EditMovieModal({ open, onClose, onUpdated }: Props) {
 
   const handleClearAllText = () => {
     if (!confirm("Clear ALL text fields? Title, description, genre, VJ, actors?")) return;
-    form.setTitle("");
-    form.setGenre("");
-    form.setVj("");
-    form.setActors("");
-    form.setDescription("");
-    form.setYear("");
+    form.setTitle(""); form.setGenre(""); form.setVj(""); form.setActors(""); form.setDescription(""); form.setYear("");
   };
 
   const handleUpdate = async () => {
@@ -205,10 +185,12 @@ export default function EditMovieModal({ open, onClose, onUpdated }: Props) {
         if (oldKey && oldKey !== mainKey) await deleteR2File(oldKey);
       }
 
+      // UNLIMITED GLOBAL PREVIEWS - FOR ALL TYPES - CUBES - R2 clean namespace
       const finalPreviewKeys = await uploadPreviewVideosForEdit(
         selected.id,
         upload.previewVideos,
-        (id, pct) => upload.updatePreviewProgress(id, pct)
+        (id, pct) => upload.updatePreviewProgress(id, pct),
+        form.type
       );
 
       let finalSeasons = form.seasons;
@@ -233,12 +215,12 @@ export default function EditMovieModal({ open, onClose, onUpdated }: Props) {
         description: form.description.trim(),
         cover_url: coverKey || "",
         main_url: mainKey || undefined,
-        preview_urls: finalPreviewKeys,
-        seasons: finalSeasons,
+        preview_urls: finalPreviewKeys, // UNLIMITED GLOBAL - cubes 72x72 - random in reels
+        seasons: finalSeasons, // each episode has its own preview_url inside
       };
 
       await updateMovie(selected.id, payload);
-      alert(`✅ Updated - Same ID ${safeId(selected.id)}`);
+      alert(`✅ Updated - Same ID ${safeId(selected.id)} - ${finalPreviewKeys.length} global previews + episodes`);
       onClose();
       onUpdated?.();
       fetchMovies();
@@ -268,8 +250,8 @@ export default function EditMovieModal({ open, onClose, onUpdated }: Props) {
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 12, maxHeight: 500, overflowY: "auto" }}>
               {filtered.map((m) => (
                 <div key={m.id} onClick={() => loadMovie(m)} style={{ display: "flex", gap: 10, padding: 10, background: "hsl(var(--surface))", borderRadius: 10, cursor: "pointer", border: "1px solid hsl(var(--border))" }}>
-                  <img src={getR2Url(m.cover_url)} onError={(e) => { (e.currentTarget as HTMLImageElement).src = FALLBACK; }} style={{ width: 64, height: 84, objectFit: "cover", borderRadius: 6 }} />
-                  <div><div style={{ fontWeight: 700, fontSize: 13 }}>{m.title}</div><small style={{ color: "#888" }}>{m.type} • {m.year} • {m.genre} • {m.vj}</small></div>
+                  <img src={getR2Url(m.cover_url)} onError={(e) => { (e.currentTarget as HTMLImageElement).src = FALLBACK; }} style={{ width: 64, height: 84, objectFit: "cover", borderRadius: 6 }} alt="" />
+                  <div><div style={{ fontWeight: 700, fontSize: 13 }}>{m.title}</div><small style={{ color: "#888" }}>{m.type} • {m.year} • {m.genre} • {m.vj} • {m.preview_urls?.length || 0} previews</small></div>
                 </div>
               ))}
             </div>
@@ -294,64 +276,30 @@ export default function EditMovieModal({ open, onClose, onUpdated }: Props) {
                   description={form.description} setDescription={form.setDescription}
                 />
 
-                {!isSeries ? (
+                <SingleMovieUploads
+                  coverPreview={upload.coverPreview}
+                  moviePreview={upload.moviePreview}
+                  currentCoverKey={upload.currentCoverKey}
+                  currentMainKey={upload.currentMainKey}
+                  coverProg={upload.coverProg}
+                  mainProg={upload.mainProg}
+                  previewVideos={upload.previewVideos}
+                  setPreviewVideos={upload.setPreviewVideos}
+                  coverRef={upload.coverRef}
+                  mainRef={upload.mainRef}
+                  onCoverFile={(f) => { upload.setCoverPreview(URL.createObjectURL(f)); upload.setCoverProg(0); }}
+                  onMainFile={(f) => { upload.setMoviePreview(URL.createObjectURL(f)); upload.setMainProg(0); }}
+                  getR2Url={getR2Url}
+                />
+
+                {isSeries && (
                   <>
-                    <SingleMovieUploads
-                      coverPreview={upload.coverPreview}
-                      moviePreview={upload.moviePreview}
-                      currentCoverKey={upload.currentCoverKey}
-                      currentMainKey={upload.currentMainKey}
-                      coverProg={upload.coverProg}
-                      mainProg={upload.mainProg}
-                      previewVideos={upload.previewVideos}
-                      setPreviewVideos={upload.setPreviewVideos}
-                      coverRef={upload.coverRef}
-                      mainRef={upload.mainRef}
-                      onCoverFile={(f) => { upload.setCoverPreview(URL.createObjectURL(f)); upload.setCoverProg(0); }}
-                      onMainFile={(f) => { upload.setMoviePreview(URL.createObjectURL(f)); upload.setMainProg(0); }}
-                      getR2Url={getR2Url}
-                    />
+                    <div style={{ marginTop: 12, padding: 8, background: "#0f172a", borderRadius: 8, border: "1px solid #22d3ee22" }}>
+                      <small style={{ color: "#22d3ee" }}>ℹ️ Series: Main video above is universal trailer. Global previews above are cubes (random in reels). Episode individual previews are in tiles below — they also shuffle in global reels feed.</small>
+                    </div>
                     <div style={{ display: "flex", gap: 8, marginTop: 10, flexWrap: "wrap" }}>
                       {upload.coverPreview && <button onClick={handleDeleteCover} className="cc-btn ghost" style={{ color: "#ff4444", fontSize: 12 }}>🗑️ Delete Cover (R2)</button>}
-                      {upload.moviePreview && <button onClick={handleDeleteMain} className="cc-btn ghost" style={{ color: "#ff4444", fontSize: 12 }}>🗑️ Delete Main Movie (R2)</button>}
-                      {upload.previewVideos.map(pv => pv.existingKey ? <button key={pv.id} onClick={() => handleDeletePreview(pv.id, pv.existingKey)} className="cc-btn ghost" style={{ color: "#ffaa44", fontSize: 12 }}>🗑️ Delete Preview {pv.existingKey.slice(0, 15)}</button> : null)}
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <div className="cc-up-box" style={{ marginTop: 14 }}>
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                        <label>🖼️ SERIES COVER (Universal)</label>
-                        <div style={{ display: "flex", gap: 6 }}>
-                          {upload.currentCoverKey && <button onClick={() => window.open(getR2Url(upload.currentCoverKey) || `${WORKER_URL}/r2/${upload.currentCoverKey}`, "_blank")} className="cc-btn ghost" style={{ fontSize: 12 }}>⬇️ View</button>}
-                          {upload.coverPreview && <button onClick={handleDeleteCover} className="cc-btn ghost" style={{ fontSize: 12, color: "#ff4444" }}>🗑️ Delete Cover</button>}
-                        </div>
-                      </div>
-                      <input type="file" ref={upload.coverRef} accept="image/*" onChange={(e) => { const f = e.target.files?.[0]; if (f) { if(upload.coverPreview?.startsWith("blob:")) URL.revokeObjectURL(upload.coverPreview); upload.setCoverPreview(URL.createObjectURL(f)); upload.setCoverProg(0); } }} />
-                      <div className="prog" style={{ display: upload.coverProg > 0 ? "block" : "none", marginTop: 10 }}><div className="prog-bar"><div className="prog-fill" style={{ width: upload.coverProg + "%" }}></div></div><span className="prog-text">{upload.coverProg}%</span></div>
-                      {upload.coverPreview && <img src={upload.coverPreview} style={{ width: "100%", marginTop: 10, borderRadius: 8, maxHeight: 180, objectFit: "cover" }} />}
-                      {!upload.coverPreview && upload.currentCoverKey && <div style={{ fontSize: 12, color: "#888", marginTop: 6 }}>✅ Existing Cover: {upload.currentCoverKey.slice(0, 50)}</div>}
-                    </div>
-
-                    <div className="cc-up-box" style={{ marginTop: 14 }}>
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                        <label>🎞️ SERIES PREVIEW (Universal Trailer)</label>
-                        <div style={{ display: "flex", gap: 6 }}>
-                          {upload.currentMainKey && <button onClick={() => window.open(getR2Url(upload.currentMainKey) || `${WORKER_URL}/r2/${upload.currentMainKey}`, "_blank")} className="cc-btn ghost" style={{ fontSize: 12 }}>⬇️ View</button>}
-                          {(upload.moviePreview || upload.currentMainKey) && <button onClick={handleDeleteMain} className="cc-btn ghost" style={{ fontSize: 12, color: "#ff4444" }}>🗑️ Delete Preview</button>}
-                        </div>
-                      </div>
-                      <input type="file" ref={upload.mainRef} accept="video/*" onChange={(e) => { const f = e.target.files?.[0]; if (f) { if(upload.moviePreview?.startsWith("blob:")) URL.revokeObjectURL(upload.moviePreview); upload.setMoviePreview(URL.createObjectURL(f)); upload.setMainProg(0); } }} />
-                      <div className="prog" style={{ display: upload.mainProg > 0 ? "block" : "none", marginTop: 10 }}><div className="prog-bar"><div className="prog-fill" style={{ width: upload.mainProg + "%" }}></div></div><span className="prog-text">{upload.mainProg}%</span></div>
-                      {upload.moviePreview && <video src={upload.moviePreview} style={{ width: "100%", marginTop: 10, borderRadius: 8, maxHeight: 220, background: "#000" }} controls muted playsInline />}
-                      {!upload.moviePreview && upload.currentMainKey && (
-                        <>
-                          <video src={getR2Url(upload.currentMainKey) || `${WORKER_URL}/r2/${upload.currentMainKey}`} style={{ width: "100%", marginTop: 10, borderRadius: 8, maxHeight: 220, background: "#000" }} controls muted playsInline />
-                          <div style={{ fontSize: 12, color: "hsl(var(--primary))", marginTop: 6 }}>✅ Existing Global Preview: {upload.currentMainKey.slice(0, 60)}</div>
-                        </>
-                      )}
-                      {!upload.moviePreview && !upload.currentMainKey && <div style={{ fontSize: 12, color: "#888", marginTop: 6 }}>No global preview yet — upload one</div>}
-                      <small style={{ color: "#888", fontSize: 11, marginTop: 6, display: "block" }}>Universal trailer for whole series. Individual episode previews are in tiles below.</small>
+                      {upload.moviePreview && <button onClick={handleDeleteMain} className="cc-btn ghost" style={{ color: "#ff4444", fontSize: 12 }}>🗑️ Delete Trailer (R2)</button>}
                     </div>
                   </>
                 )}

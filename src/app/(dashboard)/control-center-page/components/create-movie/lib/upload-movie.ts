@@ -1,8 +1,7 @@
 // src/app/(dashboard)/control-center-page/components/create-movie/lib/upload-movie.ts
 import { cleanKey } from "../constants";
 import { uploadToR2 } from "./upload-to-r2";
-import type { ProgressCallback, SeasonDraft } from "../types";
-
+import type { ProgressCallback } from "../types";
 
 interface UploadCoverParams {
   file: File;
@@ -10,7 +9,6 @@ interface UploadCoverParams {
   safeTitle: string;
   onProgress: ProgressCallback;
 }
-
 
 export async function uploadCover({
   file,
@@ -22,45 +20,45 @@ export async function uploadCover({
   return uploadToR2(file, coverKey, onProgress);
 }
 
-
 interface UploadMainMovieParams {
   file: File;
   uid: string;
   safeTitle: string;
   onProgress: ProgressCallback;
+  prefix?: string;
 }
-
 
 export async function uploadMainMovie({
   file,
   uid,
   safeTitle,
   onProgress,
+  prefix = "movies",
 }: UploadMainMovieParams): Promise<string> {
-  const mainKey = `movies/${uid}-${safeTitle}-${cleanKey(file.name)}`;
+  const mainKey = `${prefix}/${uid}-${safeTitle}-${cleanKey(file.name)}`;
   return uploadToR2(file, mainKey, onProgress);
 }
-
 
 interface UploadPreviewsParams {
   files: File[];
   uid: string;
+  type?: "Single" | "Full" | "Mini";
 }
-
 
 export async function uploadPreviews({
   files,
   uid,
+  type = "Single",
 }: UploadPreviewsParams): Promise<string[]> {
+  const prefix = type === "Single" ? "previews" : "series-previews";
   const previewKeys: string[] = [];
   for (const pf of files) {
-    const pk = `previews/${uid}-${cleanKey(pf.name)}`;
+    const pk = `${prefix}/${uid}-${Date.now()}-${cleanKey(pf.name)}-${Math.random().toString(36).slice(2,4)}`;
     const k = await uploadToR2(pf, pk, () => {});
     previewKeys.push(k);
   }
   return previewKeys;
 }
-
 
 interface UploadEpisodeParams {
   file: File;
@@ -69,7 +67,6 @@ interface UploadEpisodeParams {
   seasonName: string;
   onProgress: ProgressCallback;
 }
-
 
 export async function uploadEpisodeFile({
   file,
@@ -84,35 +81,22 @@ export async function uploadEpisodeFile({
   return uploadToR2(file, epKey, onProgress);
 }
 
-
 interface UploadEpisodePreviewParams {
   file: File;
   uid: string;
   safeTitle: string;
 }
 
-
 export async function uploadEpisodePreview({
   file,
   uid,
   safeTitle,
 }: UploadEpisodePreviewParams): Promise<string> {
-  const preKey = `previews/${uid}-${safeTitle}/${crypto.randomUUID()}-${cleanKey(
-    file.name
-  )}`;
+  const preKey = `series/${uid}/previews/${crypto.randomUUID()}-preview-${cleanKey(file.name)}`;
   return uploadToR2(file, preKey, () => {});
 }
 
-
-// ---------------------------------------------------------------------------
 // ACTOR HEADSHOTS
-// ---------------------------------------------------------------------------
-
-/**
- * Centre-crops an image to a square and shrinks it to a small JPEG (default 400px).
- * A phone photo is several MB; a headshot only needs ~40 KB.
- * Falls back to the original file if the browser cannot process it.
- */
 export async function resizeHeadshot(file: File, size = 400): Promise<File> {
   try {
     const bmp = await createImageBitmap(file);
@@ -136,27 +120,20 @@ export async function resizeHeadshot(file: File, size = 400): Promise<File> {
   }
 }
 
-
 interface UploadHeadshotParams {
   file: File;
   uid: string;
 }
-
 
 export async function uploadHeadshot({
   file,
   uid,
 }: UploadHeadshotParams): Promise<string> {
   const small = await resizeHeadshot(file);
-  // random part: two phone photos are often both called "image.jpg"
   const key = `cast/${uid}-${crypto.randomUUID().slice(0, 6)}-${cleanKey(small.name)}`;
   return uploadToR2(small, key, () => {});
 }
 
-
-// Helper to generate safe title
 export function createSafeTitle(title: string): string {
   return cleanKey(title);
 }
-
-

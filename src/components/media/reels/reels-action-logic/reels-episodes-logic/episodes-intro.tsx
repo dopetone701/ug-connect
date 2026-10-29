@@ -2,18 +2,7 @@
 
 import { useEffect, useState } from "react"
 
-/**
- * Introduction tab for the episodes panel.
- * Same data and layout as VideoMetaInfo on the watch page: pills, description, cast.
- * Styles live in ../../reels-episodes-panel.css (reps-intro-*).
- *
- * Data source: the watch page gets `movie` from this API list (found by id) and
- * reads movie.description / genre / vj / cast straight off it. If the reels movie
- * object is missing those fields, we load the same record the same way:
- * sessionStorage `movie_preload_<id>` first, then the API list.
- */
-
-const API_URL = "https://movie-server-api.connectu89.workers.dev/api/movies"
+const API_URL = "https://movie-creation-portal-api.connectu89.workers.dev/movies"
 
 function useFullMovie(movie: any, movieId?: string) {
   const [fetched, setFetched] = useState<any>(null)
@@ -36,8 +25,9 @@ function useFullMovie(movie: any, movieId?: string) {
 
     fetch(API_URL, { cache: "no-store" })
       .then((r) => r.json())
-      .then((list) => {
-        if (cancelled || !Array.isArray(list)) return
+      .then((data) => {
+        if (cancelled) return
+        const list = Array.isArray(data) ? data : data.movies || []
         const found = list.find((m: any) => String(m.id) === id)
         if (found) {
           setFetched(found)
@@ -49,7 +39,6 @@ function useFullMovie(movie: any, movieId?: string) {
     return () => { cancelled = true }
   }, [id, missing])
 
-  // reels data wins, fetched record only fills the gaps
   return fetched ? { ...fetched, ...stripEmpty(movie) } : movie
 }
 
@@ -64,7 +53,7 @@ function stripEmpty(obj: any) {
 
 export function parseCastFromMovie(movie: any): { name: string; photo: string | null }[] {
   if (Array.isArray(movie?.cast) && movie.cast.length > 0) {
-    return movie.cast.slice(0, 4).map((c: any) => {
+    return movie.cast.slice(0, 8).map((c: any) => {
       if (typeof c === "string") return { name: c, photo: null }
       return {
         name: c?.name || c?.actor || c?.fullName || String(c),
@@ -72,34 +61,49 @@ export function parseCastFromMovie(movie: any): { name: string; photo: string | 
       }
     })
   }
-  const rawActors = String(movie?.actors || movie?.cast || "").trim()
-  if (!rawActors) return []
-  try {
-    const parsed = JSON.parse(rawActors)
-    if (Array.isArray(parsed)) {
-      return parsed.slice(0, 4).map((c: any) =>
-        typeof c === "string"
-          ? { name: c, photo: null }
-          : { name: c?.name || String(c), photo: c?.photo || null }
-      )
+  let rawActors = movie?.actors
+  if (typeof rawActors === "string") {
+    try {
+      const parsed = JSON.parse(rawActors)
+      if (Array.isArray(parsed)) {
+        return parsed.slice(0, 8).map((c: any) =>
+          typeof c === "string" ? { name: c, photo: null } : { name: c?.name || String(c), photo: c?.photo || null }
+        )
+      }
+    } catch {}
+    return rawActors.split(",").map((a: string) => a.trim()).filter(Boolean).slice(0, 8).map((name) => ({ name, photo: null }))
+  }
+  return []
+}
+
+function getPreviewCount(movie: any): number {
+  let previews: any = movie?.preview_urls
+  if (typeof previews === "string") { try { previews = JSON.parse(previews) } catch { previews = [] } }
+  let count = Array.isArray(previews) ? previews.length : 0
+  let seasons: any = movie?.seasons
+  if (typeof seasons === "string") { try { seasons = JSON.parse(seasons) } catch {} }
+  if (Array.isArray(seasons)) {
+    for (const s of seasons) {
+      if (Array.isArray(s.episodes)) {
+        for (const ep of s.episodes) {
+          if (ep.preview_url) count++
+        }
+      }
     }
-  } catch {}
-  return rawActors
-    .split(",")
-    .map((a: string) => a.trim())
-    .filter(Boolean)
-    .slice(0, 4)
-    .map((name) => ({ name, photo: null }))
+  }
+  return count
 }
 
 export function EpisodesIntro({ movie: reelMovie, movieId }: { movie: any; movieId?: string }) {
   const movie = useFullMovie(reelMovie, movieId)
   const cast = parseCastFromMovie(movie)
+  const previewCount = getPreviewCount(movie)
   const pills = [
     { text: movie?.genre, strong: true },
-    { text: movie?.vj },
+    { text: movie?.vj ? `VJ ${movie.vj}` : null },
     { text: movie?.year || "2024" },
-    { text: movie?.rating || "HD" },
+    { text: movie?.type || "Single" },
+    { text: previewCount ? `${previewCount} previews` : null },
   ].filter((p) => !!p.text)
 
   return (
@@ -118,7 +122,7 @@ export function EpisodesIntro({ movie: reelMovie, movieId }: { movie: any; movie
 
       {cast.length > 0 && (
         <div className="reps-cast">
-          <div className="reps-cast-header">Cast</div>
+          <div className="reps-cast-header">Cast ({cast.length})</div>
           <div className="reps-cast-list">
             {cast.map((m, i) => (
               <div key={`${m.name}-${i}`} className="reps-cast-item" title={m.name}>
@@ -141,4 +145,3 @@ export function EpisodesIntro({ movie: reelMovie, movieId }: { movie: any; movie
 }
 
 export default EpisodesIntro
-
