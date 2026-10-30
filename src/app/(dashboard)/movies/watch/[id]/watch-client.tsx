@@ -12,6 +12,7 @@ import "./mobile-preview.css"
 
 import SimilarMovies from "./similar-movies"
 import EpisodesRow from "./episodes-row"
+import WatchCommentPanel from "./watch-comment-panel"
 
 
 import PlayerOverlay from "../../_components/vid-actions/player-overlay"
@@ -693,6 +694,11 @@ useEffect(() => { setSharedSelectedQuality(quality); }, [quality, setSharedSelec
           {!isMini && !isFullScreen && movie?.seasons?.length>0 && (
             <EpisodesRow movie={movie} activeEpId={epId} onSelect={(ep:any)=>{ if(isOverlay){ setOverlayEpId(String(ep.id)) }else{ router.push(`${pathname}?t=full&ep=${ep.id}`) } }} />
           )}
+
+          {!isMini && !isFullScreen && (
+  <WatchCommentPanel movieId={String(movie.id)} movie={movie} />
+)}
+
           {!isMini && !isFullScreen && <SimilarMovies current={movie} />}
           {/* inside the drawer the footer scrolls with the content */}
           {isOverlay && !isMini && !isFullScreen && <FooterFree />}

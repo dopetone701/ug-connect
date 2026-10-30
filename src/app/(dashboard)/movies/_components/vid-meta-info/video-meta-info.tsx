@@ -66,63 +66,77 @@ export default function VideoMetaInfo({ movie, descExpanded, setDescExpanded }: 
         </div>
       )}
 
-      <style jsx>{`
-        .c-cast-header {
-          font-size: 13px;
-          font-weight: 600;
-          color: hsl(var(--text));
-          margin-bottom: 8px;
-        }
-        .c-cast-row {
-          margin-top: 14px;
-        }
-        .c-cast-list {
-          display: flex;
-          flex-direction: column;
-          gap: 10px;
-        }
-        .c-cast-item {
-          display: flex;
-          flex-direction: row;
-          align-items: center;
-          gap: 10px;
-          width: 100%;
-        }
-        .c-cast-avatar {
-          width: 40px;
-          height: 40px;
-          border-radius: 50%;
-          overflow: hidden;
-          background: hsl(var(--muted));
-          border: 1px solid hsl(var(--border));
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          flex-shrink: 0;
-        }
-        .c-cast-img {
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-          display: block;
-        }
-        .c-cast-fallback {
-          font-size: 16px;
-          font-weight: 700;
-          color: hsl(var(--text));
-          line-height: 1;
-          text-transform: uppercase;
-        }
-        .c-cast-name {
-          font-size: 13px;
-          line-height: 1.2;
-          color: hsl(var(--text) / 0.9);
-          text-transform: capitalize;
-          white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
-        }
-      `}</style>
+     <style jsx>{`
+  .c-cast-header {
+    font-size: 13px;
+    font-weight: 600;
+    color: hsl(var(--text));
+    margin-bottom: 10px;
+  }
+  .c-cast-row {
+    margin-top: 14px;
+  }
+  .c-cast-list {
+    display: flex;
+    flex-direction: row;
+    gap: 16px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  .c-cast-list::-webkit-scrollbar {
+    display: none;
+  }
+  .c-cast-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    flex: 0 0 auto;
+    width: 64px;
+  }
+  .c-cast-avatar {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    overflow: hidden;
+    background: hsl(var(--surface-hover));
+    border: 1px solid hsl(var(--border));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .c-cast-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .c-cast-fallback {
+    font-size: 20px;
+    font-weight: 700;
+    color: hsl(var(--text));
+    line-height: 1;
+    text-transform: uppercase;
+  }
+  .c-cast-name {
+    width: 100%;
+    font-size: 12px;
+    line-height: 1.2;
+    text-align: center;
+    color: hsl(var(--text) / 0.9);
+    text-transform: capitalize;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+`}</style>
+
+
+
     </div>
   );
 }

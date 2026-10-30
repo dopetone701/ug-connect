@@ -345,5 +345,17 @@ html:has(.is-shell-full) body { background: #000 !important; } <- REMOVE
 
 
 
+@media (min-width: 769px) {
+  * {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  *::-webkit-scrollbar {
+    display: none;
+    width: 0;
+    height: 0;
+  }
+}
+
 
 
