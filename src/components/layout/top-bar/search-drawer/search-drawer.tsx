@@ -11,7 +11,6 @@ import "../../../../app/(dashboard)/movies/latest-movies.css";
 import FadersCloseBtn from "../faders-drawer/faders-close-btn";
 import FilteredContent from "./filtered-content";
 
-// FIXED: Same as VideoMetaInfo - handles right movie time from drive
 const getYear = (m: any) => {
   const raw = m.year || m.Year || m.releaseYear || m.release_year || m.release_date || m.created_at || m.date;
   if (!raw) return 0;
@@ -22,13 +21,27 @@ const getYear = (m: any) => {
   return isNaN(y) ? 0 : y;
 };
 
+// CATEGORY FILTER - west-african = west_african = west african
+function normCat(s: string) {
+  return String(s || "").toLowerCase().trim().replace(/[-\s]+/g, "_").replace(/_+/g, "_");
+}
+function getCatIdFromText(txt: string): string | null {
+  const q = normCat(txt);
+  if (!q) return null;
+  const cats = ["popular","western","european","west_african","east_african","south_asian","east_asian","southeast_asian","arab","west-african","east-african","south-asian","east-asian","southeast-asian","ugandan","nigerian","indian","korean","filipino","nigerian","ugandan"];
+  for (const id of cats) {
+    const nid = normCat(id);
+    if (q === nid || q.includes(nid) || nid.includes(q)) return nid;
+  }
+  return null;
+}
+
 export default function SearchDrawer() {
   const { allMovies, query, activeSection } = useGlobalSearch() as any;
   const { filterType, filterValue, timeRange, showFilterRow, select, selectTime, clear, selectGenre } = useFadersDrawer() as any;
   const { favIds, recentIds } = useMovieStore() as any;
   const [zoomed, setZoomed] = useState<any>(null);
 
-  // FIX 1: KNOW LISTS + CONTINUE WATCHING - synced from drive store like home rows
  const baseSections = useMemo(() => getSections(allMovies, { favIds, recentIds }), [allMovies, favIds, recentIds]);
 
   const isMyListView = useMemo(() => {
@@ -45,19 +58,12 @@ export default function SearchDrawer() {
 
   const isPersonalListView = isMyListView || isContinueView;
 
-  // FIX 2: NEVER OPEN KEYBOARD ON MOBILE IF OPENED BY SECTION TITLES / FADERS
-  // Only open keyboard if opened by search icon
   useEffect(() => {
     if (typeof window === "undefined") return;
     const isMobile = window.innerWidth <= 1024 || navigator.maxTouchPoints > 0;
     if (!isMobile) return;
-    
-    // If opened by section titles, faders, or filters (not by search icon), blur everything
     const openedBySection = !!activeSection || !!filterType || showFilterRow;
-    const openedBySearchIcon = !openedBySection && !!query;
-    
     if (openedBySection) {
-      // Blur after short delay to kill keyboard
       const t1 = setTimeout(() => {
         if (document.activeElement instanceof HTMLElement) {
           document.activeElement.blur();
@@ -116,12 +122,22 @@ export default function SearchDrawer() {
     const yearOnly = q.replace(/\s*movies\s*$/,"").trim();
     const isYearQuery = /^(19|20)\d{2}$/.test(yearOnly);
 
-    // FIX 1: HANDLE LISTS + CONTINUE WATCHING when opened by section titles
+    // === CATEGORY FILTER FROM D1 ===
+    const catFromQuery = getCatIdFromText(String(query || activeSection || ""));
+    if (catFromQuery && catFromQuery !== "popular") {
+      const filteredByCat = list.filter((m: any) => {
+        const mCat = normCat(m.category || m.origin || m.country || "");
+        return mCat === catFromQuery;
+      });
+      if (filteredByCat.length > 0) {
+        list = filteredByCat;
+      }
+    }
+
     if (activeSection) {
       const activeLower = activeSection.toLowerCase().trim();
       const activeClean = activeLower.replace(/\s*movies\s*$/,"").trim();
 
-           // Continue Watching = watch history
       if (isContinueView) {
         const sec = baseSections.find((s:any) => s.title.toLowerCase().includes("continue"));
         if (sec?.data?.length) return sec.data;
@@ -131,7 +147,6 @@ export default function SearchDrawer() {
         }
       }
 
-      // My List = favourites - NOT fallback to time
       if (isMyListView) {
         const sec = baseSections.find((s:any) => s.title.toLowerCase().includes("my list") || s.title.toLowerCase().includes("favorite") || s.id === "my-list");
         if (sec?.data?.length) return sec.data;
@@ -141,22 +156,17 @@ export default function SearchDrawer() {
         }
       }
 
-
-      // My List / Favorites / Lists
       if (activeLower.includes("my list") || activeLower.includes("favorites") || activeLower.includes("favourite") || activeLower.includes("watchlist")) {
         const sec = baseSections.find((s:any) => s.title.toLowerCase().includes("my list") || s.title.toLowerCase().includes("favorite"));
         if (sec) return sec.data;
       }
 
-      // Check baseSections for exact match (covers all home rows including lists)
       const sec = baseSections.find((s:any) => s.id === activeSection || s.title.toLowerCase() === activeSection.toLowerCase() || s.title.toLowerCase() === activeClean);
       if (sec) return sec.data;
 
-      // Fallback: title contains
       const fallback = baseSections.find((s:any) => s.title.toLowerCase().includes(activeClean));
       if (fallback) return fallback.data;
 
-      // TV Series / Mini Series
       const isTvQuery = activeLower.includes("tv series") || activeLower === "tv" || activeLower === "full" || activeLower === "series";
       const isMiniQuery = activeLower.includes("mini series") || activeLower === "mini";
       if (isTvQuery) {
@@ -167,7 +177,6 @@ export default function SearchDrawer() {
       }
     }
 
-    // YEAR SEARCH MODE - synced from drive year
     if (isYearQuery) {
       const targetYear = parseInt(yearOnly, 10);
       const withYear: any[] = list
@@ -193,7 +202,6 @@ export default function SearchDrawer() {
       const isTv = q.includes("tv series") || qClean === "tv" || qClean === "full" || qClean === "series" || q === "tv series";
       const isMini = q.includes("mini series") || qClean === "mini" || q === "mini series";
 
-      // Handle lists and continue watching via query too
       if (qClean.includes("continue")) {
         const sec = baseSections.find((s:any) => s.title.toLowerCase().includes("continue"));
         if (sec) {
@@ -213,7 +221,7 @@ export default function SearchDrawer() {
         if (!isTimeQuery) {
           const words = qClean.split(" ").filter((w: any)=>w.length>=1);
           list = list.filter((m: any)=>{
-            const hay = `${m.title||""} ${m.genre||""} ${m.vj||""} ${m.actors||""} ${m.type||""} ${getYear(m)}`.toLowerCase();
+            const hay = `${m.title||""} ${m.genre||""} ${m.vj||""} ${m.actors||""} ${m.type||""} ${m.category||""} ${m.origin||""} ${getYear(m)}`.toLowerCase();
             if(hay.includes(q)) return true;
             if(words.length>1 && words.every((w: string)=>hay.includes(w))) return true;
             return hay.includes(qClean);
@@ -222,9 +230,7 @@ export default function SearchDrawer() {
       }
     }
 
-       // FILTERS SYNCED FROM DRIVE - but NOT for my list / continue
     if(!isPersonalListView && filterType&&filterValue){
-
       if(filterType==="genre") list = list.filter((m: any)=>String(m.genre||"").toLowerCase().includes(filterValue.toLowerCase()));
       if(filterType==="vj") list = list.filter((m: any)=>String(m.vj||"").toLowerCase().includes(filterValue.toLowerCase()));
       if(filterType==="actor") list = list.filter((m: any)=>String(m.actors||"").toLowerCase().includes(filterValue.toLowerCase()));
@@ -327,4 +333,3 @@ export default function SearchDrawer() {
     </div>
   );
 }
-
