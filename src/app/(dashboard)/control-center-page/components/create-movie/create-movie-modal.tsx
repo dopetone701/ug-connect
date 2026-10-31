@@ -1,10 +1,9 @@
-// src/app/(dashboard)/control-center-page/components/create-movie/create-movie-modal.tsx
 "use client";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { useCreateMovieForm } from "./hooks/use-create-movie-form";
 import { useCreateMovieUpload } from "./hooks/use-create-movie-upload";
-import { generateShortId, MAX_ACTORS } from "./constants";
+import { generateShortId, MAX_ACTORS, type MovieCategoryId } from "./constants";
 import {
   createSafeTitle,
   uploadCover,
@@ -21,9 +20,7 @@ import SeriesSection from "./parts/series-section";
 import type { CastMember, MoviePayload } from "./types";
 import "./create-movie-modal.css";
 
-
 type Props = { open: boolean; onClose: () => void; onCreated?: () => void };
-
 
 export default function CreateMovieModal({ open, onClose, onCreated }: Props) {
   const form = useCreateMovieForm();
@@ -41,14 +38,14 @@ export default function CreateMovieModal({ open, onClose, onCreated }: Props) {
     resetAll,
   } = useCreateMovieUpload();
 
-  // lock page scroll behind the modal
+  // Local category state - no extra file needed, source is constants.ts
+  const [category, setCategory] = useState<MovieCategoryId | "">("");
+
   useEffect(() => {
     if (!open) return;
     const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = prev;
-    };
+    return () => { document.body.style.overflow = prev; };
   }, [open]);
 
   if (!open) return null;
@@ -57,6 +54,7 @@ export default function CreateMovieModal({ open, onClose, onCreated }: Props) {
     if (uploading) return;
     resetAll();
     form.resetForm();
+    setCategory("");
     onClose();
   };
 
@@ -68,6 +66,7 @@ export default function CreateMovieModal({ open, onClose, onCreated }: Props) {
 
     if (!form.title.trim() || !cover || !form.year.trim() || namedActors.length === 0)
       return alert("Title, Year, at least 1 Actor and Cover are required");
+    if (!category) return alert("Category / Origin is required - for Explore More sync");
     if (!Number.isFinite(yearNum)) return alert("Year must be a number");
     if (form.actors.some((a) => a.file && !a.name.trim()))
       return alert("Every headshot needs an actor name");
@@ -83,12 +82,17 @@ export default function CreateMovieModal({ open, onClose, onCreated }: Props) {
 
       const coverKey = await uploadCover({ file: cover, uid, safeTitle, onProgress: setCoverProg });
 
-      // actors: upload each headshot (shrunk to a small square), keep name + photo key
       const cast: CastMember[] = [];
       for (const a of namedActors.slice(0, MAX_ACTORS)) {
         const photo = a.file ? await uploadHeadshot({ file: a.file, uid }) : null;
         cast.push({ name: a.name.trim(), photo });
       }
+
+      const globalPreviewKeys = await uploadPreviews({
+        files: form.previewFiles,
+        uid,
+        type: form.type
+      });
 
       const payload: MoviePayload = {
         title: form.title.trim(),
@@ -100,12 +104,19 @@ export default function CreateMovieModal({ open, onClose, onCreated }: Props) {
         cast,
         description: form.desc.trim(),
         cover_url: coverKey,
-      };
+        preview_urls: globalPreviewKeys,
+        // SYNC FIELD - from constants.ts -> Drive -> ExploreMore
+        category: category,
+        origin: category,
+        country: category,
+      } as MoviePayload & { origin?: string; country?: string };
 
       if (!form.isSeries) {
         payload.main_url = await uploadMainMovie({ file: main!, uid, safeTitle, onProgress: setMainProg });
-        payload.preview_urls = await uploadPreviews({ files: form.previewFiles, uid });
       } else {
+        if (main) {
+          payload.main_url = await uploadMainMovie({ file: main, uid, safeTitle, onProgress: setMainProg, prefix: "series-previews" });
+        }
         const uploadedSeasons: NonNullable<MoviePayload["seasons"]> = [];
         for (const season of seasons as any[]) {
           const uploadedEps: NonNullable<MoviePayload["seasons"]>[number]["episodes"] = [];
@@ -138,9 +149,10 @@ export default function CreateMovieModal({ open, onClose, onCreated }: Props) {
 
       await saveMovie(payload);
 
-      alert("✅ Uploaded to R2 + Saved to D1");
+      alert(`✅ Uploaded - ${globalPreviewKeys.length} global previews + Category: ${category}`);
       resetAll();
       form.resetForm();
+      setCategory("");
       onClose();
       onCreated?.();
     } catch (e: any) {
@@ -154,7 +166,7 @@ export default function CreateMovieModal({ open, onClose, onCreated }: Props) {
     <div className="cc-modal-bg">
       <div className="cc-modal">
         <div className="cc-modal-head">
-          <h3>🎬 Create Movie</h3>
+          <h3>🎬 Create Movie - {form.type} - {form.previewFiles.length} global previews</h3>
           <button onClick={handleClose} className="cc-close">✕</button>
         </div>
 
@@ -164,6 +176,7 @@ export default function CreateMovieModal({ open, onClose, onCreated }: Props) {
             year={form.year} setYear={form.setYear}
             genre={form.genre} setGenre={form.setGenre}
             vj={form.vj} setVj={form.setVj}
+            category={category} setCategory={setCategory}
             actors={form.actors} setActors={form.setActors}
             type={form.type} setType={form.setType}
             desc={form.desc} setDesc={form.setDesc}
@@ -172,7 +185,7 @@ export default function CreateMovieModal({ open, onClose, onCreated }: Props) {
           />
 
           <SingleMovieUploads
-            seriesMode={form.isSeries}
+            seriesMode={false}
             mainRef={form.mainRef}
             coverRef={form.coverRef}
             movieUrl={form.movieUrl}
@@ -188,7 +201,7 @@ export default function CreateMovieModal({ open, onClose, onCreated }: Props) {
           <SeriesSection type={form.type} seasons={seasons} setSeasons={setSeasons} />
 
           <div id="createStatus" className="cc-status">
-            {uploading ? "⏳ Uploading to R2..." : "🚀 Ready"}
+            {uploading ? "⏳ Uploading to R2... (covers/ + movies/ + previews/ + series/)" : `🚀 Ready - ${form.previewFiles.length} global previews | Category: ${category || "not selected"}`}
           </div>
         </div>
 
@@ -202,8 +215,6 @@ export default function CreateMovieModal({ open, onClose, onCreated }: Props) {
     </div>
   );
 
-  // Portal to <body> so the modal escapes the layout's stacking context and covers the top bar.
   return typeof document !== "undefined" ? createPortal(modal, document.body) : modal;
 }
-
 

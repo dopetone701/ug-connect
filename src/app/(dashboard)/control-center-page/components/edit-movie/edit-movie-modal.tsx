@@ -1,118 +1,256 @@
 "use client";
+
 import { useState, useEffect } from "react";
 import "./edit-movie-modal.css";
-import { API_URL, cleanKey, getR2Url, FALLBACK, safeId, WORKER_URL } from "./constants";
+
+import {
+  API_URL,
+  cleanKey,
+  getR2Url,
+  FALLBACK,
+  safeId,
+  WORKER_URL,
+} from "./constants";
+
 import { useEditMovieForm } from "./hooks/use-edit-movie-form";
 import { useEditMovieUpload } from "./hooks/use-edit-movie-upload";
+
 import { uploadToR2 } from "./lib/upload-to-r2";
 import { updateMovie, fetchMovieById } from "./lib/update-movie";
-import { uploadSeasonsForEdit, uploadPreviewVideosForEdit } from "./lib/upload-movie";
+
+import {
+  uploadSeasonsForEdit,
+  uploadPreviewVideosForEdit,
+} from "./lib/upload-movie";
+
 import MovieDetailsFields from "./parts/movie-details-fields";
 import SingleMovieUploads from "./parts/single-movie-uploads";
 import SeriesSection from "./parts/series-section";
+
 import type { MoviePayload } from "./types";
 
-type Props = { open: boolean; onClose: () => void; onUpdated?: () => void };
+type Props = {
+  open: boolean;
+  onClose: () => void;
+  onUpdated?: () => void;
+};
 
-async function deleteR2File(oldUrlOrKey: string | null | undefined): Promise<void> {
+async function deleteR2File(
+  oldUrlOrKey: string | null | undefined
+): Promise<void> {
   if (!oldUrlOrKey) return;
+
   let key = oldUrlOrKey;
-  if (key.includes("/r2/")) key = key.split("/r2/")[1].split("?")[0];
+
+  if (key.includes("/r2/")) {
+    key = key.split("/r2/")[1].split("?")[0];
+  }
+
   if (key.startsWith("http")) {
-    try { key = decodeURIComponent(new URL(key).pathname.replace("/r2/", "").replace(/^\/+/, "")); } catch {}
+    try {
+      key = decodeURIComponent(
+        new URL(key).pathname.replace("/r2/", "").replace(/^\/+/, "")
+      );
+    } catch {}
   }
-  if (!key || key.includes("blob:") || key === "/movie.jpg" || key.length < 3) return;
-  try { await fetch(`${WORKER_URL}/r2-delete/${encodeURIComponent(key)}`, { method: "DELETE" }); } catch {}
+
+  if (
+    !key ||
+    key.includes("blob:") ||
+    key === "/movie.jpg" ||
+    key.length < 3
+  ) {
+    return;
+  }
+
+  try {
+    await fetch(
+      `${WORKER_URL}/r2-delete/${encodeURIComponent(key)}`,
+      { method: "DELETE" }
+    );
+  } catch {}
 }
 
-function extractKey(urlOrKey: string | null | undefined): string | null {
-  if (!urlOrKey) return null;
-  if (typeof urlOrKey !== "string") return null;
-  let s = urlOrKey.trim();
-  if (!s) return null;
-  if (s.includes("/r2/")) return s.split("/r2/")[1].split("?")[0] || null;
-  if (s.startsWith("http")) {
-    try { return decodeURIComponent(new URL(s).pathname.replace("/r2/", "").replace(/^\/+/, "")); } catch { return s; }
+function extractKey(
+  urlOrKey: string | null | undefined
+): string | null {
+  if (!urlOrKey || typeof urlOrKey !== "string") return null;
+
+  const value = urlOrKey.trim();
+
+  if (!value) return null;
+
+  if (value.includes("/r2/")) {
+    return value.split("/r2/")[1].split("?")[0] || null;
   }
-  return s;
+
+  if (value.startsWith("http")) {
+    try {
+      return decodeURIComponent(
+        new URL(value).pathname.replace("/r2/", "").replace(/^\/+/, "")
+      );
+    } catch {
+      return value;
+    }
+  }
+
+  return value;
 }
 
-export default function EditMovieModal({ open, onClose, onUpdated }: Props) {
+export default function EditMovieModal({
+  open,
+  onClose,
+  onUpdated,
+}: Props) {
   const [search, setSearch] = useState("");
   const [allMovies, setAllMovies] = useState<any[]>([]);
   const [filtered, setFiltered] = useState<any[]>([]);
   const [selected, setSelected] = useState<any>(null);
-  const [fullMovie, setFullMovie] = useState<(MoviePayload & { id: string }) | null>(null);
+
+  const [fullMovie, setFullMovie] = useState<
+    (MoviePayload & { id: string }) | null
+  >(null);
+
   const [loadingFull, setLoadingFull] = useState(false);
 
   const form = useEditMovieForm(fullMovie || undefined);
   const upload = useEditMovieUpload();
 
   const fetchMovies = async () => {
-    const res = await fetch(`${API_URL}?t=${Date.now()}`, { cache: "no-store" });
-    const d = await res.json();
-    const list = Array.isArray(d) ? d : d.movies || d.data || [];
-    setAllMovies(list);
-    setFiltered(list.slice(0, 12));
+    try {
+      const response = await fetch(`${API_URL}?t=${Date.now()}`, {
+        cache: "no-store",
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch movies: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      const list = Array.isArray(data)
+        ? data
+        : data.movies || data.data || [];
+
+      setAllMovies(list);
+      setFiltered(list.slice(0, 12));
+    } catch (error) {
+      console.error("Failed to fetch movies:", error);
+      alert("Could not load movies. Please try again.");
+    }
   };
 
   useEffect(() => {
-    if (open) { fetchMovies(); setSelected(null); setFullMovie(null); setSearch(""); }
+    if (!open) return;
+
+    void fetchMovies();
+
+    setSelected(null);
+    setFullMovie(null);
+    setSearch("");
   }, [open]);
 
   useEffect(() => {
-    if (!search) setFiltered(allMovies.slice(0, 12));
-    else setFiltered(allMovies.filter((m: any) => m.title?.toLowerCase().includes(search.toLowerCase())).slice(0, 24));
+    const query = search.trim().toLowerCase();
+
+    if (!query) {
+      setFiltered(allMovies.slice(0, 12));
+      return;
+    }
+
+    setFiltered(
+      allMovies
+        .filter((movie: any) =>
+          movie.title?.toLowerCase().includes(query)
+        )
+        .slice(0, 24)
+    );
   }, [search, allMovies]);
 
-  const loadMovie = async (m: any) => {
-    setSelected(m);
+  const loadMovie = async (movie: any) => {
+    setSelected(movie);
     setLoadingFull(true);
+
     try {
-      const full = await fetchMovieById(m.id);
-      let cast = (full as any).cast || (full as any)["cast"] || [];
-      if (typeof cast === "string") { try { cast = JSON.parse(cast); } catch { cast = []; } }
-      
+      const full: any = await fetchMovieById(movie.id);
+
+      let cast = full.cast || [];
+
+      if (typeof cast === "string") {
+        try {
+          cast = JSON.parse(cast);
+        } catch {
+          cast = [];
+        }
+      }
+
+      const rawPreviewUrls = full.preview_urls;
+      const rawSeasons = full.seasons;
+
       const payload: any = {
         ...full,
         cast,
         year: full.year,
-        preview_urls: typeof full.preview_urls === "string" ? JSON.parse(full.preview_urls) : full.preview_urls || [],
-        seasons: typeof full.seasons === "string" ? JSON.parse(full.seasons) : full.seasons || [],
+        category:
+          full.category ??
+          full.origin ??
+          full.country ??
+          "",
+        preview_urls:
+          typeof rawPreviewUrls === "string"
+            ? JSON.parse(rawPreviewUrls)
+            : rawPreviewUrls || [],
+        seasons:
+          typeof rawSeasons === "string"
+            ? JSON.parse(rawSeasons)
+            : rawSeasons || [],
       };
-      
+
       setFullMovie(payload);
-      
-      // COVER - universal
+
+      // COVER
       const coverKey = extractKey(payload.cover_url);
-      upload.setCurrentCoverKey(coverKey ?? null);
+
+      upload.setCurrentCoverKey(coverKey);
       upload.setCoverPreview(getR2Url(payload.cover_url) || "");
 
-      // GLOBAL TRAILER - main_url (optional, not cubes)
+      // GLOBAL TRAILER
       let globalPreviewKey: string | null = null;
       let globalPreviewUrl: string | null = null;
+
       if (payload.main_url || payload.video_url) {
         const raw = payload.main_url || payload.video_url;
-        globalPreviewKey = extractKey(raw);
-        globalPreviewUrl = getR2Url(raw) || (globalPreviewKey ? `${WORKER_URL}/r2/${globalPreviewKey}` : null);
-      }
-      upload.setCurrentMainKey(globalPreviewKey ?? null);
-      upload.setMoviePreview(globalPreviewUrl ?? null);
-      
-      // UNLIMITED GLOBAL PREVIEWS - CUBES - for ALL types Single/Full/Mini
-      const previews = payload.preview_urls || [];
-      upload.setPreviewVideos(previews.map((k: string) => ({
-        id: crypto.randomUUID(),
-        existingKey: k,
-        file: null,
-        objectUrl: null,
-        progress: 0,
-        status: "done" as const,
-      })));
 
-    } catch (e) {
-      console.error(e);
-      setFullMovie(m);
+        globalPreviewKey = extractKey(raw);
+
+        globalPreviewUrl =
+          getR2Url(raw) ||
+          (globalPreviewKey
+            ? `${WORKER_URL}/r2/${globalPreviewKey}`
+            : null);
+      }
+
+      upload.setCurrentMainKey(globalPreviewKey);
+      upload.setMoviePreview(globalPreviewUrl);
+
+      // GLOBAL PREVIEWS
+      const previews = payload.preview_urls || [];
+
+      upload.setPreviewVideos(
+        previews.map((key: string) => ({
+          id: crypto.randomUUID(),
+          existingKey: key,
+          file: null,
+          objectUrl: null,
+          progress: 0,
+          status: "done" as const,
+        }))
+      );
+    } catch (error) {
+      console.error("Failed to load full movie:", error);
+
+      alert("Could not load the full movie details.");
+      setSelected(null);
     } finally {
       setLoadingFull(false);
     }
@@ -120,112 +258,231 @@ export default function EditMovieModal({ open, onClose, onUpdated }: Props) {
 
   const handleDeleteCover = async () => {
     if (!confirm("Delete cover? This will delete from R2.")) return;
+
     const oldKey = upload.currentCoverKey;
+
     if (oldKey) await deleteR2File(oldKey);
+
     upload.setCoverPreview(null);
     upload.setCurrentCoverKey(null);
-    if (upload.coverRef.current) upload.coverRef.current.value = "";
+
+    if (upload.coverRef.current) {
+      upload.coverRef.current.value = "";
+    }
   };
 
   const handleDeleteMain = async () => {
-    if (!confirm("Delete global trailer? This will delete from R2.")) return;
+    if (!confirm("Delete global trailer? This will delete from R2.")) {
+      return;
+    }
+
     const oldKey = upload.currentMainKey;
+
     if (oldKey) await deleteR2File(oldKey);
+
     upload.setMoviePreview(null);
     upload.setCurrentMainKey(null);
-    if (upload.mainRef.current) upload.mainRef.current.value = "";
+
+    if (upload.mainRef.current) {
+      upload.mainRef.current.value = "";
+    }
   };
 
-  const handleDeletePreview = async (id: string, existingKey: string | null) => {
+  const handleDeletePreview = async (
+    id: string,
+    existingKey: string | null
+  ) => {
     if (existingKey && !confirm("Delete this preview?")) return;
-    if (existingKey) await deleteR2File(existingKey);
-    upload.setPreviewVideos(prev => prev.filter(p => p.id !== id));
+
+    if (existingKey) {
+      await deleteR2File(existingKey);
+    }
+
+    upload.setPreviewVideos((previous) =>
+      previous.filter((preview) => preview.id !== id)
+    );
   };
 
   const handleClearAllText = () => {
-    if (!confirm("Clear ALL text fields? Title, description, genre, VJ, actors?")) return;
-    form.setTitle(""); form.setGenre(""); form.setVj(""); form.setActors(""); form.setDescription(""); form.setYear("");
+    if (
+      !confirm(
+        "Clear ALL text fields? Title, description, genre, VJ, actors?"
+      )
+    ) {
+      return;
+    }
+
+    form.setTitle("");
+    form.setGenre("");
+    form.setVj("");
+    form.setActors("");
+    form.setDescription("");
+    form.setYear("");
   };
 
   const handleUpdate = async () => {
     if (!selected || !fullMovie) return;
-    if (!form.isValid() && form.title.trim() === "") { alert("Title required"); return; }
-    
+
+    if (!form.isValid() && form.title.trim() === "") {
+      alert("Title required");
+      return;
+    }
+
+    if (!form.category) {
+      alert("Please select a category or origin before saving.");
+      return;
+    }
+
     upload.setUploading(true);
+
     try {
-      let finalCast = [...form.cast];
-      for (let i = 0; i < finalCast.length; i++) {
-        const member: any = finalCast[i];
-        const oldPhotoKey = fullMovie.cast?.[i]?.photo || null;
+      // CAST PHOTOS
+      const finalCast = [...form.cast];
+
+      for (let index = 0; index < finalCast.length; index++) {
+        const member: any = finalCast[index];
+
+        const oldPhotoKey =
+          fullMovie.cast?.[index]?.photo || null;
+
         if (member._file) {
-          const key = `actors/${selected.id}-${cleanKey(member.name)}-${Date.now()}-${cleanKey(member._file.name)}`;
-          const uploadedKey = await uploadToR2(member._file, key, () => {});
-          if (oldPhotoKey && oldPhotoKey !== uploadedKey) await deleteR2File(oldPhotoKey);
-          finalCast[i] = { name: member.name, photo: uploadedKey };
+          const key =
+            `actors/${selected.id}-` +
+            `${cleanKey(member.name)}-` +
+            `${Date.now()}-` +
+            `${cleanKey(member._file.name)}`;
+
+          const uploadedKey = await uploadToR2(
+            member._file,
+            key,
+            () => {}
+          );
+
+          if (oldPhotoKey && oldPhotoKey !== uploadedKey) {
+            await deleteR2File(oldPhotoKey);
+          }
+
+          finalCast[index] = {
+            name: member.name,
+            photo: uploadedKey,
+          };
         }
       }
 
+      // COVER
       let coverKey = upload.currentCoverKey;
       let mainKey = upload.currentMainKey;
-      
-      const nc = upload.coverRef.current?.files?.[0];
-      if (nc) {
+
+      const newCover = upload.coverRef.current?.files?.[0];
+
+      if (newCover) {
         const oldKey = coverKey;
-        const k = `covers/${selected.id}-${cleanKey(form.title)}-${cleanKey(nc.name)}`;
-        coverKey = await uploadToR2(nc, k, (p) => upload.setCoverProg(p));
-        if (oldKey && oldKey !== coverKey) await deleteR2File(oldKey);
-      }
-      
-      const nm = upload.mainRef.current?.files?.[0];
-      if (nm) {
-        const oldKey = mainKey;
-        const prefix = form.type === "Single" ? "movies" : "series-previews";
-        const k = `${prefix}/${selected.id}-${cleanKey(form.title)}-${cleanKey(nm.name)}`;
-        mainKey = await uploadToR2(nm, k, (p) => upload.setMainProg(p));
-        if (oldKey && oldKey !== mainKey) await deleteR2File(oldKey);
+
+        const key =
+          `covers/${selected.id}-` +
+          `${cleanKey(form.title)}-` +
+          `${cleanKey(newCover.name)}`;
+
+        coverKey = await uploadToR2(
+          newCover,
+          key,
+          (progress) => upload.setCoverProg(progress)
+        );
+
+        if (oldKey && oldKey !== coverKey) {
+          await deleteR2File(oldKey);
+        }
       }
 
-      // UNLIMITED GLOBAL PREVIEWS - FOR ALL TYPES - CUBES - R2 clean namespace
+      // GLOBAL TRAILER
+      const newMain = upload.mainRef.current?.files?.[0];
+
+      if (newMain) {
+        const oldKey = mainKey;
+
+        const prefix =
+          form.type === "Single" ? "movies" : "series-previews";
+
+        const key =
+          `${prefix}/${selected.id}-` +
+          `${cleanKey(form.title)}-` +
+          `${cleanKey(newMain.name)}`;
+
+        mainKey = await uploadToR2(
+          newMain,
+          key,
+          (progress) => upload.setMainProg(progress)
+        );
+
+        if (oldKey && oldKey !== mainKey) {
+          await deleteR2File(oldKey);
+        }
+      }
+
+      // GLOBAL PREVIEWS
       const finalPreviewKeys = await uploadPreviewVideosForEdit(
         selected.id,
         upload.previewVideos,
-        (id, pct) => upload.updatePreviewProgress(id, pct),
+        (id, progress) =>
+          upload.updatePreviewProgress(id, progress),
         form.type
       );
 
+      // SEASONS
       let finalSeasons = form.seasons;
+
       if (form.type !== "Single") {
         finalSeasons = await uploadSeasonsForEdit(
           selected.id,
           form.seasons,
-          (seasonId, epId, pct, status) => {
-            upload.updateEpisodeStatus(seasonId, epId, { progress: pct, status }, form.setSeasons);
+          (seasonId, episodeId, progress, status) => {
+            upload.updateEpisodeStatus(
+              seasonId,
+              episodeId,
+              { progress, status },
+              form.setSeasons
+            );
           }
         );
       }
+
+      // CATEGORY: USE THE CURRENT FORM STATE
+      const selectedCategory = form.category;
 
       const payload: MoviePayload = {
         title: form.title.trim(),
         genre: form.genre.trim(),
         vj: form.vj.trim(),
         type: form.type,
-        year: parseInt(form.year) || 0,
+        year: parseInt(form.year, 10) || 0,
         actors: form.actors.trim(),
         cast: finalCast,
         description: form.description.trim(),
         cover_url: coverKey || "",
         main_url: mainKey || undefined,
-        preview_urls: finalPreviewKeys, // UNLIMITED GLOBAL - cubes 72x72 - random in reels
-        seasons: finalSeasons, // each episode has its own preview_url inside
+        preview_urls: finalPreviewKeys,
+        seasons: finalSeasons,
+
+        category: selectedCategory,
+        origin: selectedCategory,
+        country: selectedCategory,
       };
 
       await updateMovie(selected.id, payload);
-      alert(`✅ Updated - Same ID ${safeId(selected.id)} - ${finalPreviewKeys.length} global previews + episodes`);
+
+      alert(
+        `Updated successfully. ID ${safeId(selected.id)}. ` +
+        `Category: ${selectedCategory}. ` +
+        `Global previews: ${finalPreviewKeys.length}.`
+      );
+
       onClose();
       onUpdated?.();
-      fetchMovies();
-    } catch (e: any) {
-      alert("❌ " + e.message);
+
+      await fetchMovies();
+    } catch (error: any) {
+      console.error("Failed to update movie:", error);
+      alert("Update failed: " + (error?.message || "Unknown error"));
     } finally {
       upload.setUploading(false);
       upload.setCoverProg(0);
@@ -234,46 +491,184 @@ export default function EditMovieModal({ open, onClose, onUpdated }: Props) {
   };
 
   if (!open) return null;
-  const isSeries = form.type === "Full" || form.type === "Mini";
+
+  const isSeries =
+    form.type === "Full" || form.type === "Mini";
 
   return (
     <div className="cc-modal-bg" onClick={onClose}>
-      <div className="cc-modal" onClick={(e) => e.stopPropagation()}>
+      <div
+        className="cc-modal"
+        onClick={(event) => event.stopPropagation()}
+      >
         <div className="cc-modal-head">
-          <h3>✏️ Edit Movie {selected ? `- ${safeId(selected.id)} - ${selected.title}` : `- ${allMovies.length} movies`}</h3>
-          <button onClick={onClose} className="cc-close">✕</button>
+          <h3>
+            Edit Movie{" "}
+            {selected
+              ? `- ${safeId(selected.id)} - ${selected.title}`
+              : `- ${allMovies.length} movies`}
+          </h3>
+
+          <button
+            type="button"
+            onClick={onClose}
+            className="cc-close"
+          >
+            ✕
+          </button>
         </div>
 
         {!selected ? (
           <div className="cc-modal-body">
-            <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Search movies..." style={{ width: "100%", padding: "12px", borderRadius: 10, border: "1px solid hsl(var(--border))", background: "hsl(var(--bg))", color: "hsl(var(--text))", fontSize: 16 }} />
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginTop: 12, maxHeight: 500, overflowY: "auto" }}>
-              {filtered.map((m) => (
-                <div key={m.id} onClick={() => loadMovie(m)} style={{ display: "flex", gap: 10, padding: 10, background: "hsl(var(--surface))", borderRadius: 10, cursor: "pointer", border: "1px solid hsl(var(--border))" }}>
-                  <img src={getR2Url(m.cover_url)} onError={(e) => { (e.currentTarget as HTMLImageElement).src = FALLBACK; }} style={{ width: 64, height: 84, objectFit: "cover", borderRadius: 6 }} alt="" />
-                  <div><div style={{ fontWeight: 700, fontSize: 13 }}>{m.title}</div><small style={{ color: "#888" }}>{m.type} • {m.year} • {m.genre} • {m.vj} • {m.preview_urls?.length || 0} previews</small></div>
+            <input
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              placeholder="Search movies..."
+              style={{
+                width: "100%",
+                padding: 12,
+                borderRadius: 10,
+                border: "1px solid hsl(var(--border))",
+                background: "hsl(var(--bg))",
+                color: "hsl(var(--text))",
+                fontSize: 16,
+              }}
+            />
+
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+                gap: 10,
+                marginTop: 12,
+                maxHeight: 500,
+                overflowY: "auto",
+              }}
+            >
+              {filtered.map((movie) => (
+                <div
+                  key={movie.id}
+                  onClick={() => void loadMovie(movie)}
+                  style={{
+                    display: "flex",
+                    gap: 10,
+                    padding: 10,
+                    background: "hsl(var(--surface))",
+                    borderRadius: 10,
+                    cursor: "pointer",
+                    border: "1px solid hsl(var(--border))",
+                  }}
+                >
+                  <img
+                    src={getR2Url(movie.cover_url)}
+                    onError={(event) => {
+                      event.currentTarget.src = FALLBACK;
+                    }}
+                    style={{
+                      width: 64,
+                      height: 84,
+                      objectFit: "cover",
+                      borderRadius: 6,
+                    }}
+                    alt=""
+                  />
+
+                  <div>
+                    <div
+                      style={{
+                        fontWeight: 700,
+                        fontSize: 13,
+                      }}
+                    >
+                      {movie.title}
+                    </div>
+
+                    <small style={{ color: "#888" }}>
+                      {movie.type} • {movie.year} • {movie.genre} •{" "}
+                      {movie.vj} •{" "}
+                      {movie.category ||
+                        movie.origin ||
+                        "no category"}{" "}
+                      • {movie.preview_urls?.length || 0} previews
+                    </small>
+                  </div>
                 </div>
               ))}
             </div>
           </div>
         ) : (
           <div className="cc-modal-body">
-            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 10 }}>
-              <button onClick={() => { setSelected(null); setFullMovie(null); upload.resetUploadState(); }} style={{ background: "#222", color: "#fff", padding: "6px 12px", borderRadius: 8, border: "none" }}>← Back to {allMovies.length}</button>
-              <button onClick={handleClearAllText} style={{ background: "#3a1a1a", color: "#ff8888", padding: "6px 12px", borderRadius: 8, border: "1px solid #ff444422" }}>🗑️ Clear All Text</button>
+            <div
+              style={{
+                display: "flex",
+                gap: 8,
+                flexWrap: "wrap",
+                marginBottom: 10,
+              }}
+            >
+              <button
+                type="button"
+                onClick={() => {
+                  setSelected(null);
+                  setFullMovie(null);
+                  upload.resetUploadState();
+                }}
+                style={{
+                  background: "#222",
+                  color: "#fff",
+                  padding: "6px 12px",
+                  borderRadius: 8,
+                  border: "none",
+                }}
+              >
+                ← Back to {allMovies.length}
+              </button>
+
+              <button
+                type="button"
+                onClick={handleClearAllText}
+                style={{
+                  background: "#3a1a1a",
+                  color: "#ff8888",
+                  padding: "6px 12px",
+                  borderRadius: 8,
+                  border: "1px solid #ff444422",
+                }}
+              >
+                Clear All Text
+              </button>
             </div>
-            
-            {loadingFull ? <div style={{ padding: 20, textAlign: "center" }}>Loading full movie data...</div> : (
+
+            {loadingFull ? (
+              <div
+                style={{
+                  padding: 20,
+                  textAlign: "center",
+                }}
+              >
+                Loading full movie data...
+              </div>
+            ) : (
               <>
                 <MovieDetailsFields
-                  title={form.title} setTitle={form.setTitle}
-                  genre={form.genre} setGenre={form.setGenre}
-                  vj={form.vj} setVj={form.setVj}
-                  type={form.type} setType={form.setType}
-                  year={form.year} setYear={form.setYear}
-                  actors={form.actors} setActors={form.setActors}
-                  cast={form.cast} setCast={form.setCast}
-                  description={form.description} setDescription={form.setDescription}
+                  title={form.title}
+                  setTitle={form.setTitle}
+                  genre={form.genre}
+                  setGenre={form.setGenre}
+                  vj={form.vj}
+                  setVj={form.setVj}
+                  type={form.type}
+                  setType={form.setType}
+                  year={form.year}
+                  setYear={form.setYear}
+                  actors={form.actors}
+                  setActors={form.setActors}
+                  cast={form.cast}
+                  setCast={form.setCast}
+                  description={form.description}
+                  setDescription={form.setDescription}
+                  category={form.category}
+                  setCategory={form.setCategory}
                 />
 
                 <SingleMovieUploads
@@ -287,24 +682,83 @@ export default function EditMovieModal({ open, onClose, onUpdated }: Props) {
                   setPreviewVideos={upload.setPreviewVideos}
                   coverRef={upload.coverRef}
                   mainRef={upload.mainRef}
-                  onCoverFile={(f) => { upload.setCoverPreview(URL.createObjectURL(f)); upload.setCoverProg(0); }}
-                  onMainFile={(f) => { upload.setMoviePreview(URL.createObjectURL(f)); upload.setMainProg(0); }}
+                  onCoverFile={(file) => {
+                    upload.setCoverPreview(
+                      URL.createObjectURL(file)
+                    );
+                    upload.setCoverProg(0);
+                  }}
+                  onMainFile={(file) => {
+                    upload.setMoviePreview(
+                      URL.createObjectURL(file)
+                    );
+                    upload.setMainProg(0);
+                  }}
                   getR2Url={getR2Url}
                 />
 
                 {isSeries && (
                   <>
-                    <div style={{ marginTop: 12, padding: 8, background: "#0f172a", borderRadius: 8, border: "1px solid #22d3ee22" }}>
-                      <small style={{ color: "#22d3ee" }}>ℹ️ Series: Main video above is universal trailer. Global previews above are cubes (random in reels). Episode individual previews are in tiles below — they also shuffle in global reels feed.</small>
+                    <div
+                      style={{
+                        marginTop: 12,
+                        padding: 8,
+                        background: "#0f172a",
+                        borderRadius: 8,
+                        border: "1px solid #22d3ee22",
+                      }}
+                    >
+                      <small style={{ color: "#22d3ee" }}>
+                        Series: The main video is the universal
+                        trailer. Global previews are used for cubes.
+                        Episode previews remain in their episode tiles.
+                      </small>
                     </div>
-                    <div style={{ display: "flex", gap: 8, marginTop: 10, flexWrap: "wrap" }}>
-                      {upload.coverPreview && <button onClick={handleDeleteCover} className="cc-btn ghost" style={{ color: "#ff4444", fontSize: 12 }}>🗑️ Delete Cover (R2)</button>}
-                      {upload.moviePreview && <button onClick={handleDeleteMain} className="cc-btn ghost" style={{ color: "#ff4444", fontSize: 12 }}>🗑️ Delete Trailer (R2)</button>}
+
+                    <div
+                      style={{
+                        display: "flex",
+                        gap: 8,
+                        marginTop: 10,
+                        flexWrap: "wrap",
+                      }}
+                    >
+                      {upload.coverPreview && (
+                        <button
+                          type="button"
+                          onClick={handleDeleteCover}
+                          className="cc-btn ghost"
+                          style={{
+                            color: "#ff4444",
+                            fontSize: 12,
+                          }}
+                        >
+                          Delete Cover (R2)
+                        </button>
+                      )}
+
+                      {upload.moviePreview && (
+                        <button
+                          type="button"
+                          onClick={handleDeleteMain}
+                          className="cc-btn ghost"
+                          style={{
+                            color: "#ff4444",
+                            fontSize: 12,
+                          }}
+                        >
+                          Delete Trailer (R2)
+                        </button>
+                      )}
                     </div>
                   </>
                 )}
 
-                <SeriesSection type={form.type} seasons={form.seasons} setSeasons={form.setSeasons} />
+                <SeriesSection
+                  type={form.type}
+                  seasons={form.seasons}
+                  setSeasons={form.setSeasons}
+                />
               </>
             )}
           </div>
@@ -312,9 +766,63 @@ export default function EditMovieModal({ open, onClose, onUpdated }: Props) {
 
         {selected && (
           <div className="cc-modal-foot">
-            <button onClick={async () => { if (confirm(`Delete ${selected.title}?`)) { await fetch(`${API_URL}/${selected.id}`, { method: "DELETE" }); setSelected(null); setFullMovie(null); fetchMovies(); } }} className="cc-btn ghost" style={{ color: "#ff4444", marginRight: "auto" }}>🗑️ Delete Movie</button>
-            <button onClick={onClose} disabled={upload.uploading} className="cc-btn ghost">Cancel</button>
-            <button disabled={upload.uploading} onClick={handleUpdate} className="cc-btn primary">{upload.uploading ? "Uploading..." : `💾 Save Keep ID ${safeId(selected.id)}`}</button>
+            <button
+              type="button"
+              onClick={async () => {
+                if (!confirm(`Delete ${selected.title}?`)) return;
+
+                try {
+                  const response = await fetch(
+                    `${API_URL}/${selected.id}`,
+                    { method: "DELETE" }
+                  );
+
+                  if (!response.ok) {
+                    throw new Error(
+                      `Delete failed: ${response.status}`
+                    );
+                  }
+
+                  setSelected(null);
+                  setFullMovie(null);
+
+                  await fetchMovies();
+                  onUpdated?.();
+                } catch (error: any) {
+                  alert(
+                    "Delete failed: " +
+                    (error?.message || "Unknown error")
+                  );
+                }
+              }}
+              className="cc-btn ghost"
+              style={{
+                color: "#ff4444",
+                marginRight: "auto",
+              }}
+            >
+              Delete Movie
+            </button>
+
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={upload.uploading}
+              className="cc-btn ghost"
+            >
+              Cancel
+            </button>
+
+            <button
+              type="button"
+              disabled={upload.uploading || loadingFull}
+              onClick={handleUpdate}
+              className="cc-btn primary"
+            >
+              {upload.uploading
+                ? "Uploading..."
+                : `Save Keep ID ${safeId(selected.id)}`}
+            </button>
           </div>
         )}
       </div>

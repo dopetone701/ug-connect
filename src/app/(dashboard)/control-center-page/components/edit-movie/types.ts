@@ -1,5 +1,7 @@
 // edit-movie/types.ts - SOLID edit types - mirrors create-movie
 
+import type { MovieCategoryId } from "./constants";
+
 export type MovieType = "Single" | "Mini" | "Full";
 
 export interface CastMember {
@@ -40,6 +42,10 @@ export interface MoviePayload {
   main_url?: string;
   preview_urls: string[];
   seasons?: SeasonDraft[];
+  // ===== CATEGORY SYSTEM =====
+  category?: MovieCategoryId;
+  origin?: string;
+  country?: string;
 }
 
 export interface EditMovieModalProps {
@@ -60,4 +66,9 @@ export interface EditFormState {
   actors: string;
   cast: CastMember[];
   description: string;
+  // ===== CATEGORY SYSTEM =====
+  category: MovieCategoryId | "";
+  origin?: string;
+  country?: string;
 }
+

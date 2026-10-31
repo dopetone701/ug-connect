@@ -1,69 +1,68 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useCallback, useMemo } from "react";
 import "./explore-more.css";
 import { Movie } from "./types";
 import { useGlobalSearch } from "@/stores/use-global-search";
+import { CATEGORY_OPTIONS } from "@/app/(dashboard)/control-center-page/components/edit-movie/constants";
 
 type Props = { movies: Movie[] };
 
-const CATS = [
-  { id: "popular", label: "MOST POPULAR" },
-  { id: "western", label: "WESTERN" },
-  { id: "ugandan", label: "UGANDAN" },
-  { id: "nigerian", label: "NIGERIAN" },
-  { id: "korean", label: "KOREAN" },
-  { id: "filipino", label: "FILIPINO" },
-  { id: "indian", label: "INDIAN" },
-];
+// Normalize: west-african = west_african = west african = westafrican
+function norm(s: string) {
+  return String(s || "").toLowerCase().trim().replace(/[-\s]+/g, "_").replace(/_+/g, "_");
+}
+
+function getMovieCategory(m: any): string {
+  return norm(m.category || m.origin || m.country || "");
+}
+
+function isMovieInCategory(movie: any, catId: string) {
+  if (catId === "popular") return true;
+  const mCat = getMovieCategory(movie);
+  if (!mCat) return false;
+  const cId = norm(catId);
+  // exact match: western = western, west_african = west-african
+  if (mCat === cId) return true;
+  // legacy support: west_african includes nigerian etc via CATEGORY_OPTIONS matchKeys not needed here
+  return false;
+}
 
 export default function ExploreMore({ movies }: Props) {
-  const handleCat = (cat: (typeof CATS)[number]) => {
-    let q = "";
+  const handleCat = useCallback((cat: typeof CATEGORY_OPTIONS[number]) => {
+    useGlobalSearch.getState().setQuery(cat.searchQuery);
+    useGlobalSearch.getState().setSection(cat.searchQuery);
+  }, []);
 
-    if (cat.id === "popular") {
-      q = "most watched";
-    } else {
-      q = cat.label.toLowerCase();
+  const availableCats = useMemo(() => {
+    if (!movies || movies.length === 0) return [];
+    // Only categories that actually have movies in D1 - single source of truth
+    return CATEGORY_OPTIONS.filter(cat => {
+      if (cat.id === "popular") return movies.length > 0;
+      // skip legacy duplicates (ugandan, nigerian, etc) - they are mapped to new ids
+      if (["ugandan","nigerian","indian","korean","filipino"].includes(cat.id as any)) return false;
+      return movies.some(m => isMovieInCategory(m, cat.id));
+    });
+  }, [movies]);
 
-      if (q.split(" ").length === 1) {
-        q = `${q} movies`;
-      }
-    }
-
-    useGlobalSearch.getState().setQuery(q);
-    useGlobalSearch.getState().setSection(q);
-  };
+  if (!movies || movies.length === 0) return null;
+  if (availableCats.length === 0) return null;
 
   return (
     <div className="em-root">
       <div className="em-head">
         <h2 className="em-main-title">Explore More</h2>
       </div>
-
       <div className="em-track">
-        {CATS.map((cat) => {
-          const sample = movies.find((m) =>
-            cat.id === "popular"
-              ? true
-              : (m.title + " " + m.genre + " " + m.vj)
-                  .toLowerCase()
-                  .includes(cat.label.toLowerCase().slice(0, 4))
-          );
-
-          const hasData =
-            cat.id === "popular" ? movies.length > 0 : !!sample;
-
+        {availableCats.map((cat) => {
+          const sample = movies.find((m) => isMovieInCategory(m, cat.id));
           return (
             <ExploreCard
               key={cat.id}
               cat={cat}
               sample={sample}
-              hasData={hasData}
-              onOpen={() => {
-                if (!hasData) return;
-                handleCat(cat);
-              }}
+              total={movies.length}
+              onOpen={() => handleCat(cat)}
             />
           );
         })}
@@ -72,101 +71,49 @@ export default function ExploreMore({ movies }: Props) {
   );
 }
 
-
-/* =========================================================
-   SCROLL-SAFE EXPLORE CARD
-   ========================================================= */
-
 function ExploreCard({
   cat,
   sample,
-  hasData,
+  total,
   onOpen,
 }: {
-  cat: (typeof CATS)[number];
-  sample?: Movie;
-  hasData: boolean;
+  cat: typeof CATEGORY_OPTIONS[number];
+  sample?: any;
+  total: number;
   onOpen: () => void;
 }) {
   const movedRef = useRef(false);
-  const startXRef = useRef(0);
-  const startYRef = useRef(0);
+  const startRef = useRef({ x: 0, y: 0 });
 
   const handlePointerDown = (e: React.PointerEvent) => {
     movedRef.current = false;
-    startXRef.current = e.clientX;
-    startYRef.current = e.clientY;
+    startRef.current = { x: e.clientX, y: e.clientY };
+    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
   };
-
   const handlePointerMove = (e: React.PointerEvent) => {
-    const dx = Math.abs(e.clientX - startXRef.current);
-    const dy = Math.abs(e.clientY - startYRef.current);
-
-    // Once the pointer moves more than 6px,
-    // this is treated as a scroll/swipe, not a tap.
-    if (dx > 6 || dy > 6) {
-      movedRef.current = true;
-    }
+    if (movedRef.current) return;
+    const dx = Math.abs(e.clientX - startRef.current.x);
+    const dy = Math.abs(e.clientY - startRef.current.y);
+    if (dx > 8 || dy > 8) movedRef.current = true;
   };
-
-  const handlePointerUp = () => {
-    // Keep the lock alive long enough to block the
-    // click event that follows pointerup.
-    setTimeout(() => {
-      movedRef.current = false;
-    }, 100);
-  };
-
+  const handlePointerUp = () => setTimeout(() => (movedRef.current = false), 150);
   const handleClick = (e: React.MouseEvent) => {
     if (movedRef.current) {
       e.preventDefault();
       e.stopPropagation();
       return;
     }
-
-    if (!hasData) return;
-
     onOpen();
   };
 
+
   return (
-    <div
-      className={`em-card ${!hasData ? "coming" : ""}`}
-      onPointerDown={handlePointerDown}
-      onPointerMove={handlePointerMove}
-      onPointerUp={handlePointerUp}
-      onClick={handleClick}
-    >
-      {sample ? (
-        <img
-          src={sample.cover}
-          alt={cat.label}
-          loading="lazy"
-          draggable={false}
-        />
-      ) : (
-        <div className="em-placeholder" />
-      )}
-
+    <div className="em-card" onPointerDown={handlePointerDown} onPointerMove={handlePointerMove} onPointerUp={handlePointerUp} onClick={handleClick}>
+      {sample ? <img src={sample.cover || sample.cover_url} alt={cat.label} loading="lazy" draggable={false} /> : <div className="em-placeholder" />}
       <div className="em-overlay" />
-
-      <div className="em-label">
-        {cat.label}
-      </div>
-
-      {!hasData && (
-        <div className="em-coming">
-          COMING SOON
-        </div>
-      )}
-
-      {hasData && (
-        <div className="em-count">
-          {cat.id === "popular"
-            ? `${sample ? " " : ""} ${"titles"}`.trim()
-            : "Explore →"}
-        </div>
-      )}
+      <div className="em-label">{cat.label}</div>
+      <div className="em-count">{cat.id === "popular" ? `${total} titles` : "Explore →"}</div>
     </div>
   );
 }
+

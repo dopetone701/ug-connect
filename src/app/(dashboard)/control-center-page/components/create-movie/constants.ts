@@ -80,3 +80,36 @@ export function getRawKey(urlOrKey: string): string {
 export function cleanFileName(name: string): string {
   return name.replace(/[^a-zA-Z0-9-_. ]/g, "-").slice(0, 100);
 }
+
+// =========================================================
+// NEW - SINGLE NAME CATEGORY SYSTEM
+// This is your global source - import from here everywhere
+// =========================================================
+
+export type MovieCategoryId =
+  | "western"
+  | "east-african"
+  | "west-african"
+  | "east-asian"
+  | "southeast-asian"
+  | "south-asian"
+  | "european"
+  | "arab";
+
+export type CategoryOption = {
+  id: MovieCategoryId;
+  label: string;
+  searchQuery: string;
+  matchKeys: string[];
+};
+
+export const CATEGORY_OPTIONS: CategoryOption[] = [
+  { id: "western", label: "WESTERN", searchQuery: "western hollywood movies", matchKeys: ["western", "hollywood", "usa", "american"] },
+  { id: "east-african", label: "UGANDAN", searchQuery: "east african ugandan movies", matchKeys: ["uganda", "ugandan", "kenya", "tanzania", "east africa", "east-african"] },
+  { id: "west-african", label: "NIGERIAN", searchQuery: "west african nollywood movies", matchKeys: ["nigeria", "nigerian", "nollywood", "ghana", "west africa", "west-african"] },
+  { id: "east-asian", label: "KOREAN", searchQuery: "east asian korean movies", matchKeys: ["korea", "korean", "k-drama", "china", "chinese", "japan", "east-asian"] },
+  { id: "southeast-asian", label: "FILIPINO", searchQuery: "southeast asian filipino movies", matchKeys: ["filipino", "philippines", "tagalog", "southeast-asian"] },
+  { id: "south-asian", label: "INDIAN", searchQuery: "south asian indian bollywood movies", matchKeys: ["india", "indian", "bollywood", "telugu", "tamil", "hindi", "south-asian"] },
+  { id: "european", label: "BRITISH / EUROPEAN", searchQuery: "european british movies", matchKeys: ["british", "uk", "england", "european"] },
+  { id: "arab", label: "ARAB / MENA", searchQuery: "arab mena movies", matchKeys: ["arab", "mena", "khaleeji", "egypt", "turkey"] },
+];

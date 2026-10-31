@@ -11,13 +11,17 @@ export async function updateMovie(movieId: string, payload: MoviePayload) {
     type: payload.type,
     year: payload.year || null,
     actors: payload.actors?.trim(),
-    cast: payload.cast, // <-- ONLY ONE, no quotes needed in JSON
+    cast: payload.cast,
     description: payload.description?.trim(),
     cover_url: payload.cover_url,
     main_url: payload.main_url || null,
     video_url: payload.main_url || null,
     preview_urls: payload.preview_urls || [],
     seasons: payload.seasons || [],
+    // CATEGORY - was missing, now added
+    category: (payload as any).category || "",
+    origin: (payload as any).origin || (payload as any).category || "",
+    country: (payload as any).country || (payload as any).category || "",
   };
 
   const res = await fetch(`${API_URL}/${movieId}`, {
@@ -30,7 +34,6 @@ export async function updateMovie(movieId: string, payload: MoviePayload) {
     const text = await res.text();
     throw new Error(`Update failed ${res.status}: ${text}`);
   }
-
   return res.json();
 }
 

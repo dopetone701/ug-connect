@@ -1,9 +1,7 @@
-// src/app/(dashboard)/control-center-page/components/create-movie/parts/movie-details-fields.tsx
 "use client";
 import React, { useEffect, useRef } from "react";
 import type { MovieType, ActorDraft } from "../types";
-import { MAX_ACTORS, generateShortId } from "../constants";
-
+import { MAX_ACTORS, generateShortId, CATEGORY_OPTIONS, type MovieCategoryId } from "../constants";
 
 interface MovieDetailsFieldsProps {
   title: string;
@@ -14,6 +12,8 @@ interface MovieDetailsFieldsProps {
   setGenre: (v: string) => void;
   vj: string;
   setVj: (v: string) => void;
+  category: string;
+  setCategory: (v: MovieCategoryId) => void;
   actors: ActorDraft[];
   setActors: (v: ActorDraft[]) => void;
   type: MovieType;
@@ -24,7 +24,6 @@ interface MovieDetailsFieldsProps {
   disabled?: boolean;
 }
 
-
 export default function MovieDetailsFields({
   title,
   setTitle,
@@ -34,6 +33,8 @@ export default function MovieDetailsFields({
   setGenre,
   vj,
   setVj,
+  category,
+  setCategory,
   actors,
   setActors,
   type,
@@ -70,6 +71,23 @@ export default function MovieDetailsFields({
           <label>VJ</label>
           <input value={vj} onChange={(e) => setVj(e.target.value)} />
         </div>
+
+        <div style={{ gridColumn: "1/-1" }}>
+          <label>🌍 CATEGORY / ORIGIN *</label>
+          <select
+            value={category}
+            disabled={disabled}
+            onChange={(e) => setCategory(e.target.value as MovieCategoryId)}
+          >
+            <option value="">Select origin for Explore More...</option>
+            {CATEGORY_OPTIONS.map((opt) => (
+              <option key={opt.id} value={opt.id}>
+                {opt.label}
+              </option>
+            ))}
+          </select>
+        </div>
+
         <div style={{ gridColumn: "1/-1" }}>
           <label>TYPE *</label>
           <select
@@ -100,12 +118,6 @@ export default function MovieDetailsFields({
   );
 }
 
-
-/* ------------------------------------------------------------------ */
-/* ACTORS: up to 5 rows, each with a headshot picker and a name        */
-/* Lives outside .cc-form-grid so the grid's input styles don't apply. */
-/* ------------------------------------------------------------------ */
-
 function ActorsList({
   value,
   onChange,
@@ -115,7 +127,6 @@ function ActorsList({
   onChange: (next: ActorDraft[]) => void;
   disabled?: boolean;
 }) {
-  // free preview URLs when the modal goes away
   const latest = useRef(value);
   latest.current = value;
   useEffect(
@@ -226,5 +237,4 @@ function ActorsList({
     </div>
   );
 }
-
 

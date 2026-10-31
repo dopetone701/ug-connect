@@ -40,7 +40,11 @@ type ApiMovie = {
   likes?: number
   is_editors_pick?: boolean
   created_at?: string
+  category?: string
+  origin?: string
+  country?: string
 }
+
 
 const API_URL = "https://movie-server-api.connectu89.workers.dev/api/movies"
 
@@ -165,11 +169,15 @@ export default function MoviesPage() {
         likes: typeof m.likes === "number" ? m.likes : 0,
         isEditorsPick: m.is_editors_pick || false,
         createdAt: m.created_at,
-        type: m.type || "Single",
+               type: m.type || "Single",
         year: m.year,
         actors: m.actors,
         seasons: m.seasons || [],
-      }))
+        category: (m as any).category || "",
+        origin: (m as any).origin || (m as any).category || "",
+        country: (m as any).country || (m as any).category || "",
+      } as any))
+
     },
     []
   )

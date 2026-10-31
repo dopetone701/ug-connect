@@ -4,6 +4,7 @@
 // (If you moved tv-series.tsx, change this one path.)
 export type { SeasonDraft } from "../tv-series";
 
+import type { MovieCategoryId } from "./constants";
 
 export type MovieType = "Single" | "Mini" | "Full";
 
@@ -40,6 +41,13 @@ export interface MoviePayload {
   cast: CastMember[];
   description: string;
   cover_url: string;
+  
+  // === NEW - CATEGORY SYNC FOR EXPLORE MORE ===
+  category?: MovieCategoryId;
+  origin?: string;
+  country?: string;
+  // ============================================
+
   // single movie
   main_url?: string;
   preview_urls?: string[];
@@ -49,5 +57,3 @@ export interface MoviePayload {
     episodes: { title: string; main_url: string; preview_url: string | null }[];
   }[];
 }
-
-
