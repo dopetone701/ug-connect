@@ -1,15 +1,18 @@
-/* Inline comments on the watch page. Uses DNA theme tokens. */
+/* WATCH COMMENTS - NATIVE ONE BAR - NO ONE CAN TELL IT IMPORTS REELS - PRECISE ANIMATION */
 
 .watch-comments {
   width: 100%;
-  margin: 32px 0;
+  margin: 32px 0 0;
   color: hsl(var(--text));
+  position: relative;
+  z-index: 1;
 }
 
 .watch-comments-title {
-  margin: 0 0 12px;
+  margin: 0 0 16px;
   font-size: 20px;
   font-weight: 700;
+  letter-spacing: -0.02em;
   color: hsl(var(--text));
 }
 
@@ -19,25 +22,20 @@
   flex-direction: column;
   height: min(560px, 75vh);
   height: min(560px, 75dvh);
+  max-height: 75dvh;
   border-radius: 16px;
   overflow: hidden;
   background: hsl(var(--surface));
   border: 1px solid hsl(var(--border));
-  color: hsl(var(--text));
 }
 
-/* Neutralize slide-out assumptions + drop any hardcoded backgrounds */
 .watch-comments .watch-comments-card .reels-c-body {
   position: relative;
-  inset: auto;
   width: 100%;
   height: 100%;
   min-height: 0;
   display: flex;
   flex-direction: column;
-  transform: none;
-  background: transparent;
-  color: inherit;
 }
 
 .watch-comments .watch-comments-card .reels-c-list {
@@ -45,86 +43,241 @@
   min-height: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
-  background: transparent;
+  padding-bottom: 16px;
 }
 
-/* Input area */
-.watch-comments .watch-comments-card .reels-c-input-bar {
-  position: relative;
-  bottom: auto;
-  flex: 0 0 auto;
+/* KILL STATIC INSIDE CARD - ONLY FLOATING HOST REMAINS */
+.watch-comments .watch-comments-card .reels-c-input-bar:not(.injected-real-bar) {
+  display: none !important;
+  height: 0 !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+/* ===== HOST INVISIBLE - PRECISE ANIMATION LIKE BEFORE ===== */
+.watch-floating-bar.watch-comment-floating {
+  position: fixed;
+  bottom: 0;
+  z-index: 9999;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  padding: 0 0 16px;
+  transform: translateY(110%);
+  opacity: 0;
+  pointer-events: none;
+  transition: transform 0.52s cubic-bezier(0.32,0.72,0,1), opacity 0.38s ease !important;
+  will-change: transform, opacity !important;
+}
+
+.watch-floating-bar.watch-comment-floating.is-visible {
+  transform: translateY(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.watch-floating-bar.watch-comment-floating.is-hidden {
+  transform: translateY(110%);
+  opacity: 0;
+}
+
+.watch-floating-bar-inner.watch-floating-host {
+  width: min(720px, calc(100% - 32px));
+  max-width: 720px;
+  margin: 0 auto;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* REAL BAR INJECTED - 100% NATIVE WATCH PAGE - ONE BAR ONLY - placeholder | emoji | send */
+.watch-floating-bar-inner .reels-c-input-bar.injected-real-bar {
+  position: relative !important;
+  bottom: auto !important;
+  left: auto !important;
+  right: auto !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+  background: hsl(var(--surface)) !important;
+  border: 1px solid hsl(var(--border)) !important;
+  border-radius: 999px !important;
+  box-shadow: 0 1px 2px hsl(0 0% 0% / 0.04), 0 8px 24px hsl(0 0% 0% / 0.08) !important;
+  padding: 6px 6px 6px 18px !important;
+  height: 50px !important;
+  min-height: 50px !important;
+  opacity: 1 !important;
+  transform: none !important;
+  pointer-events: auto !important;
+}
+
+/* Reply above pill */
+.watch-floating-bar-inner .reels-c-input-bar .reels-c-replying-to {
+  position: absolute !important;
+  bottom: calc(100% + 8px) !important;
+  left: 12px !important;
+  right: 12px !important;
+  display: flex !important;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 500;
+  color: hsl(var(--text-muted));
   background: hsl(var(--surface));
-  border-top: 1px solid hsl(var(--border));
-}
-
-.watch-comments .watch-comments-card .reels-c-input-wrap {
-  background: hsl(var(--bg));
   border: 1px solid hsl(var(--border));
   border-radius: 999px;
+  box-shadow: 0 4px 12px hsl(0 0% 0% / 0.08);
 }
 
-.watch-comments .watch-comments-card .reels-c-input-wrap input {
-  background: transparent;
-  color: hsl(var(--text));
+/* INPUT WRAP - NATIVE ONE LINE: placeholder | emoji | send */
+.watch-floating-bar-inner .reels-c-input-bar .reels-c-input-wrap {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
 }
 
-.watch-comments .watch-comments-card .reels-c-input-wrap input::placeholder {
-  color: hsl(var(--text-muted));
+.watch-floating-bar-inner .reels-c-input-bar .reels-c-input-wrap input {
+  flex: 1 1 0 !important;
+  min-width: 0 !important;
+  height: 38px !important;
+  border: none !important;
+  background: transparent !important;
+  color: hsl(var(--text)) !important;
+  font-size: 14.5px !important;
+  outline: none !important;
+  padding: 0 !important;
+  order: 1 !important;
+}
+.watch-floating-bar-inner .reels-c-input-bar .reels-c-input-wrap input::placeholder { color: hsl(var(--text-muted)); }
+
+/* EMOJI - ONE GROUP ONLY, HORIZONTAL, NO CHIP, SITTING IN INPUT, ORDER 2 */
+.watch-floating-bar-inner .reels-c-input-bar .emoji-factory-bar-in-input {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  flex-wrap: nowrap !important;
+  gap: 0 !important;
+  padding: 0 !important;
+  margin: 0 8px 0 12px !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  order: 2 !important;
+  flex: 0 0 auto !important;
+  width: auto !important;
+  writing-mode: horizontal-tb !important;
 }
 
-.watch-comments .watch-comments-card .reels-c-input-wrap button {
-  color: hsl(var(--primary));
+.watch-floating-bar-inner .reels-c-input-bar .emoji-factory-scroll {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  flex-wrap: nowrap !important;
+  gap: 4px !important;
+  overflow: visible !important;
+  width: auto !important;
+  background: transparent !important;
+  border: none !important;
+  writing-mode: horizontal-tb !important;
 }
 
-.watch-comments .watch-comments-card .reels-c-input-wrap button:disabled {
-  color: hsl(var(--text-muted));
+.watch-floating-bar-inner .reels-c-input-bar .emoji-factory-chip-instant {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  padding: 0 2px !important;
+  margin: 0 !important;
+  min-width: auto !important;
+  width: auto !important;
+  height: auto !important;
+  display: inline-flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 4px !important;
+  font-size: 18px !important;
+  line-height: 1 !important;
+  white-space: nowrap !important;
+  writing-mode: horizontal-tb !important;
+  cursor: pointer !important;
+  transition: transform 0.15s ease !important;
+}
+.watch-floating-bar-inner .reels-c-input-bar .emoji-factory-chip-instant:hover { transform: scale(1.15) !important; }
+.watch-floating-bar-inner .reels-c-input-bar .emoji-factory-scroll .emoji-factory-chip-instant:nth-child(n+2) { display: none !important; }
+
+/* SEND - FAR RIGHT AFTER EMOJI, ORDER 3 */
+.watch-floating-bar-inner .reels-c-input-bar .reels-c-input-wrap button:last-child {
+  order: 3 !important;
+  width: 38px !important;
+  height: 38px !important;
+  min-width: 38px !important;
+  border-radius: 50% !important;
+  border: none !important;
+  background: hsl(var(--text)) !important;
+  color: hsl(var(--bg)) !important;
+  display: grid !important;
+  place-items: center !important;
+  cursor: pointer !important;
+  flex-shrink: 0 !important;
+  margin-left: 8px !important;
+  transition: all 0.2s ease !important;
 }
 
-.watch-comments .watch-comments-card .reels-c-replying-to {
-  background: hsl(var(--surface-hover));
-  color: hsl(var(--text-muted));
-}
-
-.watch-comments .watch-comments-card .emoji-factory-chip-instant {
-  background: hsl(var(--surface-hover));
-  border: 1px solid hsl(var(--border));
-}
-
-.watch-comments .watch-comments-card .reels-c-toast {
-  background: hsl(var(--primary));
-  color: hsl(var(--primary-text));
-}
-
-/* PC: hide every scrollbar inside the panel (scrolling still works) */
-@media (min-width: 769px) {
-  .watch-comments,
-  .watch-comments * {
-    scrollbar-width: none;
-    -ms-overflow-style: none;
+/* PC - RESPECT TITLE, CENTERED IN CONTENT */
+@media (min-width: 1025px) {
+  .watch-floating-bar.watch-comment-floating {
+    left: calc(50% + 140px);
+    right: auto;
+    width: min(640px, 50vw);
+    max-width: 640px;
+    transform: translateX(-50%) translateY(110%);
   }
-  .watch-comments *::-webkit-scrollbar {
-    display: none;
-    width: 0;
-    height: 0;
+  .watch-floating-bar.watch-comment-floating.is-visible {
+    transform: translateX(-50%) translateY(0);
   }
+  .watch-floating-bar.watch-comment-floating.is-hidden {
+    transform: translateX(-50%) translateY(110%);
+  }
+}
+
+@media (max-width: 1024px) {
+  .watch-floating-bar.watch-comment-floating {
+    left: 0;
+    right: 0;
+    width: 100%;
+    padding: 0 12px calc(10px + env(safe-area-inset-bottom));
+  }
+  .watch-floating-bar-inner.watch-floating-host {
+    width: 100%;
+    max-width: 100%;
+  }
+}
+
+body.reels-kb-open .watch-floating-bar.watch-comment-floating {
+  left: 0 !important;
+  right: 0 !important;
+  width: 100% !important;
+  transform: translateX(0) translateY(0) !important;
+  background: hsl(var(--surface)) !important;
+  border-top: 1px solid hsl(var(--border)) !important;
+  padding: 10px 12px calc(10px + env(safe-area-inset-bottom)) !important;
+  border-radius: 0 !important;
+  transition: none !important;
 }
 
 @media (max-width: 640px) {
-  .watch-comments {
-    margin: 24px 0;
-    padding: 0;
-    width: 100vw;
-    margin-left: calc(-50vw + 50%);
-    margin-right: calc(-50vw + 50%);
-    left: 0;
-    right: 0;
-  }
-  .watch-comments .watch-comments-card {
-    height: min(520px, 70dvh);
-    border-radius: 0;
-    border-left: none;
-    border-right: none;
-  }
+  .watch-comments { margin: 24px 0 0; width: 100vw; margin-left: calc(-50vw + 50%); margin-right: calc(-50vw + 50%); }
+  .watch-comments .watch-comments-card { height: min(520px, 70dvh); max-height: 70dvh; border-radius: 0; border-left: none; border-right: none; }
 }
-
 

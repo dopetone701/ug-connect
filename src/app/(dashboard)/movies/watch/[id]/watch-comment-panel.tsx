@@ -1,32 +1,92 @@
 "use client"
 
 import "./watch-comment-panel.css"
-// Adjust this path to wherever reels-comment-body.tsx lives in your project.
 import { ReelsCommentBodyFull } from "@/components/media/reels/reels-action-logic/reels-comment-body-full"
+import { useEffect, useRef, useState } from "react"
+import { createPortal } from "react-dom"
+import { useKeyboardViewport } from "@/stores/use-keyboard-viewport"
 
-
-
-type Props = {
-  movieId: string
-  movie?: any
-  onCountChange?: (count: number) => void
-}
+type Props = { movieId: string; movie?: any; onCountChange?: (count: number) => void }
 
 export function WatchCommentPanel({ movieId, movie, onCountChange }: Props) {
-  return (
-    <section className="watch-comments" aria-label="Comments">
-      <h2 className="watch-comments-title">Comments</h2>
-      <div className="watch-comments-card">
-        <ReelsCommentBodyFull
-          movieId={movieId}
-          movie={movie}
-          onCountChange={onCountChange}
-        />
+  const containerRef = useRef<HTMLElement>(null)
+  const titleRef = useRef<HTMLHeadingElement>(null)
+  const hostInnerRef = useRef<HTMLDivElement>(null)
+  const [isVisible, setIsVisible] = useState(false)
+  const [mounted, setMounted] = useState(false)
+  const isContainerInView = useRef(false)
+
+  useKeyboardViewport(true)
+  useEffect(() => setMounted(true), [])
+
+  useEffect(() => {
+    if (!titleRef.current) return
+    const obs = new IntersectionObserver(
+      ([e]) => {
+        isContainerInView.current = e.isIntersecting
+        setIsVisible(e.isIntersecting)
+      },
+      { threshold: 0.15, rootMargin: "0px 0px -80px 0px" }
+    )
+    obs.observe(titleRef.current)
+    return () => obs.disconnect()
+  }, [])
+
+  useEffect(() => {
+    const areas = [
+      document.querySelector(".content-scroll"),
+      document.querySelector(".connect-scroll-area"),
+      window
+    ].filter(Boolean) as any[]
+    const onScroll = () => {
+      if (!isContainerInView.current) setIsVisible(false)
+      else setIsVisible(true)
+    }
+    areas.forEach(a => a.addEventListener("scroll", onScroll, { passive: true } as any))
+    window.addEventListener("scroll", onScroll, { passive: true })
+    return () => {
+      areas.forEach(a => a.removeEventListener("scroll", onScroll as any))
+      window.removeEventListener("scroll", onScroll)
+    }
+  }, [])
+
+  // Inject real Reels bar into floating host - ONE BAR ONLY
+  useEffect(() => {
+    const inject = () => {
+      const realBar = document.querySelector(".watch-comments .watch-comments-card .reels-c-input-bar") as HTMLElement
+      const host = hostInnerRef.current
+      if (!realBar || !host) return
+      if (realBar.parentElement === host) return
+      host.appendChild(realBar)
+      realBar.classList.add("injected-real-bar")
+      realBar.style.display = ""
+    }
+    const interval = setInterval(inject, 200)
+    inject()
+    const mutObs = new MutationObserver(inject)
+    if (containerRef.current) mutObs.observe(containerRef.current, { childList: true, subtree: true })
+    return () => { clearInterval(interval); mutObs.disconnect() }
+  }, [mounted])
+
+  const floatingShell = (
+    <div className={`watch-floating-bar watch-comment-floating ${isVisible ? "is-visible" : "is-hidden"}`}>
+      <div ref={hostInnerRef} className="watch-floating-bar-inner watch-floating-host">
+        {/* Real bar injected here - looks native */}
       </div>
-    </section>
+    </div>
+  )
+
+  return (
+    <>
+      <section ref={containerRef} className="watch-comments" aria-label="Comments">
+        <h2 ref={titleRef} className="watch-comments-title">Comments</h2>
+        <div className="watch-comments-card">
+          <ReelsCommentBodyFull movieId={movieId} movie={movie} onCountChange={onCountChange} />
+        </div>
+      </section>
+      {mounted ? createPortal(floatingShell, document.body) : null}
+    </>
   )
 }
-
 export default WatchCommentPanel
-
 

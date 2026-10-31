@@ -1,0 +1,148 @@
+/* WATCH FLOATING BAR - MODERN BROWSER BOTTOM BAR - NO NEW FILE, ONLY 3 FILES USED */
+/* Mobile const bottom in drawer shell, listens to scroll, shows before comments */
+
+.watch-floating-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 9999;
+  background: hsl(var(--surface) / 0.98);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-top: 1px solid hsl(var(--border));
+  padding: 10px 12px calc(10px + env(safe-area-inset-bottom));
+  transform: translateY(110%);
+  opacity: 0;
+  transition: transform 0.38s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.28s ease;
+  will-change: transform, opacity;
+  box-shadow: 0 -4px 24px hsl(0 0% 0% / 0.1);
+}
+
+.watch-floating-bar.is-visible {
+  transform: translateY(0);
+  opacity: 1;
+}
+
+.watch-floating-bar.is-hidden {
+  transform: translateY(110%);
+  opacity: 0;
+  transition: transform 0.25s cubic-bezier(0.4, 0, 1, 1), opacity 0.2s ease;
+}
+
+.watch-floating-bar-inner {
+  width: 100%;
+  max-width: 100%;
+  margin: 0 auto;
+}
+
+.watch-floating-input-wrap {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  background: hsl(var(--bg));
+  border: 1px solid hsl(var(--border));
+  border-radius: 999px;
+  padding: 4px;
+}
+
+.watch-floating-input-wrap input {
+  flex: 1 1 0;
+  width: 0;
+  min-width: 0;
+  height: 42px;
+  margin: 0;
+  padding: 0 14px;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: hsl(var(--text));
+  font-size: 14px;
+  outline: none;
+}
+
+.watch-floating-input-wrap input::placeholder {
+  color: hsl(var(--text-muted));
+}
+
+.watch-floating-input-wrap button {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  min-width: 38px;
+  flex: 0 0 38px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: hsl(var(--primary));
+  color: hsl(var(--primary-text));
+  cursor: pointer;
+}
+
+.watch-floating-input-wrap button:disabled {
+  opacity: 0.5;
+}
+
+/* PC: Minimal floating size based on watch-client */
+.watch-floating-bar.watch-client-bar {
+  left: 50%;
+  right: auto;
+  transform: translateX(-50%) translateY(110%);
+  width: min(720px, 90vw);
+  max-width: 720px;
+  border-radius: 999px;
+  border: 1px solid hsl(var(--border));
+  padding: 8px;
+  margin-bottom: 16px;
+  box-shadow: 0 8px 32px hsl(0 0% 0% / 0.15), 0 2px 8px hsl(0 0% 0% / 0.1);
+  background: hsl(var(--surface) / 0.98);
+}
+
+.watch-floating-bar.watch-client-bar.is-visible {
+  transform: translateX(-50%) translateY(0);
+}
+
+.watch-floating-bar.watch-client-bar.is-hidden {
+  transform: translateX(-50%) translateY(150%);
+}
+
+/* MOBILE: Full width in drawer shell */
+@media (max-width: 1024px) {
+  .watch-drawer-panel .watch-floating-bar.watch-drawer-bar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+    border-bottom: none;
+  }
+}
+
+/* Keyboard open - WhatsApp sits on top */
+body.reels-kb-open .watch-floating-bar {
+  position: fixed !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  transform: translateY(0) !important;
+  border-radius: 0 !important;
+  margin-bottom: 0 !important;
+  z-index: 10000 !important;
+  padding-bottom: calc(10px + env(safe-area-inset-bottom)) !important;
+  background: hsl(var(--surface)) !important;
+}
+
+/* Hide original input inside comments card - since floating takes over */
+.watch-comments .watch-comments-card .reels-c-input-bar {
+  display: none !important;
+}
+

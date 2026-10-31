@@ -1,39 +1,27 @@
 "use client";
 
-
 import { useEffect, useState, useRef, useCallback } from "react"
 import { useParams, useSearchParams, useRouter, usePathname } from "next/navigation"
-
 
 import "../../movies.css"
 import "./connect-player.css"
 import "./mobile-preview.css"
 
-
 import SimilarMovies from "./similar-movies"
 import EpisodesRow from "./episodes-row"
 import WatchCommentPanel from "./watch-comment-panel"
-
 
 import PlayerOverlay from "../../_components/vid-actions/player-overlay"
 import VideoMetaInfo from "../../_components/vid-meta-info/video-meta-info"
 import UnderVideoStaBtns from "../../_components/under-vid-btns/under-video-sta-btns"
 
-
 import { useWatchDrawer } from "@/stores/use-watch-drawer"
 import { useReelsDrawer } from "@/stores/use-reels-drawer"
-import FooterFree from "@/components/layout/curvy-pro-room/get-started-email/footer/footer"
 import { useVideoSettingsDrawer } from "@/stores/use-video-settings-drawer";
 import { useMiniPlayerFloating } from "../../_components/vid-actions/mini-player-floating-logic";
 import { useMovieStore } from "@/stores/use-movie-store";
 
-
-
-
 const API_URL = "https://movie-server-api.connectu89.workers.dev/api/movies"
-
-
-
 
 function detectMobileDevice() {
   if (typeof window === "undefined") return true;
@@ -44,7 +32,6 @@ function detectMobileDevice() {
   if (isTouchDevice && window.innerWidth <= 1024) return true;
   return false;
 }
-
 
 export default function WatchPage({
   isOverlay = false,
@@ -64,10 +51,8 @@ export default function WatchPage({
   const { closeDrawer, openDrawer } = useWatchDrawer() as any
   const { openReels, closeReels } = useReelsDrawer() as any
 
-
   const type = search.get("t") || storeType || "full"
   const isPreview = type === "preview"
-
 
   const [movie, setMovie] = useState<any>(() => {
     if (typeof window === "undefined") return null
@@ -81,12 +66,10 @@ export default function WatchPage({
   const rootRef = useRef<HTMLDivElement>(null)
   const floating = useMiniPlayerFloating(rootRef, isMini);
 
-
   const lastTimeRef = useRef(0)
   const autoPlayTimerRef = useRef<any>(null)
   const controlsTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const interactingRef = useRef(false);
-
 
   const [playing, setPlaying] = useState(false)
   const [progress, setProgress] = useState(0)
@@ -108,9 +91,7 @@ export default function WatchPage({
   const settingsOpen = useVideoSettingsDrawer((s) => s.isOpen);
   const closeVideoSettings = useVideoSettingsDrawer((s) => s.close);
 
-
   useEffect(() => { if (externalFs!== undefined) setIsFullScreen(externalFs) }, [externalFs])
-
 
   const [overlayEpId, setOverlayEpId] = useState<string | null>(() => {
     try {
@@ -120,9 +101,7 @@ export default function WatchPage({
     } catch { return null }
   })
 
-
 const handleBack = useCallback(() => {
-  // MINI PLAYER X = CLOSE MINI
   if (isMini) {
     try {
       const v = videoRef.current;
@@ -133,10 +112,8 @@ const handleBack = useCallback(() => {
     return;
   }
 
-
   if (isFullScreen) return;
   const store = useWatchDrawer.getState();
-
 
   if (isMobile && isOverlay) {
     const video = videoRef.current;
@@ -155,7 +132,6 @@ const handleBack = useCallback(() => {
     return;
   }
 
-
   if (isMobile) {
     const video = videoRef.current;
        try {
@@ -163,7 +139,6 @@ const handleBack = useCallback(() => {
         const t = video.currentTime
         const d = video.duration || 0
         const pct = d ? (t / d) * 100 : 0
-        // per-user true progress
         if (t > 2 && d > 5) {
           try { useMovieStore.getState().saveProgress(effectiveId, t, d) } catch {}
         }
@@ -173,7 +148,6 @@ const handleBack = useCallback(() => {
       }
     } catch {}
 
-
     if (effectiveId) {
       store.openDrawer(String(effectiveId), isPreview ? "preview" : "full");
       store.minimize();
@@ -182,14 +156,12 @@ const handleBack = useCallback(() => {
     return;
   }
 
-
   if (isOverlay) {
     if (onClose) { onClose(); } else { closeDrawer(); }
   } else {
     router.push("/movies");
   }
 }, [isFullScreen, isMobile, isOverlay, isMini, playing, currentTime, effectiveId, isPreview, onClose, closeDrawer, router]);
-
 
   useEffect(() => {
     if (isOverlay) return
@@ -229,12 +201,10 @@ const handleBack = useCallback(() => {
     return () => { window.removeEventListener("resize", onResize); clearTimeout(timeout) }
   }, [effectiveId, isPreview, isOverlay, movie, isFullScreen, openDrawer, openReels, closeDrawer, closeReels, router])
 
-
   const skip = useCallback((sec: number) => {
     if(!videoRef.current) return
     videoRef.current.currentTime = Math.max(0, Math.min(duration, videoRef.current.currentTime + sec))
   }, [duration])
-
 
   const updateBufferedProgress = useCallback(() => {
     const video = videoRef.current
@@ -247,7 +217,6 @@ const handleBack = useCallback(() => {
     setBufferedProgress(Math.min(100, (bufferedEnd / video.duration) * 100))
   }, [])
 
-
   const seekTo = useCallback((clientX: number, rect: DOMRect) => {
     const pct = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width))
     if (videoRef.current && duration) {
@@ -255,7 +224,6 @@ const handleBack = useCallback(() => {
       setProgress(pct * 100)
     }
   }, [duration])
-
 
   const togglePlay = useCallback(() => {
     if(!videoRef.current) return
@@ -265,26 +233,18 @@ const handleBack = useCallback(() => {
     }else{ videoRef.current.pause(); setPlaying(false) }
   }, [])
 
-
-// handleFilmClick moved below to fix TDZ
-
-
 const toggleFullscreen = useCallback(async () => {
   const video = videoRef.current as any
   const root = rootRef.current as any
   if (!video || !root) return
 
-
   const savedTime = video.currentTime
   const wasPlaying = !video.paused
 
-
-  // Detect environment
   const isNative = (window as any).Capacitor?.isNativePlatform?.() ? (window as any).Capacitor.isNativePlatform() : false
   const isStandalonePWA = window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone === true
   const isAndroid = /Android/i.test(navigator.userAgent)
   const shouldUseConnectPlayer = isNative || isStandalonePWA || isAndroid
-
 
   let CapOrientation: any = null
   if (isNative) {
@@ -294,11 +254,9 @@ const toggleFullscreen = useCallback(async () => {
     } catch {}
   }
 
-
   try {
     if (!isFullScreen) {
       if (!shouldUseConnectPlayer) {
-        // BROWSER ONLY: native player
         if (video.webkitEnterFullscreen) {
           video.webkitEnterFullscreen()
         } else if (video.requestFullscreen) {
@@ -307,7 +265,6 @@ const toggleFullscreen = useCallback(async () => {
           await root.requestFullscreen({ navigationUI: "hide" } as any)
         }
       } else {
-        // PWA / ANDROID / APP: connect player fullscreen
         try { if (isNative) await CapOrientation?.unlock?.() } catch {}
         try { await (screen.orientation as any)?.unlock?.() } catch {}
         try {
@@ -342,14 +299,12 @@ const toggleFullscreen = useCallback(async () => {
   }
 }, [isFullScreen, onFsChange])
 
-
   const formatTime = useCallback((sec: number) => {
     if(!sec || isNaN(sec)) return "0:00"
     const h = Math.floor(sec / 3600); const m = Math.floor((sec % 3600) / 60); const s = Math.floor(sec % 60)
     if(h > 0) return `${h}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`
     return `${m}:${String(s).padStart(2,'0')}`
   }, [])
-
 
   useEffect(() => {
     let cancelled = false
@@ -361,13 +316,11 @@ const toggleFullscreen = useCallback(async () => {
     return ()=>{ cancelled = true }
   }, [effectiveId])
 
-
   useEffect(() => {
     const check = () => setIsMobile(detectMobileDevice())
     check(); window.addEventListener("resize", check); window.addEventListener("orientationchange", check)
     return () => { window.removeEventListener("resize", check); window.removeEventListener("orientationchange", check) }
   }, [])
-
 
   useEffect(() => {
     if(!movie) return; setMounted(true)
@@ -380,11 +333,9 @@ const toggleFullscreen = useCallback(async () => {
     return () => { document.removeEventListener("fullscreenchange", onFs); document.removeEventListener("webkitfullscreenchange", onFs as any) }
   }, [movie])
 
-
 const cancelControlsTimer = useCallback(() => {
   if (controlsTimerRef.current) { clearTimeout(controlsTimerRef.current); controlsTimerRef.current = null; }
 }, []);
-
 
 const scheduleControlsHide = useCallback(() => {
   cancelControlsTimer();
@@ -395,22 +346,18 @@ const scheduleControlsHide = useCallback(() => {
   }, 3200);
 }, [playing, cancelControlsTimer]);
 
-
 const keepControlsVisible = useCallback(() => { setShowControls(true); cancelControlsTimer(); }, [cancelControlsTimer]);
 const startControlsInteraction = useCallback(() => { interactingRef.current = true; setShowControls(true); cancelControlsTimer(); }, [cancelControlsTimer]);
 const endControlsInteraction = useCallback(() => { interactingRef.current = false; scheduleControlsHide(); }, [scheduleControlsHide]);
 
-
 const handleFilmClick = useCallback((e: React.MouseEvent | React.TouchEvent) => {
   const t = e.target as HTMLElement;
-  // if tap is on a control button/progress - just keep visible and reset timer
   const isControl = !!t.closest('button, .cc-icon, .apple-full, .center-skip-btn, .play-apple, .starz-progress, .quality-settings, [data-control], .bubble-expand, .bubble-close, .back-btn-timeout, [data-no-drag]');
   if (isControl) {
     setShowControls(true);
     scheduleControlsHide();
     return;
   }
-  // tap anywhere else on video - toggle
   if (!showControls) {
     setShowControls(true);
     scheduleControlsHide();
@@ -420,12 +367,9 @@ const handleFilmClick = useCallback((e: React.MouseEvent | React.TouchEvent) => 
   }
 }, [showControls, scheduleControlsHide, cancelControlsTimer]);
 
-
 useEffect(() => { scheduleControlsHide(); return () => { cancelControlsTimer(); }; }, [scheduleControlsHide, cancelControlsTimer]);
 useEffect(() => { return () => { interactingRef.current = false; cancelControlsTimer(); }; }, [cancelControlsTimer]);
 
-
-// NEW: Hide overlays instantly when user interacts outside video
 useEffect(() => {
   if (!showControls) return;
   const hideNow = () => {
@@ -434,31 +378,21 @@ useEffect(() => {
   };
   const handleOutsidePointer = (e: Event) => {
     const target = e.target as HTMLElement;
-    // if click is inside video player, let handleFilmClick handle it
     const insideVideo = target.closest('.film-giant, .connect-player, .center-cover, .center-controls-layer, .connect-controls, .center-top, .back-btn-timeout, .connect-loader');
     if (insideVideo) return;
-    // if click is on under-video area, episodes, similar, footer, etc -> hide instantly
     const outsideArea = target.closest('.connect-under-section, .episodes-row, .similar-movies, .film-meta, footer, .footer-free');
     if (outsideArea || !insideVideo) {
       hideNow();
     }
   };
   const handleScroll = () => {
-    // hide on any scroll outside video
     if (window.scrollY > 10) hideNow();
   };
-  const handleKeyOutside = (e: KeyboardEvent) => {
-    if (e.key === 'Escape') return;
-    const target = e.target as HTMLElement;
-    if (!target.closest('.film-giant')) hideNow();
-  };
-
 
   window.addEventListener('pointerdown', handleOutsidePointer, { capture: true } as any);
   window.addEventListener('touchstart', handleOutsidePointer, { capture: true } as any);
   window.addEventListener('scroll', handleScroll, { passive: true });
   window.addEventListener('wheel', handleScroll, { passive: true } as any);
-
 
   return () => {
     window.removeEventListener('pointerdown', handleOutsidePointer, { capture: true } as any);
@@ -468,42 +402,33 @@ useEffect(() => {
   };
 }, [showControls, cancelControlsTimer]);
 
-
   const searchEpId = search.get("ep") || search.get("e")
   const epId = isOverlay? overlayEpId || searchEpId : searchEpId
   const allEps = movie?.seasons?.flatMap((s:any)=>s.episodes||[]) || []
   const activeEp = epId? allEps.find((ep:any)=> String(ep.id)===String(epId)) : null
   const epUrl = activeEp?.video_url || activeEp?.url
 
-
 const isSeries = (movie?.seasons?.length > 0 && allEps.length > 1) || false
 const currentEpisodeIndex = epId ? allEps.findIndex((ep:any)=> String(ep.id)===String(epId)) : 0
 const [autoPlayOn, setAutoPlayOn] = useState(true)
 
-
 const goToEp = (ep:any) => { if(isOverlay){ setOverlayEpId(String(ep.id)) } else{ router.push(`${pathname}?t=full&ep=${ep.id}`) } }
-
 
 const handleEnded = () => {
   try{
     const v = videoRef.current
     if(v && v.duration > 5){
-      useMovieStore.getState().saveProgress(effectiveId, v.duration, v.duration) // 100% for replay icon
+      useMovieStore.getState().saveProgress(effectiveId, v.duration, v.duration)
     }
   }catch{}
   if (!autoPlayOn) return; if (!isSeries) return;
   const next = allEps[currentEpisodeIndex + 1]; if (next) goToEp(next);
 };
 
-
-
-
 const onNextEpisode = () => { const next = allEps[currentEpisodeIndex + 1]; if(next) goToEp(next) }
 const onPrevEpisode = () => { const prev = allEps[currentEpisodeIndex - 1]; if(prev) goToEp(prev) }
 
-
   const previewUrl = movie?.preview_urls?.[0] || (movie as any)?.preview_url || (movie as any)?.trailer_url || (movie as any)?.preview || (movie as any)?.video_preview_url
-
 
   const rawSources = movie? isPreview
    ? [{ label:"Preview", value:"preview", url: previewUrl || movie.video_url }]
@@ -514,12 +439,10 @@ const onPrevEpisode = () => { const prev = allEps[currentEpisodeIndex - 1]; if(p
        { label:"720p", value:"720", url: movie.video_url_720 || movie.qualities?.["720"] },
      ].filter(q=>!!q.url) : []
 
-
   const normalize = (x:any) => {
     const preview = x?.preview_urls?.[0] || x?.preview_url || x?.trailer_url || x?.video_preview_url || x?.preview
     return {...x, id:String(x.id), preview_url:preview, preview_urls:x.preview_urls || (preview?[preview]:[]), trailer_url:x.trailer_url || preview}
   }
-
 
   const handlePreviewReels = () => {
     const rawList = allMovies && allMovies.length? allMovies : [movie]
@@ -529,16 +452,13 @@ const onPrevEpisode = () => { const prev = allEps[currentEpisodeIndex - 1]; if(p
     setTimeout(()=> openReels(list, idx>=0? idx:0), isOverlay?150:0)
   }
 
-
   const qualitySources = rawSources.filter((v,i,a)=> a.findIndex(x=>x.url===v.url)===i)
   const currentQualityObj = qualitySources.find(q=>q.value===quality) || qualitySources[0]
   const videoUrl = currentQualityObj?.url
 
-
   const setSharedQualityOptions = useVideoSettingsDrawer((s) => s.setQualityOptions);
   const setSharedQualityHandler = useVideoSettingsDrawer((s) => s.setQualityHandler);
   const setSharedSelectedQuality = useVideoSettingsDrawer((s) => s.setSelectedQuality);
-
 
 useEffect(() => {
   setSharedQualityOptions(qualitySources.map(({ label, value }) => ({ label, value })));
@@ -546,9 +466,7 @@ useEffect(() => {
   return () => { setSharedQualityHandler(null); setSharedQualityOptions([]); };
 }, [movie?.id, isPreview, activeEp?.id, setSharedQualityOptions, setSharedQualityHandler]);
 
-
 useEffect(() => { setSharedSelectedQuality(quality); }, [quality, setSharedSelectedQuality]);
-
 
   useEffect(()=>{
     if(!videoUrl ||!videoRef.current) return
@@ -570,17 +488,13 @@ useEffect(() => { setSharedSelectedQuality(quality); }, [quality, setSharedSelec
     return ()=> clearTimeout(autoPlayTimerRef.current)
   },[videoUrl, activeEp?.id, effectiveId, volume, type])
 
-
   if(!movie) return <div className={`film-root connect-root ${isOverlay?'yt-overlay-root':''}`} style={{background:"hsl(var(--bg))", minHeight:"60vh"}}><div className="film-giant inner-body" style={{display:"flex",alignItems:"center",justifyContent:"center"}}>Loading...</div></div>
-
 
   return (
     <>
       <div ref={rootRef} className={`film-root connect-root ${isOverlay?'yt-overlay-root':''} ${isFullScreen?'is-shell-full':''} ${isMobile?'is-mobile-layout':'is-desktop-layout'}`}>
 
-
         <div className="film-giant connect-player inner-body" onClick={handleFilmClick} onMouseMove={()=> { if(!isMobile) { setShowControls(true); scheduleControlsHide(); } }} onMouseLeave={()=> playing &&!isMobile && setShowControls(false)} onTouchStart={()=> setShowControls(true)}>
-
 
           <div className="film-center"><div className="center-cover">
             <video
@@ -590,12 +504,11 @@ useEffect(() => { setSharedSelectedQuality(quality); }, [quality, setSharedSelec
               onLoadStart={()=>setIsLoading(true)} onWaiting={()=>setIsLoading(true)} onCanPlay={()=>setIsLoading(false)}
               onPlaying={()=>{ setIsLoading(false); setPlaying(true); setHasStarted(true) }}
               onPause={()=>setPlaying(false)}
-                           onTimeUpdate={(e)=>{
+              onTimeUpdate={(e)=>{
                 const v=e.currentTarget; setCurrentTime(v.currentTime); lastTimeRef.current=v.currentTime
                 if(v.duration){
                   const pct = (v.currentTime/v.duration)*100
                   setProgress(pct); setDuration(v.duration)
-                  // CLEAN: save per-user with duration for true bar dynamics
                   if(v.currentTime > 2 && v.duration > 5){
                     try { useMovieStore.getState().saveProgress(effectiveId, v.currentTime, v.duration) } catch {}
                   }
@@ -607,18 +520,15 @@ useEffect(() => { setSharedSelectedQuality(quality); }, [quality, setSharedSelec
                 }catch{}
               }}
 
-
               onProgress={updateBufferedProgress}
-                           onLoadedMetadata={(e)=>{
+              onLoadedMetadata={(e)=>{
                 const vid=e.target as HTMLVideoElement; setDuration(vid.duration)
                 try{
-                  // 1st source: per-user true progress
                   const st = useMovieStore.getState() as any
                   const savedP = st.watchProgress?.[String(effectiveId)] || st.getProgress?.(String(effectiveId))
                   if(savedP && savedP.percent < 95 && savedP.time > 2 && savedP.time < vid.duration-1){
                     vid.currentTime=savedP.time; lastTimeRef.current=savedP.time; return
                   }
-                  // 2nd fallback: sessionStorage
                   const saved=sessionStorage.getItem(`continue_${effectiveId}`)
                   if(saved){
                     const parsed=JSON.parse(saved);
@@ -630,7 +540,6 @@ useEffect(() => { setSharedSelectedQuality(quality); }, [quality, setSharedSelec
                 }catch{}
                 if(lastTimeRef.current) vid.currentTime=lastTimeRef.current
               }}
-
 
               onClick={(e)=> { e.stopPropagation(); (handleFilmClick as any)(e); }}
               onDoubleClick={()=> setVideoFit(v=> v==='contain' ? 'cover' : 'contain')}
@@ -658,8 +567,6 @@ useEffect(() => { setSharedSelectedQuality(quality); }, [quality, setSharedSelec
               isMini={isMini}
               onClose={onClose || closeDrawer}
               onExpand={maximize}
-
-
               onShowControls={keepControlsVisible}
               onInteractionStart={startControlsInteraction}
               onInteractionEnd={endControlsInteraction}
@@ -674,10 +581,8 @@ useEffect(() => { setSharedSelectedQuality(quality); }, [quality, setSharedSelec
               setVideoFit={setVideoFit}
             />
 
-
           </div></div>
         </div>
-
 
         {!isMini && (
           <div className="connect-actions-slot" style={{display:isFullScreen?'none':'flex'}}>
@@ -695,27 +600,19 @@ useEffect(() => { setSharedSelectedQuality(quality); }, [quality, setSharedSelec
             <EpisodesRow movie={movie} activeEpId={epId} onSelect={(ep:any)=>{ if(isOverlay){ setOverlayEpId(String(ep.id)) }else{ router.push(`${pathname}?t=full&ep=${ep.id}`) } }} />
           )}
 
-          {!isMini && !isFullScreen && (
-  <WatchCommentPanel movieId={String(movie.id)} movie={movie} />
-)}
-
+          {/* SIMILAR FIRST */}
           {!isMini && !isFullScreen && <SimilarMovies current={movie} />}
-          {/* inside the drawer the footer scrolls with the content */}
-          {isOverlay && !isMini && !isFullScreen && <FooterFree />}
+
+          {/* COMMENTS LAST - NO FOOTER ANYMORE */}
+          {!isMini && !isFullScreen && (
+            <WatchCommentPanel movieId={String(movie.id)} movie={movie} />
+          )}
+
         </div>
       </div>
 
-
-      {/* on the normal watch page the footer stays outside connect-root, as before */}
-      {!isOverlay && !isMini && !isFullScreen && <FooterFree />}
+      {/* FOOTER REMOVED - NO MORE FOOTER ON WATCH PAGE */}
     </>
   )
 }
-
-
-
-
-
-
-
 
