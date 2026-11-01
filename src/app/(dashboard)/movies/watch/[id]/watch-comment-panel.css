@@ -1,17 +1,16 @@
-/* WATCH COMMENTS - NATIVE ONE BAR - NO ONE CAN TELL IT IMPORTS REELS - PRECISE ANIMATION */
+/* WATCH COMMENTS - NATIVE ONE BAR - NO ONE CAN TELL IT IMPORTS REELS - PRECISE ANIMATION - FAKE GAP KILLED */
 
 .watch-comments {
   width: 100%;
   margin: 32px 0 0;
-  /* NO min-height, NO 160px */
-  padding-bottom: calc(86px + env(safe-area-inset-bottom));
+  padding: 0 !important;
+  margin-bottom: 0 !important;
   color: hsl(var(--text));
   position: relative;
   z-index: 1;
-  background: hsl(var(--bg)); /* kills black gap */
+  background: hsl(var(--bg));
   background-color: hsl(var(--bg));
 }
-
 
 .watch-comments-title {
   margin: 0 0 16px;
@@ -32,6 +31,7 @@
   overflow: hidden;
   background: hsl(var(--surface));
   border: 1px solid hsl(var(--border));
+  margin-bottom: 0 !important;
 }
 
 .watch-comments .watch-comments-card .reels-c-body {
@@ -48,7 +48,8 @@
   min-height: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
-  padding-bottom: 16px;
+  /* last comment can go up above input, but no gap below panel */
+  padding-bottom: calc(90px + env(safe-area-inset-bottom)) !important;
 }
 
 /* KILL STATIC INSIDE CARD - ONLY FLOATING HOST REMAINS */
@@ -282,28 +283,51 @@ body.reels-kb-open .watch-floating-bar.watch-comment-floating {
 }
 
 @media (max-width: 640px) {
-  .watch-comments { margin: 24px 0 0; width: 100vw; margin-left: calc(-50vw + 50%); margin-right: calc(-50vw + 50%); }
-  .watch-comments .watch-comments-card { height: min(520px, 70dvh); max-height: 70dvh; border-radius: 0; border-left: none; border-right: none; }
+  .watch-comments {
+    margin: 24px 0 0;
+    width: 100vw;
+    margin-left: calc(-50vw + 50%);
+    margin-right: calc(-50vw + 50%);
+    padding: 0 !important;
+    margin-bottom: 0 !important;
+    background: hsl(var(--bg));
+    background-color: hsl(var(--bg));
+  }
+  .watch-comments .watch-comments-card {
+    height: min(520px, 70dvh);
+    max-height: 70dvh;
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+    margin-bottom: 0 !important;
+  }
+  .watch-comments .watch-comments-card .reels-c-list {
+    padding-bottom: calc(90px + env(safe-area-inset-bottom)) !important;
+  }
 }
 
 
-
-
 @media (max-width: 640px) {
-  .watch-comments { 
-    margin: 24px 0 0; 
-    width: 100vw; 
-    margin-left: calc(-50vw + 50%); 
-    margin-right: calc(-50vw + 50%);
-    padding-bottom: calc(86px + env(safe-area-inset-bottom)); /* fit, not prolong */
-    background: hsl(var(--bg));
-    min-height: auto !important; /* kill the prolong */
+  .watch-comments-title {
+    padding: 0 16px !important;
   }
-  .watch-comments .watch-comments-card { 
-    height: min(560px, 75dvh); 
-    max-height: 75dvh; 
-    border-radius: 0; 
-    border-left: none; 
-    border-right: none; 
-  }
+}
+
+
+.watch-comments .watch-comments-card::before {
+  content: "" !important;
+  position: absolute !important;
+  top: 8px !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  width: 36px !important;
+  height: 4px !important;
+  border-radius: 999px !important;
+  background: hsl(var(--border)) !important;
+  opacity: 0.8 !important;
+  z-index: 2 !important;
+}
+
+.watch-comments .watch-comments-card {
+  padding-top: 20px !important; /* space for handle */
 }
