@@ -20,6 +20,9 @@ import { useReelsDrawer } from "@/stores/use-reels-drawer"
 import { useVideoSettingsDrawer } from "@/stores/use-video-settings-drawer";
 import { useMiniPlayerFloating } from "../../_components/vid-actions/mini-player-floating-logic";
 import { useMovieStore } from "@/stores/use-movie-store";
+import ZoomToCover from "./zoom-to-cover";
+
+
 
 const API_URL = "https://movie-server-api.connectu89.workers.dev/api/movies"
 
@@ -496,9 +499,14 @@ useEffect(() => { setSharedSelectedQuality(quality); }, [quality, setSharedSelec
 
         <div className="film-giant connect-player inner-body" onClick={handleFilmClick} onMouseMove={()=> { if(!isMobile) { setShowControls(true); scheduleControlsHide(); } }} onMouseLeave={()=> playing &&!isMobile && setShowControls(false)} onTouchStart={()=> setShowControls(true)}>
 
-          <div className="film-center"><div className="center-cover">
+<div className="film-center"><div className="center-cover">
+<ZoomToCover fit={videoFit} onFitChange={setVideoFit} enabled={isMobile && !isMini && !isFullScreen}>
+
+
             <video
-              key={`${movie.id}-${quality}-${activeEp?.id || 'default'}-${videoFit}`}
+            key={`${movie.id}-${quality}-${activeEp?.id || 'default'}`}
+
+
               ref={videoRef} src={videoUrl} className={`connect-video ${videoFit}`}
               style={{ objectFit: videoFit as any, width:'100%', height:'100%', background:'#000' }}
               onLoadStart={()=>setIsLoading(true)} onWaiting={()=>setIsLoading(true)} onCanPlay={()=>setIsLoading(false)}
@@ -578,10 +586,13 @@ useEffect(() => { setSharedSelectedQuality(quality); }, [quality, setSharedSelec
               onPrevEpisode={onPrevEpisode}
               setAutoPlayOn={setAutoPlayOn}
               videoFit={videoFit}
-              setVideoFit={setVideoFit}
+                          setVideoFit={setVideoFit}
             />
-
+          </ZoomToCover>
           </div></div>
+
+
+
         </div>
 
         {!isMini && (

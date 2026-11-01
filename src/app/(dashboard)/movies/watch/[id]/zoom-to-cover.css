@@ -1,0 +1,55 @@
+/* Wrapper fills the player frame exactly, so layout is unchanged */
+.zoom-to-cover {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* pan-y keeps vertical scrolling but lets JS own the two-finger pinch */
+.zoom-to-cover.is-enabled {
+  touch-action: pan-y;
+}
+
+/* Smooth contain <-> cover feel on the video itself */
+.zoom-to-cover .connect-video {
+  transition: transform 0.25s ease;
+}
+
+/* Small toast shown after a pinch */
+.zoom-to-cover-hint {
+  position: absolute;
+  left: 50%;
+  top: 14%;
+  transform: translateX(-50%);
+  z-index: 10005;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.62);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  pointer-events: none;
+  white-space: nowrap;
+  animation: zoom-to-cover-hint-in 0.2s ease-out;
+}
+
+@keyframes zoom-to-cover-hint-in {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+/* Never active in the mini player or fullscreen shell */
+.connect-root.is-mini-player .zoom-to-cover-hint,
+.watch-drawer-root.is-mini .zoom-to-cover-hint {
+  display: none !important;
+}
+
