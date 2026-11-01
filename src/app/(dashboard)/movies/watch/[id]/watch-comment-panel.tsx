@@ -19,35 +19,21 @@ export function WatchCommentPanel({ movieId, movie, onCountChange }: Props) {
   useKeyboardViewport(true)
   useEffect(() => setMounted(true), [])
 
+  // FIXED LOGIC: Scope ENTIRE panel, not just title
   useEffect(() => {
-    if (!titleRef.current) return
+    if (!containerRef.current) return
     const obs = new IntersectionObserver(
       ([e]) => {
         isContainerInView.current = e.isIntersecting
         setIsVisible(e.isIntersecting)
       },
-      { threshold: 0.15, rootMargin: "0px 0px -80px 0px" }
+      { 
+        threshold: 0.05, 
+        rootMargin: "0px 0px -10% 0px" 
+      }
     )
-    obs.observe(titleRef.current)
+    obs.observe(containerRef.current)
     return () => obs.disconnect()
-  }, [])
-
-  useEffect(() => {
-    const areas = [
-      document.querySelector(".content-scroll"),
-      document.querySelector(".connect-scroll-area"),
-      window
-    ].filter(Boolean) as any[]
-    const onScroll = () => {
-      if (!isContainerInView.current) setIsVisible(false)
-      else setIsVisible(true)
-    }
-    areas.forEach(a => a.addEventListener("scroll", onScroll, { passive: true } as any))
-    window.addEventListener("scroll", onScroll, { passive: true })
-    return () => {
-      areas.forEach(a => a.removeEventListener("scroll", onScroll as any))
-      window.removeEventListener("scroll", onScroll)
-    }
   }, [])
 
   // Inject real Reels bar into floating host - ONE BAR ONLY
@@ -89,4 +75,3 @@ export function WatchCommentPanel({ movieId, movie, onCountChange }: Props) {
   )
 }
 export default WatchCommentPanel
-

@@ -1119,3 +1119,36 @@ footer{
   .connect-root .connect-actions-slot{max-width:100%;padding:14px 16px 0 16px}
 }
 
+
+
+
+
+
+/* ===== RUBBER BAND FIX - DNA NOT BLACK - PASTE AT VERY BOTTOM ===== */
+html, body {
+  background: hsl(var(--bg)) !important;
+  background-color: hsl(var(--bg)) !important;
+}
+
+.connect-root {
+  background: hsl(var(--bg)) !important;
+  background-color: hsl(var(--bg)) !important;
+}
+
+.connect-root .connect-scroll-area {
+  display: block !important; /* was contents - now it can hold DNA bg */
+  width: 100% !important;
+  background: hsl(var(--bg)) !important;
+  background-color: hsl(var(--bg)) !important;
+}
+
+.connect-root .connect-actions-slot {
+  background: hsl(var(--bg)) !important;
+  background-color: hsl(var(--bg)) !important;
+  border: none !important;
+}
+
+.connect-root .connect-under-section {
+  background: hsl(var(--bg)) !important;
+  background-color: hsl(var(--bg)) !important;
+}

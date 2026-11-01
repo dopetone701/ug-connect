@@ -3,12 +3,13 @@
 .watch-comments {
   width: 100%;
   margin: 32px 0 0;
-  padding-bottom: 160px; /* kills gap, reserves for floating bar */
-  min-height: calc(100dvh - 100px); /* makes mother continue to edge */
+  /* NO min-height, NO 160px */
+  padding-bottom: calc(86px + env(safe-area-inset-bottom));
   color: hsl(var(--text));
   position: relative;
   z-index: 1;
-  background: hsl(var(--bg)); /* kills black gap behind, now DNA */
+  background: hsl(var(--bg)); /* kills black gap */
+  background-color: hsl(var(--bg));
 }
 
 
@@ -285,3 +286,24 @@ body.reels-kb-open .watch-floating-bar.watch-comment-floating {
   .watch-comments .watch-comments-card { height: min(520px, 70dvh); max-height: 70dvh; border-radius: 0; border-left: none; border-right: none; }
 }
 
+
+
+
+@media (max-width: 640px) {
+  .watch-comments { 
+    margin: 24px 0 0; 
+    width: 100vw; 
+    margin-left: calc(-50vw + 50%); 
+    margin-right: calc(-50vw + 50%);
+    padding-bottom: calc(86px + env(safe-area-inset-bottom)); /* fit, not prolong */
+    background: hsl(var(--bg));
+    min-height: auto !important; /* kill the prolong */
+  }
+  .watch-comments .watch-comments-card { 
+    height: min(560px, 75dvh); 
+    max-height: 75dvh; 
+    border-radius: 0; 
+    border-left: none; 
+    border-right: none; 
+  }
+}
