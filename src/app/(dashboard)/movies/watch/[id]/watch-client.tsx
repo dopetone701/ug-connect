@@ -20,11 +20,6 @@ import { useReelsDrawer } from "@/stores/use-reels-drawer"
 import { useVideoSettingsDrawer } from "@/stores/use-video-settings-drawer";
 import { useMiniPlayerFloating } from "../../_components/vid-actions/mini-player-floating-logic";
 import { useMovieStore } from "@/stores/use-movie-store";
-import { usePinchToCover } from "./zoom-to-cover";
-
-
-
-
 
 const API_URL = "https://movie-server-api.connectu89.workers.dev/api/movies"
 
@@ -94,11 +89,7 @@ export default function WatchPage({
   const maximize = useWatchDrawer((s) => s.maximize)
   const drawerState = useWatchDrawer() as any
   const settingsOpen = useVideoSettingsDrawer((s) => s.isOpen);
-const closeVideoSettings = useVideoSettingsDrawer((s) => s.close);
-const coverRef = useRef<HTMLDivElement>(null)
-const pinchHint = usePinchToCover(coverRef, videoFit, setVideoFit, isMobile && !isMini && !isFullScreen && !!movie)
-
-
+  const closeVideoSettings = useVideoSettingsDrawer((s) => s.close);
 
   useEffect(() => { if (externalFs!== undefined) setIsFullScreen(externalFs) }, [externalFs])
 
@@ -505,15 +496,9 @@ useEffect(() => { setSharedSelectedQuality(quality); }, [quality, setSharedSelec
 
         <div className="film-giant connect-player inner-body" onClick={handleFilmClick} onMouseMove={()=> { if(!isMobile) { setShowControls(true); scheduleControlsHide(); } }} onMouseLeave={()=> playing &&!isMobile && setShowControls(false)} onTouchStart={()=> setShowControls(true)}>
 
-<div className="film-center"><div className="center-cover" ref={coverRef}>
-
-
-
-
+          <div className="film-center"><div className="center-cover">
             <video
-            key={`${movie.id}-${quality}-${activeEp?.id || 'default'}`}
-
-
+              key={`${movie.id}-${quality}-${activeEp?.id || 'default'}-${videoFit}`}
               ref={videoRef} src={videoUrl} className={`connect-video ${videoFit}`}
               style={{ objectFit: videoFit as any, width:'100%', height:'100%', background:'#000' }}
               onLoadStart={()=>setIsLoading(true)} onWaiting={()=>setIsLoading(true)} onCanPlay={()=>setIsLoading(false)}
@@ -593,12 +578,10 @@ useEffect(() => { setSharedSelectedQuality(quality); }, [quality, setSharedSelec
               onPrevEpisode={onPrevEpisode}
               setAutoPlayOn={setAutoPlayOn}
               videoFit={videoFit}
-                          setVideoFit={setVideoFit}
+              setVideoFit={setVideoFit}
             />
+
           </div></div>
-
-         {pinchHint && <div className="zoom-to-cover-hint">{pinchHint}</div>}
-
         </div>
 
         {!isMini && (

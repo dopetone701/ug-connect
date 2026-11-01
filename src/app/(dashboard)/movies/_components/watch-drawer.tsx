@@ -227,10 +227,6 @@ requestAnimationFrame(() => {
 
 
   const onDown = (e: any) => {
-    if (e.touches && e.touches.length > 1) return;
-
-
-
     if(!isMobile) return;
     if(minimized) return;
     if((e.target as HTMLElement).closest("button")) return;
@@ -249,10 +245,6 @@ requestAnimationFrame(() => {
 
 
   const onMove = (e: any) => {
-    if (e.touches && e.touches.length > 1) return;
-
-
-
     if(!isMobile) return;
     if(!dragging) return;
     const y = e.clientY?? e.touches?.[0]?.clientY;
