@@ -3,10 +3,14 @@
 .watch-comments {
   width: 100%;
   margin: 32px 0 0;
+  padding-bottom: 160px; /* kills gap, reserves for floating bar */
+  min-height: calc(100dvh - 100px); /* makes mother continue to edge */
   color: hsl(var(--text));
   position: relative;
   z-index: 1;
+  background: hsl(var(--bg)); /* kills black gap behind, now DNA */
 }
+
 
 .watch-comments-title {
   margin: 0 0 16px;
