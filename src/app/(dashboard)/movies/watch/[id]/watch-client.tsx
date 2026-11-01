@@ -20,7 +20,9 @@ import { useReelsDrawer } from "@/stores/use-reels-drawer"
 import { useVideoSettingsDrawer } from "@/stores/use-video-settings-drawer";
 import { useMiniPlayerFloating } from "../../_components/vid-actions/mini-player-floating-logic";
 import { useMovieStore } from "@/stores/use-movie-store";
-import ZoomToCover from "./zoom-to-cover";
+import { usePinchToCover } from "./zoom-to-cover";
+
+
 
 
 
@@ -92,7 +94,11 @@ export default function WatchPage({
   const maximize = useWatchDrawer((s) => s.maximize)
   const drawerState = useWatchDrawer() as any
   const settingsOpen = useVideoSettingsDrawer((s) => s.isOpen);
-  const closeVideoSettings = useVideoSettingsDrawer((s) => s.close);
+const closeVideoSettings = useVideoSettingsDrawer((s) => s.close);
+const coverRef = useRef<HTMLDivElement>(null)
+const pinchHint = usePinchToCover(coverRef, videoFit, setVideoFit, isMobile && !isMini && !isFullScreen && !!movie)
+
+
 
   useEffect(() => { if (externalFs!== undefined) setIsFullScreen(externalFs) }, [externalFs])
 
@@ -499,8 +505,9 @@ useEffect(() => { setSharedSelectedQuality(quality); }, [quality, setSharedSelec
 
         <div className="film-giant connect-player inner-body" onClick={handleFilmClick} onMouseMove={()=> { if(!isMobile) { setShowControls(true); scheduleControlsHide(); } }} onMouseLeave={()=> playing &&!isMobile && setShowControls(false)} onTouchStart={()=> setShowControls(true)}>
 
-<div className="film-center"><div className="center-cover">
-<ZoomToCover fit={videoFit} onFitChange={setVideoFit} enabled={isMobile && !isMini && !isFullScreen}>
+<div className="film-center"><div className="center-cover" ref={coverRef}>
+
+
 
 
             <video
@@ -588,10 +595,9 @@ useEffect(() => { setSharedSelectedQuality(quality); }, [quality, setSharedSelec
               videoFit={videoFit}
                           setVideoFit={setVideoFit}
             />
-          </ZoomToCover>
           </div></div>
 
-
+         {pinchHint && <div className="zoom-to-cover-hint">{pinchHint}</div>}
 
         </div>
 
