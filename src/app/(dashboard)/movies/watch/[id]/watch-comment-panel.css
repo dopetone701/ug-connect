@@ -270,34 +270,17 @@
   }
 }
 
-/* KEYBOARD OPEN - PIN ABOVE KEYBOARD USING YOUR STORE VARS - NEVER BEHIND */
-body.reels-kb-open {
-  overflow: hidden !important;
-}
-
 body.reels-kb-open .watch-floating-bar.watch-comment-floating {
-  position: fixed !important;
   left: 0 !important;
   right: 0 !important;
   width: 100% !important;
-  /* pin to top of keyboard: 100dvh - vvh = keyboard height */
-  bottom: calc(100dvh - var(--vvh, 100dvh)) !important;
-  top: auto !important;
   transform: translateX(0) translateY(0) !important;
   background: hsl(var(--surface)) !important;
   border-top: 1px solid hsl(var(--border)) !important;
   padding: 10px 12px calc(10px + env(safe-area-inset-bottom)) !important;
   border-radius: 0 !important;
   transition: none !important;
-  z-index: 10000 !important;
 }
-
-/* while keyboard open, make list not scroll behind */
-body.reels-kb-open .watch-comments-card .reels-c-list {
-  padding-bottom: calc(90px + env(safe-area-inset-bottom)) !important;
-  overscroll-behavior: contain !important;
-}
-
 
 @media (max-width: 640px) {
   .watch-comments {

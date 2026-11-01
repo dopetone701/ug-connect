@@ -55,43 +55,7 @@ export function WatchCommentPanel({ movieId, movie, onCountChange }: Props) {
   }, [mounted])
 
 
-  // ===== KEYBOARD OPEN - PIN INPUT ABOVE KEYBOARD - NEVER BEHIND =====
-useEffect(() => {
-  const vv = window.visualViewport;
-  const bar = document.querySelector('.watch-floating-bar.watch-comment-floating') as HTMLElement | null;
-  if (!bar || !vv) return;
-
-  const onVvChange = () => {
-    const kbHeight = window.innerHeight - vv.height - vv.offsetTop;
-    const isKbOpen = kbHeight > 120; // keyboard open threshold
-
-    if (isKbOpen) {
-      document.body.classList.add('reels-kb-open');
-      bar.style.bottom = `${kbHeight}px`;
-      bar.style.transform = 'translateX(0) translateY(0)';
-      // keep list padding so last comment still above input
-      const list = document.querySelector('.watch-comments-card .reels-c-list') as HTMLElement | null;
-      if (list) list.style.paddingBottom = `calc(90px + ${kbHeight}px)`;
-    } else {
-      document.body.classList.remove('reels-kb-open');
-      bar.style.bottom = '';
-      const list = document.querySelector('.watch-comments-card .reels-c-list') as HTMLElement | null;
-      if (list) list.style.paddingBottom = '';
-    }
-  };
-
-  vv.addEventListener('resize', onVvChange);
-  vv.addEventListener('scroll', onVvChange);
-  window.addEventListener('resize', onVvChange);
-
-  return () => {
-    vv.removeEventListener('resize', onVvChange);
-    vv.removeEventListener('scroll', onVvChange);
-    window.removeEventListener('resize', onVvChange);
-    document.body.classList.remove('reels-kb-open');
-  };
-}, []);
-
+  
 
   const floatingShell = (
     <div className={`watch-floating-bar watch-comment-floating ${isVisible ? "is-visible" : "is-hidden"}`}>

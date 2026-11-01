@@ -1007,3 +1007,18 @@
   border: 0 !important;
 }
 
+
+
+/* YOUTUBE - KILL BUBBLE - OVERRIDE */
+.reels-c-bubble {
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  padding: 0 !important;
+}
+.reels-c-item {
+  border-bottom: 0 !important;
+}
+.reels-c-my-emoji {
+  display: none !important;
+}
