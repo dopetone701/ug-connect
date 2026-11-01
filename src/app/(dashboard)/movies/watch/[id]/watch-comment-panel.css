@@ -270,9 +270,9 @@
   }
 }
 
+/* KEYBOARD OPEN - PIN ABOVE KEYBOARD USING YOUR STORE VARS - NEVER BEHIND */
 body.reels-kb-open {
-  overflow: hidden !important; /* prevent scroll behind keyboard */
-  height: 100dvh !important;
+  overflow: hidden !important;
 }
 
 body.reels-kb-open .watch-floating-bar.watch-comment-floating {
@@ -280,7 +280,9 @@ body.reels-kb-open .watch-floating-bar.watch-comment-floating {
   left: 0 !important;
   right: 0 !important;
   width: 100% !important;
-  bottom: 0 !important; /* JS will override with exact kb height */
+  /* pin to top of keyboard: 100dvh - vvh = keyboard height */
+  bottom: calc(100dvh - var(--vvh, 100dvh)) !important;
+  top: auto !important;
   transform: translateX(0) translateY(0) !important;
   background: hsl(var(--surface)) !important;
   border-top: 1px solid hsl(var(--border)) !important;
@@ -288,6 +290,12 @@ body.reels-kb-open .watch-floating-bar.watch-comment-floating {
   border-radius: 0 !important;
   transition: none !important;
   z-index: 10000 !important;
+}
+
+/* while keyboard open, make list not scroll behind */
+body.reels-kb-open .watch-comments-card .reels-c-list {
+  padding-bottom: calc(90px + env(safe-area-inset-bottom)) !important;
+  overscroll-behavior: contain !important;
 }
 
 
