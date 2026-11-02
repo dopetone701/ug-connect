@@ -8,6 +8,8 @@ import FooterFree from "@/components/layout/curvy-pro-room/get-started-email/foo
 import SigninModals from "./auth-system/signin-modals";
 import LogoutModal from "./auth-system/logout-modal";
 import { useMovieStore } from "@/stores/use-movie-store";
+import RefreshSpinner from "./refresh-spinner";
+
 
 
 const WORKER_URL = "https://user-account-server-api.connectu89.workers.dev";
@@ -186,10 +188,20 @@ export default function Page(){
     }
   };
 
-  return(
+   return(
   <>
-    <div className="landing-root">
+    <div className="landing-root" id="landing-root">
+      <RefreshSpinner targetId="landing-root" onRefresh={async () => {
+        try{
+          const r = await fetch("https://open.er-api.com/v6/latest/AED");
+          const d = await r.json();
+          setRate(Math.round(d.rates?.UGX || 1008));
+        }catch{}
+        // optional: reload user too
+        window.dispatchEvent(new CustomEvent("ug_profile_updated"));
+      }} />
       <h1 className="landing-title">Choose your service {isAdmin && <span style={{fontSize:12, background:"#000", color:"#fff", padding:"2px 8px", borderRadius:12, marginLeft:8}}>ADMIN - All Services Visible</span>}</h1>
+
       <div className="grid top-grid">
         {visibleTop.map(s=> (
           <div key={s.id} className="card-wrapper">
