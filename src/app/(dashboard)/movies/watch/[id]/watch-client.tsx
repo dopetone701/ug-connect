@@ -346,13 +346,51 @@ const scheduleControlsHide = useCallback(() => {
   }, 3200);
 }, [playing, cancelControlsTimer]);
 
-const keepControlsVisible = useCallback(() => { setShowControls(true); cancelControlsTimer(); }, [cancelControlsTimer]);
-const startControlsInteraction = useCallback(() => { interactingRef.current = true; setShowControls(true); cancelControlsTimer(); }, [cancelControlsTimer]);
-const endControlsInteraction = useCallback(() => { interactingRef.current = false; scheduleControlsHide(); }, [scheduleControlsHide]);
+const keepControlsVisible = useCallback(() => { 
+  setShowControls(true); 
+  cancelControlsTimer(); 
+  // if pc cast not open, schedule hide again
+  if (!document.body.hasAttribute("data-pc-cast-open")) {
+    scheduleControlsHide();
+  }
+}, [cancelControlsTimer, scheduleControlsHide]);
+
+const startControlsInteraction = useCallback(() => { 
+  interactingRef.current = true; 
+  setShowControls(true); 
+  cancelControlsTimer(); 
+}, [cancelControlsTimer]);
+
+const endControlsInteraction = useCallback(() => { 
+  interactingRef.current = false; 
+  scheduleControlsHide(); 
+}, [scheduleControlsHide]);
+
+// Fix: when cast closes, hide controls again after 2.5s
+useEffect(() => {
+  const onPcCastClosed = () => {
+    interactingRef.current = false;
+    scheduleControlsHide();
+  };
+  const onKeepVisible = () => {
+    if (document.body.hasAttribute("data-pc-cast-open")) {
+      // while cast open, keep visible but don't block future hide
+      setShowControls(true);
+    }
+  };
+  window.addEventListener("pcCastClosed", onPcCastClosed as any);
+  window.addEventListener("keepControlsVisible", onKeepVisible as any);
+  return () => {
+    window.removeEventListener("pcCastClosed", onPcCastClosed as any);
+    window.removeEventListener("keepControlsVisible", onKeepVisible as any);
+  };
+}, [scheduleControlsHide]);
+
+
 
 const handleFilmClick = useCallback((e: React.MouseEvent | React.TouchEvent) => {
   const t = e.target as HTMLElement;
-  const isControl = !!t.closest('button, .cc-icon, .apple-full, .center-skip-btn, .play-apple, .starz-progress, .quality-settings, [data-control], .bubble-expand, .bubble-close, .back-btn-timeout, [data-no-drag]');
+ const isControl = !!t.closest('button, .cc-icon, .apple-full, .center-skip-btn, .play-apple, .starz-progress, .quality-settings, [data-control], .bubble-expand, .bubble-close, .back-btn-timeout, [data-no-drag], .pc-cast-panel, .pc-cast-wrapper, .pc-cast-backdrop');
   if (isControl) {
     setShowControls(true);
     scheduleControlsHide();

@@ -52,10 +52,12 @@ export default function VideoCastBtn() {
     keepAlive();
     const interval = setInterval(keepAlive, 150);
     document.body.setAttribute("data-pc-cast-open", "true");
-    return () => {
+       return () => {
       clearInterval(interval);
       document.body.removeAttribute("data-pc-cast-open");
+      window.dispatchEvent(new CustomEvent("pcCastClosed"));
     };
+
   }, [showPcPanel]);
 
   return (
