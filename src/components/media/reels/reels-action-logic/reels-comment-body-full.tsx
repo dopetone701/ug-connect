@@ -264,7 +264,7 @@ export function ReelsCommentBody({ movieId, movie, onCountChange, hideInput }: P
                 ×
               </button>
             </div>
-          )} 
+          )}
 
                    <div className="reels-c-input-wrap">
             <input
