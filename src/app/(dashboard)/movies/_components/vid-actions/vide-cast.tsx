@@ -25,40 +25,34 @@ export default function VideoCastBtn() {
   }, [showPcPanel, setPcPanelOpen]);
 
   // Keep overlay visible while pc panel is open - no timeout till closed + overlay skip btns
+   // Keep only top visible while pc panel open - let progress + lower row auto-hide in fullscreen
   useEffect(() => {
     if (!showPcPanel) return;
     const keepAlive = () => {
-      window.dispatchEvent(new CustomEvent("keepControlsVisible"));
-      const controls = document.querySelector(".connect-controls") as HTMLElement | null;
-      if (controls) {
-        controls.classList.add("show");
-        (controls as any).style.opacity = "1";
-        (controls as any).style.visibility = "visible";
-        (controls as any).style.pointerEvents = "auto";
-      }
+      // DON'T dispatch keepControlsVisible - let lower row hide normally
       const centerTop = document.querySelector(".center-top") as HTMLElement | null;
       if (centerTop) {
         centerTop.classList.add("show");
         (centerTop as any).style.opacity = "1";
         (centerTop as any).style.visibility = "visible";
       }
-      // keep center-controls-layer visible but its buttons blocked by backdrop
-      const centerLayer = document.querySelector(".center-controls-layer") as HTMLElement | null;
-      if (centerLayer) {
-        (centerLayer as any).style.opacity = "1";
-        (centerLayer as any).style.visibility = "visible";
-      }
     };
     keepAlive();
-    const interval = setInterval(keepAlive, 150);
+    const interval = setInterval(keepAlive, 400);
     document.body.setAttribute("data-pc-cast-open", "true");
-       return () => {
+    return () => {
       clearInterval(interval);
       document.body.removeAttribute("data-pc-cast-open");
       window.dispatchEvent(new CustomEvent("pcCastClosed"));
+      // hide center-top after close too
+      const centerTop = document.querySelector(".center-top") as HTMLElement | null;
+      if (centerTop) {
+        (centerTop as any).style.opacity = "";
+        (centerTop as any).style.visibility = "";
+      }
     };
-
   }, [showPcPanel]);
+
 
   return (
     <div style={{ position: "relative" }}>
