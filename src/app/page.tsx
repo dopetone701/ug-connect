@@ -200,7 +200,7 @@ export default function Page(){
         // optional: reload user too
         window.dispatchEvent(new CustomEvent("ug_profile_updated"));
       }} />
-      <h1 className="landing-title">Choose your service {isAdmin && <span style={{fontSize:12, background:"#000", color:"#fff", padding:"2px 8px", borderRadius:12, marginLeft:8}}>ADMIN - All Services Visible</span>}</h1>
+      <h1 className="landing-title">Choose your service {isAdmin && <span style={{fontSize:12, background:"#000", color:"#fff", padding:"2px 8px", borderRadius:12, marginLeft:8}}></span>}</h1>
 
       <div className="grid top-grid">
         {visibleTop.map(s=> (
