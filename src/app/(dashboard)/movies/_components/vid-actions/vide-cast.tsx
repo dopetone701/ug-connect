@@ -4,7 +4,7 @@ import { useGlobalCast } from "@/stores/use-global-cast";
 import PcCastPanel from "./pc-cast-panel";
 
 export default function VideoCastBtn() {
-  const { setOpen } = useGlobalCast();
+ const { setOpen, setPcPanelOpen } = useGlobalCast();
   const [showPcPanel, setShowPcPanel] = useState(false);
   const [isWide, setIsWide] = useState(false);
 
@@ -18,6 +18,11 @@ export default function VideoCastBtn() {
       window.removeEventListener("orientationchange", check);
     };
   }, []);
+
+ // SYNC to global store - hide skip/play when cast open
+  useEffect(() => {
+    setPcPanelOpen(showPcPanel);
+  }, [showPcPanel, setPcPanelOpen]);
 
   // Keep overlay visible while pc panel is open - no timeout till closed + overlay skip btns
   useEffect(() => {

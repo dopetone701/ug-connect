@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useGlobalCast } from "@/stores/use-global-cast";
 
 import BackBtn from "../back-btn";
 import PlayBtnIcon from "./../../../../../modal-generator/svg-icons/play-btn-icon";
@@ -42,6 +43,7 @@ export default function PlayerOverlay({
   onPrevEpisode,
   setAutoPlayOn,
 }: any) {
+ const { pcPanelOpen } = useGlobalCast();
   const keepControlsVisible = () => onShowControls?.();
 
   const startInteraction = () => {
@@ -322,9 +324,10 @@ export default function PlayerOverlay({
         </div>
       )}
 
-      {showControls && !isLoading && (
+           {showControls && !isLoading && !pcPanelOpen && (
         <div
           className="center-controls-layer"
+
           style={{
             position: "absolute",
             inset: 0,

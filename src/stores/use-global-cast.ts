@@ -1,10 +1,10 @@
 "use client";
 import { create } from "zustand";
 
-export type Device = { 
-  id: string; 
-  name: string; 
-  type: "tv" | "chromecast" | "airplay" 
+export type Device = {
+  id: string;
+  name: string;
+  type: "tv" | "chromecast" | "airplay"
 };
 
 type CastState = {
@@ -13,11 +13,13 @@ type CastState = {
   isCasting: boolean;
   devices: Device[];
   selectedDevice: Device | null;
+  pcPanelOpen: boolean;
   setOpen: (v: boolean) => void;
   setScanning: (v: boolean) => void;
   setDevices: (d: Device[]) => void;
   selectDevice: (d: Device) => void;
   stopCasting: () => void;
+  setPcPanelOpen: (v: boolean) => void;
 };
 
 export const useGlobalCast = create<CastState>((set) => ({
@@ -26,9 +28,11 @@ export const useGlobalCast = create<CastState>((set) => ({
   isCasting: false,
   devices: [],
   selectedDevice: null,
+  pcPanelOpen: false,
   setOpen: (v) => set({ isOpen: v }),
   setScanning: (v) => set({ isScanning: v }),
   setDevices: (d) => set({ devices: d }),
   selectDevice: (d) => set({ selectedDevice: d, isCasting: true, isOpen: false }),
   stopCasting: () => set({ selectedDevice: null, isCasting: false }),
+  setPcPanelOpen: (v) => set({ pcPanelOpen: v }),
 }));
