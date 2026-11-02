@@ -22,6 +22,8 @@ import MiniSeriesRow from "./_lib/mini-series-row"
 import { useGlobalSearch } from "@/stores/use-global-search"
 import { useWatchDrawer } from "@/stores/use-watch-drawer"
 import { useReelsDrawer } from "@/stores/use-reels-drawer"
+import RefreshSpinner from "@/app/refresh-spinner"
+
 
 type ApiMovie = {
   id: any
@@ -423,9 +425,20 @@ export default function MoviesPage() {
     )
   }
 
-  return (
-    <div className="film-root">
+   return (
+    <div className="film-root" id="film-root">
+      <RefreshSpinner 
+        targetId="film-root" 
+        onRefresh={async () => {
+          // re-fetch movies same as your load()
+          const res = await fetch(API_URL, { cache: "no-store" });
+          const data = await res.json();
+          // quick reload - you can replace with setAllMovies if you expose it
+          window.location.reload();
+        }} 
+      />
       <div className="film-giant">
+
         <div className="film-bg">
           <div className="gblob b1" />
           <div className="gblob b2" />
