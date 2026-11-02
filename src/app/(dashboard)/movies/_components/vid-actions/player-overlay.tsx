@@ -394,12 +394,71 @@ export default function PlayerOverlay({
         </div>
       )}
 
-      <div
+           <div
         className={`connect-controls ${showControls ? "show" : ""}`}
-        style={{ pointerEvents: showControls ? "auto" : "none" }}
+        style={{ pointerEvents: showControls ? "auto" : "none", display: "flex", flexDirection: "column" }}
         onPointerMove={keepControlsVisible}
       >
-        <div className="cc-above-progress">
+        {/* PROGRESS ON TOP */}
+        <div className="cc-progress-bottom" style={{ order: 1, marginBottom: "8px" }}>
+          <div
+            className="starz-progress"
+            style={{ touchAction: "none", cursor: "pointer" }}
+            onPointerDown={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              startInteraction();
+
+              const bar = e.currentTarget;
+              bar.setPointerCapture(e.pointerId);
+
+              const seekFromPointer = (clientX: number) => {
+                const bg = bar.querySelector(
+                  ".starz-progress-bg"
+                ) as HTMLElement | null;
+
+                if (!bg) return;
+
+                onSeek?.(clientX, bg.getBoundingClientRect());
+              };
+
+              seekFromPointer(e.clientX);
+
+              const handleMove = (ev: PointerEvent) => {
+                seekFromPointer(ev.clientX);
+              };
+
+              const handleUp = () => {
+                bar.removeEventListener("pointermove", handleMove);
+                bar.removeEventListener("pointerup", handleUp);
+                bar.removeEventListener("pointercancel", handleUp);
+                endInteraction();
+              };
+
+              bar.addEventListener("pointermove", handleMove);
+              bar.addEventListener("pointerup", handleUp);
+              bar.addEventListener("pointercancel", handleUp);
+            }}
+          >
+            <div className="starz-progress-bg">
+              <div
+                className="starz-buffered"
+                style={{ width: `${bufferedProgress}%` }}
+              />
+              <div
+                className="starz-progress-fill"
+                style={{ width: `${progress}%` }}
+              />
+              <div
+                className="starz-thumb"
+                style={{ left: `${progress}%` }}
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="cc-above-progress" style={{ order: 2 }}>
+
           <span className="cc-left-time">
             {formatTime(currentTime)} / {formatTime(duration)}
           </span>
@@ -465,62 +524,7 @@ export default function PlayerOverlay({
           </div>
         </div>
 
-        <div className="cc-progress-bottom">
-          <div
-            className="starz-progress"
-            style={{ touchAction: "none", cursor: "pointer" }}
-            onPointerDown={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              startInteraction();
-
-              const bar = e.currentTarget;
-              bar.setPointerCapture(e.pointerId);
-
-              const seekFromPointer = (clientX: number) => {
-                const bg = bar.querySelector(
-                  ".starz-progress-bg"
-                ) as HTMLElement | null;
-
-                if (!bg) return;
-
-                onSeek?.(clientX, bg.getBoundingClientRect());
-              };
-
-              seekFromPointer(e.clientX);
-
-              const handleMove = (ev: PointerEvent) => {
-                seekFromPointer(ev.clientX);
-              };
-
-              const handleUp = () => {
-                bar.removeEventListener("pointermove", handleMove);
-                bar.removeEventListener("pointerup", handleUp);
-                bar.removeEventListener("pointercancel", handleUp);
-                endInteraction();
-              };
-
-              bar.addEventListener("pointermove", handleMove);
-              bar.addEventListener("pointerup", handleUp);
-              bar.addEventListener("pointercancel", handleUp);
-            }}
-          >
-            <div className="starz-progress-bg">
-              <div
-                className="starz-buffered"
-                style={{ width: `${bufferedProgress}%` }}
-              />
-              <div
-                className="starz-progress-fill"
-                style={{ width: `${progress}%` }}
-              />
-              <div
-                className="starz-thumb"
-                style={{ left: `${progress}%` }}
-              />
-            </div>
-          </div>
-        </div>
+        
       </div>
     </>
   );
