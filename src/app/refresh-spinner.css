@@ -1,52 +1,60 @@
+/* PRO - root IS the scroller */
+.landing-root,
+.film-root {
+  position: relative;
+  height: 100dvh;
+  height: 100svh;
+  overflow: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+  touch-action: pan-y;
+  background: hsl(var(--bg));
+}
+
+/* spinner behind content */
 .ptr-root {
   position: absolute;
-  top: -52px;
+  top: 0;
   left: 0;
   right: 0;
-  height: 52px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
-  z-index: 50;
+  height: 70px;
+  display: grid;
+  place-items: center;
+  z-index: 1;
   pointer-events: none;
+  background: hsl(var(--bg));
+}
+
+/* content that slides - FIXED for bottom bar */
+.landing-content-inner,
+.film-content-inner {
+  position: relative;
+  z-index: 2;
+  min-height: 100%;
+  background: hsl(var(--bg));
   will-change: transform;
-  transition: opacity 0.2s ease;
+  transform: translateZ(0);
+  padding-bottom: 140px; /* lifts Explore More above bottom nav */
 }
 
 .ptr-spinner {
-  width: 28px;
-  height: 28px;
+  width: 38px;
+  height: 38px;
   display: grid;
   place-items: center;
 }
 
 .ptr-spinner-inner {
-  width: 22px;
-  height: 22px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
-  border: 2.5px solid hsl(var(--border));
-  border-top-color: hsl(var(--primary));
-  transition: all 0.2s;
+  border: 3.5px solid hsl(var(--border));
+  border-top-color: hsl(var(--text));
 }
 
-.ptr-spinner-inner[data-ready="true"] {
-  border-top-color: hsl(var(--primary));
-  border-width: 3px;
+.ptr-spinner-inner.spin {
+  animation: ptr-spin 0.65s linear infinite;
 }
 
-.ptr-spinner-inner[data-refreshing="true"] {
-  animation: ptr-spin 0.7s linear infinite;
-}
-
-
-
-@keyframes ptr-spin {
-  to { transform: rotate(360deg); }
-}
-
-/* Make your landing-root compatible */
-.landing-root {
-  position: relative;
-  overscroll-behavior-y: contain; /* stops shell from getting the drag */
-}
+@keyframes ptr-spin { to { transform: rotate(360deg); } }

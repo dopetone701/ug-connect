@@ -1,48 +1,29 @@
-// src/app/refresh-spinner.tsx
 "use client";
 import "./refresh-spinner.css";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useRefreshSpinner } from "@/stores/use-refresh-spinner";
 
-export default function RefreshSpinner({ 
-  onRefresh,
-  targetId = "landing-root" // reusable - change id for any section
-}: { 
-  onRefresh?: () => Promise<void>;
-  targetId?: string;
-}) {
-  const [scrollEl, setScrollEl] = useState<HTMLElement | null>(null);
-  
+export default function RefreshSpinner({ targetId, onRefresh }: any) {
+  const [els, setEls] = useState<any>({ scrollEl: null, contentEl: null });
+
   useEffect(() => {
-    setScrollEl(document.querySelector(`.${targetId}`) as HTMLElement || document.getElementById(targetId) as HTMLElement);
+    const root = document.getElementById(targetId);
+    if (!root) return;
+    const inner = root.querySelector(".film-content-inner") || root.querySelector(".landing-content-inner");
+    setEls({ scrollEl: root, contentEl: inner });
   }, [targetId]);
 
-  const handleRefresh = async () => {
-    if (onRefresh) await onRefresh();
-    else window.location.reload();
-  };
-
-  const { pull, state, progress } = useRefreshSpinner({
-    scrollEl,
-    onRefresh: handleRefresh,
-    threshold: 78
+  const { pull, progress, state } = useRefreshSpinner({
+    scrollEl: els.scrollEl,
+    contentEl: els.contentEl,
+    onRefresh,
   });
 
-  if (pull === 0 && state === "idle") return null;
-
-   return (
-    <div 
-      className="ptr-root" 
-      style={{ 
-        transform: `translateY(${pull}px)`,
-        opacity: pull > 0 ? 1 : 0
-      }}
-      data-state={state}
-    >
-      <div className="ptr-spinner" style={{ transform: `rotate(${progress * 360}deg) scale(${0.6 + progress * 0.4})` }}>
-        <div className="ptr-spinner-inner" data-ready={state === "ready"} data-refreshing={state === "refreshing"} />
+  return (
+    <div className="ptr-root" style={{ opacity: state === "refreshing" ? 1 : progress }}>
+      <div className="ptr-spinner" style={{ transform: `scale(${0.7 + progress * 0.3})` }}>
+        <div className={`ptr-spinner-inner ${pull > 5 || state === "refreshing" ? "spin" : ""}`} />
       </div>
     </div>
   );
-
 }

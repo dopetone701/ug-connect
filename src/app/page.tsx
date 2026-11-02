@@ -190,15 +190,16 @@ export default function Page(){
 
    return(
   <>
-    <div className="landing-root" id="landing-root">
+       <div className="landing-root" id="landing-root">
+      <div className="landing-content-inner">
       <RefreshSpinner 
         targetId="landing-root" 
         onRefresh={async () => {
           window.location.reload();
         }} 
       />
+      <h1 className="landing-title">Choose your service</h1>
 
-<h1 className="landing-title">Choose your service</h1>
 
       <div className="grid top-grid">
         {visibleTop.map(s=> (
@@ -244,6 +245,7 @@ export default function Page(){
         onConfirm={confirmLogout}
         user={user}
       />
+    </div>
     </div>
   </>
 );

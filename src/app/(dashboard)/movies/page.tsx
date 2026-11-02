@@ -425,18 +425,16 @@ export default function MoviesPage() {
     )
   }
 
-   return (
+     return (
     <div className="film-root" id="film-root">
       <RefreshSpinner 
         targetId="film-root" 
+        contentClass="film-content-inner"
         onRefresh={async () => {
-          // re-fetch movies same as your load()
-          const res = await fetch(API_URL, { cache: "no-store" });
-          const data = await res.json();
-          // quick reload - you can replace with setAllMovies if you expose it
           window.location.reload();
         }} 
       />
+      <div className="film-content-inner">
       <div className="film-giant">
 
         <div className="film-bg">
@@ -559,6 +557,7 @@ export default function MoviesPage() {
         return <UserListsRow movies={allMovies} />;
       })()}
       <ExploreMore movies={allMovies} />
+    </div>
     </div>
   )
 }

@@ -1,74 +1,109 @@
-// src/app/hooks/use-refresh-spinner.ts / stores/use-refresh-spinner.ts
 "use client";
-import { useRef, useState, useEffect, useCallback } from "react";
+import { useEffect, useState, useRef } from "react";
 
-type State = "idle" | "pulling" | "ready" | "refreshing";
+export function useRefreshSpinner({ scrollEl, contentEl, onRefresh }: any) {
+  const DEAD_ZONE = 28;
+  const TRIGGER = 105;
+  const MAX_PULL = 80;
 
-export function useRefreshSpinner({ 
-  onRefresh, 
-  threshold = 78,
-  resistance = 0.42,
-  scrollEl
-}: {
-  onRefresh: () => Promise<void> | void;
-  threshold?: number;
-  resistance?: number;
-  scrollEl: HTMLElement | null;
-}) {
   const [pull, setPull] = useState(0);
-  const [state, setState] = useState<State>("idle");
-  const startY = useRef(0);
-  const isDragging = useRef(false);
+  const [progress, setProgress] = useState(0);
+  const [state, setState] = useState<"idle"|"pulling"|"ready"|"refreshing">("idle");
 
-  const canPull = useCallback(() => {
-    if (!scrollEl) return false;
-    return scrollEl.scrollTop <= 0;
-  }, [scrollEl]);
+  const startY = useRef(0);
+  const dragging = useRef(false);
+  const crossed = useRef(false);
+  const raf = useRef(0);
 
   useEffect(() => {
-    if (!scrollEl) return;
-    
+    if (!scrollEl || !contentEl) return;
+
+    const isAtTop = () => scrollEl.scrollTop <= 1;
+
     const onStart = (e: TouchEvent) => {
-      if (!canPull() || state === "refreshing") return;
+      if (state === "refreshing") return;
+      if (!isAtTop()) return;
       startY.current = e.touches[0].clientY;
-      isDragging.current = true;
+      dragging.current = false;
+      crossed.current = false;
     };
 
     const onMove = (e: TouchEvent) => {
-      if (!isDragging.current || !canPull()) return;
-      const diff = e.touches[0].clientY - startY.current;
-      if (diff <= 0) return;
-      
-      // Prevent native rubberband behind
-      if (diff > 10) e.preventDefault();
-      
-      // Apply resistance - makes it INTENTIONAL
-      const damped = Math.pow(diff, 0.85) * resistance;
-      const clamped = Math.min(damped, 120);
+      if (!isAtTop()) {
+        dragging.current = false;
+        return;
+      }
+
+      const raw = e.touches[0].clientY - startY.current;
+      if (raw <= 0) {
+        if (pull > 0) {
+          cancelAnimationFrame(raf.current);
+          contentEl.style.transform = `translateY(0px)`;
+          setPull(0);
+          setProgress(0);
+          setState("idle");
+        }
+        return;
+      }
+
+      if (raw < DEAD_ZONE) return; // intentional dead zone
+
+      if (!dragging.current) dragging.current = true;
+
+      if (raw > DEAD_ZONE + 5) e.preventDefault(); // block only after intentional
+
+      const intentional = raw - DEAD_ZONE;
+      const damped = Math.pow(intentional, 0.84) * 0.42;
+      const clamped = Math.min(damped, MAX_PULL);
+      const prog = Math.min(Math.max(0, raw - 40) / (TRIGGER - 40), 1);
+
+      cancelAnimationFrame(raf.current);
+      raf.current = requestAnimationFrame(() => {
+        contentEl.style.transform = `translateY(${clamped}px)`;
+      });
+
       setPull(clamped);
-      
-      setState(clamped >= threshold ? "ready" : "pulling");
+      setProgress(prog);
+
+      if (clamped >= 50) {
+        if (!crossed.current) navigator.vibrate?.(12);
+        crossed.current = true;
+        setState("ready");
+      } else {
+        setState("pulling");
+      }
     };
 
     const onEnd = async () => {
-      if (!isDragging.current) return;
-      isDragging.current = false;
-      
-      if (state === "ready") {
+      if (!dragging.current) return;
+      dragging.current = false;
+
+      if (crossed.current && pull >= 48) {
         setState("refreshing");
-        try {
-          // haptic for intentional feel
-          if (navigator.vibrate) navigator.vibrate(20);
-          await onRefresh();
-        } finally {
+        setPull(55);
+        setProgress(1);
+        contentEl.style.transform = `translateY(55px)`;
+        await new Promise(r => setTimeout(r, 700));
+        await onRefresh();
+        contentEl.style.transition = "transform 0.35s cubic-bezier(0.34,1.56,0.64,1)";
+        contentEl.style.transform = `translateY(0px)`;
+        setTimeout(() => {
+          contentEl.style.transition = "";
           setPull(0);
+          setProgress(0);
           setState("idle");
-        }
+        }, 350);
       } else {
-        // snap back
-        setPull(0);
-        setState("idle");
+        contentEl.style.transition = "transform 0.26s ease";
+        contentEl.style.transform = `translateY(0px)`;
+        setTimeout(() => {
+          contentEl.style.transition = "";
+          setPull(0);
+          setProgress(0);
+          setState("idle");
+        }, 260);
       }
+      crossed.current = false;
     };
 
     scrollEl.addEventListener("touchstart", onStart, { passive: true });
@@ -76,11 +111,12 @@ export function useRefreshSpinner({
     scrollEl.addEventListener("touchend", onEnd);
 
     return () => {
-      scrollEl.removeEventListener("touchstart", onStart);
-      scrollEl.removeEventListener("touchmove", onMove);
-      scrollEl.removeEventListener("touchend", onEnd);
+      cancelAnimationFrame(raf.current);
+      scrollEl.removeEventListener("touchstart", onStart as any);
+      scrollEl.removeEventListener("touchmove", onMove as any);
+      scrollEl.removeEventListener("touchend", onEnd as any);
     };
-  }, [scrollEl, canPull, state, threshold, resistance, onRefresh]);
+  }, [scrollEl, contentEl, state, pull, onRefresh]);
 
-  return { pull, state, progress: Math.min(pull / threshold, 1) };
+  return { pull, progress, state };
 }
