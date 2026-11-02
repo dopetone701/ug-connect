@@ -1152,3 +1152,21 @@ html, body {
   background: hsl(var(--bg)) !important;
   background-color: hsl(var(--bg)) !important;
 }
+
+
+
+
+/* ===== CTA WIDTH ONLY - KEEP ORIGINAL HEIGHT ===== */
+.connect-root .connect-actions-slot{
+  width:100% !important;
+  max-width:100% !important;
+  padding:14px 0 0 0 !important;
+  margin:0 !important;
+}
+.connect-root .connect-action-row{
+  width:100% !important;
+  max-width:100% !important;
+  box-sizing:border-box !important;
+  padding:0 16px 2px 16px !important;
+  margin:0 !important;
+}
