@@ -240,7 +240,8 @@ requestAnimationFrame(() => {
     // otherwise scrolling back up through a long page would trigger fullscreen
     const scroller = panelRef.current?.querySelector(".connect-scroll-area") as HTMLElement | null;
     const scrolledDown = Math.max(scroller?.scrollTop ?? 0, panelRef.current?.scrollTop ?? 0) > 0;
-    dragModeRef.current = isFullscreen? "exit-fs" : (getIsVideoZone(y)? "to-mini" : (scrolledDown? "none" : "to-fs"));
+   // KEEP only video->mini, KILL to-fs and exit-fs (cast breaks it)
+    dragModeRef.current = getIsVideoZone(y) ? "to-mini" : "none";
   };
 
 
@@ -256,16 +257,10 @@ requestAnimationFrame(() => {
       dragYRef.current = dy;
       setDragY(dy * 0.7);
     }
-    else if(dragModeRef.current === "to-fs"){
-      if(dy < 0) return;
-      dragYRef.current = dy;
-      setDragY(fixedLayout ? 0 : Math.min(dy * 0.08, 32));
+       else if(dragModeRef.current === "to-fs" || dragModeRef.current === "exit-fs"){
+      return; // killed
     }
-    else if(dragModeRef.current === "exit-fs"){
-      if(dy > 0) return;
-      dragYRef.current = dy;
-      setDragY(dy * 0.7);
-    }
+
   };
 
 
@@ -279,15 +274,10 @@ requestAnimationFrame(() => {
     if(dragModeRef.current === "to-mini"){
       if(dy > 140 && elapsed > 180) minimize();
     }
-    else if(dragModeRef.current === "to-fs"){
-      if(velocity > 0.9){
-      } else if(dy > 180 && elapsed > 250){
-        triggerFsBtn();
-      }
+       else if(dragModeRef.current === "to-fs" || dragModeRef.current === "exit-fs"){
+      // killed - nothing
     }
-    else if(dragModeRef.current === "exit-fs"){
-      if(dy < -90) triggerFsBtn();
-    }
+
     setDragY(0);
     dragModeRef.current = "none";
   };
