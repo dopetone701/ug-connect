@@ -191,15 +191,13 @@ export default function Page(){
    return(
   <>
     <div className="landing-root" id="landing-root">
-      <RefreshSpinner targetId="landing-root" onRefresh={async () => {
-        try{
-          const r = await fetch("https://open.er-api.com/v6/latest/AED");
-          const d = await r.json();
-          setRate(Math.round(d.rates?.UGX || 1008));
-        }catch{}
-        // optional: reload user too
-        window.dispatchEvent(new CustomEvent("ug_profile_updated"));
-      }} />
+      <RefreshSpinner 
+        targetId="landing-root" 
+        onRefresh={async () => {
+          window.location.reload();
+        }} 
+      />
+
 <h1 className="landing-title">Choose your service</h1>
 
       <div className="grid top-grid">
