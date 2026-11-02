@@ -2,7 +2,7 @@
 
 function parseCastFromMovie(movie: any): { name: string; photo: string | null }[] {
   if (Array.isArray(movie?.cast) && movie.cast.length > 0) {
-    return movie.cast.slice(0, 4).map((c: any) => {
+   return movie.cast.slice(0, 5).map((c: any) => {
       if (typeof c === "string") return { name: c, photo: null };
       return {
         name: c?.name || c?.actor || c?.fullName || String(c),
@@ -15,10 +15,11 @@ function parseCastFromMovie(movie: any): { name: string; photo: string | null }[
   try {
     const parsed = JSON.parse(rawActors);
     if (Array.isArray(parsed)) {
-      return parsed.slice(0, 4).map((c: any) => typeof c === "string" ? { name: c, photo: null } : { name: c?.name || String(c), photo: c?.photo || null });
+          return parsed.slice(0, 5).map((c: any) => typeof c === "string" ? { name: c, photo: null } : { name: c?.name || String(c), photo: c?.photo || null });
     }
   } catch {}
-  return rawActors.split(",").map((a: string) => a.trim()).filter(Boolean).slice(0, 4).map((name) => ({ name, photo: null }));
+  return rawActors.split(",").map((a: string) => a.trim()).filter(Boolean).slice(0, 5).map((name) => ({ name, photo: null }));
+
 }
 
 export default function VideoMetaInfo({ movie, descExpanded, setDescExpanded }: any) {
