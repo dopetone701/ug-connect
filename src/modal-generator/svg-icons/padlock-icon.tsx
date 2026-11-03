@@ -1,28 +1,44 @@
 // Padlock.tsx
 import React from "react";
 
-export default function Padlock() {
+type PadlockProps = {
+  size?: number;
+  color?: string;
+  className?: string;
+};
+
+export default function Padlock({ size = 100, color = "#333", className }: PadlockProps) {
+  const s = size / 100; // your original design is built at 100px wide
   return (
-    <div style={{ width: 100, margin: "50px auto", textAlign: "center" }}>
+    <div
+      className={className}
+      style={{
+        width: size,
+        height: size * 1.3,
+        textAlign: "center",
+        flexShrink: 0,
+      }}
+    >
       {/* Shackle */}
       <div
         style={{
-          width: 60,
-          height: 50,
-          border: "10px solid #333",
+          width: 60 * s,
+          height: 50 * s,
+          border: `${10 * s}px solid ${color}`,
           borderBottom: "none",
-          borderRadius: "30px 30px 0 0",
+          borderRadius: `${30 * s}px ${30 * s}px 0 0`,
           margin: "0 auto",
+          boxSizing: "border-box",
         }}
       />
 
       {/* Body */}
       <div
         style={{
-          width: 100,
-          height: 80,
-          background: "#333",
-          borderRadius: 10,
+          width: 100 * s,
+          height: 80 * s,
+          background: color,
+          borderRadius: 10 * s,
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
@@ -31,8 +47,8 @@ export default function Padlock() {
         {/* Keyhole */}
         <div
           style={{
-            width: 20,
-            height: 30,
+            width: 20 * s,
+            height: 30 * s,
             background: "white",
             borderRadius: "50%",
           }}
