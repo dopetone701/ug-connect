@@ -1256,16 +1256,45 @@ html, body {
 }
 
 
-/* SMOOTH ROTATE LIKE YOUTUBE - NO BLINK */
-.film-root, .film-giant, .center-cover, .connect-video {
-  transition: width 0.35s ease, height 0.35s ease, transform 0.35s ease !important;
-  will-change: width, height, transform !important;
-  backface-visibility: hidden !important;
-  background: #000 !important;
+/* PORTRAIT VIDEO - NO SCROLL, FIT ONLY */
+.film-root, .film-giant, .center-cover {
+  overflow: hidden !important;
+  overscroll-behavior: none !important;
 }
 
 .film-root.is-shell-full {
+  position: fixed !important;
+  inset: 0 !important;
   width: 100vw !important;
   height: 100dvh !important;
+  overflow: hidden !important;
   background: #000 !important;
+}
+
+.film-root.is-shell-full .film-giant,
+.film-root.is-shell-full .center-cover {
+  width: 100% !important;
+  height: 100% !important;
+  max-height: 100dvh !important;
+  overflow: hidden !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.film-root.is-shell-full video {
+  width: 100% !important;
+  height: 100% !important;
+  max-height: 100dvh !important;
+  object-fit: contain !important;
+}
+
+/* Body never scrolls in fullscreen */
+body:has(.is-shell-full),
+html.is-fullscreen-active,
+html.is-fullscreen-active body {
+  overflow: hidden !important;
+  position: fixed !important;
+  width: 100% !important;
+  height: 100% !important;
 }
