@@ -274,7 +274,7 @@ export default function MovieCard({
             onClick={openYT}
           >
            {isGuest && (
-              <span className="guest-lock-icon" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 9, height: 9, lineHeight: 0, overflow: "hidden", verticalAlign: "middle", marginRight: 3, flexShrink: 0 }}>
+              <span className="guest-lock-icon" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 9, height: 9, lineHeight: 0, overflow: "hidden", verticalAlign: "middle", marginRight: 3, flexShrink: 0, transform: "translateY(-1.5px)" }}>
                 <Padlock size={9} />
               </span>
             )}
