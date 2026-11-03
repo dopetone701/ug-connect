@@ -3,6 +3,12 @@ import { useRouter } from "next/navigation"
 import { useWatchDrawer } from "@/stores/use-watch-drawer"
 import { useReelsDrawer } from "@/stores/use-reels-drawer"
 import { useMovieStore } from "@/stores/use-movie-store"
+import Padlock from "@/modal-generator/svg-icons/padlock-icon"
+import {
+  useIsGuest,
+  isGuestUser,
+  openSignInModal,
+} from "@/app/auth-system/movie-locker-if-guest"
 
 function cleanVj(raw: any): string {
   if (!raw) return ""
@@ -33,12 +39,23 @@ export function ReelsModal({ current, onWatchFull }: any) {
   const { closeReels } = useReelsDrawer() as any
   const { addRecent } = useMovieStore() as any
 
+  // GUEST GATE: reactive for UI (small padlock next to Watch Full if guest)
+  const isGuest = useIsGuest()
+
   if(!current) return null
 
   const realVj = getRealVj(current)
   const displayVj = realVj && realVj.toUpperCase() !== "UG" ? realVj : ""
 
   const handleClick = () => {
+    // GUEST GATE: guests can PREVIEW (they are already in reels),
+    // but cannot Watch Full Movie. Fresh read, no stale closure.
+    // No addRecent, no preload, no drawer, no router if guest.
+    if (isGuestUser()) {
+      openSignInModal()
+      return
+    }
+
     const id = String(current.id)
     const preview = (current as any).preview_urls?.[0] || (current as any).preview_url || (current as any).trailer_url || (current as any).video_preview_url
 
@@ -85,9 +102,13 @@ export function ReelsModal({ current, onWatchFull }: any) {
         style={{ background:"hsl(var(--primary))", color:"hsl(var(--primary-text))"}}
         onClick={handleClick}
       >
+        {isGuest && (
+          <span className="guest-lock-icon" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 14, height: 14, lineHeight: 0, overflow: "hidden", verticalAlign: "middle", marginRight: 6, flexShrink: 0, transform: "translateY(-1px)" }}>
+            <Padlock size={14} />
+          </span>
+        )}
         ▶ Watch Full Movie
       </button>
     </div>
   )
 }
-
