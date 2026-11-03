@@ -12,7 +12,6 @@ import {
   useIsGuest,
   isGuestUser,
   openSignInModal,
-  GuestLockBadge,
 } from "@/app/auth-system/movie-locker-if-guest"
 import "./movie-card-continue-watching.css"
 
@@ -30,7 +29,7 @@ export default function MovieCard({
   const { openDrawer } = useWatchDrawer() as any
   const { openReels } = useReelsDrawer() as any
 
-  // GUEST GATE: reactive for UI (padlock / LOCKED label)
+  // GUEST GATE: reactive for UI (small padlock next to PLAY if guest)
   const isGuest = useIsGuest()
 
   const movedRef = useRef(false)
@@ -135,10 +134,10 @@ export default function MovieCard({
   const openMovie = (type: "full" | "preview" = "full") => {
     if (movedRef.current) return
 
-    // GUEST GATE: lock everything - card click, PLAY, PRE, RESUME, REPLAY
-    // Fresh read from localStorage (not stale hook closure), so it works
-    // even if guest just signed in / out. No addRecent, no drawer, no router.
-    if (isGuestUser()) {
+    // GUEST GATE: guests can PREVIEW, but cannot watch FULL movie.
+    // Only gate "full". "preview" / PRE always passes through.
+    // Fresh read from localStorage (not stale hook closure).
+    if (type === "full" && isGuestUser()) {
       openSignInModal()
       return
     }
@@ -254,9 +253,6 @@ export default function MovieCard({
 
         <div className="l-card-fade" />
 
-        {/* GUEST GATE: padlock badge on poster if guest */}
-        <GuestLockBadge />
-
         {/* FIXED: Only show for Continue row */}
         {showAsContinue && (
           <div className="ug-progress-track">
@@ -277,14 +273,12 @@ export default function MovieCard({
             className="l-a-btn play on"
             onClick={openYT}
           >
-           {isGuest ? (
-              <>
-                <span className="lock-icon-wrap" style={{ display: "inline-grid", placeItems: "center" }}>
-                  <Padlock size={18} />
-                </span>
-                LOCKED
-              </>
-            ) : showAsContinue ? (
+           {isGuest && (
+              <span className="guest-lock-icon" style={{ display: "inline-flex", alignItems: "center", marginRight: 4 }}>
+                <Padlock size={12} />
+              </span>
+            )}
+            {showAsContinue ? (
               isFullyWatched ? (
                 <>
                   <span className="replay-icon-wrap">
@@ -305,7 +299,7 @@ export default function MovieCard({
             className="l-a-btn prev on"
             onClick={openPreview}
           >
-            {isGuest ? "LOCKED" : "PRE"}
+            PRE
           </button>
         </div>
       </div>
