@@ -256,6 +256,13 @@ const toggleFullscreen = useCallback(async () => {
 
   try {
     if (!isFullScreen) {
+      // YOUTUBE WAY: lock BEFORE fullscreen, so it rotates once smoothly
+      try { if (isNative) await CapOrientation?.lock?.({ orientation: 'landscape' }) } catch {}
+      try { if (screen.orientation && (screen.orientation as any).lock) { await (screen.orientation as any).lock('landscape') } } catch {}
+
+      // Small delay lets rotation start before fullscreen - no snap
+      await new Promise(r => setTimeout(r, 50))
+
       if (!shouldUseConnectPlayer) {
         if (video.webkitEnterFullscreen) {
           video.webkitEnterFullscreen()
@@ -265,8 +272,6 @@ const toggleFullscreen = useCallback(async () => {
           await root.requestFullscreen({ navigationUI: "hide" } as any)
         }
       } else {
-        try { if (isNative) await CapOrientation?.unlock?.() } catch {}
-        try { await (screen.orientation as any)?.unlock?.() } catch {}
         try {
           if (root.requestFullscreen) {
             await root.requestFullscreen({ navigationUI: "hide" } as any)
@@ -274,8 +279,6 @@ const toggleFullscreen = useCallback(async () => {
             await (root as any).webkitRequestFullscreen()
           }
         } catch {}
-        try { if (isNative) await CapOrientation?.lock?.({ orientation: 'landscape' }) } catch {}
-        try { if (screen.orientation && (screen.orientation as any).lock) { await (screen.orientation as any).lock('landscape') } } catch {}
       }
       setIsFullScreen(true)
       onFsChange?.(true)
@@ -291,8 +294,9 @@ const toggleFullscreen = useCallback(async () => {
       onFsChange?.(false)
       document.documentElement.classList.remove('is-fullscreen-active')
       document.body.style.overflow = ''
-      try { if (isNative) await CapOrientation?.lock?.({ orientation: 'portrait' }) } catch {}
-      try { if (screen.orientation && (screen.orientation as any).lock) { await (screen.orientation as any).lock('portrait') } } catch {}
+      // Unlock AFTER exit, not before
+      try { if (isNative) await CapOrientation?.unlock?.() } catch {}
+      try { if (screen.orientation && (screen.orientation as any).unlock) { await (screen.orientation as any).unlock() } } catch {}
     }
   } catch {
     setIsFullScreen(v=>!v)
@@ -536,7 +540,7 @@ useEffect(() => { setSharedSelectedQuality(quality); }, [quality, setSharedSelec
 
           <div className="film-center"><div className="center-cover">
             <video
-              key={`${movie.id}-${quality}-${activeEp?.id || 'default'}-${videoFit}`}
+key={`${movie.id}-${quality}-${activeEp?.id || 'default'}`}
               ref={videoRef} src={videoUrl} className={`connect-video ${videoFit}`}
               style={{ objectFit: videoFit as any, width:'100%', height:'100%', background:'#000' }}
               onLoadStart={()=>setIsLoading(true)} onWaiting={()=>setIsLoading(true)} onCanPlay={()=>setIsLoading(false)}

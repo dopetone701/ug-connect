@@ -1254,3 +1254,18 @@ html, body {
   position: relative !important;
   z-index: 10001 !important;
 }
+
+
+/* SMOOTH ROTATE LIKE YOUTUBE - NO BLINK */
+.film-root, .film-giant, .center-cover, .connect-video {
+  transition: width 0.35s ease, height 0.35s ease, transform 0.35s ease !important;
+  will-change: width, height, transform !important;
+  backface-visibility: hidden !important;
+  background: #000 !important;
+}
+
+.film-root.is-shell-full {
+  width: 100vw !important;
+  height: 100dvh !important;
+  background: #000 !important;
+}
