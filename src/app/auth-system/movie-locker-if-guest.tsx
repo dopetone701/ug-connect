@@ -1,7 +1,39 @@
- "use client";
+"use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { PadlockIcon } from "@/modal-generator/svg-icons/padlock-icon";
+import Padlock from "@/modal-generator/svg-icons/padlock-icon";
+
+// --- Scaled wrapper for your Padlock (it is fixed at 100px, div-based) ---
+// size = desired px in the button / badge. 100 is Padlock's native width.
+function ScaledPadlock({ size = 22 }: { size?: number }) {
+  const scale = size / 100;
+  return (
+    <span
+      style={{
+        width: size,
+        height: size * 1.3, // shackle + body = ~130px tall at 100px wide
+        display: "grid",
+        placeItems: "center",
+        overflow: "hidden",
+        flexShrink: 0,
+      }}
+    >
+      <span
+        style={{
+          transform: `scale(${scale})`,
+          transformOrigin: "center center",
+          // counter the 50px auto margin inside Padlock
+          margin: "-50px 0",
+          display: "block",
+          width: 100,
+          height: 130,
+        }}
+      >
+        <Padlock />
+      </span>
+    </span>
+  );
+}
 
 // --- 1. Guest check - matches your guest-user-account.tsx keys ---
 export function isGuestUser(): boolean {
@@ -10,12 +42,10 @@ export function isGuestUser(): boolean {
     const raw = localStorage.getItem("ug_user");
     if (raw) {
       const u = JSON.parse(raw);
-      // expired guest = treat as guest (force sign-in)
       if (u.isGuest) return true;
       if (u.expiresAt && Date.now() > u.expiresAt) return true;
       return false;
     }
-    // fallback to your old flags
     if (localStorage.getItem("ug_guest") === "1") return true;
     const id = localStorage.getItem("ug_guest_id") || "";
     if (id.startsWith("gst_")) return true;
@@ -27,7 +57,6 @@ export function isGuestUser(): boolean {
 
 export function useIsGuest() {
   const [isGuest, setIsGuest] = useState(false);
-
   const refresh = useCallback(() => setIsGuest(isGuestUser()), []);
 
   useEffect(() => {
@@ -46,12 +75,8 @@ export function useIsGuest() {
 }
 
 // --- 2. Open your existing sign-in modal ---
-// Replace this with however your app already opens it.
-// If you already have a global event, use that. Otherwise this fallback works:
 export function openSignInModal() {
   window.dispatchEvent(new CustomEvent("ug-open-signin"));
-  // If your sign-in is in src/app/auth-system/sign-in.tsx and uses a store/context,
-  // call that here instead, e.g. setShowSignIn(true)
 }
 
 // --- 3. Gate helper for any onPlay handler ---
@@ -82,19 +107,12 @@ export function LockedPlayButton({ onPlay, className, size = 22 }: LockedPlayBut
       onClick={() => gatePlayIfGuest(onPlay)}
       style={{ position: "relative", display: "grid", placeItems: "center" }}
     >
-      {isGuest ? (
-        // YOUR padlock icon - swap props to match its actual export
-        // If it takes className only, use <PadlockIcon className="..." />
-        <PadlockIcon width={size} height={size} />
-      ) : (
-        // your normal play icon - keep what you already use
-        <span>▶</span>
-      )}
+      {isGuest ? <ScaledPadlock size={size} /> : <span>▶</span>}
     </button>
   );
 }
 
-// --- 5. Optional: small lock badge to overlay on card poster ---
+// --- 5. Small lock badge to overlay on card poster ---
 export function GuestLockBadge({ size = 16 }: { size?: number }) {
   const isGuest = useIsGuest();
   if (!isGuest) return null;
@@ -113,7 +131,7 @@ export function GuestLockBadge({ size = 16 }: { size?: number }) {
         backdropFilter: "blur(4px)",
       }}
     >
-      <PadlockIcon width={size} height={size} />
+      <ScaledPadlock size={size} />
     </span>
   );
 }
