@@ -3,38 +3,6 @@
 import { useEffect, useState, useCallback } from "react";
 import Padlock from "@/modal-generator/svg-icons/padlock-icon";
 
-// --- Scaled wrapper for your Padlock (it is fixed at 100px, div-based) ---
-// size = desired px in the button / badge. 100 is Padlock's native width.
-function ScaledPadlock({ size = 22 }: { size?: number }) {
-  const scale = size / 100;
-  return (
-    <span
-      style={{
-        width: size,
-        height: size * 1.3, // shackle + body = ~130px tall at 100px wide
-        display: "grid",
-        placeItems: "center",
-        overflow: "hidden",
-        flexShrink: 0,
-      }}
-    >
-      <span
-        style={{
-          transform: `scale(${scale})`,
-          transformOrigin: "center center",
-          // counter the 50px auto margin inside Padlock
-          margin: "-50px 0",
-          display: "block",
-          width: 100,
-          height: 130,
-        }}
-      >
-        <Padlock />
-      </span>
-    </span>
-  );
-}
-
 // --- 1. Guest check - matches your guest-user-account.tsx keys ---
 export function isGuestUser(): boolean {
   if (typeof window === "undefined") return false;
@@ -58,7 +26,6 @@ export function isGuestUser(): boolean {
 export function useIsGuest() {
   const [isGuest, setIsGuest] = useState(false);
   const refresh = useCallback(() => setIsGuest(isGuestUser()), []);
-
   useEffect(() => {
     refresh();
     window.addEventListener("ug-auth-changed", refresh);
@@ -70,7 +37,6 @@ export function useIsGuest() {
       window.removeEventListener("storage", refresh);
     };
   }, [refresh]);
-
   return isGuest;
 }
 
@@ -79,14 +45,16 @@ export function openSignInModal() {
   window.dispatchEvent(new CustomEvent("ug-open-signin"));
 }
 
-// --- 3. Gate helper for any onPlay handler ---
+// --- 3. Gate helper for FULL movie only ---
+// Guests CAN preview, they CANNOT watch full. So only gate "full".
+// Preview ("pre") must never call this.
 export function gatePlayIfGuest(onPlay: () => void): boolean {
   if (isGuestUser()) {
     openSignInModal();
-    return false; // blocked
+    return false;
   }
   onPlay();
-  return true; // allowed
+  return true;
 }
 
 // --- 4. Drop-in Locked Play Button for movie cards ---
@@ -98,7 +66,6 @@ type LockedPlayButtonProps = {
 
 export function LockedPlayButton({ onPlay, className, size = 22 }: LockedPlayButtonProps) {
   const isGuest = useIsGuest();
-
   return (
     <button
       type="button"
@@ -107,7 +74,7 @@ export function LockedPlayButton({ onPlay, className, size = 22 }: LockedPlayBut
       onClick={() => gatePlayIfGuest(onPlay)}
       style={{ position: "relative", display: "grid", placeItems: "center" }}
     >
-      {isGuest ? <ScaledPadlock size={size} /> : <span>▶</span>}
+      {isGuest ? <Padlock size={size} /> : <span>▶</span>}
     </button>
   );
 }
@@ -129,9 +96,10 @@ export function GuestLockBadge({ size = 16 }: { size?: number }) {
         borderRadius: 999,
         background: "rgba(0,0,0,0.65)",
         backdropFilter: "blur(4px)",
+        zIndex: 2,
       }}
     >
-      <ScaledPadlock size={size} />
+      <Padlock size={size} />
     </span>
   );
 }
