@@ -64,7 +64,7 @@ type LockedPlayButtonProps = {
   size?: number;
 };
 
-export function LockedPlayButton({ onPlay, className, size = 22 }: LockedPlayButtonProps) {
+export function LockedPlayButton({ onPlay, className, size = 9 }: LockedPlayButtonProps) {
   const isGuest = useIsGuest();
   return (
     <button
@@ -80,7 +80,7 @@ export function LockedPlayButton({ onPlay, className, size = 22 }: LockedPlayBut
 }
 
 // --- 5. Small lock badge to overlay on card poster ---
-export function GuestLockBadge({ size = 16 }: { size?: number }) {
+export function GuestLockBadge({ size = 9 }: { size?: number }) {
   const isGuest = useIsGuest();
   if (!isGuest) return null;
   return (
