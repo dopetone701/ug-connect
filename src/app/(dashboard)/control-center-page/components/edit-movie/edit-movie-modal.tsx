@@ -17,6 +17,7 @@ import { useEditMovieUpload } from "./hooks/use-edit-movie-upload";
 
 import { uploadToR2 } from "./lib/upload-to-r2";
 import { updateMovie, fetchMovieById } from "./lib/update-movie";
+import { syncMovieCast } from "../create-movie/actor-dna";
 
 import {
   uploadSeasonsForEdit,
@@ -468,13 +469,19 @@ export default function EditMovieModal({
         country: selectedCategory,
       };
 
-      await updateMovie(selected.id, payload);
+           await updateMovie(selected.id, payload);
+
+      // ACTOR DNA SYNC - runs AFTER movie saved, never blocks save
+      try {
+        await syncMovieCast(selected.id, finalCast);
+      } catch (e) { console.warn("actor DNA sync skipped", e); }
 
       alert(
         `Updated successfully. ID ${safeId(selected.id)}. ` +
         `Category: ${selectedCategory}. ` +
         `Global previews: ${finalPreviewKeys.length}.`
       );
+
 
       onClose();
       onUpdated?.();

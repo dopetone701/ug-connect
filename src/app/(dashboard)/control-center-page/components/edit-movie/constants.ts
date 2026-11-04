@@ -1,10 +1,22 @@
 // edit-movie/constants.ts - mirrors create-movie/constants.ts
+// FIXED: added Actor DNA API base (D1 + R2) — was missing, so Edit could never call /actors?search=
 
 export const WORKER_URL = "https://movie-creation-portal-api.connectu89.workers.dev";
 export const API_BASE = "https://movie-server-api.connectu89.workers.dev";
 export const API_URL = `${API_BASE}/api/movies`;
 export const R2_BASE = `${API_BASE}/r2`;
 export const FALLBACK = "/movie.jpg";
+
+// [STRIPPED 77 bytes] Actor DNA API — R2 photos + D1 actors (NOT Google Drive)
+// [STRIPPED 77 bytes] This is the ONLY base the actor picker must use.
+export const ACTOR_API_BASE = "https://actor-dna-api.connectu89.workers.dev";
+export const ACTOR_PREFIX = "actors/dna/";
+
+export const MAX_ACTORS = 5;
+
+export function generateShortId(): string {
+  return Math.random().toString(36).slice(2, 10);
+}
 
 export const CHUNK_SIZE = 5 * 1024 * 1024; // 5MB - iPhone safe
 export const SINGLE_LIMIT = 90 * 1024 * 1024; // 90MB
@@ -103,6 +115,14 @@ export function getR2Url(k?: string | null): string {
   return `${R2_BASE}/${k.replace(/^\//, "")}`;
 }
 
+// [STRIPPED 77 bytes] Actor photo helper — same logic as getR2Url, but explicit for actors
+// [STRIPPED 75 bytes]
+export function getActorPhotoUrl(photoKeyOrUrl?: string | null): string {
+  if (!photoKeyOrUrl) return "";
+  if (photoKeyOrUrl.startsWith("http") || photoKeyOrUrl.startsWith("blob:")) return photoKeyOrUrl;
+  return `${R2_BASE}/${photoKeyOrUrl.replace(/^\//, "")}`;
+}
+
 type MovieRecord = {
   main_url?: string | null;
   video_url?: string | null;
@@ -113,7 +133,7 @@ type MovieRecord = {
 export function getRawKey(m: MovieRecord, field: string): string | null {
   const rawField = `${field}_raw`;
   let v: string | null = null;
- 
+
   if (m[rawField] && typeof m[rawField] === "string") v = m[rawField] as string;
   else if (m[field] && typeof m[field] === "string") v = m[field] as string;
   else if (m.main_url) v = m.main_url;

@@ -1,12 +1,26 @@
 "use client";
+import { useEffect, useMemo, useState } from "react";
 
-function parseCastFromMovie(movie: any): { name: string; photo: string | null }[] {
+// [STRIPPED 77 bytes] Actor DNA — truth is D1 actors.photo_url (R2), NOT movie row.
+// [STRIPPED 75 bytes] Watch page used to show only movie.cast[].photo (stale).
+// Now: show movie photo instantly, then upgrade to D1 photo if D1 has one.
+// So if you re-upload Sarah's headshot in Edit, Watch page shows the new photo
+// without you having to re-save the movie.
+const ACTOR_API_BASE = "https://actor-dna-api.connectu89.workers.dev";
+
+const norm = (s: string) =>
+  String(s || "").trim().toLowerCase().normalize("NFKD").replace(/\s+/g, " ").replace(/[^\p{L}\p{N}\s]/gu, "").trim();
+
+type CastItem = { name: string; photo: string | null; actorId?: string | null };
+
+function parseCastFromMovie(movie: any): CastItem[] {
   if (Array.isArray(movie?.cast) && movie.cast.length > 0) {
-   return movie.cast.slice(0, 5).map((c: any) => {
+    return movie.cast.slice(0, 5).map((c: any) => {
       if (typeof c === "string") return { name: c, photo: null };
       return {
         name: c?.name || c?.actor || c?.fullName || String(c),
-        photo: c?.photo || c?.image || c?.avatar || c?.profile_path || c?.headshot || null,
+        photo: c?.photo || c?.photoUrl || c?.photo_url || c?.image || c?.avatar || c?.profile_path || c?.headshot || null,
+        actorId: c?.actorId || c?.actor_id || null,
       };
     });
   }
@@ -15,15 +29,47 @@ function parseCastFromMovie(movie: any): { name: string; photo: string | null }[
   try {
     const parsed = JSON.parse(rawActors);
     if (Array.isArray(parsed)) {
-          return parsed.slice(0, 5).map((c: any) => typeof c === "string" ? { name: c, photo: null } : { name: c?.name || String(c), photo: c?.photo || null });
+      return parsed.slice(0, 5).map((c: any) => typeof c === "string" ? { name: c, photo: null } : { name: c?.name || String(c), photo: c?.photo || c?.photoUrl || null });
     }
   } catch {}
   return rawActors.split(",").map((a: string) => a.trim()).filter(Boolean).slice(0, 5).map((name) => ({ name, photo: null }));
+}
 
+// [STRIPPED 77 bytes] SYNC TRUE ACTOR — reuse, don't duplicate
+// For each name: GET /actors?search=name&limit=3, take EXACT normalized match only.
+// If D1 has a photo, use it. If D1 has no photo, keep movie photo (don't blank it).
+// If no D1 actor at all, keep movie photo as-is.
+async function hydrateFromDNA(cast: CastItem[]): Promise<CastItem[]> {
+  if (!cast.length) return cast;
+  return Promise.all(cast.map(async (m) => {
+    try {
+      const res = await fetch(`${ACTOR_API_BASE}/actors?search=${encodeURIComponent(m.name)}&limit=3`);
+      if (!res.ok) return m;
+      const data = await res.json().catch(() => null);
+      const list: any[] = Array.isArray(data) ? data : data?.actors || data?.data || [];
+      const hit = list.find((a) => norm(a?.name || "") === norm(m.name));
+      if (!hit) return m;
+      const actorPhoto = hit.photo || hit.photo_url || hit.photoUrl || null;
+      return { ...m, actorId: hit.id || m.actorId || null, photo: actorPhoto || m.photo || null };
+    } catch { return m; }
+  }));
 }
 
 export default function VideoMetaInfo({ movie, descExpanded, setDescExpanded }: any) {
-  const cast = parseCastFromMovie(movie);
+  const baseCast = useMemo(() => parseCastFromMovie(movie), [movie]);
+  const [cast, setCast] = useState<CastItem[]>(baseCast);
+
+  // Show movie cast instantly, then upgrade to true D1 photo in background
+  useEffect(() => {
+    setCast(parseCastFromMovie(movie));
+    let cancelled = false;
+    hydrateFromDNA(parseCastFromMovie(movie)).then((hydrated) => {
+      if (!cancelled) setCast(hydrated);
+    });
+    return () => { cancelled = true; };
+    // Re-run when movie changes (different watch page). movie is the whole row.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [movie?.id, movie?.cast, movie?.actors]);
 
   return (
     <div className="connect-desc-block">
@@ -49,12 +95,19 @@ export default function VideoMetaInfo({ movie, descExpanded, setDescExpanded }: 
           <div className="c-cast-list">
             {cast.map((m, i) => {
               const initial = m.name.charAt(0).toUpperCase();
+              // Photo may be R2 key ("actors/dna/...") or https url — if it's a key, it still
+              // works if your movie server serves /r2/. If it 404s, D1 photo (https) will have replaced it above.
+              const src = m.photo && (m.photo.startsWith("http") || m.photo.startsWith("blob:") || m.photo.startsWith("data:"))
+                ? m.photo
+                : m.photo
+                ? `https://movie-server-api.connectu89.workers.dev/r2/${m.photo.replace(/^\/+/, "")}`
+                : null;
               return (
-                <div key={`${m.name}-${i}`} className="c-cast-item" title={m.name}>
+                <div key={`${m.actorId || m.name}-${i}`} className="c-cast-item" title={m.name}>
                   <div className="c-cast-avatar">
-                    {m.photo ? (
+                    {src ? (
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img src={m.photo} alt={m.name} className="c-cast-img" />
+                      <img src={src} alt={m.name} className="c-cast-img" onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />
                     ) : (
                       <span className="c-cast-fallback">{initial}</span>
                     )}
@@ -135,9 +188,6 @@ export default function VideoMetaInfo({ movie, descExpanded, setDescExpanded }: 
     text-overflow: ellipsis;
   }
 `}</style>
-
-
-
     </div>
   );
 }

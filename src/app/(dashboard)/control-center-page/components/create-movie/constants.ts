@@ -3,6 +3,8 @@
 export const WORKER_URL =
   "https://movie-creation-portal-api.connectu89.workers.dev";
 
+export const ACTOR_API_BASE = "https://actor-dna-api.connectu89.workers.dev";
+
 export const R2_BASE = "https://pub-your-r2-public-url.r2.dev"; // change to your R2 public URL
 
 export const CHUNK_SIZE = 5 * 1024 * 1024; // 5MB - iPhone safe

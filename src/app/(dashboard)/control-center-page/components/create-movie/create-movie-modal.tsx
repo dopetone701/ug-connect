@@ -14,6 +14,8 @@ import {
   uploadHeadshot,
 } from "./lib/upload-movie";
 import { saveMovie } from "./lib/save-movie";
+import { syncMovieCast } from "./actor-dna";
+
 import MovieDetailsFields from "./parts/movie-details-fields";
 import SingleMovieUploads from "./parts/single-movie-uploads";
 import SeriesSection from "./parts/series-section";
@@ -147,9 +149,23 @@ export default function CreateMovieModal({ open, onClose, onCreated }: Props) {
         payload.seasons = uploadedSeasons;
       }
 
-      await saveMovie(payload);
+           await saveMovie(payload);
+
+      // ACTOR DNA SYNC - does NOT touch movies table, only creates actor links
+      try {
+        // Find the new movie ID by title (creation worker generates ID server-side)
+        const res = await fetch(`https://movie-server-api.connectu89.workers.dev/api/movies?search=${encodeURIComponent(payload.title)}`);
+        const data = await res.json().catch(()=>null);
+        const list = Array.isArray(data) ? data : data?.movies || data?.data || [];
+        // Find exact match by title + year
+        const found = list.find((m: any) => m.title?.trim() === payload.title.trim() && Number(m.year) === payload.year) || list[0];
+        if (found?.id) {
+          await syncMovieCast(found.id, cast);
+        }
+      } catch (e) { console.warn("actor DNA sync skipped", e); }
 
       alert(`✅ Uploaded - ${globalPreviewKeys.length} global previews + Category: ${category}`);
+
       resetAll();
       form.resetForm();
       setCategory("");
