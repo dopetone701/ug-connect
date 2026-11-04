@@ -3,6 +3,12 @@ import "./episodes-row.css";
 import { useRouter, usePathname } from "next/navigation";
 import { useState, useRef, useCallback, useMemo, useEffect } from "react";
 import DotsMenu from "./dots-menu";
+import Padlock from "@/modal-generator/svg-icons/padlock-icon";
+import {
+  useIsGuest,
+  isGuestUser,
+  openSignInModal,
+} from "../../../../auth-system/movie-locker-if-guest";
 
 type Props = { movie:any; activeEpId?:string|null; onSelect?:(ep:any)=>void };
 
@@ -13,6 +19,9 @@ export default function EpisodesRow({ movie, activeEpId, onSelect }: Props){
   const [pagesToRender, setPagesToRender] = useState(2);
   const [currentPage, setCurrentPage] = useState(0);
   const [isMobile, setIsMobile] = useState(true);
+
+  // GUEST GATE: reactive for UI (small padlock next to episode title if guest)
+  const isGuest = useIsGuest();
 
   useEffect(()=>{
     const check = ()=> setIsMobile(window.innerWidth <= 768);
@@ -91,6 +100,13 @@ export default function EpisodesRow({ movie, activeEpId, onSelect }: Props){
                   const isActive = String(activeEpId) === String(row.id) || String(activeEpId) === String(row.episode_number);
                   const num = row.episode_number || pageIdx*PAGE + i + 1;
                   const go = ()=> {
+                    // GUEST GATE: episodes play FULL (?t=full).
+                    // Guests cannot watch full episodes -> sign-in modal, return.
+                    // Fresh read, no stale closure.
+                    if (isGuestUser()) {
+                      openSignInModal();
+                      return;
+                    }
                     if(onSelect) onSelect(row);
                     else router.push(`${pathname}?t=full&ep=${row.id}`);
                   };
@@ -101,7 +117,14 @@ export default function EpisodesRow({ movie, activeEpId, onSelect }: Props){
                         <div className="ep-row-badge">{String(num)}</div>
                       </div>
                       <div className="ep-row-info">
-                        <div className="ep-row-title">{row.title || `Episode ${num}`}</div>
+                        <div className="ep-row-title">
+                          {isGuest && (
+                            <span className="guest-lock-icon" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 11, height: 11, lineHeight: 0, overflow: "hidden", verticalAlign: "middle", marginRight: 5, flexShrink: 0, transform: "translateY(-1px)" }}>
+                              <Padlock size={11} />
+                            </span>
+                          )}
+                          {row.title || `Episode ${num}`}
+                        </div>
                         <div className="ep-row-sub">{isActive ? "▶ Now Playing" : row._seasonName}</div>
                       </div>
 
@@ -129,3 +152,4 @@ export default function EpisodesRow({ movie, activeEpId, onSelect }: Props){
     </div>
   );
 }
+
