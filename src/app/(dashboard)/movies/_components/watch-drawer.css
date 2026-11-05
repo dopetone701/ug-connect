@@ -851,3 +851,32 @@ pointer-events: auto !important;
 
 .watch-drawer-root.is-mini .connect-actions-slot { display: none !important; }
 
+
+
+/* LANDSCAPE DRAWER OVERFLOW — must be last, beats overflow:visible above */
+@media (max-width: 1024px) and (orientation: landscape) {
+  .watch-drawer-root.open:not(.is-mini) .watch-drawer-panel {
+    overflow-x: hidden !important;
+  }
+  .watch-drawer-root.open:not(.is-mini) .watch-drawer-content,
+  .watch-drawer-root.open:not(.is-mini) .connect-root:not(.is-shell-full),
+  .watch-drawer-root.open:not(.is-mini) .connect-scroll-area,
+  .watch-drawer-root.open:not(.is-mini) .connect-under-section,
+  .watch-drawer-root.open:not(.is-mini) .episodes-row,
+  .watch-drawer-root.open:not(.is-mini) .similar-movies {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    overflow-x: hidden !important;
+    box-sizing: border-box !important;
+  }
+  /* flex children need min-width:0 or they refuse to shrink */
+  .watch-drawer-root.open:not(.is-mini) .connect-scroll-area > *,
+  .watch-drawer-root.open:not(.is-mini) .connect-under-section > * {
+    min-width: 0 !important;
+    max-width: 100% !important;
+  }
+  .watch-drawer-root.open:not(.is-mini) .episodes-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
