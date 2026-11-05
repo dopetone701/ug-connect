@@ -183,10 +183,11 @@
  }
 }
 /* BREAK OUT OF GLOBAL PADDING - EDGE TO EDGE ONLY HERO */
-@media(max-width:768px){
+@media(max-width:768px) and (orientation: portrait){
   .film-root{
     width: 100vw;
     margin-left: calc(-50vw + 50%);
+
     padding-left: 0 !important;
     padding-right: 0 !important;
   }
@@ -315,3 +316,31 @@
   }
 }
 
+
+
+
+/* LANDSCAPE — cancel the portrait breakout, no 100vw shift */
+@media(max-width:768px) and (orientation: landscape){
+  .film-root{
+    width: 100% !important;
+    margin-left: 0 !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    overflow-x: hidden !important;
+    max-width: 100% !important;
+  }
+  .film-giant{
+    width: 100% !important;
+    max-width: 100% !important;
+    min-height: 0 !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+  .strip-wrap,
+  .film-center{
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-left: 0 !important;
+  }
+  .gblob{ display: none !important; }
+}
