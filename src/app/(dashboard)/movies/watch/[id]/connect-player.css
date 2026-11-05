@@ -1265,3 +1265,42 @@ html, body {
   will-change: transform !important;
   backface-visibility: hidden !important;
 }
+
+
+
+/* LANDSCAPE — connect-player overflow fix, must be last */
+@media (max-width: 1024px) and (orientation: landscape) {
+  .connect-root,
+  .connect-root .connect-actions-slot,
+  .connect-root .connect-scroll-area,
+  .connect-root .connect-under-section,
+  .connect-root .details-panel.under-player,
+  .connect-root .similar-slot,
+  .connect-root .sim-root,
+  .connect-root .latest-root {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    overflow-x: hidden !important;
+    box-sizing: border-box !important;
+  }
+  .connect-root .connect-under-section {
+    padding: 14px 12px 0 12px !important;
+  }
+  .connect-root .connect-action-row {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+  }
+  .connect-root .connect-scroll-area > *,
+  .connect-root .connect-under-section > * {
+    min-width: 0 !important;
+    max-width: 100% !important;
+  }
+  .connect-root .details-panel.under-player {
+    width: calc(100% - 24px) !important;
+    margin: 14px 12px 0 12px !important;
+  }
+}
