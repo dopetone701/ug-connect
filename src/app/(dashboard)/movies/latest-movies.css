@@ -4,23 +4,14 @@
 .latest-see{font-size:10px;font-weight:800;letter-spacing:.08em;color:hsl(var(--text-muted));background:transparent;border:none;cursor:pointer}
 .latest-track-wrap{position:relative;width:100%;overflow:visible;background:transparent}
 .latest-track{
-  display:flex;gap:8px;overflow-x:auto;overflow-y:hidden;
+  display:flex;gap:8px;
   padding:2px 12px 6px 12px;
-  -webkit-overflow-scrolling:touch;
-  scrollbar-width:none;
-  -ms-overflow-style:none;
-  touch-action:pan-x pan-y;
-  overscroll-behavior-x:contain;
-  scroll-behavior:auto;
-  scroll-snap-type:none;
-  cursor:grab;
   background:transparent;
 }
-.latest-track::-webkit-scrollbar{display:none}
-.latest-track.is-dragging{cursor:grabbing;user-select:none}
+/* REMOVED from here: overflow-x, overflow-y, -webkit-overflow-scrolling, scrollbar-width, -ms-overflow-style, touch-action, overscroll-behavior-x, scroll-behavior, scroll-snap-type, cursor:grab, .is-dragging */
 
 /* STARZPLAY EXACT - 6px */
-.latest-card{flex:0 0 auto;width:158px;display:flex;flex-direction:column;gap:0;background:transparent;border:none;border-radius:6px;overflow:visible;scroll-snap-align:none !important}
+.latest-card{flex:0 0 auto;width:158px;display:flex;flex-direction:column;gap:0;background:transparent;border:none;border-radius:6px;overflow:visible}
 
 .l-card-cover{position:relative;width:100%;aspect-ratio:2/3;border-radius:6px;overflow:hidden;background:hsl(var(--surface));border:1px solid hsl(var(--border));isolation:isolate}
 .l-card-cover img{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none;-webkit-user-drag:none}
@@ -39,6 +30,3 @@
   .latest-track{padding:2px 12px 4px 12px;gap:8px}
   .latest-card{width:calc((100vw - 12px - 12px - 16px) / 3.2);min-width:0}
 }
-
-
-

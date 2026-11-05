@@ -1,0 +1,24 @@
+/* noon-scroll.css — INDEPENDENT, exactly like Mini Series .series-track */
+/* No JS. Browser handles smooth scroll + soft rubber-band natively. */
+
+.noon-scroll{
+  display:flex;
+  overflow-x:auto;
+  overflow-y:hidden;
+  padding:0 14px 10px;
+  scroll-snap-type:x mandatory;
+  scrollbar-width:none;
+  -ms-overflow-style:none;
+  -webkit-overflow-scrolling:touch;
+  overscroll-behavior-x:auto;
+  touch-action:pan-x pan-y;
+}
+
+.noon-scroll::-webkit-scrollbar{
+  display:none;
+}
+
+.noon-scroll > *{
+  scroll-snap-align:start;
+  flex-shrink:0;
+}
