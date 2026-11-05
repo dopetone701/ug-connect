@@ -8,7 +8,7 @@ export const GENRES = [
   { id: "all", label: "All", img: "/genre-filter-images/rango-all.PNG", fallback: "A" },
   { id: "action", label: "Action", img: "/genre-filter-images/action.JPG" },
   { id: "adventure", label: "Adventure", img: "/genre-filter-images/adventure.JPG" },
-  { id: "animations", label: "Animation", img: "/genre-filter-images/animations.jpg" },
+  { id: "animation", label: "Animation", img: "/genre-filter-images/animations.jpg" },
   { id: "cartoon", label: "Cartoon", img: "/genre-filter-images/cartoon.WEBP" },
   { id: "comedy", label: "Comedy", img: "/genre-filter-images/comedy.webp" },
   { id: "crime", label: "Crime", img: "/genre-filter-images/crime.PNG" },

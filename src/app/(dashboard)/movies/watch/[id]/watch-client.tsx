@@ -6,6 +6,8 @@ import { useParams, useSearchParams, useRouter, usePathname } from "next/navigat
 import "../../movies.css"
 import "./connect-player.css"
 import "./mobile-preview.css"
+import { useZoomToCover } from "./zoom-to-cover"
+
 
 import SimilarMovies from "./similar-movies"
 import EpisodesRow from "./episodes-row"
@@ -105,7 +107,7 @@ export default function WatchPage({
   const [mounted, setMounted] = useState(false)
   const [isFullScreen, setIsFullScreen] = useState(false)
   const [quality, setQuality] = useState("auto")
-  const [videoFit, setVideoFit] = useState<'contain'|'cover'>('contain')
+ const { videoFit, setVideoFit, toggleZoom } = useZoomToCover(videoRef)
   const [bufferedProgress, setBufferedProgress] = useState(0)
   const [isMobile, setIsMobile] = useState(true)
   const [isLoading, setIsLoading] = useState(true)
@@ -632,7 +634,7 @@ key={`${movie.id}-${quality}-${activeEp?.id || 'default'}`}
                 if(lastTimeRef.current) vid.currentTime=lastTimeRef.current
               }}
               onClick={(e)=> { e.stopPropagation(); (handleFilmClick as any)(e); }}
-              onDoubleClick={()=> setVideoFit(v=> v==='contain' ? 'cover' : 'contain')}
+             onDoubleClick={toggleZoom}
               playsInline loop={isPreview} preload="auto" muted
               onEnded={handleEnded}
               autoPlay={autoPlayOn}

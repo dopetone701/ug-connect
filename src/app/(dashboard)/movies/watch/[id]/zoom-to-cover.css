@@ -1,24 +1,33 @@
-/* beats every object-fit: contain !important in your CSS */
-.connect-root .connect-video.cover,
-.watch-drawer-root .connect-root .connect-video.cover,
-.watch-drawer-root.open:not(.is-mini) .connect-root:not(.is-shell-full) .connect-video.cover {
+/* zoom-to-cover.css — ONLY owner that can turn contain -> cover */
+/* No pan, no scale, no extra zoom. Just object-fit toggle, soft. */
+
+/* Base — video always has soft transition, no snap */
+.connect-video {
+  transition: object-fit 0.01s, transform 0.35s ease !important;
+}
+
+/* COVER — must beat every contain !important in connect-player.css + watch-drawer.css */
+.connect-video.is-zoom-cover,
+.connect-root .connect-video.is-zoom-cover,
+.connect-root.is-shell-full .connect-video.is-zoom-cover,
+.watch-drawer-root .connect-video.is-zoom-cover,
+.watch-drawer-root.open:not(.is-mini) .connect-video.is-zoom-cover,
+.watch-drawer-root.open:not(.is-mini) .connect-root:not(.is-shell-full) .connect-video.is-zoom-cover {
   object-fit: cover !important;
+  object-position: center center !important;
+  animation: zoom-cover-soft 0.35s ease !important;
 }
 
-.zoom-to-cover-hint {
-  position: absolute;
-  left: 50%;
-  top: 14%;
-  transform: translateX(-50%);
-  z-index: 10005;
-  padding: 6px 14px;
-  border-radius: 999px;
-  background: rgba(0, 0, 0, 0.62);
-  color: #fff;
-  font-size: 12px;
-  font-weight: 600;
-  pointer-events: none;
-  white-space: nowrap;
+/* Soft, not magnet — tiny breathe so it doesn't snap */
+@keyframes zoom-cover-soft {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.03); }
+  100% { transform: scale(1); }
 }
 
-
+/* Mini-player NEVER zooms — stays contain */
+.watch-drawer-root.is-mini .connect-video.is-zoom-cover,
+.connect-root.is-mini-player .connect-video.is-zoom-cover {
+  object-fit: contain !important;
+  animation: none !important;
+}
