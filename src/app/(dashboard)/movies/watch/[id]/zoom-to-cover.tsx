@@ -1,9 +1,7 @@
 // zoom-to-cover.tsx — ONE owner for pinch-to-cover
-// Pinch out = cover, Pinch in = contain, Double-tap = toggle
+// LANDSCAPE ONLY — pinch out = cover, pinch in = contain, double-tap = toggle
+// Portrait = always contain. Turn to portrait = auto exit cover.
 // No pan, no extra zoom levels, no scale.
-// Pinch listens on .center-cover (video.parentElement), NOT on <video>
-// PlayerOverlay sits on top of <video> with inset:0 + zIndex 9999,
-// so video never gets touchstart. Touches bubble to .center-cover.
 import "./zoom-to-cover.css";
 import { useCallback, useEffect, useRef, useState } from "react";
 
@@ -12,7 +10,17 @@ export function useZoomToCover(videoRef: React.RefObject<HTMLVideoElement | null
   const fitRef = useRef(videoFit);
   fitRef.current = videoFit;
 
+  const isLandscape = () => {
+    if (typeof window === "undefined") return false;
+    return window.innerWidth > window.innerHeight;
+  };
+
   const toggleZoom = useCallback(() => {
+    // Portrait: never go to cover, always back to normal
+    if (!isLandscape()) {
+      setVideoFit("contain");
+      return;
+    }
     setVideoFit((v) => (v === "contain" ? "cover" : "contain"));
   }, []);
 
@@ -23,13 +31,26 @@ export function useZoomToCover(videoRef: React.RefObject<HTMLVideoElement | null
     video.classList.toggle("is-zoom-cover", videoFit === "cover");
   }, [videoFit, videoRef]);
 
-  // Pinch only — 2 fingers on .center-cover, nothing else
+  // AUTO EXIT: turn to portrait -> back to contain
+  useEffect(() => {
+    const onResize = () => {
+      if (!isLandscape() && fitRef.current === "cover") {
+        setVideoFit("contain");
+      }
+    };
+    window.addEventListener("resize", onResize);
+    window.addEventListener("orientationchange", onResize);
+    return () => {
+      window.removeEventListener("resize", onResize);
+      window.removeEventListener("orientationchange", onResize);
+    };
+  }, []);
+
+  // Pinch only — 2 fingers on .center-cover, landscape only
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
 
-    // FIX for red targets: no .closest() — video.parentElement IS .center-cover
-    // and is already typed as HTMLElement, so no Element vs HTMLElement error.
     const target: HTMLElement | null = video.parentElement;
     if (!target) return;
 
@@ -41,6 +62,8 @@ export function useZoomToCover(videoRef: React.RefObject<HTMLVideoElement | null
       Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY);
 
     const onTouchStart = (e: TouchEvent) => {
+      // Portrait: pinch does nothing
+      if (!isLandscape()) return;
       if (e.touches.length !== 2) return;
       // Don't start pinch on controls — play / seek / fullscreen / cast
       const el = e.target as HTMLElement | null;
@@ -51,6 +74,12 @@ export function useZoomToCover(videoRef: React.RefObject<HTMLVideoElement | null
 
     const onTouchMove = (e: TouchEvent) => {
       if (!pinching || e.touches.length !== 2) return;
+      // If user rotated mid-pinch, bail and exit cover
+      if (!isLandscape()) {
+        pinching = false;
+        if (fitRef.current === "cover") setVideoFit("contain");
+        return;
+      }
       const cur = dist(e.touches[0], e.touches[1]);
       const delta = cur - startDist;
       // Pinch OUT -> cover, Pinch IN -> contain, back to normal
