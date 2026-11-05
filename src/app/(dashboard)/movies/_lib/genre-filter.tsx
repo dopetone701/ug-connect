@@ -64,7 +64,7 @@ export default function GenreFilter({ onSelect }: Props) {
 
   return (
     <div className="genre-root">
-      <div className="genre-track" ref={trackRef}>
+      <div className="genre-track noon-scroll" ref={trackRef}>
         {GENRES.map((g) => (
           <button
             key={g.id}

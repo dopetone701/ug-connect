@@ -8,17 +8,11 @@
 .genre-track {
   display: flex;
   gap: 14px;
-  overflow-x: auto;
-  overflow-y: hidden;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-  cursor: grab;
-  user-select: none;
-  touch-action: pan-y;
   padding: 6px 2px 10px 2px;
+  background: transparent;
+  /* NO scroll logic here — noon-scroll.css owns it all */
+  /* REMOVED: overflow-x, overflow-y, scrollbar-width, -ms-overflow-style, cursor:grab, user-select:none, touch-action:pan-y, .dragging, ::-webkit-scrollbar */
 }
-.genre-track::-webkit-scrollbar { display: none; }
-.genre-track.dragging { cursor: grabbing; }
 
 .genre-card {
   flex: 0 0 auto;
@@ -43,7 +37,8 @@
   transition: border-color 0.2s, transform 0.2s;
 }
 
-.genre-card.on.genre-circle {
+/* FIXED: was .genre-card.on.genre-circle — never matched, missing space */
+.genre-card.on .genre-circle {
   border-color: #ff2a2a;
   transform: scale(1.06);
 }
@@ -76,7 +71,8 @@
   white-space: nowrap;
 }
 
-.genre-card.on.genre-label {
+/* FIXED: was .genre-card.on.genre-label — never matched, missing space */
+.genre-card.on .genre-label {
   opacity: 1;
   font-weight: 800;
   color: #ff2a2a;
