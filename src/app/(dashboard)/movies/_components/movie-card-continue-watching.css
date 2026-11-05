@@ -1,8 +1,9 @@
-/* movie-card-continue-watching.css - FORCE VISIBLE */
+/* movie-card-continue-watching.css - FIXED: keep radius clipping */
 
 .l-card-cover {
   position: relative !important;
-  overflow: visible !important;
+  overflow: hidden !important; /* was visible — visible killed top border-radius */
+  border-radius: 6px !important; /* force same as bottom */
 }
 
 .ug-progress-track {
@@ -26,8 +27,6 @@
   display: block !important;
   transition: width 0.4s ease !important;
 }
-
-
 
 /* REPLAY ICON — preserve original button height */
 .replay-icon-wrap {
@@ -59,8 +58,6 @@
   white-space: nowrap;
 }
 
-
-
 .replay-icon-wrap svg {
   display: block;
   width: 12px;
@@ -77,7 +74,3 @@
 .l-a-btn.play.on .replay-icon-wrap {
   white-space: nowrap;
 }
-
-
-
-

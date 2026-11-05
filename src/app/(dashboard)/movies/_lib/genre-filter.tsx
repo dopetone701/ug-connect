@@ -90,4 +90,3 @@ export default function GenreFilter({ onSelect }: Props) {
     </div>
   );
 }
-
