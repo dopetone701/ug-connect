@@ -3,6 +3,7 @@ import { useRef, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import "../../latest-movies.css";
 import "./similar-movies.css";
+import { attachNoonScroll } from "../../_lib/noon-scroll";
 import { useMovieStore } from "../../../../../stores/use-movie-store";
 import { useWatchDrawer } from "@/stores/use-watch-drawer";
 import { useReelsDrawer } from "@/stores/use-reels-drawer";
@@ -29,6 +30,8 @@ export default function SimilarMovies({ current }: { current: Movie }) {
   const [movies, setMovies] = useState<Movie[]>([]);
   const trackRef = useRef<HTMLDivElement>(null);
   const dragRef = useRef(false);
+  const startXRef = useRef(0);
+  const startYRef = useRef(0);
   const router = useRouter();
   const { addRecent } = useMovieStore();
   const { openDrawer, closeDrawer } = useWatchDrawer();
@@ -53,6 +56,30 @@ export default function SimilarMovies({ current }: { current: Movie }) {
         setMovies(list.slice(0, 12));
       });
   }, [current]);
+
+  // NOON-SCROLL — same as Mini Series, no custom drag/momentum
+  useEffect(() => {
+    if (!trackRef.current) return;
+    const cleanup = attachNoonScroll(trackRef.current);
+    return cleanup;
+  }, [movies]);
+
+  // Tap-vs-swipe guard only — NOT scroll logic
+  const onTrackPointerDown = (e: React.PointerEvent) => {
+    if ((e.target as HTMLElement).closest("button")) return;
+    dragRef.current = false;
+    startXRef.current = e.clientX;
+    startYRef.current = e.clientY;
+  };
+  const onTrackPointerMove = (e: React.PointerEvent) => {
+    if ((e.target as HTMLElement).closest("button")) return;
+    const dx = Math.abs(e.clientX - startXRef.current);
+    const dy = Math.abs(e.clientY - startYRef.current);
+    if (dx > 6 || dy > 6) dragRef.current = true;
+  };
+  const onTrackPointerUp = () => {
+    setTimeout(() => { dragRef.current = false; }, 100);
+  };
 
   const normalize = (x: any) => {
     const preview = x?.preview_urls?.[0] || x?.preview_url || x?.trailer_url || x?.video_preview_url || x?.preview;
@@ -136,94 +163,6 @@ export default function SimilarMovies({ current }: { current: Movie }) {
     useGlobalSearch.getState().setSection(q);
   };
 
-  useEffect(() => {
-    const el = trackRef.current;
-    if (!el) return;
-    let isDown = false,
-      startX = 0,
-      scrollStart = 0,
-      velocity = 0,
-      lastX = 0,
-      lastTime = 0,
-      raf = 0;
-    const kill = () => cancelAnimationFrame(raf);
-    const momentum = () => {
-      cancelAnimationFrame(raf);
-      const step = () => {
-        velocity *= 0.92;
-        if (Math.abs(velocity) < 0.5) return;
-        el.scrollLeft += velocity;
-        raf = requestAnimationFrame(step);
-      };
-      raf = requestAnimationFrame(step);
-    };
-    const down = (x: number) => {
-      kill();
-      isDown = true;
-      dragRef.current = false;
-      startX = x;
-      lastX = x;
-      scrollStart = el.scrollLeft;
-      lastTime = performance.now();
-      velocity = 0;
-      el.classList.add("is-dragging");
-    };
-    const move = (x: number, e?: Event) => {
-      if (!isDown) return;
-      const now = performance.now();
-      const dx = x - startX;
-      const dist = x - lastX;
-      const dt = now - lastTime || 16;
-      if (Math.abs(dx) > 3) dragRef.current = true;
-      if (dragRef.current) {
-        e?.preventDefault();
-        velocity = (dist / dt) * 16;
-        el.scrollLeft = scrollStart - dx;
-      }
-      lastX = x;
-      lastTime = now;
-    };
-    const up = () => {
-      if (!isDown) return;
-      isDown = false;
-      el.classList.remove("is-dragging");
-      if (Math.abs(velocity) > 2) {
-        velocity = -velocity;
-        momentum();
-      }
-      setTimeout(() => {
-        dragRef.current = false;
-      }, 80);
-    };
-    const md = (e: MouseEvent) => {
-      if ((e.target as HTMLElement).closest(".l-a-btn")) return;
-      down(e.pageX);
-    };
-    const mm = (e: MouseEvent) => move(e.pageX, e);
-    const mu = () => up();
-    const td = (e: TouchEvent) => {
-      if ((e.target as HTMLElement).closest(".l-a-btn")) return;
-      down(e.touches[0].pageX);
-    };
-    const tm = (e: TouchEvent) => move(e.touches[0].pageX, e);
-    const tu = () => up();
-    el.addEventListener("mousedown", md);
-    window.addEventListener("mousemove", mm as any);
-    window.addEventListener("mouseup", mu);
-    el.addEventListener("touchstart", td as any, { passive: true } as any);
-    el.addEventListener("touchmove", tm as any, { passive: false } as any);
-    el.addEventListener("touchend", tu as any, { passive: true } as any);
-    return () => {
-      cancelAnimationFrame(raf);
-      el.removeEventListener("mousedown", md);
-      window.removeEventListener("mousemove", mm as any);
-      window.removeEventListener("mouseup", mu);
-      el.removeEventListener("touchstart", td as any);
-      el.removeEventListener("touchmove", tm as any);
-      el.removeEventListener("touchend", tu as any);
-    };
-  }, [movies]);
-
   if (!movies.length) return null;
 
   return (
@@ -232,7 +171,13 @@ export default function SimilarMovies({ current }: { current: Movie }) {
         <h3 className="latest-title" onClick={seeAll}>More {current.genre || current.vj}</h3>
         <button className="latest-see" onClick={seeAll}>SEE ALL</button>
       </div>
-      <div className="latest-track" ref={trackRef}>
+      <div
+        className="latest-track noon-scroll"
+        ref={trackRef}
+        onPointerDown={onTrackPointerDown}
+        onPointerMove={onTrackPointerMove}
+        onPointerUp={onTrackPointerUp}
+      >
         {movies.map((m) => (
           <div key={m.id} className="latest-card" onClick={() => openMovie(m, "full")}>
             <div className="l-card-cover">
@@ -250,4 +195,3 @@ export default function SimilarMovies({ current }: { current: Movie }) {
     </div>
   );
 }
-

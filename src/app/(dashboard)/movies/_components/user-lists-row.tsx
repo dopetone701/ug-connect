@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useMovieStore } from "../../../../stores/use-movie-store";
 import "../latest-movies.css";
+import { attachNoonScroll } from "../_lib/noon-scroll";
 import { useWatchDrawer } from "@/stores/use-watch-drawer";
 import { useReelsDrawer } from "@/stores/use-reels-drawer";
 import { useGlobalSearch } from "@/stores/use-global-search";
@@ -23,12 +24,20 @@ function isMobileDevice() {
 export default function UserListsRow({ movies = [] }: Props) {
   const { lists, createList } = useMovieStore() as any;
   const router = useRouter();
+  const trackRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (lists.length === 0) {
       createList("my-list");
     }
   }, [lists.length, createList]);
+
+  // NOON-SCROLL — same as Mini Series
+  useEffect(() => {
+    if (!trackRef.current) return;
+    const cleanup = attachNoonScroll(trackRef.current);
+    return cleanup;
+  }, [movies]);
 
   const mainList = lists[0];
 
@@ -63,7 +72,7 @@ export default function UserListsRow({ movies = [] }: Props) {
           <button className="latest-see" onClick={handleSeeAll}>SEE ALL</button>
         </div>
         <div className="latest-track-wrap">
-          <div className="latest-track">
+          <div className="latest-track noon-scroll" ref={trackRef}>
             <div className="latest-card">
               <div className="l-card-cover" style={{ display: "flex", alignItems: "center", justifyContent: "center", background: "hsl(var(--surface))", borderRadius: 6 }}>
                 <span style={{ fontWeight: 900, fontSize: 13 }}>MY LIST</span>
@@ -88,7 +97,7 @@ export default function UserListsRow({ movies = [] }: Props) {
         </button>
       </div>
       <div className="latest-track-wrap">
-        <div className="latest-track">
+        <div className="latest-track noon-scroll" ref={trackRef}>
           {myMovies.length === 0 ? (
             <div className="latest-card">
               <div className="l-card-cover" style={{ display: "flex", flexDirection: "column", gap: 6, alignItems: "center", justifyContent: "center", background: "hsl(var(--surface))", borderRadius: 6 }}>
@@ -203,4 +212,3 @@ function ListMovieCard({ movie, allMovies }: { movie: any; allMovies: any[] }) {
     </div>
   );
 }
-

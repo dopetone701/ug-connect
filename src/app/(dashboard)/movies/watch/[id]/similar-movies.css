@@ -28,13 +28,11 @@
 .sim-track{
   display:flex;
   gap:12px;
-  overflow-x:auto;
   padding:4px 12px 16px;
-  scrollbar-width:none;
-  -webkit-overflow-scrolling:touch;
+  background:transparent;
+  /* NO scroll logic here — noon-scroll.css owns it */
+  /* REMOVED: overflow-x, scrollbar-width, -webkit-overflow-scrolling, ::-webkit-scrollbar */
 }
-
-.sim-track::-webkit-scrollbar{ display:none }
 
 .sim-card{
   flex:0 0 160px;
@@ -124,14 +122,3 @@
   font-weight:800;
   letter-spacing:.04em;
 }
-
-.latest-root,
-.sim-root{
-  background: hsl(var(--bg)) !important;
-  border-top: 1px solid hsl(var(--border)) !important; /* not black */
-  border-bottom: none !important;
-}
-
-/* if you want no line at all */
-.latest-root{ border: none !important; }
-.episodes-row, .film-episodes{ border-bottom: none !important; }
