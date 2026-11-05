@@ -1,6 +1,9 @@
 // zoom-to-cover.tsx — ONE owner for pinch-to-cover
 // Pinch out = cover, Pinch in = contain, Double-tap = toggle
 // No pan, no extra zoom levels, no scale.
+// Pinch listens on .center-cover (video.parentElement), NOT on <video>
+// PlayerOverlay sits on top of <video> with inset:0 + zIndex 9999,
+// so video never gets touchstart. Touches bubble to .center-cover.
 import "./zoom-to-cover.css";
 import { useCallback, useEffect, useRef, useState } from "react";
 
@@ -20,23 +23,30 @@ export function useZoomToCover(videoRef: React.RefObject<HTMLVideoElement | null
     video.classList.toggle("is-zoom-cover", videoFit === "cover");
   }, [videoFit, videoRef]);
 
-  // Pinch only — 2 fingers on video, nothing else
+  // Pinch only — 2 fingers on .center-cover, nothing else
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
+
+    // FIX for red targets: no .closest() — video.parentElement IS .center-cover
+    // and is already typed as HTMLElement, so no Element vs HTMLElement error.
+    const target: HTMLElement | null = video.parentElement;
+    if (!target) return;
 
     let pinching = false;
     let startDist = 0;
     const PINCH_THRESHOLD = 28; // px — must move this far to toggle, no accidental toggle
 
-    const dist = (t1: React.Touch | Touch, t2: React.Touch | Touch) =>
+    const dist = (t1: Touch, t2: Touch) =>
       Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY);
 
     const onTouchStart = (e: TouchEvent) => {
-      if (e.touches.length === 2) {
-        pinching = true;
-        startDist = dist(e.touches[0], e.touches[1]);
-      }
+      if (e.touches.length !== 2) return;
+      // Don't start pinch on controls — play / seek / fullscreen / cast
+      const el = e.target as HTMLElement | null;
+      if (el && el.closest("button, .cc-icon, .starz-progress, .quality-settings, [data-control]")) return;
+      pinching = true;
+      startDist = dist(e.touches[0], e.touches[1]);
     };
 
     const onTouchMove = (e: TouchEvent) => {
@@ -59,18 +69,20 @@ export function useZoomToCover(videoRef: React.RefObject<HTMLVideoElement | null
       if (e.touches.length < 2) pinching = false;
     };
 
-    video.addEventListener("touchstart", onTouchStart, { passive: true });
-    video.addEventListener("touchmove", onTouchMove, { passive: true });
-    video.addEventListener("touchend", onTouchEnd);
-    video.addEventListener("touchcancel", onTouchEnd);
+    target.addEventListener("touchstart", onTouchStart, { passive: true });
+    target.addEventListener("touchmove", onTouchMove, { passive: true });
+    target.addEventListener("touchend", onTouchEnd);
+    target.addEventListener("touchcancel", onTouchEnd);
     return () => {
-      video.removeEventListener("touchstart", onTouchStart);
-      video.removeEventListener("touchmove", onTouchMove);
-      video.removeEventListener("touchend", onTouchEnd);
-      video.removeEventListener("touchcancel", onTouchEnd);
+      target.removeEventListener("touchstart", onTouchStart);
+      target.removeEventListener("touchmove", onTouchMove);
+      target.removeEventListener("touchend", onTouchEnd);
+      target.removeEventListener("touchcancel", onTouchEnd);
     };
-   });
-
+    // No dep array on purpose — <video> has key={`${movie.id}-${quality}-${activeEp?.id}`}
+    // so React replaces the video element on episode/quality change.
+    // Re-running every render re-attaches to the new video / new .center-cover.
+  });
 
   return { videoFit, setVideoFit, toggleZoom };
 }
