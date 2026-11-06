@@ -1,5 +1,7 @@
 "use client";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
+import { useActorViewPanel } from "@/stores/use-actor-view-panel";
+
 
 // [STRIPPED 77 bytes] Actor DNA — truth is D1 actors.photo_url (R2), NOT movie row.
 // [STRIPPED 75 bytes] Watch page used to show only movie.cast[].photo (stale).
@@ -8,10 +10,13 @@ import { useEffect, useMemo, useState } from "react";
 // without you having to re-save the movie.
 const ACTOR_API_BASE = "https://actor-dna-api.connectu89.workers.dev";
 
+
 const norm = (s: string) =>
   String(s || "").trim().toLowerCase().normalize("NFKD").replace(/\s+/g, " ").replace(/[^\p{L}\p{N}\s]/gu, "").trim();
 
+
 type CastItem = { name: string; photo: string | null; actorId?: string | null };
+
 
 function parseCastFromMovie(movie: any): CastItem[] {
   if (Array.isArray(movie?.cast) && movie.cast.length > 0) {
@@ -35,6 +40,7 @@ function parseCastFromMovie(movie: any): CastItem[] {
   return rawActors.split(",").map((a: string) => a.trim()).filter(Boolean).slice(0, 5).map((name) => ({ name, photo: null }));
 }
 
+
 // [STRIPPED 77 bytes] SYNC TRUE ACTOR — reuse, don't duplicate
 // For each name: GET /actors?search=name&limit=3, take EXACT normalized match only.
 // If D1 has a photo, use it. If D1 has no photo, keep movie photo (don't blank it).
@@ -55,9 +61,29 @@ async function hydrateFromDNA(cast: CastItem[]): Promise<CastItem[]> {
   }));
 }
 
+
 export default function VideoMetaInfo({ movie, descExpanded, setDescExpanded }: any) {
   const baseCast = useMemo(() => parseCastFromMovie(movie), [movie]);
   const [cast, setCast] = useState<CastItem[]>(baseCast);
+  const openActorPanel = useActorViewPanel((s) => s.open);
+  const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const longPressedRef = useRef(false);
+
+
+  const startLongPress = (m: CastItem) => {
+    longPressedRef.current = false;
+    longPressTimer.current = setTimeout(() => {
+      longPressedRef.current = true;
+      openActorPanel({ actorId: m.actorId, name: m.name, photo: m.photo });
+    }, 500);
+  };
+
+
+  const cancelLongPress = () => {
+    if (longPressTimer.current) clearTimeout(longPressTimer.current);
+    longPressTimer.current = null;
+  };
+
 
   // Show movie cast instantly, then upgrade to true D1 photo in background
   useEffect(() => {
@@ -70,6 +96,7 @@ export default function VideoMetaInfo({ movie, descExpanded, setDescExpanded }: 
     // Re-run when movie changes (different watch page). movie is the whole row.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [movie?.id, movie?.cast, movie?.actors]);
+
 
   return (
     <div className="connect-desc-block">
@@ -89,6 +116,7 @@ export default function VideoMetaInfo({ movie, descExpanded, setDescExpanded }: 
         )}
       </div>
 
+
       {cast.length > 0 && (
         <div className="c-cast-row">
           <div className="c-cast-header">Cast</div>
@@ -103,7 +131,29 @@ export default function VideoMetaInfo({ movie, descExpanded, setDescExpanded }: 
                 ? `https://movie-server-api.connectu89.workers.dev/r2/${m.photo.replace(/^\/+/, "")}`
                 : null;
               return (
-                <div key={`${m.actorId || m.name}-${i}`} className="c-cast-item" title={m.name}>
+               <div
+                  key={`${m.actorId || m.name}-${i}`}
+                  className="c-cast-item"
+                  title={m.name}
+                  onPointerDown={(e) => {
+                    e.stopPropagation();
+                    startLongPress(m);
+                  }}
+                  onPointerUp={(e) => {
+                    e.stopPropagation();
+                    cancelLongPress();
+                  }}
+                  onPointerLeave={cancelLongPress}
+                  onPointerCancel={cancelLongPress}
+                  onContextMenu={(e) => e.preventDefault()}
+                  onClick={(e) => {
+                    if (longPressedRef.current) {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      longPressedRef.current = false;
+                    }
+                  }}
+                >
                   <div className="c-cast-avatar">
                     {src ? (
                       // eslint-disable-next-line @next/next/no-img-element
@@ -119,6 +169,7 @@ export default function VideoMetaInfo({ movie, descExpanded, setDescExpanded }: 
           </div>
         </div>
       )}
+
 
      <style jsx>{`
   .c-cast-header {

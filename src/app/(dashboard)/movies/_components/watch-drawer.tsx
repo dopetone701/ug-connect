@@ -3,6 +3,7 @@ import { useRouter } from "next/navigation";
 import { useWatchDrawer } from "@/stores/use-watch-drawer";
 import WatchClient from "../watch/[id]/watch-client";
 import { useMiniPlayerFloating } from "../_components/vid-actions/mini-player-floating-logic";
+import { ActorViewPanel } from "../_components/vid-meta-info/actor-view-panel";
 import "./watch-drawer.css";
 
 
@@ -11,9 +12,11 @@ function detectMobileDevice() {
   const isPhoneUA = /iPhone|iPod|Android.*Mobile|Windows Phone/i.test(navigator.userAgent || "");
   const isTouch = navigator.maxTouchPoints > 0;
   if (isPhoneUA) return true;
+  if (window.innerWidth <= 1024) return true;
   if (isTouch && window.innerWidth <= 1024) return true;
   return false;
 }
+
 
 
 export default function WatchDrawer(){
@@ -309,7 +312,7 @@ requestAnimationFrame(() => {
         onTouchEnd={onUp}
         onClickCapture={minimized? floating.onClickCapture : undefined}
       >
-        <div className="watch-drawer-content" onClick={()=>{
+              <div className="watch-drawer-content" onClick={()=>{
           if(!minimized) return;
           if(isExpanding) return;
           if(!showControls){ setShowControls(true); return; }
@@ -318,9 +321,11 @@ requestAnimationFrame(() => {
           <WatchClient id={movieId} isOverlay={true} onClose={handleClose} onExpand={handleSmoothExpand} isMini={minimized} isFullscreen={isFullscreen} onFsChange={setIsFullscreen} />
         </div>
       </div>
+      <ActorViewPanel />
     </div>
   )
 }
+
 
 
 

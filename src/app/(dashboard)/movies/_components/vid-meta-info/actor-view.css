@@ -1,0 +1,203 @@
+/* ============================================================
+   actor-view.css — FULL FILE
+   Panel shell (mirror of dots) + Portal overlay fix
+   + Body hero (image blends into bg) + MovieRow flush
+   Paste this as the WHOLE file, don't append to old one.
+   ============================================================ */
+
+/* ---------- 1. BACKDROP + PANEL SHELL ---------- */
+/* Portal renders this at document.body, so fixed = viewport again.
+   Must beat WatchDrawer stacking — hence 99999 / 100000. */
+.actor-view-backdrop {
+  position: fixed;
+  inset: 0;
+  background: hsla(var(--bg), 0.55);
+  background: rgba(0,0,0,0.55);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  z-index: 99999;
+  animation: actorViewFadeIn 0.2s ease;
+}
+
+.actor-view-panel {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: hsl(var(--bg));
+  border-top: 1px solid hsl(var(--border));
+  border-radius: 16px 16px 0 0;
+  z-index: 100000;
+  padding: 8px 0 calc(12px + env(safe-area-inset-bottom));
+  animation: actorViewSlideUp 0.32s cubic-bezier(0.16,1,0.3,1);
+  max-height: 88vh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  box-shadow: 0 -10px 40px hsla(var(--bg), 0.5);
+}
+.actor-view-panel::-webkit-scrollbar { display: none; }
+
+.actor-view-handle {
+  width: 36px;
+  height: 4px;
+  background: hsl(var(--border));
+  border-radius: 10px;
+  margin: 6px auto 12px;
+}
+
+.actor-view-group {
+  background: hsl(var(--surface));
+  border: 1px solid hsl(var(--border));
+  border-radius: 12px;
+  margin: 0 8px;
+  overflow: hidden;
+}
+
+/* ---------- 2. BODY ---------- */
+.actor-view-body {
+  padding: 0 0 8px;
+}
+
+/* MovieRow inside the panel: sit flush, no extra outer gap */
+.actor-view-body .latest-root {
+  margin-top: 6px;
+}
+
+/* ---------- 3. HERO — actor image blends into bg ---------- */
+.actor-view-hero {
+  position: relative;
+  width: 100%;
+  height: 220px;
+  overflow: hidden;
+  border-radius: 12px 12px 0 0;
+  margin-top: -8px;
+  background: hsl(var(--surface));
+}
+.actor-view-hero-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+  display: block;
+}
+.actor-view-hero-fallback {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 72px;
+  font-weight: 800;
+  color: hsl(var(--text));
+  text-transform: uppercase;
+  background: hsl(var(--surface-hover));
+}
+/* Blend: image fades into panel bg at the bottom */
+.actor-view-hero-fade {
+  position: absolute;
+  inset: auto 0 0 0;
+  height: 70%;
+  background: linear-gradient(to bottom, transparent 0%, hsl(var(--bg) / 0.2) 35%, hsl(var(--bg) / 0.85) 75%, hsl(var(--bg)) 100%);
+  pointer-events: none;
+}
+.actor-view-hero-text {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  bottom: 12px;
+}
+.actor-view-hero-name {
+  font-size: 24px;
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.2px;
+  color: hsl(var(--text));
+  text-transform: capitalize;
+}
+.actor-view-hero-count {
+  margin-top: 4px;
+  font-size: 13px;
+  color: hsl(var(--text-muted));
+}
+
+/* ---------- 4. ROW / CARDS (kept from your saved file) ---------- */
+/* The body now uses the app MovieRow/MovieCard, but these classes
+   are kept so nothing you already styled breaks. */
+.actor-view-row {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding: 14px 12px 4px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  -webkit-overflow-scrolling: touch;
+}
+.actor-view-row::-webkit-scrollbar { display: none; }
+.actor-view-card {
+  flex: 0 0 auto;
+  width: 104px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: transparent;
+  border: none;
+  padding: 0;
+  text-align: left;
+  cursor: pointer;
+}
+.actor-view-card-img-wrap {
+  width: 104px;
+  height: 156px;
+  border-radius: 10px;
+  overflow: hidden;
+  background: hsl(var(--surface-hover));
+  border: 1px solid hsl(var(--border));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.actor-view-card-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.actor-view-card-fallback {
+  font-size: 28px;
+  font-weight: 700;
+  color: hsl(var(--text));
+  text-transform: uppercase;
+}
+.actor-view-card-title {
+  font-size: 13px;
+  line-height: 1.2;
+  color: hsl(var(--text));
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-transform: capitalize;
+}
+.actor-view-card-meta {
+  font-size: 11px;
+  color: hsl(var(--text-muted));
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.actor-view-empty {
+  padding: 16px;
+  font-size: 14px;
+  color: hsl(var(--text-muted));
+}
+
+/* ---------- 5. ANIMATIONS ---------- */
+@keyframes actorViewSlideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+@keyframes actorViewFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
