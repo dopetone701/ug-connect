@@ -6,7 +6,6 @@ import { useState, useEffect, useCallback } from "react";
 import HeartIcon from "@/modal-generator/svg-icons/heart-icon";
 import ShareAtomIcon from "@/modal-generator/svg-icons/share-atom-icon";
 
-
 const WORKER_URL = "https://movie-actions-server-api.connectu89.workers.dev/heart";
 
 function getDeviceId() {
@@ -102,10 +101,45 @@ export default function UnderVideoStaBtns({
     router.push(`/movies/watch/${String(paramsId)}?t=full`);
   };
 
+  // FIXED SHARE: always shares the movie ID armed, not the current URL.
+  // Recipient lands on /movies/watch/<id>?t=preview with exact movie loaded.
+  // ?t=preview is used so guests can open it. Signed-in users tap "Watch Full Movie".
   const handleShare = async () => {
-    const url = window.location.href;
-    if (navigator.share) { try { await navigator.share({ title: movie.title, url }); } catch {} }
-    else { try { await navigator.clipboard.writeText(url); alert("Link copied!"); } catch {} }
+    const movieId = String(movie?.id ?? paramsId ?? "");
+    if (!movieId || movieId === "undefined" || movieId === "null") return;
+
+    const shareUrl = `${window.location.origin}/movies/watch/${movieId}?t=preview`;
+
+    const shareData = {
+      title: movie?.title || "Watch this movie",
+      text: `Watch ${movie?.title || "this movie"} on Connect`,
+      url: shareUrl,
+    };
+
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+        return;
+      } catch (err: any) {
+        if (err?.name === "AbortError") return;
+        // fall through to clipboard copy
+      }
+    }
+
+    try {
+      await navigator.clipboard.writeText(shareUrl);
+      alert("Link copied! Share it to open this exact movie.");
+    } catch {
+      const ta = document.createElement("textarea");
+      ta.value = shareUrl;
+      ta.style.position = "fixed";
+      ta.style.opacity = "0";
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand("copy"); } catch {}
+      document.body.removeChild(ta);
+      alert("Link copied!");
+    }
   };
 
   return (
@@ -151,4 +185,3 @@ export default function UnderVideoStaBtns({
     </div>
   );
 }
-
