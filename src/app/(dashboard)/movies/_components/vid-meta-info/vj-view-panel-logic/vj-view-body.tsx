@@ -1,10 +1,13 @@
 "use client"
 import { useMemo, useState } from "react"
-import { useRouter } from "next/navigation"
-import { useMovieStore } from "@/stores/use-movie-store"
+import { useGlobalSearch } from "@/stores/use-global-search"
 import { sloganForVJ } from "./use-vj-view-panel"
 import { VJCinematicName } from "./vj-pro-cinematic-font"
 import { VJWallet } from "./vj-wallet"
+// REUSE exact row — same as ActorViewBody does. Do NOT rebuild cards here.
+// Actor: import MovieRow from "../movie-row" (actor file is in vid-meta-info/)
+// VJ file is one folder deeper (vj-view-panel-logic/), so "../../movie-row"
+import MovieRow from "../../movie-row"
 
 const norm = (s: string) => String(s || "").trim().toLowerCase()
 
@@ -31,22 +34,24 @@ const FAQS = [
 ]
 
 export function VJViewBody({ vjId, vj, onClose }: { vjId: string; vj: any; onClose: () => void }) {
-  const router = useRouter()
   const [showFaq, setShowFaq] = useState(false)
   const [showTip, setShowTip] = useState(false)
   const [openFaq, setOpenFaq] = useState<number | null>(0)
 
+  // TRUE VJ — same source + same key as FadersTiles (useFaderData).
+  // Faders: vjs = Set( String(m.vj).trim().toLowerCase() ) from useGlobalSearch().allMovies
+  // Panel MUST use that exact list/key, not useMovieStore, not NFKD, not vjName.
   // FIX: getSnapshot loop — never return a new array from a Zustand selector.
-  const store = useMovieStore() as any
+  const store = useGlobalSearch() as any
   const allMovies: any[] = useMemo(() => {
-    const list = store?.movies || store?.allMovies || store?.list || []
+    const list = store?.allMovies || []
     return Array.isArray(list) ? list : []
-  }, [store?.movies, store?.allMovies, store?.list])
+  }, [store?.allMovies])
 
   const vjMovies = useMemo(() => {
-    const target = norm(vj?.name)
+    const target = String(vj?.name || "").trim().toLowerCase()
     if (!target) return []
-    return allMovies.filter((m: any) => norm(m?.vj) === target || norm(m?.vjName) === target)
+    return allMovies.filter((m: any) => String(m?.vj || "").trim().toLowerCase() === target)
   }, [allMovies, vj?.name])
 
   const slogan = sloganForVJ(vj?.name, vj?.slogan)
@@ -104,37 +109,21 @@ export function VJViewBody({ vjId, vj, onClose }: { vjId: string; vj: any; onClo
         <VJWallet vjName={vj?.name} onClose={() => setShowTip(false)} />
       )}
 
-      {/* MOVIES ROW — no "tap a movie" hint, no "no movies" text: every VJ here has movies */}
-      <div className="vj-movies-head">
-        <h3 className="vj-section-title">Movies by {vj?.name} <span className="vj-count-badge">{count}</span></h3>
-      </div>
-
-      <div className="vj-movie-row">
-        {vjMovies.map((m: any) => {
-          const poster = m.poster || m.thumbnail || m.image || m.cover || ""
-          const title = m.title || m.name || "Untitled"
-          return (
-            <button
-              key={String(m.id)}
-              type="button"
-              className="vj-movie-card"
-              onClick={() => { onClose(); router.push(`/movies/watch/${m.id}`) }}
-              onContextMenu={(e) => e.preventDefault()}
-              onDragStart={(e) => e.preventDefault()}
-            >
-              <span className="vj-movie-img-wrap">
-                {poster ? (
-                  <img src={poster} alt="" draggable={false} className="vj-movie-img" loading="lazy" />
-                ) : (
-                  <span className="vj-movie-fallback">{String(title).charAt(0)}</span>
-                )}
-              </span>
-              <span className="vj-movie-title">{title}</span>
-              <span className="vj-movie-meta">{m.year || ""} {m.genre ? `• ${m.genre}` : ""}</span>
-            </button>
-          )
-        })}
-      </div>
+      {/* 2. ROW BELOW — exact same pattern as ActorViewBody:
+          the app's own row + cards, not custom cards.
+          Actor: <div onClickCapture={() => onClose?.()}><MovieRow title={`${actor.name} movies`} movies={movies} /></div>
+          VJ: same, plus ONE guard actor doesn't need — tapping the VJ label INSIDE
+          a card must NOT close this panel (it would close + reopen the same VJ). */}
+      {vjMovies.length > 0 && (
+        <div
+          onClickCapture={(e) => {
+            if ((e.target as HTMLElement).closest(".l-card-vj-on")) return
+            onClose()
+          }}
+        >
+          <MovieRow title={`${vj?.name} movies`} movies={vjMovies} />
+        </div>
+      )}
       <div style={{ height: 12 }} />
     </div>
   )
