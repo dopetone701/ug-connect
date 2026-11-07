@@ -102,13 +102,14 @@ export default function UnderVideoStaBtns({
   };
 
   // FIXED SHARE: always shares the movie ID armed, not the current URL.
-  // Recipient lands on /movies/watch/<id>?t=preview with exact movie loaded.
+  // Recipient lands on /movies/watch?id=<id>&t=preview with exact movie loaded.
+  // ?id= format is REQUIRED on Cloudflare Pages static export - /movies/watch/[id] 404s unless pre-generated.
   // ?t=preview is used so guests can open it. Signed-in users tap "Watch Full Movie".
   const handleShare = async () => {
     const movieId = String(movie?.id ?? paramsId ?? "");
     if (!movieId || movieId === "undefined" || movieId === "null") return;
 
-    const shareUrl = `${window.location.origin}/movies/watch/${movieId}?t=preview`;
+    const shareUrl = `${window.location.origin}/movies?id=${movieId}&t=preview`; // drawer deep-link, NOT /movies/watch/[id] which 404s + has no drawer on mobile
 
     const shareData = {
       title: movie?.title || "Watch this movie",
