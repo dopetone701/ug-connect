@@ -1,6 +1,6 @@
 "use client"
 
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import {
   useEffect,
   useState,
@@ -26,7 +26,6 @@ import { useWatchDrawer } from "@/stores/use-watch-drawer"
 import { useReelsDrawer } from "@/stores/use-reels-drawer"
 import RefreshSpinner from "@/app/refresh-spinner"
 
-
 type ApiMovie = {
   id: any
   type?: string
@@ -49,9 +48,7 @@ type ApiMovie = {
   country?: string
 }
 
-
 const API_URL = "https://movie-server-api.connectu89.workers.dev/api/movies"
-
 const MOVIES_CACHE_KEY = "movies_home_cache_v1"
 const MOVIES_SCROLL_KEY = "movies_home_scroll_v1"
 
@@ -63,78 +60,27 @@ function isMobileDevice() {
   return false
 }
 
-function SwipeSafeButton({
-  children,
-  className,
-  onClick,
-  ...props
-}: React.ButtonHTMLAttributes<HTMLButtonElement>) {
+function SwipeSafeButton({ children, className, onClick, ...props }: React.ButtonHTMLAttributes<HTMLButtonElement>) {
   const movedRef = useRef(false)
   const startXRef = useRef(0)
   const startYRef = useRef(0)
-  const handlePointerDown = (e: React.PointerEvent<HTMLButtonElement>) => {
-    movedRef.current = false
-    startXRef.current = e.clientX
-    startYRef.current = e.clientY
-  }
-  const handlePointerMove = (e: React.PointerEvent<HTMLButtonElement>) => {
-    const dx = Math.abs(e.clientX - startXRef.current)
-    const dy = Math.abs(e.clientY - startYRef.current)
-    if (dx > 8 || dy > 8) movedRef.current = true
-  }
+  const handlePointerDown = (e: React.PointerEvent<HTMLButtonElement>) => { movedRef.current = false; startXRef.current = e.clientX; startYRef.current = e.clientY }
+  const handlePointerMove = (e: React.PointerEvent<HTMLButtonElement>) => { const dx = Math.abs(e.clientX - startXRef.current); const dy = Math.abs(e.clientY - startYRef.current); if (dx > 8 || dy > 8) movedRef.current = true }
   const handlePointerCancel = () => { movedRef.current = true }
-  const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-    if (movedRef.current) { e.preventDefault(); e.stopPropagation(); return }
-    onClick?.(e)
-  }
-  return (
-    <button
-      {...props}
-      className={className}
-      onPointerDown={handlePointerDown}
-      onPointerMove={handlePointerMove}
-      onPointerCancel={handlePointerCancel}
-      onClick={handleClick}
-    >
-      {children}
-    </button>
-  )
+  const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => { if (movedRef.current) { e.preventDefault(); e.stopPropagation(); return } onClick?.(e) }
+  return <button {...props} className={className} onPointerDown={handlePointerDown} onPointerMove={handlePointerMove} onPointerCancel={handlePointerCancel} onClick={handleClick}>{children}</button>
 }
 
-function StripCard({
-  movie,
-  onSelect,
-}: {
-  movie: LibMovie
-  onSelect: (movie: LibMovie) => void
-}) {
+function StripCard({ movie, onSelect }: { movie: LibMovie; onSelect: (movie: LibMovie) => void }) {
   const movedRef = useRef(false)
   const startXRef = useRef(0)
   const startYRef = useRef(0)
-  const handlePointerDown = (e: React.PointerEvent<HTMLButtonElement>) => {
-    movedRef.current = false
-    startXRef.current = e.clientX
-    startYRef.current = e.clientY
-  }
-  const handlePointerMove = (e: React.PointerEvent<HTMLButtonElement>) => {
-    const dx = Math.abs(e.clientX - startXRef.current)
-    const dy = Math.abs(e.clientY - startYRef.current)
-    if (dx > 8 || dy > 8) movedRef.current = true
-  }
+  const handlePointerDown = (e: React.PointerEvent<HTMLButtonElement>) => { movedRef.current = false; startXRef.current = e.clientX; startYRef.current = e.clientY }
+  const handlePointerMove = (e: React.PointerEvent<HTMLButtonElement>) => { const dx = Math.abs(e.clientX - startXRef.current); const dy = Math.abs(e.clientY - startYRef.current); if (dx > 8 || dy > 8) movedRef.current = true }
   const handlePointerCancel = () => { movedRef.current = true }
-  const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-    if (movedRef.current) { e.preventDefault(); e.stopPropagation(); return }
-    onSelect(movie)
-  }
+  const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => { if (movedRef.current) { e.preventDefault(); e.stopPropagation(); return } onSelect(movie) }
   return (
-    <button
-      type="button"
-      className="strip-card"
-      onPointerDown={handlePointerDown}
-      onPointerMove={handlePointerMove}
-      onPointerCancel={handlePointerCancel}
-      onClick={handleClick}
-    >
+    <button type="button" className="strip-card" onPointerDown={handlePointerDown} onPointerMove={handlePointerMove} onPointerCancel={handlePointerCancel} onClick={handleClick}>
       <img src={movie.cover} alt={movie.title} loading="lazy" decoding="async" draggable={false} />
     </button>
   )
@@ -151,58 +97,32 @@ export default function MoviesPage() {
   const pauseRef = useRef<number>(0)
   const playTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const addTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const deepLinkHandledRef = useRef<string | null>(null)
 
   const { favIds, recentIds, lists, createList } = useMovieStore() as any
   const store = useMovieStore() as any
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { openDrawer } = useWatchDrawer() as any
   const { openReels } = useReelsDrawer() as any
 
-  const mapMovies = useCallback(
-    (data: ApiMovie[]): LibMovie[] => {
-      return data.map((m) => ({
-        id: m.id,
-        title: m.title.toLowerCase(),
-        genre: m.genre,
-        vj: m.vj,
-        cover: m.cover_url,
-        desc: m.description,
-        video: m.video_url,
-        preview: m.preview_urls,
-        views: typeof m.views === "number" ? m.views : 0,
-        likes: typeof m.likes === "number" ? m.likes : 0,
-        isEditorsPick: m.is_editors_pick || false,
-        createdAt: m.created_at,
-               type: m.type || "Single",
-        year: m.year,
-        actors: m.actors,
-        seasons: m.seasons || [],
-        category: (m as any).category || "",
-        origin: (m as any).origin || (m as any).category || "",
-        country: (m as any).country || (m as any).category || "",
-      } as any))
-
-    },
-    []
-  )
+  const mapMovies = useCallback((data: ApiMovie[]): LibMovie[] => {
+    return data.map((m) => ({
+      id: m.id, title: m.title.toLowerCase(), genre: m.genre, vj: m.vj, cover: m.cover_url, desc: m.description, video: m.video_url, preview: m.preview_urls,
+      views: typeof m.views === "number" ? m.views : 0, likes: typeof m.likes === "number" ? m.likes : 0, isEditorsPick: m.is_editors_pick || false, createdAt: m.created_at,
+      type: m.type || "Single", year: m.year, actors: m.actors, seasons: m.seasons || [], category: (m as any).category || "", origin: (m as any).origin || (m as any).category || "", country: (m as any).country || (m as any).category || "",
+    } as any))
+  }, [])
 
   useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 768);
-    checkMobile();
-    window.addEventListener("resize", checkMobile);
+    const checkMobile = () => setIsMobile(window.innerWidth < 768)
+    checkMobile()
+    window.addEventListener("resize", checkMobile)
     let cancelled = false
     try {
       const cached = sessionStorage.getItem(MOVIES_CACHE_KEY)
-      if (cached) {
-        const parsed: LibMovie[] = JSON.parse(cached)
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          setAllMovies(parsed)
-          useGlobalSearch.getState().setAll(parsed)
-        }
-      }
-    } catch (error) {
-      console.warn("Failed to restore movie cache:", error)
-    }
+      if (cached) { const parsed: LibMovie[] = JSON.parse(cached); if (Array.isArray(parsed) && parsed.length > 0) { setAllMovies(parsed); useGlobalSearch.getState().setAll(parsed) } }
+    } catch (error) { console.warn("Failed to restore movie cache:", error) }
     async function load() {
       try {
         const res = await fetch(API_URL, { cache: "no-store" })
@@ -212,20 +132,11 @@ export default function MoviesPage() {
         const mapped = mapMovies(data)
         setAllMovies(mapped)
         useGlobalSearch.getState().setAll(mapped)
-        try {
-          sessionStorage.setItem(MOVIES_CACHE_KEY, JSON.stringify(mapped))
-        } catch (error) {
-          console.warn("Failed to cache movies:", error)
-        }
-      } catch (error) {
-        console.error("Failed to load movies:", error)
-      }
+        try { sessionStorage.setItem(MOVIES_CACHE_KEY, JSON.stringify(mapped)) } catch (error) { console.warn("Failed to cache movies:", error) }
+      } catch (error) { console.error("Failed to load movies:", error) }
     }
     load()
-    return () => {
-      cancelled = true
-      window.removeEventListener("resize", checkMobile);
-    }
+    return () => { cancelled = true; window.removeEventListener("resize", checkMobile) }
   }, [mapMovies])
 
   useEffect(() => {
@@ -237,81 +148,36 @@ export default function MoviesPage() {
         if (saved === null) return
         const y = Number(saved)
         if (!Number.isFinite(y)) return
-        requestAnimationFrame(() => {
-          if (cancelled) return
-          requestAnimationFrame(() => {
-            if (cancelled) return
-            window.scrollTo({ top: y, left: 0, behavior: "auto" })
-          })
-        })
+        requestAnimationFrame(() => { if (cancelled) return; requestAnimationFrame(() => { if (cancelled) return; window.scrollTo({ top: y, left: 0, behavior: "auto" }) }) })
       } catch {}
     }
     restoreHomeScroll()
     return () => { cancelled = true }
   }, [])
 
-  const saveHomeScroll = useCallback(() => {
-    try {
-      sessionStorage.setItem(MOVIES_SCROLL_KEY, String(window.scrollY))
-    } catch {}
-  }, [])
+  const saveHomeScroll = useCallback(() => { try { sessionStorage.setItem(MOVIES_SCROLL_KEY, String(window.scrollY)) } catch {} }, [])
 
   useEffect(() => {
     let timer: ReturnType<typeof setTimeout> | null = null
-    const handleScroll = () => {
-      if (timer) clearTimeout(timer)
-      timer = setTimeout(() => {
-        try {
-          sessionStorage.setItem(MOVIES_SCROLL_KEY, String(window.scrollY))
-        } catch {}
-      }, 80)
-    }
+    const handleScroll = () => { if (timer) clearTimeout(timer); timer = setTimeout(() => { try { sessionStorage.setItem(MOVIES_SCROLL_KEY, String(window.scrollY)) } catch {} }, 80) }
     window.addEventListener("scroll", handleScroll, { passive: true })
-    return () => {
-      window.removeEventListener("scroll", handleScroll)
-      if (timer) clearTimeout(timer)
-    }
+    return () => { window.removeEventListener("scroll", handleScroll); if (timer) clearTimeout(timer) }
   }, [])
 
   const movies = useMemo(() => allMovies.slice(0, 6), [allMovies])
 
-  useEffect(() => {
-    if (!movies.length) return
-    const t = setInterval(() => {
-      setActive((p) => (p + 1) % movies.length)
-    }, 30000)
-    return () => clearInterval(t)
-  }, [movies])
+  useEffect(() => { if (!movies.length) return; const t = setInterval(() => { setActive((p) => (p + 1) % movies.length) }, 30000); return () => clearInterval(t) }, [movies])
+  useEffect(() => { const t = setInterval(() => { if (Date.now() < pauseRef.current) return; setAnchor((p) => p === "full" ? "preview" : "full") }, 5000); return () => clearInterval(t) }, [])
 
-  useEffect(() => {
-    const t = setInterval(() => {
-      if (Date.now() < pauseRef.current) return
-      setAnchor((p) => p === "full" ? "preview" : "full")
-    }, 5000)
-    return () => clearInterval(t)
-  }, [])
-
-  const handleManualAnchor = (type: "full" | "preview") => {
-    setAnchor(type)
-    pauseRef.current = Date.now() + 20000
-  }
-
+  const handleManualAnchor = (type: "full" | "preview") => { setAnchor(type); pauseRef.current = Date.now() + 20000 }
   const m = movies[active]
-
   const isInMyList = useMemo(() => lists?.[0]?.movieIds?.includes(m?.id), [lists, m])
 
   const handleAddToList = useCallback(() => {
     if (!m) return
-    if (isInMyList) {
-      if (store.removeFromMyList) store.removeFromMyList(m.id)
-      else if (store.toggleListMovie) store.toggleListMovie("my-list", m.id)
-      return
-    }
+    if (isInMyList) { if (store.removeFromMyList) store.removeFromMyList(m.id); else if (store.toggleListMovie) store.toggleListMovie("my-list", m.id); return }
     let myList = lists?.[0]
-    if (!myList) {
-      createList("my-list")
-      myList = lists?.[0] || { id: "my-list" }
-    }
+    if (!myList) { createList("my-list"); myList = lists?.[0] || { id: "my-list" } }
     if (store.addMovieToList) store.addMovieToList(myList.id, m.id)
     else if (store.addToList) store.addToList(myList.id, m.id)
     else if (store.toggleListMovie) store.toggleListMovie(myList.id, m.id)
@@ -321,85 +187,85 @@ export default function MoviesPage() {
     addTimerRef.current = setTimeout(() => { setJustAdded(false) }, 1200)
   }, [m, lists, createList, store, isInMyList])
 
+  // ===== FIXED SHARE: drawer deep-link, NOT /movies/watch/[id] =====
+  // Mobile uses drawer, desktop uses page. So we share a link that lands on
+  // /movies (a REAL static page) and auto-opens the right drawer.
+  // Old: /movies/watch/${id}?t=... -> 404 on Cloudflare Pages + no drawer on mobile
+  // New: /movies?id=${id}&t=preview -> always loads, drawer opens on mobile
   const handleShare = useCallback(async () => {
     if (!m) return
-    const url = `${window.location.origin}` + `/movies/watch/${m.id}?t=${anchor}`
+    const url = `${window.location.origin}/movies?id=${m.id}&t=preview`
     if ((navigator as any).share) {
-      try { await (navigator as any).share({ title: m.title, url }) } catch {}
+      try { await (navigator as any).share({ title: m.title, text: `Watch ${m.title} on Connect`, url }) } catch {}
     } else {
-      try { await navigator.clipboard.writeText(url) } catch {}
+      try { await navigator.clipboard.writeText(url); alert("Link copied! Share it to open this exact movie.") } catch {}
     }
-  }, [m, anchor])
+  }, [m])
 
   const normalizeReels = (x: any) => {
     const preview = x.preview?.[0] || x.preview_urls?.[0] || x.preview || x.trailer_url
-    return {
-      ...x,
-      id: String(x.id),
-      cover: x.cover || x.cover_url,
-      cover_url: x.cover || x.cover_url,
-      video: x.video || x.video_url,
-      video_url: x.video || x.video_url,
-      preview_url: preview,
-      preview_urls: x.preview || x.preview_urls || (preview ? [preview] : []),
-      trailer_url: x.trailer_url || preview,
-    }
+    return { ...x, id: String(x.id), cover: x.cover || x.cover_url, cover_url: x.cover || x.cover_url, video: x.video || x.video_url, video_url: x.video || x.video_url, preview_url: preview, preview_urls: x.preview || x.preview_urls || (preview ? [preview] : []), trailer_url: x.trailer_url || preview }
   }
 
   const handlePlay = useCallback(() => {
     if (!m) return
     saveHomeScroll()
-
-    // MOBILE FIX: hero movie -> watch drawer, preview -> reels drawer
     if (isMobile) {
-      if (anchor === "preview") {
-        const list = movies.map(normalizeReels)
-        openReels(list, active)
-      } else {
-        openDrawer(String(m.id))
-      }
+      if (anchor === "preview") { const list = movies.map(normalizeReels); openReels(list, active) }
+      else { openDrawer(String(m.id)) }
       return
     }
-
-    // DESKTOP: keep original page push
     setClicking(true)
     if (playTimerRef.current) clearTimeout(playTimerRef.current)
     playTimerRef.current = setTimeout(() => { setClicking(false) }, 420)
     router.push(`/movies/watch/${m.id}?t=${anchor}`, { scroll: false })
   }, [m, anchor, router, saveHomeScroll, isMobile, movies, active, openDrawer, openReels])
 
+  // ===== DEEP-LINK HANDLER: /movies?id=XXX&t=preview|full =====
+  // This is what makes a shared link work. Runs AFTER movies load.
+  // Mobile: open drawer / reels (same as handlePlay). Desktop: push to watch page.
+  // Then clean URL to /movies so refresh doesn't re-open.
   useEffect(() => {
-    return () => {
-      if (playTimerRef.current) clearTimeout(playTimerRef.current)
-      if (addTimerRef.current) clearTimeout(addTimerRef.current)
+    if (!allMovies.length) return
+    const id = searchParams.get("id")
+    const t = searchParams.get("t") || "preview"
+    if (!id) return
+    if (deepLinkHandledRef.current === `${id}-${t}`) return
+    deepLinkHandledRef.current = `${id}-${t}`
+    const target = allMovies.find((x: any) => String(x.id) === String(id))
+    if (!target) return
+    // set hero to this movie so UI matches
+    const idx = movies.findIndex((x) => String(x.id) === String(id))
+    if (idx !== -1) setActive(idx)
+    const mobile = isMobileDevice()
+    if (mobile) {
+      if (t === "preview") {
+        const list = allMovies.map(normalizeReels)
+        const listIdx = list.findIndex((x: any) => String(x.id) === String(id))
+        setTimeout(() => openReels(list, listIdx >= 0 ? listIdx : 0), 350)
+      } else {
+        setTimeout(() => openDrawer(String(id), "full"), 350)
+      }
+    } else {
+      setTimeout(() => router.push(`/movies/watch/${id}?t=${t}`, { scroll: false }), 200)
     }
-  }, [])
+    // clean URL without reload
+    setTimeout(() => { try { window.history.replaceState(null, "", "/movies") } catch {} }, 800)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [allMovies, searchParams])
+
+  useEffect(() => { return () => { if (playTimerRef.current) clearTimeout(playTimerRef.current); if (addTimerRef.current) clearTimeout(addTimerRef.current) } }, [])
 
   const handleSeeAll = useCallback((value: string) => {
     try {
       let clean = (value || "").toLowerCase().trim()
       const s: any = useGlobalSearch.getState()
-      if (!clean || clean === "all") {
-        s.setQuery?.("")
-        s.setSection?.(null)
-        return
-      }
-      if (!clean.includes("movies") && clean.split(" ").length === 1) {
-        clean = `${clean} movies`
-      }
-      s.setQuery?.(clean)
-      s.setSection?.(clean)
-      s.openSearch?.()
-      if (s.setOpen) s.setOpen(true)
-      else if (s.setIsOpen) s.setIsOpen(true)
-      else if (s.openDrawer) s.openDrawer()
+      if (!clean || clean === "all") { s.setQuery?.(""); s.setSection?.(null); return }
+      if (!clean.includes("movies") && clean.split(" ").length === 1) { clean = `${clean} movies` }
+      s.setQuery?.(clean); s.setSection?.(clean); s.openSearch?.()
+      if (s.setOpen) s.setOpen(true); else if (s.setIsOpen) s.setIsOpen(true); else if (s.openDrawer) s.openDrawer()
       const mobile = isMobileDevice()
-      if (mobile) {
-        if (typeof window !== "undefined") {
-          window.dispatchEvent(new CustomEvent("ug-open-search-panel"))
-        }
-        return
-      }
+      if (mobile) { if (typeof window !== "undefined") { window.dispatchEvent(new CustomEvent("ug-open-search-panel")) } return }
       const param = encodeURIComponent(clean)
       router.push(`/search?q=${param}&filter=${param}&section=${param}`)
     } catch {}
@@ -408,172 +274,59 @@ export default function MoviesPage() {
   const handleStripSelect = useCallback((selectedMovie: LibMovie) => {
     const idx = movies.findIndex((x) => String(x.id) === String(selectedMovie.id))
     if (idx !== -1) setActive(idx)
-    else {
-      const fallback = movies.findIndex((x) => x.cover === selectedMovie.cover || x.title === selectedMovie.title)
-      if (fallback !== -1) setActive(fallback)
-    }
+    else { const fallback = movies.findIndex((x) => x.cover === selectedMovie.cover || x.title === selectedMovie.title); if (fallback !== -1) setActive(fallback) }
   }, [movies])
 
-    const sections = useMemo(() => getSections(allMovies, { favIds, recentIds }), [allMovies, favIds, recentIds])
-
+  const sections = useMemo(() => getSections(allMovies, { favIds, recentIds }), [allMovies, favIds, recentIds])
   const tvSeriesMovies = useMemo(() => allMovies.filter((x: any) => x.type === "Full"), [allMovies])
   const miniSeriesMovies = useMemo(() => allMovies.filter((x: any) => x.type === "Mini"), [allMovies])
-
-  // VJ BATTLE — grouped, 2+ VJs only, 1 never renders
-  // VJ BATTLE — grouped, 2+ VJs only, 1 never renders
   const battleGroups = useMemo(() => groupMoviesForBattle(allMovies), [allMovies])
   console.log("BATTLE GROUPS", battleGroups)
-    if (!allMovies.length) {
-    return (
-      <div className="film-root">
-        <div className="film-giant" style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>Loading latest...</div>
-      </div>
-    )
+  if (!allMovies.length) {
+    return (<div className="film-root"><div className="film-giant" style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>Loading latest...</div></div>)
   }
-
-     return (
+  return (
     <div className="film-root" id="film-root">
-      <RefreshSpinner 
-        targetId="film-root" 
-        contentClass="film-content-inner"
-        onRefresh={async () => {
-          window.location.reload();
-        }} 
-      />
+      <RefreshSpinner targetId="film-root" contentClass="film-content-inner" onRefresh={async () => { window.location.reload() }} />
       <div className="film-content-inner">
       <div className="film-giant">
-
-        <div className="film-bg">
-          <div className="gblob b1" />
-          <div className="gblob b2" />
-        </div>
-
-        <div className="strip-wrap upper full">
-          <div className="strip-track ltr">
-            {[...movies, ...movies, ...movies].map((x, i) => (
-              <StripCard key={`u-${i}-${x.id}`} movie={x} onSelect={handleStripSelect} />
-            ))}
-          </div>
-        </div>
-
+        <div className="film-bg"><div className="gblob b1" /><div className="gblob b2" /></div>
+        <div className="strip-wrap upper full"><div className="strip-track ltr">{[...movies, ...movies, ...movies].map((x, i) => (<StripCard key={`u-${i}-${x.id}`} movie={x} onSelect={handleStripSelect} />))}</div></div>
         <div className="film-center">
           <div className="center-cover" onClick={() => { if (isMobile) handlePlay() }} style={{ cursor: isMobile ? "pointer" : "default" }}>
             <img src={m.cover} alt={m.title} loading="eager" fetchPriority="high" decoding="async" />
             <div className="center-fade" />
-            <div className="center-top">
-              <span className="c-pill" style={{ cursor: "pointer" }} onClick={(e) => { e.stopPropagation(); handleSeeAll(m.genre)}}>{m.genre}</span>
-              <span className="c-pill muted" style={{ cursor: "pointer" }} onClick={(e) => { e.stopPropagation(); handleSeeAll(m.vj)}}>{m.vj}</span>
-            </div>
-            <div className="center-desc">
-              <div className="c-title" style={{ cursor: "pointer" }} onClick={(e) => { e.stopPropagation(); handleSeeAll(m.title)}}>{m.title}</div>
-              <div className="c-meta">{m.genre} • {m.vj}</div>
-              <div className="c-text">{m.desc}</div>
-            </div>
-
+            <div className="center-top"><span className="c-pill" style={{ cursor: "pointer" }} onClick={(e) => { e.stopPropagation(); handleSeeAll(m.genre)}}>{m.genre}</span><span className="c-pill muted" style={{ cursor: "pointer" }} onClick={(e) => { e.stopPropagation(); handleSeeAll(m.vj)}}>{m.vj}</span></div>
+            <div className="center-desc"><div className="c-title" style={{ cursor: "pointer" }} onClick={(e) => { e.stopPropagation(); handleSeeAll(m.title)}}>{m.title}</div><div className="c-meta">{m.genre} • {m.vj}</div><div className="c-text">{m.desc}</div></div>
             <div className="hero-corner-actions pc-only">
-              <SwipeSafeButton type="button" className={`hca-btn ${isInMyList ? "added" : ""} ${justAdded ? "pop" : ""}`} onClick={handleAddToList}>
-                {isInMyList ? (
-                  <><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M5 13l4 4L19 7" /></svg>ADDED</>
-                ) : (
-                  <><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 5v14M5 12h14" /></svg>MY LIST</>
-                )}
-              </SwipeSafeButton>
-              <SwipeSafeButton type="button" className="hca-btn" onClick={handleShare}>
-                <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" /><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4" /></svg>SHARE
-              </SwipeSafeButton>
+              <SwipeSafeButton type="button" className={`hca-btn ${isInMyList ? "added" : ""} ${justAdded ? "pop" : ""}`} onClick={handleAddToList}>{isInMyList ? (<><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M5 13l4 4L19 7" /></svg>ADDED</>) : (<><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 5v14M5 12h14" /></svg>MY LIST</>)}</SwipeSafeButton>
+              <SwipeSafeButton type="button" className="hca-btn" onClick={handleShare}><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" /><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4" /></svg>SHARE</SwipeSafeButton>
             </div>
-
-            <button type="button" className={`play-3d glass ${anchor} ${clicking ? "clicking" : ""}`} onClick={handlePlay} aria-label="play">
-              <span key={anchor} className={`play-smoke ${anchor}`} />
-              <span className="play-smoke-2" />
-              <span className="play-core">
-                <svg viewBox="0 0 24 24" className="play-tri" aria-hidden><path d="M8 5.8 L18 12 L8 18.2 Z" fill="white" /></svg>
-              </span>
-            </button>
+            <button type="button" className={`play-3d glass ${anchor} ${clicking ? "clicking" : ""}`} onClick={handlePlay} aria-label="play"><span key={anchor} className={`play-smoke ${anchor}`} /><span className="play-smoke-2" /><span className="play-core"><svg viewBox="0 0 24 24" className="play-tri" aria-hidden><path d="M8 5.8 L18 12 L8 18.2 Z" fill="white" /></svg></span></button>
           </div>
         </div>
-
-        <div className="strip-wrap lower full">
-          <div className="strip-track rtl">
-            {[...movies, ...movies, ...movies].reverse().map((x, i) => (
-              <StripCard key={`l-${i}-${x.id}`} movie={x} onSelect={handleStripSelect} />
-            ))}
-          </div>
-        </div>
-
+        <div className="strip-wrap lower full"><div className="strip-track rtl">{[...movies, ...movies, ...movies].reverse().map((x, i) => (<StripCard key={`l-${i}-${x.id}`} movie={x} onSelect={handleStripSelect} />))}</div></div>
         <div className="controls-row">
-          <div className="dots-wrap pc-only">
-            {movies.map((_, i) => (
-              <SwipeSafeButton key={i} type="button" className={`dot ${i === active ? "active" : ""}`} onClick={() => setActive(i)} />
-            ))}
-          </div>
-          <div className="anchor-btns pc-only">
-            <SwipeSafeButton type="button" className={`a-btn full ${anchor === "full" ? "on" : ""}`} onClick={() => handleManualAnchor("full")}>FULL MOVIE</SwipeSafeButton>
-            <SwipeSafeButton type="button" className={`a-btn prev ${anchor === "preview" ? "on" : ""}`} onClick={() => handleManualAnchor("preview")}>PREVIEW</SwipeSafeButton>
-          </div>
+          <div className="dots-wrap pc-only">{movies.map((_, i) => (<SwipeSafeButton key={i} type="button" className={`dot ${i === active ? "active" : ""}`} onClick={() => setActive(i)} />))}</div>
+          <div className="anchor-btns pc-only"><SwipeSafeButton type="button" className={`a-btn full ${anchor === "full" ? "on" : ""}`} onClick={() => handleManualAnchor("full")}>FULL MOVIE</SwipeSafeButton><SwipeSafeButton type="button" className={`a-btn prev ${anchor === "preview" ? "on" : ""}`} onClick={() => handleManualAnchor("preview")}>PREVIEW</SwipeSafeButton></div>
           <div className="mobile-same-line mobile-only">
-            <SwipeSafeButton type="button" className={`m-icon-btn left ${isInMyList ? "added" : ""} ${justAdded ? "pop" : ""}`} onClick={handleAddToList} aria-label="my list">
-              {isInMyList ? (
-                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M5 13l4 4L19 7" /></svg>
-              ) : (
-                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 5v14M5 12h14" /></svg>
-              )}
-            </SwipeSafeButton>
-            <div className="anchor-btns">
-              <SwipeSafeButton type="button" className={`a-btn full ${anchor === "full" ? "on" : ""}`} onClick={() => handleManualAnchor("full")}>FULL MOVIE</SwipeSafeButton>
-              <SwipeSafeButton type="button" className={`a-btn prev ${anchor === "preview" ? "on" : ""}`} onClick={() => handleManualAnchor("preview")}>PREVIEW</SwipeSafeButton>
-            </div>
-            <SwipeSafeButton type="button" className="m-icon-btn right" onClick={handleShare} aria-label="share">
-              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" /><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4" /></svg>
-            </SwipeSafeButton>
+            <SwipeSafeButton type="button" className={`m-icon-btn left ${isInMyList ? "added" : ""} ${justAdded ? "pop" : ""}`} onClick={handleAddToList} aria-label="my list">{isInMyList ? (<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M5 13l4 4L19 7" /></svg>) : (<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 5v14M5 12h14" /></svg>)}</SwipeSafeButton>
+            <div className="anchor-btns"><SwipeSafeButton type="button" className={`a-btn full ${anchor === "full" ? "on" : ""}`} onClick={() => handleManualAnchor("full")}>FULL MOVIE</SwipeSafeButton><SwipeSafeButton type="button" className={`a-btn prev ${anchor === "preview" ? "on" : ""}`} onClick={() => handleManualAnchor("preview")}>PREVIEW</SwipeSafeButton></div>
+            <SwipeSafeButton type="button" className="m-icon-btn right" onClick={handleShare} aria-label="share"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="18" cy="5" r="3" /><circle cx="6" cy="12" r="3" /><circle cx="18" cy="19" r="3" /><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4" /></svg></SwipeSafeButton>
           </div>
         </div>
       </div>
-
       <GenreFilter onSelect={handleSeeAll} />
-
-      {sections.slice(0, 4).map((s: any) => {
-        if (s.hidden) return null
-        if (!s.data?.length) return null
-        return <MovieRow key={s.id} title={s.title} movies={s.data} onSeeAll={handleSeeAll} />
-      })}
-
+      {sections.slice(0, 4).map((s: any) => { if (s.hidden) return null; if (!s.data?.length) return null; return <MovieRow key={s.id} title={s.title} movies={s.data} onSeeAll={handleSeeAll} /> })}
       {tvSeriesMovies.length > 0 && <TvSeriesRow movies={tvSeriesMovies} onSeeAll={handleSeeAll} />}
-
-      {sections.slice(4, 7).map((s: any) => {
-        if (s.hidden) return null
-        if (!s.data?.length) return null
-        return <MovieRow key={s.id} title={s.title} movies={s.data} onSeeAll={handleSeeAll} />
-      })}
-
-
-            {miniSeriesMovies.length > 0 && <MiniSeriesRow movies={miniSeriesMovies} onSeeAll={handleSeeAll} />}
-
-      {sections.slice(7, 11).map((s: any) => {
-        if (s.hidden) return null
-        if (!s.data?.length) return null
-        return <MovieRow key={s.id} title={s.title} movies={s.data} onSeeAll={handleSeeAll} />
-      })}
-
+      {sections.slice(4, 7).map((s: any) => { if (s.hidden) return null; if (!s.data?.length) return null; return <MovieRow key={s.id} title={s.title} movies={s.data} onSeeAll={handleSeeAll} /> })}
+      {miniSeriesMovies.length > 0 && <MiniSeriesRow movies={miniSeriesMovies} onSeeAll={handleSeeAll} />}
+      {sections.slice(7, 11).map((s: any) => { if (s.hidden) return null; if (!s.data?.length) return null; return <MovieRow key={s.id} title={s.title} movies={s.data} onSeeAll={handleSeeAll} /> })}
       {battleGroups.length > 0 && <MovieWallShell groups={battleGroups} />}
-
-      {sections.slice(11).map((s: any) => {
-        if (s.hidden) return null
-        if (!s.data?.length) return null
-        return <MovieRow key={s.id} title={s.title} movies={s.data} onSeeAll={handleSeeAll} />
-      })}
-
-      {(() => {
-        const threshold = isMobile ? 5 : 10;
-        const myCount = lists?.[0]?.movieIds?.length || favIds?.length || 0;
-        const contCount = recentIds?.length || 0;
-        const show = myCount >= threshold || contCount >= threshold;
-        if (!show) return null;
-        return <UserListsRow movies={allMovies} />;
-      })()}
+      {sections.slice(11).map((s: any) => { if (s.hidden) return null; if (!s.data?.length) return null; return <MovieRow key={s.id} title={s.title} movies={s.data} onSeeAll={handleSeeAll} /> })}
+      {(() => { const threshold = isMobile ? 5 : 10; const myCount = lists?.[0]?.movieIds?.length || favIds?.length || 0; const contCount = recentIds?.length || 0; const show = myCount >= threshold || contCount >= threshold; if (!show) return null; return <UserListsRow movies={allMovies} /> })()}
       <ExploreMore movies={allMovies} />
     </div>
     </div>
   )
 }
-
