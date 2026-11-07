@@ -1,0 +1,269 @@
+
+.mw-section {
+  --mw-gap: 6px;
+  --mw-bg: hsl(var(--bg));
+  --mw-surface: hsl(var(--surface));
+  --mw-border: hsl(var(--border));
+  --mw-text: hsl(var(--text));
+  --mw-muted: hsl(var(--text-muted));
+  --mw-primary: hsl(var(--primary));
+  --mw-primary-text: hsl(var(--primary-text));
+  --mw-outer: 6px;
+  --mw-inner: 3px;
+}
+
+.mw-grid {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  gap: 12px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 4px 12px 16px 12px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  cursor: grab;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+}
+
+.mw-grid::-webkit-scrollbar {
+  display: none;
+}
+
+.mw-grid:active {
+  cursor: grabbing;
+}
+
+.mw-card {
+  flex: 0 0 280px;
+  width: 280px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+@media (max-width: 768px) {
+  .mw-grid {
+    width: 100vw;
+    margin-left: calc(-50vw + 50%);
+  }
+
+  .mw-card {
+    flex: 0 0 72vw;
+    width: 72vw;
+  }
+}
+
+/* Wall container — no outer border, only clips the outer corners */
+.mw-square {
+  position: relative;
+  flex: 0 0 auto;
+  width: 280px;
+  height: 168px;
+  border-radius: var(--mw-outer);
+  overflow: hidden;
+  isolation: isolate;
+  background: transparent;
+  border: 0;
+}
+
+@media (max-width: 768px) {
+  .mw-square {
+    width: 72vw;
+    height: 42vw;
+  }
+}
+
+/* Each tile is an independent clipping window */
+.mw-tile {
+  position: absolute;
+  display: block;
+  appearance: none;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  overflow: hidden;
+  cursor: pointer;
+  box-sizing: border-box;
+  isolation: isolate;
+}
+
+.mw-tile.active {
+  z-index: 2;
+}
+
+/* Media is cropped to the corresponding part of the full wall */
+.mw-one-cover,
+.mw-one-video {
+  position: absolute;
+  display: block;
+  object-fit: cover;
+  max-width: none;
+  max-height: none;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.mw-fade {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.72),
+    transparent 55%
+  );
+  pointer-events: none;
+}
+
+.mw-vj {
+  position: absolute;
+  z-index: 2;
+  left: 10px;
+  bottom: 24px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #fff;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.9);
+}
+
+.mw-views {
+  position: absolute;
+  z-index: 2;
+  left: 10px;
+  bottom: 9px;
+  font-size: 10px;
+  color: rgba(255, 255, 255, 0.85);
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.9);
+}
+
+.mw-crown {
+  position: absolute;
+  z-index: 2;
+  top: 10px;
+  left: 10px;
+  font-size: 9px;
+  font-weight: 800;
+  background: var(--mw-primary);
+  color: var(--mw-primary-text);
+  padding: 4px 7px;
+  border-radius: 999px;
+}
+
+.mw-flash {
+  position: absolute;
+  z-index: 3;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.55);
+  pointer-events: none;
+  animation: mw-flash 0.45s ease-out forwards;
+}
+
+@keyframes mw-flash {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+  }
+}
+
+.mw-dot {
+  position: absolute;
+  z-index: 3;
+  top: 10px;
+  right: 10px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.6);
+  animation: mw-breathe 2s ease-in-out infinite;
+}
+
+@keyframes mw-breathe {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.9;
+    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.5);
+  }
+
+  50% {
+    transform: scale(1.45);
+    opacity: 1;
+    box-shadow: 0 0 0 6px rgba(255, 255, 255, 0);
+  }
+}
+
+.mw-under {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.mw-title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.mw-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--mw-text);
+  text-transform: capitalize;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mw-total {
+  font-size: 11px;
+  color: var(--mw-muted);
+  white-space: nowrap;
+}
+
+.mw-sound {
+  flex: 0 0 auto;
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  border: 1px solid var(--mw-border);
+  background: var(--mw-surface);
+  color: var(--mw-text);
+  font-size: 15px;
+  line-height: 1;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mw-sound:active {
+  transform: scale(0.94);
+}
+
+.mw-watch {
+  border: 0;
+  border-radius: 999px;
+  padding: 11px 14px;
+  font-weight: 800;
+  font-size: 13px;
+  cursor: pointer;
+  background: var(--mw-primary);
+  color: var(--mw-primary-text);
+}
+
+.mw-watch:active {
+  transform: scale(0.98);
+}
+
+

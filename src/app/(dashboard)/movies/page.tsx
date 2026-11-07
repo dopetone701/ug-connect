@@ -19,6 +19,8 @@ import ExploreMore from "./_lib/explore-more"
 import GenreFilter from "./_lib/genre-filter"
 import TvSeriesRow from "./_lib/tv-series-row"
 import MiniSeriesRow from "./_lib/mini-series-row"
+import MovieWallShell from "./_lib/movie-wall-logic/movie-wall-shell"
+import { groupMoviesForBattle } from "./_lib/movie-wall-logic/movie-wall-groups"
 import { useGlobalSearch } from "@/stores/use-global-search"
 import { useWatchDrawer } from "@/stores/use-watch-drawer"
 import { useReelsDrawer } from "@/stores/use-reels-drawer"
@@ -412,12 +414,16 @@ export default function MoviesPage() {
     }
   }, [movies])
 
-  const sections = useMemo(() => getSections(allMovies, { favIds, recentIds }), [allMovies, favIds, recentIds])
+    const sections = useMemo(() => getSections(allMovies, { favIds, recentIds }), [allMovies, favIds, recentIds])
 
   const tvSeriesMovies = useMemo(() => allMovies.filter((x: any) => x.type === "Full"), [allMovies])
   const miniSeriesMovies = useMemo(() => allMovies.filter((x: any) => x.type === "Mini"), [allMovies])
 
-  if (!allMovies.length) {
+  // VJ BATTLE — grouped, 2+ VJs only, 1 never renders
+  // VJ BATTLE — grouped, 2+ VJs only, 1 never renders
+  const battleGroups = useMemo(() => groupMoviesForBattle(allMovies), [allMovies])
+  console.log("BATTLE GROUPS", battleGroups)
+    if (!allMovies.length) {
     return (
       <div className="film-root">
         <div className="film-giant" style={{ display: "flex", alignItems: "center", justifyContent: "center" }}>Loading latest...</div>
@@ -540,9 +546,18 @@ export default function MoviesPage() {
         return <MovieRow key={s.id} title={s.title} movies={s.data} onSeeAll={handleSeeAll} />
       })}
 
-      {miniSeriesMovies.length > 0 && <MiniSeriesRow movies={miniSeriesMovies} onSeeAll={handleSeeAll} />}
 
-      {sections.slice(7).map((s: any) => {
+            {miniSeriesMovies.length > 0 && <MiniSeriesRow movies={miniSeriesMovies} onSeeAll={handleSeeAll} />}
+
+      {sections.slice(7, 11).map((s: any) => {
+        if (s.hidden) return null
+        if (!s.data?.length) return null
+        return <MovieRow key={s.id} title={s.title} movies={s.data} onSeeAll={handleSeeAll} />
+      })}
+
+      {battleGroups.length > 0 && <MovieWallShell groups={battleGroups} />}
+
+      {sections.slice(11).map((s: any) => {
         if (s.hidden) return null
         if (!s.data?.length) return null
         return <MovieRow key={s.id} title={s.title} movies={s.data} onSeeAll={handleSeeAll} />
