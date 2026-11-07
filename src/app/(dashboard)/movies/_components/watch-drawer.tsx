@@ -4,7 +4,10 @@ import { useWatchDrawer } from "@/stores/use-watch-drawer";
 import WatchClient from "../watch/[id]/watch-client";
 import { useMiniPlayerFloating } from "../_components/vid-actions/mini-player-floating-logic";
 import { ActorViewPanel } from "../_components/vid-meta-info/actor-view-panel";
+import { VJViewPanel } from "../_components/vid-meta-info/vj-view-panel-logic/vj-view-panel";
 import "./watch-drawer.css";
+
+
 
 
 function detectMobileDevice() {
@@ -16,6 +19,9 @@ function detectMobileDevice() {
   if (isTouch && window.innerWidth <= 1024) return true;
   return false;
 }
+
+
+
 
 
 
@@ -47,11 +53,15 @@ export default function WatchDrawer(){
   const floating = useMiniPlayerFloating(panelRef, minimized &&!isExpanding);
 
 
+
+
   const triggerFsBtn = useCallback(() => {
     const btn = panelRef.current?.querySelector(".cc-icon.apple-full") as HTMLButtonElement | null;
     if(btn) btn.click();
     else setIsFullscreen(v=>!v);
   }, []);
+
+
 
 
   useEffect(()=>{
@@ -64,6 +74,8 @@ export default function WatchDrawer(){
       window.removeEventListener("orientationchange", check);
     }
   },[]);
+
+
 
 
   useEffect(()=>{
@@ -98,11 +110,15 @@ export default function WatchDrawer(){
   }, [open, minimized, movieId, playType, isClosing, closeDrawer, router, isFullscreen]);
 
 
+
+
   useEffect(()=>{
     if(!showControls) return;
     const t = setTimeout(()=> setShowControls(false), 3000);
     return ()=> clearTimeout(t);
   }, [showControls]);
+
+
 
 
   // === SMOOTH EXPAND ===
@@ -112,14 +128,20 @@ export default function WatchDrawer(){
     const panel = panelRef.current;
 
 
+
+
     if (!panel || !minimized || isExpanding) {
       if (!minimized) maximize();
       return;
     }
 
 
+
+
    // Lock the mini-player's current position before React changes its mode.
 const rect = panel.getBoundingClientRect();
+
+
 
 
 panel.style.setProperty("position", "fixed", "important");
@@ -133,11 +155,17 @@ panel.style.setProperty("transform", "none", "important");
 panel.style.setProperty("border-radius", "12px", "important");
 
 
+
+
 panel.getBoundingClientRect();
+
+
 
 
 setIsExpanding(true);
 panel.classList.add("is-expanding");
+
+
 
 
 requestAnimationFrame(() => {
@@ -148,7 +176,11 @@ requestAnimationFrame(() => {
   panel.style.setProperty("height", `${rect.height}px`, "important");
 
 
+
+
   panel.getBoundingClientRect();
+
+
 
 
   panel.style.setProperty(
@@ -156,6 +188,8 @@ requestAnimationFrame(() => {
     "left 520ms cubic-bezier(0.16,1,0.3,1), top 520ms cubic-bezier(0.16,1,0.3,1), width 520ms cubic-bezier(0.16,1,0.3,1), height 520ms cubic-bezier(0.16,1,0.3,1), border-radius 420ms ease",
     "important"
   );
+
+
 
 
   requestAnimationFrame(() => {
@@ -170,10 +204,16 @@ requestAnimationFrame(() => {
 
 
 
+
+
+
+
     const finish = () => {
       maximize();
       setIsExpanding(false);
       panel.classList.remove("is-expanding");
+
+
 
 
       [
@@ -191,7 +231,11 @@ requestAnimationFrame(() => {
     };
 
 
+
+
     const timeout = window.setTimeout(finish, 650);
+
+
 
 
     panel.addEventListener(
@@ -210,9 +254,17 @@ requestAnimationFrame(() => {
 
 
 
+
+
+
+
+
+
   if(!movieId) return null;
   if(!open &&!minimized &&!isClosing) return null;
   if(!isMobile && open &&!minimized) return null;
+
+
 
 
   const handleClose = () => {
@@ -222,11 +274,15 @@ requestAnimationFrame(() => {
   };
 
 
+
+
   const getIsVideoZone = (clientY: number) => {
     if(isFullscreen) return false;
     const videoH = window.innerWidth * 0.5625 + 20;
     return clientY < videoH;
   };
+
+
 
 
   const onDown = (e: any) => {
@@ -248,6 +304,8 @@ requestAnimationFrame(() => {
   };
 
 
+
+
   const onMove = (e: any) => {
     if(!isMobile) return;
     if(!dragging) return;
@@ -264,7 +322,10 @@ requestAnimationFrame(() => {
       return; // killed
     }
 
+
   };
+
+
 
 
   const onUp = () => {
@@ -281,12 +342,17 @@ requestAnimationFrame(() => {
       // killed - nothing
     }
 
+
     setDragY(0);
     dragModeRef.current = "none";
   };
 
 
+
+
   const progress = Math.min(Math.abs(dragY)/400, 1);
+
+
 
 
   return(
@@ -322,11 +388,8 @@ requestAnimationFrame(() => {
         </div>
       </div>
       <ActorViewPanel />
+      <VJViewPanel />
     </div>
   )
 }
-
-
-
-
 

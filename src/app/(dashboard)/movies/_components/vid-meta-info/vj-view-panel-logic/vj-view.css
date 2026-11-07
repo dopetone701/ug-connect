@@ -1,0 +1,144 @@
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap');
+
+/* DNA colours only — no yellow anywhere.
+   Uses YOUR app variables: --bg, --surface, --surface-hover, --border, --text, --text-muted, --primary.
+   --primary is your brand accent (the expensive one). If your theme calls it --accent,
+   swap var(--primary) -> var(--accent) below. */
+
+.vj-view-backdrop {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.55);
+  backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+  z-index: 99999; animation: vjFadeIn 0.2s ease;
+}
+.vj-view-panel {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  background: hsl(var(--bg));
+  border-top: 1px solid hsl(var(--border));
+  border-radius: 16px 16px 0 0;
+  z-index: 100000;
+  padding: 8px 0 calc(12px + env(safe-area-inset-bottom));
+  animation: vjSlideUp 0.32s cubic-bezier(0.16,1,0.3,1);
+  max-height: 88vh; overflow-y: auto; -webkit-overflow-scrolling: touch;
+  box-shadow: 0 -10px 40px hsla(var(--bg), 0.5);
+  -webkit-touch-callout: none; -webkit-user-select: none; user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.vj-view-panel::-webkit-scrollbar { display: none; }
+.vj-view-handle { width: 36px; height: 4px; background: hsl(var(--border)); border-radius: 10px; margin: 6px auto 4px; }
+
+.vj-topbar { display: flex; justify-content: space-between; align-items: center; padding: 4px 16px 0; }
+.vj-topbar-label { font-size: 11px; letter-spacing: 2px; font-weight: 700; color: hsl(var(--text-muted)); }
+.vj-faq-btn {
+  width: 28px; height: 28px; border-radius: 50%;
+  border: 1px solid hsl(var(--border)); background: hsl(var(--surface));
+  color: hsl(var(--text)); font-size: 15px; font-weight: 800; cursor: pointer;
+}
+.vj-faq { margin: 12px 16px 0; background: hsl(var(--surface)); border: 1px solid hsl(var(--border)); border-radius: 12px; padding: 12px; }
+.vj-faq-item + .vj-faq-item { border-top: 1px solid hsl(var(--border)); }
+.vj-faq-q { width: 100%; display: flex; justify-content: space-between; gap: 12px; background: none; border: none; color: hsl(var(--text)); font-size: 14px; font-weight: 600; text-align: left; padding: 10px 0; cursor: pointer; }
+.vj-faq-a { font-size: 13.5px; line-height: 1.6; color: hsl(var(--text-muted)); padding: 0 0 10px; margin: 0; }
+
+/* ---------- HERO + LOGO AS GLASS BG ---------- */
+.vj-hero { position: relative; overflow: hidden; padding: 10px 16px 0; text-align: left; border-radius: 12px 12px 0 0; }
+/* Same idea as actor hero image: logo sits behind, subtle, glassy, fades to bg at bottom */
+.vj-logo-bg {
+  position: absolute; top: -12px; right: -10px;
+  width: 210px; height: 210px; object-fit: contain;
+  opacity: 0.14; filter: blur(0.5px) saturate(1.1);
+  pointer-events: none; user-select: none; -webkit-user-drag: none;
+  /* glass: soft edge, not a hard cutout */
+  -webkit-mask-image: linear-gradient(to bottom, black 0%, black 45%, transparent 92%);
+  mask-image: linear-gradient(to bottom, black 0%, black 45%, transparent 92%);
+}
+.vj-logo-fade {
+  position: absolute; inset: 0; pointer-events: none;
+  /* fade logo into panel bg towards bottom */
+  background: linear-gradient(to bottom, transparent 0%, hsl(var(--bg) / 0.25) 45%, hsl(var(--bg) / 0.85) 80%, hsl(var(--bg)) 100%);
+}
+.vj-hero > *:not(.vj-logo-bg):not(.vj-logo-fade) { position: relative; z-index: 1; }
+.vj-cinematic-eyebrow { font-size: 11px; letter-spacing: 3px; font-weight: 700; color: hsl(var(--text-muted)); }
+.vj-cinematic-name {
+  font-family: 'Bebas Neue', 'Oswald', Impact, 'Arial Narrow', sans-serif;
+  font-size: clamp(52px, 16vw, 72px); line-height: 0.9; letter-spacing: 1px;
+  text-transform: uppercase; color: hsl(var(--text)); margin: 4px 0 0;
+  text-shadow: 0 2px 24px hsla(var(--bg), 0.6);
+}
+/* DNA accent rule — was gold, now primary */
+.vj-cinematic-rule { height: 3px; margin: 10px 0 0; background: linear-gradient(90deg, hsl(var(--primary)), transparent); border-radius: 99px; }
+.vj-cinematic-rule span { display: block; width: 60px; height: 3px; background: hsl(var(--primary)); border-radius: 99px; }
+.vj-slogan { font-size: 15px; font-style: italic; line-height: 1.4; color: hsl(var(--text) / 0.85); margin: 10px 0 0; }
+.vj-stats { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; font-size: 13px; color: hsl(var(--text-muted)); margin-top: 8px; }
+.vj-stats strong { color: hsl(var(--text)); font-size: 15px; }
+.vj-dot { opacity: 0.5; }
+
+/* ---------- TIP — expensive, DNA colours ---------- */
+.vj-tip-banner {
+  margin: 16px 16px 0;
+  /* deep glass, not yellow: surface + primary tint, hairline primary border */
+  background: linear-gradient(135deg, hsl(var(--surface)) 0%, hsl(var(--primary) / 0.12) 100%);
+  border: 1px solid hsl(var(--primary) / 0.35);
+  border-radius: 14px; padding: 14px; display: flex; flex-direction: column; gap: 12px;
+}
+.vj-tip-kicker { font-size: 15px; font-weight: 800; letter-spacing: -0.1px; color: #fff; margin: 0; }
+.vj-tip-line { font-size: 13px; line-height: 1.5; color: rgba(255,255,255,0.85); margin: 4px 0 0; }
+.vj-tip-line strong { color: #fff; font-weight: 800; }
+.vj-tip-cta {
+  background: hsl(var(--primary)); color: #fff;
+  border: none;
+  border-radius: 99px; padding: 12px 18px; font-size: 14px; font-weight: 800; cursor: pointer; width: 100%;
+}
+.vj-tip-cta:disabled { opacity: 0.5; cursor: not-allowed; }
+.vj-wallet { position: relative; margin: 16px 16px 0; background: hsl(var(--surface)); border: 1px solid hsl(var(--border)); border-radius: 14px; padding: 14px; }
+.vj-wallet-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.vj-wallet-title { font-size: 17px; margin: 0; }
+.vj-wallet-sub { font-size: 13px; color: hsl(var(--text-muted)); line-height: 1.5; margin: 4px 0 0; }
+.vj-wallet-note { font-size: 12px; color: hsl(var(--text-muted)); text-align: center; margin: 10px 0 0; line-height: 1.5; }
+.vj-wallet-done { text-align: center; }
+.vj-wallet-done-emoji { font-size: 36px; }
+/* Close — top-right, always reachable */
+.vj-wallet-close {
+  flex: 0 0 auto; width: 28px; height: 28px; border-radius: 50%;
+  border: 1px solid hsl(var(--border)); background: hsl(var(--bg));
+  color: hsl(var(--text-muted)); font-size: 13px; font-weight: 700; cursor: pointer; line-height: 1;
+}
+.vj-wallet-later { width: 100%; background: none; border: none; color: hsl(var(--text-muted)); font-size: 13px; padding: 8px 0 0; cursor: pointer; }
+.vj-tip-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; }
+.vj-tip-chip { background: hsl(var(--bg)); border: 1px solid hsl(var(--border)); border-radius: 10px; padding: 10px; text-align: left; cursor: pointer; color: hsl(var(--text)); }
+.vj-tip-chip.selected { border-color: hsl(var(--primary)); background: hsl(var(--primary) / 0.14); }
+.vj-tip-amount { display: block; font-size: 14px; font-weight: 800; }
+.vj-tip-tag { display: block; font-size: 11px; color: hsl(var(--text-muted)); margin-top: 2px; }
+.vj-tip-custom input { width: 100%; margin-top: 6px; background: hsl(var(--surface)); border: 1px solid hsl(var(--border)); border-radius: 8px; padding: 8px; color: hsl(var(--text)); font-size: 14px; }
+
+/* PRECISE GAP: 16px between money buttons and Send button — not touching, not floating */
+.vj-pay-methods { display: flex; gap: 8px; margin-top: 12px; margin-bottom: 16px; }
+.vj-pay-btn { flex: 1; padding: 10px; border-radius: 99px; border: 1px solid hsl(var(--border)); background: hsl(var(--bg)); color: hsl(var(--text)); font-weight: 700; cursor: pointer; }
+.vj-pay-btn.selected { border-color: hsl(var(--primary)); background: hsl(var(--primary) / 0.14); }
+
+/* ---------- MOVIES ROW ---------- */
+.vj-section-title { font-size: 15px; font-weight: 700; color: hsl(var(--text)); margin: 0; }
+.vj-movies-head { display: flex; justify-content: space-between; align-items: baseline; padding: 18px 16px 0; }
+.vj-count-badge { display: inline-block; background: hsl(var(--primary)); color: #fff;
+ font-size: 12px; font-weight: 800; padding: 2px 8px; border-radius: 99px; margin-left: 6px; }
+.vj-movie-row { display: flex; gap: 12px; overflow-x: auto; padding: 14px 16px 4px; scrollbar-width: none; -ms-overflow-style: none; -webkit-overflow-scrolling: touch; }
+.vj-movie-row::-webkit-scrollbar { display: none; }
+.vj-movie-card { flex: 0 0 auto; width: 104px; display: flex; flex-direction: column; gap: 6px; background: none; border: none; padding: 0; text-align: left; cursor: pointer; appearance: none; -webkit-appearance: none; color: inherit; font: inherit; touch-action: manipulation; }
+.vj-movie-img-wrap { width: 104px; height: 156px; border-radius: 10px; overflow: hidden; background: hsl(var(--surface-hover)); border: 1px solid hsl(var(--border)); display: flex; align-items: center; justify-content: center; }
+.vj-movie-img { width: 100%; height: 100%; object-fit: cover; display: block; pointer-events: none; -webkit-user-drag: none; }
+.vj-movie-fallback { font-size: 28px; font-weight: 700; text-transform: uppercase; }
+.vj-movie-title { font-size: 13px; line-height: 1.2; color: hsl(var(--text)); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-transform: capitalize; pointer-events: none; }
+.vj-movie-meta { font-size: 11px; color: hsl(var(--text-muted)); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; pointer-events: none; }
+
+/* VJ CHIP */
+.c-vj-chip {
+  appearance: none; -webkit-appearance: none; background: hsl(var(--surface)); border: 1px solid hsl(var(--border));
+  border-radius: 99px; padding: 4px 10px; font: inherit; font-size: 13px; color: hsl(var(--text));
+  cursor: pointer; display: inline-flex; align-items: center; gap: 4px;
+  -webkit-touch-callout: none; user-select: none; -webkit-user-select: none; touch-action: manipulation;
+}
+.c-vj-chip:active { transform: scale(0.97); }
+.c-vj-chip b { color: hsl(var(--primary)); }
+
+@keyframes vjSlideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+@keyframes vjFadeIn { from { opacity: 0; } to { opacity: 1; } }
+

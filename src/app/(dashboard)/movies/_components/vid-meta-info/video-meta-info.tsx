@@ -1,10 +1,11 @@
 "use client";
-import { useEffect, useMemo, useState, useRef } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useActorViewPanel } from "@/stores/use-actor-view-panel";
+import { useVJViewPanel } from "./vj-view-panel-logic/use-vj-view-panel";
 
 
-// [STRIPPED 77 bytes] Actor DNA — truth is D1 actors.photo_url (R2), NOT movie row.
-// [STRIPPED 75 bytes] Watch page used to show only movie.cast[].photo (stale).
+// Actor DNA — truth is D1 actors.photo_url (R2), NOT movie row.
+// Watch page used to show only movie.cast[].photo (stale).
 // Now: show movie photo instantly, then upgrade to D1 photo if D1 has one.
 // So if you re-upload Sarah's headshot in Edit, Watch page shows the new photo
 // without you having to re-save the movie.
@@ -41,7 +42,7 @@ function parseCastFromMovie(movie: any): CastItem[] {
 }
 
 
-// [STRIPPED 77 bytes] SYNC TRUE ACTOR — reuse, don't duplicate
+// SYNC TRUE ACTOR — reuse, don't duplicate
 // For each name: GET /actors?search=name&limit=3, take EXACT normalized match only.
 // If D1 has a photo, use it. If D1 has no photo, keep movie photo (don't blank it).
 // If no D1 actor at all, keep movie photo as-is.
@@ -66,23 +67,7 @@ export default function VideoMetaInfo({ movie, descExpanded, setDescExpanded }: 
   const baseCast = useMemo(() => parseCastFromMovie(movie), [movie]);
   const [cast, setCast] = useState<CastItem[]>(baseCast);
   const openActorPanel = useActorViewPanel((s) => s.open);
-  const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const longPressedRef = useRef(false);
-
-
-  const startLongPress = (m: CastItem) => {
-    longPressedRef.current = false;
-    longPressTimer.current = setTimeout(() => {
-      longPressedRef.current = true;
-      openActorPanel({ actorId: m.actorId, name: m.name, photo: m.photo });
-    }, 500);
-  };
-
-
-  const cancelLongPress = () => {
-    if (longPressTimer.current) clearTimeout(longPressTimer.current);
-    longPressTimer.current = null;
-  };
+  const openVJPanel = useVJViewPanel((s) => s.open);
 
 
   // Show movie cast instantly, then upgrade to true D1 photo in background
@@ -103,7 +88,26 @@ export default function VideoMetaInfo({ movie, descExpanded, setDescExpanded }: 
       <h1 className="c-title">{movie.title}</h1>
       <div className="c-meta-row">
         <span className="c-pill">{movie.genre}</span>
-        <span className="c-pill muted">{movie.vj}</span>
+        {/* VJ CHIP — now a button that opens VJ panel (was a plain span) */}
+        {movie.vj ? (
+          <button
+            type="button"
+            className="c-vj-chip"
+            title={`View ${movie.vj}`}
+            aria-label={`View ${movie.vj}`}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              openVJPanel({ name: movie.vj });
+            }}
+            onContextMenu={(e) => e.preventDefault()}
+            onDragStart={(e) => e.preventDefault()}
+          >
+            <span className="c-vj-chip-mic" aria-hidden="true">🎙️</span>
+            <span>VJ</span>
+            <b>{movie.vj}</b>
+          </button>
+        ) : null}
         <span className="c-pill muted">{movie.year || "2024"}</span>
         <span className="c-pill muted">{movie.rating || "HD"}</span>
       </div>
@@ -131,39 +135,36 @@ export default function VideoMetaInfo({ movie, descExpanded, setDescExpanded }: 
                 ? `https://movie-server-api.connectu89.workers.dev/r2/${m.photo.replace(/^\/+/, "")}`
                 : null;
               return (
-               <div
+                <button
                   key={`${m.actorId || m.name}-${i}`}
+                  type="button"
                   className="c-cast-item"
                   title={m.name}
-                  onPointerDown={(e) => {
-                    e.stopPropagation();
-                    startLongPress(m);
-                  }}
-                  onPointerUp={(e) => {
-                    e.stopPropagation();
-                    cancelLongPress();
-                  }}
-                  onPointerLeave={cancelLongPress}
-                  onPointerCancel={cancelLongPress}
-                  onContextMenu={(e) => e.preventDefault()}
+                  aria-label={`View ${m.name}`}
                   onClick={(e) => {
-                    if (longPressedRef.current) {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      longPressedRef.current = false;
-                    }
+                    e.preventDefault();
+                    e.stopPropagation();
+                    openActorPanel({ actorId: m.actorId, name: m.name, photo: m.photo });
                   }}
+                  onContextMenu={(e) => e.preventDefault()}
+                  onDragStart={(e) => e.preventDefault()}
                 >
-                  <div className="c-cast-avatar">
+                  <span className="c-cast-avatar">
                     {src ? (
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img src={src} alt={m.name} className="c-cast-img" onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }} />
+                      <img
+                        src={src}
+                        alt=""
+                        draggable={false}
+                        className="c-cast-img"
+                        onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = "none"; }}
+                      />
                     ) : (
                       <span className="c-cast-fallback">{initial}</span>
                     )}
-                  </div>
+                  </span>
                   <span className="c-cast-name">{m.name}</span>
-                </div>
+                </button>
               );
             })}
           </div>
@@ -172,6 +173,36 @@ export default function VideoMetaInfo({ movie, descExpanded, setDescExpanded }: 
 
 
      <style jsx>{`
+  .c-meta-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+  }
+  /* VJ CHIP — button that opens VJ panel */
+  .c-vj-chip {
+    appearance: none;
+    -webkit-appearance: none;
+    background: hsl(var(--surface));
+    border: 1px solid hsl(var(--border));
+    border-radius: 99px;
+    padding: 4px 10px;
+    font: inherit;
+    font-size: 13px;
+    color: hsl(var(--text));
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+  .c-vj-chip:active { transform: scale(0.97); }
+  .c-vj-chip b { color: #f5c518; font-weight: 800; }
+  .c-vj-chip-mic { font-size: 12px; line-height: 1; pointer-events: none; }
   .c-cast-header {
     font-size: 13px;
     font-weight: 600;
@@ -195,12 +226,29 @@ export default function VideoMetaInfo({ movie, descExpanded, setDescExpanded }: 
     display: none;
   }
   .c-cast-item {
+    /* NOW A REAL BUTTON - reset button styles */
+    appearance: none;
+    -webkit-appearance: none;
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    font: inherit;
+    color: inherit;
+    cursor: pointer;
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 6px;
     flex: 0 0 auto;
     width: 64px;
+    /* Kill browser image / text behaviours */
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    -webkit-user-drag: none;
   }
   .c-cast-avatar {
     width: 56px;
@@ -219,6 +267,11 @@ export default function VideoMetaInfo({ movie, descExpanded, setDescExpanded }: 
     height: 100%;
     object-fit: cover;
     display: block;
+    /* Click goes to BUTTON, never to img */
+    pointer-events: none;
+    -webkit-user-drag: none;
+    user-select: none;
+    -webkit-touch-callout: none;
   }
   .c-cast-fallback {
     font-size: 20px;
@@ -226,6 +279,7 @@ export default function VideoMetaInfo({ movie, descExpanded, setDescExpanded }: 
     color: hsl(var(--text));
     line-height: 1;
     text-transform: uppercase;
+    pointer-events: none;
   }
   .c-cast-name {
     width: 100%;
@@ -237,6 +291,7 @@ export default function VideoMetaInfo({ movie, descExpanded, setDescExpanded }: 
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    pointer-events: none;
   }
 `}</style>
     </div>
