@@ -21,6 +21,16 @@ export function generateShortId(): string {
 export const CHUNK_SIZE = 5 * 1024 * 1024; // 5MB - iPhone safe
 export const SINGLE_LIMIT = 90 * 1024 * 1024; // 90MB
 
+// ===== VJ LIST — TRUE IN D1, NOT HARDCODED =====
+// Source of truth is D1: distinct `vj` values in `movies` table.
+// `parts/movie-details-fields.tsx` fetches that list from API_URL on open
+// and renders it in a <datalist>, so you can pick an existing VJ or type a new one.
+// New VJ typed -> saved on Save -> appears automatically next time. No code change needed.
+// VJ SLOGAN is also true in D1: `parts/vj-slogan.tsx` fetches distinct `vj_slogan` from API_URL.
+// NO hardcoded slogan list anywhere.
+// VJ_OPTIONS below is kept ONLY as a legacy fallback for old screens (e.g. create-movie)
+// that still import it. Edit Movie does NOT use it anymore — do not add new VJs here,
+// add them by typing them in the Edit UI, they will be saved to D1.
 export const VJ_OPTIONS = [
   "VJ Junior",
   "VJ Emmy",
@@ -156,4 +166,3 @@ export function getRawKey(m: MovieRecord, field: string): string | null {
 export function safeId(id: unknown): string {
   return String(id || "").slice(0, 8);
 }
-
