@@ -200,33 +200,3 @@
 }
 
 
-@media (max-width: 768px) {
-  /* Watch drawer mobile ONLY - strip above Ragnar = 0 */
-  .content-panel:has(.watch-drawer) {
-    padding-top: 0 !important;
-    padding-bottom: 0 !important;
-    border-top: none !important;
-    border-bottom: none !important;
-  }
-  .content-panel:has(.watch-drawer) > .content-scroll {
-    padding-top: 0 !important;
-    padding-bottom: 0 !important;
-  }
-  .content-panel:has(.watch-drawer) .film-giant,
-  .content-panel:has(.watch-drawer) .connect-player,
-  .content-panel:has(.watch-drawer) .film-center,
-  .content-panel:has(.watch-drawer) .center-cover {
-    padding-top: 0 !important;
-    padding-bottom: 0 !important;
-    margin-top: 0 !important;
-    margin-bottom: 0 !important;
-  }
-
-  /* Lower shell visible - mobile watch only */
-  .google-shell {
-    padding-bottom: env(safe-area-inset-bottom);
-  }
-  .google-shell > :not(.giant-panel) {
-    flex-shrink: 0;
-  }
-}
