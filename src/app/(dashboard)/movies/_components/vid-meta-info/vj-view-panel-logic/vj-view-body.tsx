@@ -1,5 +1,5 @@
 "use client"
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { useGlobalSearch } from "@/stores/use-global-search"
 import { sloganForVJ } from "./use-vj-view-panel"
 import { VJCinematicName } from "./vj-pro-cinematic-font"
@@ -13,6 +13,9 @@ const norm = (s: string) => String(s || "").trim().toLowerCase()
 
 // ⚠️ CHANGE THIS if your logo lives elsewhere: /logo.png, /images/ug-logo.png, etc.
 const UG_LOGO = "/logo.png"
+
+// Public read API — same D1 source Edit saves to. No hardcode here.
+const API_URL = "https://movie-server-api.connectu89.workers.dev/api/movies"
 
 const FAQS = [
   {
@@ -54,7 +57,55 @@ export function VJViewBody({ vjId, vj, onClose }: { vjId: string; vj: any; onClo
     return allMovies.filter((m: any) => String(m?.vj || "").trim().toLowerCase() === target)
   }, [allMovies, vj?.name])
 
-  const slogan = sloganForVJ(vj?.name, vj?.slogan)
+  // ===== REAL SLOGAN — TRUE IN D1, FALLBACK TO HARDCODED ONLY IF D1 HAS NONE =====
+  // Priority:
+  // 1. vj.slogan passed in (if panel opener already had it)
+  // 2. Any movie for this VJ in allMovies with vj_slogan (Edit backfills it to ALL his movies)
+  // 3. Fresh fetch from API_URL (in case allMovies is stale / cached before you saved)
+  // 4. Fallback: sloganForVJ() hardcoded — only if D1 has nothing yet
+  const [fetchedSlogan, setFetchedSlogan] = useState("")
+
+  const d1SloganFromStore = useMemo(() => {
+    const fromProp = String(vj?.slogan || vj?.vj_slogan || "").trim()
+    if (fromProp) return fromProp
+    for (const m of vjMovies) {
+      const s = String(m?.vj_slogan || m?.slogan || "").trim()
+      if (s) return s
+    }
+    return ""
+  }, [vj?.slogan, vj?.vj_slogan, vjMovies])
+
+  useEffect(() => {
+    const target = norm(vj?.name)
+    if (!target) return
+    // Already have real slogan from store — no fetch needed
+    if (d1SloganFromStore) {
+      setFetchedSlogan("")
+      return
+    }
+    let cancelled = false
+    ;(async () => {
+      try {
+        const res = await fetch(`${API_URL}?t=${Date.now()}`, { cache: "no-store" })
+        const data = await res.json().catch(() => null)
+        const list: any[] = Array.isArray(data) ? data : data?.movies || data?.data || []
+        for (const m of list) {
+          if (norm(m?.vj) !== target) continue
+          const s = String(m?.vj_slogan || m?.slogan || "").trim()
+          if (s && !cancelled) {
+            setFetchedSlogan(s)
+            return
+          }
+        }
+      } catch {}
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [vj?.name, d1SloganFromStore])
+
+  const hardcodedFallback = sloganForVJ(vj?.name, vj?.slogan)
+  const slogan = d1SloganFromStore || fetchedSlogan || hardcodedFallback
   const count = vjMovies.length
 
   return (
@@ -128,4 +179,3 @@ export function VJViewBody({ vjId, vj, onClose }: { vjId: string; vj: any; onClo
     </div>
   )
 }
-
