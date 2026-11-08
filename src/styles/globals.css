@@ -359,32 +359,14 @@ html:has(.is-shell-full) body { background: #000 !important; } <- REMOVE
 
 
 
-/* LAYOUT ONLY - Safe area passes UNDER Dynamic Island, content untouched */
-html,
-body {
+/* MAIN CONTENT PANEL - ZERO TOP PADDING ONLY */
+.content-panel {
   padding-top: 0 !important;
-  margin-top: 0 !important;
 }
 
-/* Layout shells - no top push, background extends under island */
-.app-shell,
-.movies-shell,
-.google-shell,
-.layout-root {
-  padding-top: 0 !important;
-  margin-top: 0 !important;
-}
-
-/* Only the BACKGROUND extends into safe-area, not the content */
-.app-shell::before,
-.movies-shell::before {
-  content: "";
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: env(safe-area-inset-top, 0px);
-  background: #000;
-  z-index: -1;
-  pointer-events: none;
+/* Kill the mobile one too that was adding 12px on top */
+@media (max-width: 768px) {
+  .content-panel {
+    padding-top: 0 !important;
+  }
 }
