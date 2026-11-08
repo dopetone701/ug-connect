@@ -4,11 +4,11 @@ import type { CastMember, MovieType } from "../types";
 import VJSlogan from "./vj-slogan";
 
 import {
-  VJ_OPTIONS,
   GENRE_OPTIONS,
   MOVIE_TYPES,
   getR2Url,
   CATEGORY_OPTIONS,
+  API_URL,
 } from "../constants";
 import type { MovieCategoryId } from "../constants";
 
@@ -109,6 +109,31 @@ export default function MovieDetailsFields({
 }: Props) {
   const castWithDNA = cast as CastMemberWithDNA[];
 
+  // ===== VJ LIST — TRUE IN D1, NOT HARDCODED =====
+  // Source of truth is D1: distinct `vj` values in `movies`.
+  // Fetch once on open, show in <datalist>. Type new VJ -> saved on Save -> appears next time.
+  // VJ_OPTIONS is NOT used here anymore.
+  const [vjOptions, setVjOptions] = useState<string[]>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch(`${API_URL}?t=${Date.now()}`, { cache: "no-store" });
+        const data = await res.json().catch(() => null);
+        const list: any[] = Array.isArray(data) ? data : data?.movies || data?.data || [];
+        const seen = new Set<string>();
+        for (const m of list) {
+          const v = String(m?.vj || "").trim();
+          if (v) seen.add(v);
+        }
+        if (cancelled) return;
+        setVjOptions([...seen].sort());
+      } catch {}
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
   const syncActorsString = (next: CastMemberWithDNA[]) => {
     setCast(next as CastMember[]);
     setActors(next.map((m) => m.name).filter(Boolean).join(", "));
@@ -184,15 +209,25 @@ export default function MovieDetailsFields({
   const clearSelection = (index: number) => {
     updateCastAt(index, { actorId: null, isExisting: false, photoUrl: null, photo: null, _file: null } as Partial<CastMemberWithDNA>);
   };
-  console.log("SLOGAN SETTER:", typeof setVjSlogan);
-
 
  return (
     <div className="cc-form-grid">
       <div><label>TITLE *</label><input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Movie title" /></div>
       <div><label>YEAR *</label><input value={year} onChange={(e) => setYear(e.target.value)} type="number" placeholder="2024" /></div>
       <div><label>GENRE</label><select value={genre} onChange={(e) => setGenre(e.target.value)}><option value="">Select genre</option>{GENRE_OPTIONS.map((g) => (<option key={g} value={g}>{g}</option>))}</select></div>
-      <div><label>VJ</label><select value={vj} onChange={(e) => setVj(e.target.value)}>{VJ_OPTIONS.map((v) => (<option key={v} value={v}>{v}</option>))}</select></div>
+      <div>
+        <label>VJ</label>
+        <input
+          value={vj}
+          onChange={(e) => setVj(e.target.value)}
+          list="vj-list"
+          placeholder="Type or pick VJ — from D1"
+          autoComplete="off"
+        />
+        <datalist id="vj-list">
+          {vjOptions.map((v) => (<option key={v} value={v} />))}
+        </datalist>
+      </div>
       <VJSlogan vj={vj} slogan={vj_slogan} setSlogan={setVjSlogan} />
       <div><label>ACTORS (comma separated) *</label><input value={actors} onChange={(e) => setActors(e.target.value)} placeholder="Actor 1, Actor 2" /></div>
       <div><label>TYPE</label><select value={type} onChange={(e) => setType(e.target.value as MovieType)}>{MOVIE_TYPES.map((t) => (<option key={t.value} value={t.value}>{t.label}</option>))}</select></div>
@@ -347,4 +382,3 @@ function CastRow({ member, idx, onNameChange, onPhotoPick, onRemove, onSelect, o
     </div>
   );
 }
-
