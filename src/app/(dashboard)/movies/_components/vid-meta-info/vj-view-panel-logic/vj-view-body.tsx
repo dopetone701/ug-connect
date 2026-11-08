@@ -9,13 +9,17 @@ import { VJWallet } from "./vj-wallet"
 // VJ file is one folder deeper (vj-view-panel-logic/), so "../../movie-row"
 import MovieRow from "../../movie-row"
 
+
 const norm = (s: string) => String(s || "").trim().toLowerCase()
+
 
 // ⚠️ CHANGE THIS if your logo lives elsewhere: /logo.png, /images/ug-logo.png, etc.
 const UG_LOGO = "/logo.png"
 
+
 // Public read API — same D1 source Edit saves to. No hardcode here.
 const API_URL = "https://movie-server-api.connectu89.workers.dev/api/movies"
+
 
 const FAQS = [
   {
@@ -36,10 +40,12 @@ const FAQS = [
   },
 ]
 
+
 export function VJViewBody({ vjId, vj, onClose }: { vjId: string; vj: any; onClose: () => void }) {
   const [showFaq, setShowFaq] = useState(false)
   const [showTip, setShowTip] = useState(false)
   const [openFaq, setOpenFaq] = useState<number | null>(0)
+
 
   // TRUE VJ — same source + same key as FadersTiles (useFaderData).
   // Faders: vjs = Set( String(m.vj).trim().toLowerCase() ) from useGlobalSearch().allMovies
@@ -51,11 +57,13 @@ export function VJViewBody({ vjId, vj, onClose }: { vjId: string; vj: any; onClo
     return Array.isArray(list) ? list : []
   }, [store?.allMovies])
 
+
   const vjMovies = useMemo(() => {
     const target = String(vj?.name || "").trim().toLowerCase()
     if (!target) return []
     return allMovies.filter((m: any) => String(m?.vj || "").trim().toLowerCase() === target)
   }, [allMovies, vj?.name])
+
 
   // ===== REAL SLOGAN — TRUE IN D1, FALLBACK TO HARDCODED ONLY IF D1 HAS NONE =====
   // Priority:
@@ -64,6 +72,7 @@ export function VJViewBody({ vjId, vj, onClose }: { vjId: string; vj: any; onClo
   // 3. Fresh fetch from API_URL (in case allMovies is stale / cached before you saved)
   // 4. Fallback: sloganForVJ() hardcoded — only if D1 has nothing yet
   const [fetchedSlogan, setFetchedSlogan] = useState("")
+
 
   const d1SloganFromStore = useMemo(() => {
     const fromProp = String(vj?.slogan || vj?.vj_slogan || "").trim()
@@ -74,6 +83,7 @@ export function VJViewBody({ vjId, vj, onClose }: { vjId: string; vj: any; onClo
     }
     return ""
   }, [vj?.slogan, vj?.vj_slogan, vjMovies])
+
 
   useEffect(() => {
     const target = norm(vj?.name)
@@ -104,9 +114,11 @@ export function VJViewBody({ vjId, vj, onClose }: { vjId: string; vj: any; onClo
     }
   }, [vj?.name, d1SloganFromStore])
 
+
   const hardcodedFallback = sloganForVJ(vj?.name, vj?.slogan)
   const slogan = d1SloganFromStore || fetchedSlogan || hardcodedFallback
   const count = vjMovies.length
+
 
   return (
     <div className="vj-view-body">
@@ -121,6 +133,7 @@ export function VJViewBody({ vjId, vj, onClose }: { vjId: string; vj: any; onClo
         >?</button>
       </div>
 
+
       {/* HEADER: logo as subtle glass bg, fades to bottom — same idea as actor hero image */}
       <div className="vj-hero">
         <img src={UG_LOGO} alt="" aria-hidden="true" draggable={false} className="vj-logo-bg" />
@@ -130,9 +143,9 @@ export function VJViewBody({ vjId, vj, onClose }: { vjId: string; vj: any; onClo
         <div className="vj-stats">
           <span><strong>{count}</strong> {count === 1 ? "Movie" : "Movies"} on UG Connect</span>
           <span className="vj-dot">•</span>
-          <span>Luganda • Edutainment</span>
         </div>
       </div>
+
 
       {showFaq && (
         <div className="vj-faq">
@@ -148,10 +161,11 @@ export function VJViewBody({ vjId, vj, onClose }: { vjId: string; vj: any; onClo
         </div>
       )}
 
+
       {!showTip ? (
         <div className="vj-tip-banner">
           <div>
-            <p className="vj-tip-kicker">He gave you the laughs. Give him his flowers. 💐</p>
+            <p className="vj-tip-kicker">Did you enjoy the movie?</p>
             <p className="vj-tip-line">A small tip keeps the best voice in Uganda going. <strong>100% goes to {vj?.name}.</strong></p>
           </div>
           <button type="button" className="vj-tip-cta" onClick={() => setShowTip(true)}>😍 Tip {vj?.name}</button>
@@ -159,6 +173,7 @@ export function VJViewBody({ vjId, vj, onClose }: { vjId: string; vj: any; onClo
       ) : (
         <VJWallet vjName={vj?.name} onClose={() => setShowTip(false)} />
       )}
+
 
       {/* 2. ROW BELOW — exact same pattern as ActorViewBody:
           the app's own row + cards, not custom cards.
@@ -179,3 +194,4 @@ export function VJViewBody({ vjId, vj, onClose }: { vjId: string; vj: any; onClo
     </div>
   )
 }
+

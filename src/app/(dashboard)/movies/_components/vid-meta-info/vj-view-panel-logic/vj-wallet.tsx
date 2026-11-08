@@ -62,7 +62,6 @@ export function VJWallet({ vjName, onClose }: { vjName: string; onClose: () => v
       <div className="vj-wallet-head">
         <div>
           <h3 className="vj-wallet-title">Tip {vjName}</h3>
-          <p className="vj-wallet-sub">Your appreciation goes straight into {vjName}&apos;s pocket — not ours.</p>
         </div>
         {/* CLOSE — user changed their mind */}
         <button type="button" className="vj-wallet-close" aria-label="Close tip, maybe later" onClick={onClose}>✕</button>

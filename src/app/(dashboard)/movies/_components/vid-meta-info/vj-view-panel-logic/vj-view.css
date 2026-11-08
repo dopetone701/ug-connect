@@ -25,7 +25,7 @@
   -webkit-tap-highlight-color: transparent;
 }
 .vj-view-panel::-webkit-scrollbar { display: none; }
-.vj-view-handle { width: 36px; height: 4px; background: hsl(var(--border)); border-radius: 10px; margin: 6px auto 4px; }
+.vj-view-handle { position: sticky; top: 0; z-index: 31; width: 40px; height: 5px; background: hsl(var(--border)); border-radius: 10px; margin: 14px auto 10px; }
 
 .vj-topbar { display: flex; justify-content: space-between; align-items: center; padding: 4px 16px 0; }
 .vj-topbar-label { font-size: 11px; letter-spacing: 2px; font-weight: 700; color: hsl(var(--text-muted)); }
@@ -67,7 +67,7 @@
 /* DNA accent rule — was gold, now primary */
 .vj-cinematic-rule { height: 3px; margin: 10px 0 0; background: linear-gradient(90deg, hsl(var(--primary)), transparent); border-radius: 99px; }
 .vj-cinematic-rule span { display: block; width: 60px; height: 3px; background: hsl(var(--primary)); border-radius: 99px; }
-.vj-slogan { font-size: 15px; font-style: italic; line-height: 1.4; color: hsl(var(--text) / 0.85); margin: 10px 0 0; }
+.vj-slogan { font-family: 'Inter', system-ui, -apple-system, sans-serif; font-size: 16px; font-weight: 600; font-style: normal; letter-spacing: -0.2px; line-height: 1.5; color: hsl(var(--text) / 0.9); margin: 10px 0 0; text-transform: capitalize; }
 .vj-stats { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; font-size: 13px; color: hsl(var(--text-muted)); margin-top: 8px; }
 .vj-stats strong { color: hsl(var(--text)); font-size: 15px; }
 .vj-dot { opacity: 0.5; }
