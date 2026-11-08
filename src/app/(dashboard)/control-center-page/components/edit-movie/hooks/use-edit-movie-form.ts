@@ -130,6 +130,8 @@ export function useEditMovieForm(initialData?: InitialMovieData) {
   const [seasons, setSeasons] = useState<SeasonDraft[]>([]);
   const [category, setCategory] = useState<MovieCategoryId | "">("");
   const [castHydrating, setCastHydrating] = useState(false);
+  const [vj_slogan, setVjSlogan] = useState("");
+
 
   // Populate the form whenever a different movie is loaded.
   useEffect(() => {
@@ -144,6 +146,9 @@ export function useEditMovieForm(initialData?: InitialMovieData) {
     setDescription(initialData.description || "");
     setCategory(getMovieCategory(initialData));
     setSeasons(mapSeasons(initialData.seasons));
+    setVj(initialData.vj || "VJ Junior");
+    setVjSlogan((initialData as any).vj_slogan || (initialData as any).slogan || "");
+
 
     // Cast: normalize FIRST (so UI shows instantly from movie row, with movie photos),
     // then hydrate from D1 in background (adds actorId + R2 photo where available).
@@ -174,6 +179,7 @@ export function useEditMovieForm(initialData?: InitialMovieData) {
     setTitle("");
     setGenre("");
     setVj("VJ Junior");
+    setVjSlogan("");
     setType("Single");
     setYear("");
     setActors("");
@@ -189,9 +195,9 @@ export function useEditMovieForm(initialData?: InitialMovieData) {
   };
 
   return {
-    title, genre, vj, type, year, actors, cast, description, seasons, category,
+    title, genre, vj, vj_slogan, type, year, actors, cast, description, seasons, category,
     castHydrating,
-    setTitle, setGenre, setVj, setType, setYear, setActors, setCast, setDescription, setSeasons, setCategory,
+   setTitle, setGenre, setVj, setVjSlogan, setType, setYear, setActors, setCast, setDescription, setSeasons, setCategory,
     reset, isValid,
   };
 }

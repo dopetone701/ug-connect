@@ -1,6 +1,8 @@
 "use client";
 import React, { useEffect, useRef, useState } from "react";
 import type { CastMember, MovieType } from "../types";
+import VJSlogan from "./vj-slogan";
+
 import {
   VJ_OPTIONS,
   GENRE_OPTIONS,
@@ -10,8 +12,8 @@ import {
 } from "../constants";
 import type { MovieCategoryId } from "../constants";
 
-// [STRIPPED 77 bytes] Actor DNA API — R2 photos + D1 actors (NOT Google Drive)
-// [STRIPPED 77 bytes] Defined locally here (NOT imported from constants) so this file works
+// Actor DNA API — R2 photos + D1 actors (NOT Google Drive)
+// Defined locally here (NOT imported from constants) so this file works
 // even if edit-movie/constants.ts does not export ACTOR_API_BASE yet.
 // If you add it to constants.ts, delete this line and import it instead — do NOT have both.
 const ACTOR_API_BASE = "https://actor-dna-api.connectu89.workers.dev";
@@ -36,8 +38,7 @@ export type CastMemberWithDNA = CastMember & {
   _file?: File | null;
 };
 
-// [STRIPPED 77 bytes] IMAGE SYNC — call from Edit modal Save AFTER updateMovie
-// [STRIPPED 75 bytes]
+// IMAGE SYNC — call from Edit modal Save AFTER updateMovie
 // 1. POST /actors/sync-movie { movieId, cast: [{name, photo}] } — merge by normalized_name,
 //    reuse existing actor, create new if needed, save photoUrl if actor has no photo.
 //    Needs fixed Worker (actor-dna-api.fixed.js) — old Worker ignored m.photo.
@@ -86,6 +87,8 @@ type Props = {
   setGenre: (v: string) => void;
   vj: string;
   setVj: (v: string) => void;
+  vj_slogan: string;
+  setVjSlogan: (v: string) => void;
   type: MovieType;
   setType: (v: MovieType) => void;
   year: string;
@@ -101,14 +104,13 @@ type Props = {
 };
 
 export default function MovieDetailsFields({
-  title, setTitle, genre, setGenre, vj, setVj, type, setType, year, setYear,
+  title, setTitle, genre, setGenre, vj, setVj, vj_slogan, setVjSlogan, type, setType, year, setYear,
   actors, setActors, cast, setCast, description, setDescription, category, setCategory,
 }: Props) {
   const castWithDNA = cast as CastMemberWithDNA[];
 
   const syncActorsString = (next: CastMemberWithDNA[]) => {
     setCast(next as CastMember[]);
-    // Keep comma string in sync — Edit's old `actors` input is derived, not source of truth
     setActors(next.map((m) => m.name).filter(Boolean).join(", "));
   };
 
@@ -125,7 +127,6 @@ export default function MovieDetailsFields({
   const updateCastName = (index: number, name: string) => {
     const cur = castWithDNA[index];
     if (!cur) return;
-    // FIX: if name diverges from selected actor, clear link + photo — else Emma inherits Cillian's photo
     const isSame = cur.isExisting && name.trim() === cur.name.trim();
     updateCastAt(index, {
       name,
@@ -133,9 +134,6 @@ export default function MovieDetailsFields({
     });
   };
 
-  // [STRIPPED 77 bytes] IMAGE SYNC ON PICK
-  // Existing actor (has actorId) -> upload NOW to POST /actors/:id/photo -> R2 + D1 updated instantly.
-  // New actor (no actorId) -> keep _file for Save, syncActorPhotosOnSave uploads after sync-movie creates it.
   const updateCastPhoto = async (index: number, file: File) => {
     const cur = castWithDNA[index];
     if (!cur) return;
@@ -151,7 +149,6 @@ export default function MovieDetailsFields({
         const newUrl = data?.actor?.photo || null;
         if (res.ok && newUrl) {
           URL.revokeObjectURL(localPreview);
-          // Re-read cur by index (state may have changed) — use latest cast from closure via updateCastAt
           updateCastAt(index, { photo: newUrl, photoUrl: newUrl, _file: null, photoUploading: false } as Partial<CastMemberWithDNA>);
         } else {
           updateCastAt(index, { photoUploading: false } as Partial<CastMemberWithDNA>);
@@ -173,7 +170,6 @@ export default function MovieDetailsFields({
   };
 
   const handleSelectActor = (index: number, hit: ActorSearchResult) => {
-    // INSTANT AUTO-FILL: full name + R2 photo + D1 id
     updateCastAt(index, {
       name: hit.name,
       actorId: hit.id,
@@ -188,13 +184,16 @@ export default function MovieDetailsFields({
   const clearSelection = (index: number) => {
     updateCastAt(index, { actorId: null, isExisting: false, photoUrl: null, photo: null, _file: null } as Partial<CastMemberWithDNA>);
   };
+  console.log("SLOGAN SETTER:", typeof setVjSlogan);
 
-  return (
+
+ return (
     <div className="cc-form-grid">
       <div><label>TITLE *</label><input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Movie title" /></div>
       <div><label>YEAR *</label><input value={year} onChange={(e) => setYear(e.target.value)} type="number" placeholder="2024" /></div>
       <div><label>GENRE</label><select value={genre} onChange={(e) => setGenre(e.target.value)}><option value="">Select genre</option>{GENRE_OPTIONS.map((g) => (<option key={g} value={g}>{g}</option>))}</select></div>
       <div><label>VJ</label><select value={vj} onChange={(e) => setVj(e.target.value)}>{VJ_OPTIONS.map((v) => (<option key={v} value={v}>{v}</option>))}</select></div>
+      <VJSlogan vj={vj} slogan={vj_slogan} setSlogan={setVjSlogan} />
       <div><label>ACTORS (comma separated) *</label><input value={actors} onChange={(e) => setActors(e.target.value)} placeholder="Actor 1, Actor 2" /></div>
       <div><label>TYPE</label><select value={type} onChange={(e) => setType(e.target.value as MovieType)}>{MOVIE_TYPES.map((t) => (<option key={t.value} value={t.value}>{t.label}</option>))}</select></div>
       <div style={{ gridColumn: "1 / -1" }}>
@@ -233,8 +232,7 @@ export default function MovieDetailsFields({
   );
 }
 
-// [STRIPPED 77 bytes] One cast row — its own search state
-// [STRIPPED 75 bytes]
+// One cast row — its own search state
 function CastRow({ member, idx, onNameChange, onPhotoPick, onRemove, onSelect, onClear }: {
   member: CastMemberWithDNA; idx: number;
   onNameChange: (name: string) => void;
@@ -289,6 +287,7 @@ function CastRow({ member, idx, onNameChange, onPhotoPick, onRemove, onSelect, o
   };
 
   const showDropdown = open && focused && (results.length > 0 || searching);
+  
 
   return (
     <div ref={wrapRef} style={{ position: "relative" }}>

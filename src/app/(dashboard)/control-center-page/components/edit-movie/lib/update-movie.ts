@@ -21,11 +21,13 @@ const cleanPhoto = (v: any) => (typeof v === "string" && !isBlob(v) ? v : null);
 //   await updateMovie(movieId, payload, cast);
 // where `cast` is the hook state (has _file / file / actorId / photoUrl).
 export async function updateMovie(movieId: string, payload: MoviePayload, castWithFiles?: CastWithFile[]) {
-  const body = {
+   const body = {
     title: payload.title?.trim(),
     genre: payload.genre?.trim(),
     vj: payload.vj?.trim(),
+    vj_slogan: (payload as any).vj_slogan?.trim() || "",
     type: payload.type,
+
     year: payload.year || null,
     actors: payload.actors?.trim(),
     cast: payload.cast,

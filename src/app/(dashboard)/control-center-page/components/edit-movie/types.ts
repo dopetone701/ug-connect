@@ -59,6 +59,8 @@ export interface MoviePayload {
   title: string;
   genre: string;
   vj: string;
+  vj_slogan?: string; // <-- ADD
+
   type: MovieType;
   year: number;
   /** comma separated names - for old screens */
@@ -87,6 +89,7 @@ export interface EditFormState {
   title: string;
   genre: string;
   vj: string;
+  vj_slogan: string; // <-- ADD
   type: MovieType;
   year: string;
   actors: string; // comma-separated, kept for old screens — derived from cast on Save

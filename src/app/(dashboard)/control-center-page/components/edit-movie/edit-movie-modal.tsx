@@ -115,6 +115,12 @@ export default function EditMovieModal({
   const [loadingFull, setLoadingFull] = useState(false);
 
   const form = useEditMovieForm(fullMovie || undefined);
+  console.log("EDIT MODAL SLOGAN CHECK:", {
+  value: form.vj_slogan,
+  setter: typeof form.setVjSlogan,
+  formKeys: Object.keys(form),
+});
+
   const upload = useEditMovieUpload();
 
   const fetchMovies = async () => {
@@ -313,12 +319,14 @@ export default function EditMovieModal({
       return;
     }
 
-    form.setTitle("");
+       form.setTitle("");
     form.setGenre("");
     form.setVj("");
+    form.setVjSlogan("");
     form.setActors("");
     form.setDescription("");
     form.setYear("");
+
   };
 
   const handleUpdate = async () => {
@@ -450,11 +458,13 @@ export default function EditMovieModal({
       // CATEGORY: USE THE CURRENT FORM STATE
       const selectedCategory = form.category;
 
-      const payload: MoviePayload = {
+           const payload: MoviePayload = {
         title: form.title.trim(),
         genre: form.genre.trim(),
         vj: form.vj.trim(),
+        vj_slogan: form.vj_slogan.trim(),
         type: form.type,
+
         year: parseInt(form.year, 10) || 0,
         actors: form.actors.trim(),
         cast: finalCast,
@@ -657,14 +667,17 @@ export default function EditMovieModal({
               </div>
             ) : (
               <>
-                <MovieDetailsFields
+                 <MovieDetailsFields
                   title={form.title}
                   setTitle={form.setTitle}
                   genre={form.genre}
                   setGenre={form.setGenre}
                   vj={form.vj}
                   setVj={form.setVj}
+                  vj_slogan={form.vj_slogan}
+                  setVjSlogan={form.setVjSlogan}
                   type={form.type}
+
                   setType={form.setType}
                   year={form.year}
                   setYear={form.setYear}
