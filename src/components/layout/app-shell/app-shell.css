@@ -200,3 +200,17 @@
 }
 
 
+
+
+
+
+/* TOP BAR MOTHER HOLDER - INVISIBLE, PILLS FLOAT */
+@media (max-width: 768px),
+       (hover: none) and (pointer: coarse) {
+  
+
+  .giant-panel .top-bar {
+    background: transparent !important;
+    background-color: transparent !important;
+  }
+}
