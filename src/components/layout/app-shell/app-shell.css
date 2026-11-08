@@ -200,3 +200,4 @@
 }
 
 
+.giant-body, .content-panel, .content-scroll, .film-giant, .connect-player, .film-center, .center-cover { padding-top: 0 !important; padding-bottom: 0 !important; margin-top: 0 !important; margin-bottom: 0 !important; }

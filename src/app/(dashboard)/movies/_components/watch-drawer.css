@@ -883,26 +883,3 @@ pointer-events: auto !important;
 
 
 
-/* KILL LIL TOP STRIP - drawer flush to browser bar */
-.watch-drawer-root.open:not(.is-mini) .watch-drawer-panel {
-  top: 0 !important;
-  padding-top: 0 !important;
-  margin-top: 0 !important;
-  border-top: none !important;
-}
-.watch-drawer-root.open:not(.is-mini) .watch-drawer-content,
-.watch-drawer-root.open:not(.is-mini) .connect-root,
-.watch-drawer-root.open:not(.is-mini) .film-giant.inner-body,
-.watch-drawer-root.open:not(.is-mini) .film-center,
-.watch-drawer-root.open:not(.is-mini) .center-cover,
-.watch-drawer-root.open:not(.is-mini) .connect-video {
-  padding-top: 0 !important;
-  margin-top: 0 !important;
-  border-top: none !important;
-  top: 0 !important;
-}
-.watch-drawer-root.open:not(.is-mini) .watch-drawer-backdrop {
-  top: 0 !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-}
