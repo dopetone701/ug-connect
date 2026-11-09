@@ -7,10 +7,11 @@ type Store = {
   query: string;
   activeSection: string | null;
   isSearchOpen: boolean;
+  openedFrom: "search-icon" | "other" | null;
   setAll: (m: any[]) => void;
   setQuery: (q: string) => void;
   setSection: (id: string | null) => void;
-  openSearch: () => void;
+  openSearch: (from?: "search-icon" | "other") => void;
   closeSearch: () => void;
   filtered: () => any[];
 }
@@ -51,12 +52,13 @@ export const useGlobalSearch = create<Store>((set, get) => ({
   query: "",
   activeSection: null,
   isSearchOpen: false,
+  openedFrom: null,
 
   setAll: (allMovies) => set({ allMovies }),
   setQuery: (query) => set({ query, isSearchOpen: true }),
-  setSection: (activeSection) => set({ activeSection, isSearchOpen: true }),
-  openSearch: () => set({ isSearchOpen: true }),
-  closeSearch: () => set({ isSearchOpen: false, activeSection: null }),
+  setSection: (activeSection) => set({ activeSection, isSearchOpen: true, openedFrom: "other" }),
+  openSearch: (from) => set({ isSearchOpen: true, openedFrom: from ?? null }),
+  closeSearch: () => set({ isSearchOpen: false, activeSection: null, openedFrom: null }),
 
   filtered: () => {
     const { allMovies, query, activeSection } = get()
