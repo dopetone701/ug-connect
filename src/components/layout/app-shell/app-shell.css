@@ -214,3 +214,20 @@
     background-color: transparent !important;
   }
 }
+
+
+
+/* INNER CONTENT - NO MORE PUSH DOWN */
+.google-shell,
+.giant-panel,
+.giant-body,
+.content-panel,
+.content-scroll {
+  padding-top: 0 !important;
+  margin-top: 0 !important;
+}
+
+/* Only the top bar pills clear the island, not the whole page */
+.top-bar {
+  padding-top: max(8px, env(safe-area-inset-top)) !important;
+}
