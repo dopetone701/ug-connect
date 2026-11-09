@@ -2,19 +2,27 @@
 import { useCallback, useEffect, useRef, useState } from "react"
 
 /**
- * useWatchAnimateToLandscape — SINGLE SOURCE OF TRUTH — v4 FINAL
- * Replaces v1. v1 is the file you just pasted — it causes the disappear.
+ * useWatchAnimateToLandscape — SINGLE SOURCE OF TRUTH
+ * Replaces the animation logic that was scattered across:
  *
- * v1 bugs that make video vanish:
- *  1. await lockLandscape() + 60ms wait — browser rotates BEFORE we measure, video already moved.
- *  2. FLIP with --wal-from-* + .wal-animating, but CSS animates left/top/width/height = layout = rebuild.
- *  3. After 520ms: root.requestFullscreen() / video.requestFullscreen() / webkitEnterFullscreen()
- *     = browser tears down video layer, re-parents it, re-decodes = BLACK + video disappears, then snaps back.
- *  4. fullscreenchange listener removes .wal-fullscreen instantly = exit snap.
- *  5. savedTime / wasPlaying restore = video seeks = flash.
+ * 1. WatchClient toggleFullscreen()
+ *    - Capacitor ScreenOrientation.lock('landscape')
+ *    - screen.orientation.lock('landscape')
+ *    - 50ms setTimeout, then video.webkitEnterFullscreen / video.requestFullscreen / root.requestFullscreen
+ *    - setIsFullScreen(true), onFsChange(true), documentElement.is-fullscreen-active, body overflow hidden
+ *    - savedTime / wasPlaying restore, unlock on exit
+ * 2. WatchClient fullscreenchange listener
+ *    - setIsFullScreen(!!document.fullscreenElement || !!webkitFullscreenElement)
+ * 3. WatchDrawer triggerFsBtn()
+ *    - querySelector(".cc-icon.apple-full")?.click() — indirect, fragile
+ * 4. WatchDrawer handleSmoothExpand()
+ *    - FLIP: getBoundingClientRect() -> lock left/top/width/height -> transition 520ms -> 100vw/100dvh
+ *    - inline style mess, cleared manually on finish
+ * 5. WatchDrawer isPortrait matchMedia + fixedLayout
+ *    - portrait -> fixed video layout, landscape -> free layout
  *
- * v4: NO lock, NO native fullscreen, NO requestFullscreen, NO seek, NO re-parent.
- * Same <video>, CSS-only .is-shell-full, PIN first (identical frame) then transform-only FLIP.
+ * NEW RULE: Nothing else animates. Nothing else locks orientation.
+ * WatchClient + WatchDrawer only call this hook and apply its classNames.
  */
 
 type Opts = {
@@ -22,163 +30,160 @@ type Opts = {
   rootRef: React.RefObject<HTMLDivElement | null>
   externalFs?: boolean
   onFsChange?: (v: boolean) => void
-  getPortraitRect?: () => DOMRect | null
-  onExitToPortrait?: () => void
 }
 
-export function useWatchAnimateToLandscape({ videoRef, rootRef, externalFs, onFsChange, getPortraitRect, onExitToPortrait }: Opts) {
+export function useWatchAnimateToLandscape({ videoRef, rootRef, externalFs, onFsChange }: Opts) {
   const [isFullscreen, setIsFullscreen] = useState(false)
-  const [isLandscape, setIsLandscape] = useState(false)
+  const [isLandscape, setIsLandscape] = useState(false) // device orientation, not video
   const [isAnimating, setIsAnimating] = useState(false)
-  const animatingRef = useRef(false)
-  const portraitRectRef = useRef<DOMRect | null>(null)
-  const lastOrientation = useRef<"portrait" | "landscape">(
-    typeof window !== "undefined" && window.innerWidth > window.innerHeight ? "landscape" : "portrait"
-  )
+  const animTimer = useRef<any>(null)
+  const savedRef = useRef({ time: 0, playing: false })
 
+  // --- 1. Device orientation = single listener ---
   useEffect(() => {
     const mq = window.matchMedia("(orientation: landscape)")
-    const update = () => { setIsLandscape(mq.matches); lastOrientation.current = mq.matches ? "landscape" : "portrait" }
+    const update = () => setIsLandscape(mq.matches)
     update()
     mq.addEventListener?.("change", update)
     return () => mq.removeEventListener?.("change", update)
   }, [])
 
-  // External is MIRROR only — never drives us, never fights.
-  useEffect(() => { if (externalFs !== undefined) setIsFullscreen(externalFs) }, [externalFs])
+  // --- 2. External fullscreen (WatchDrawer) syncs in, never fights ---
+  useEffect(() => {
+    if (externalFs !== undefined) setIsFullscreen(externalFs)
+  }, [externalFs])
 
-  const clearVars = useCallback((root: HTMLElement) => {
-    ["--wal-left","--wal-top","--wal-w","--wal-h","--wal-dx","--wal-dy","--wal-sx","--wal-sy","--wal-rot"].forEach(k => root.style.removeProperty(k))
+  const setFs = useCallback((v: boolean) => {
+    setIsFullscreen(v)
+    onFsChange?.(v)
+    document.documentElement.classList.toggle("is-fullscreen-active", v)
+    document.body.style.overflow = v ? "hidden" : ""
+  }, [onFsChange])
+
+  const lockLandscape = useCallback(async () => {
+    try {
+      const isNative = (window as any).Capacitor?.isNativePlatform?.() ? (window as any).Capacitor.isNativePlatform() : false
+      if (isNative) {
+        try {
+          const mod = await import("@capacitor/screen-orientation")
+          await mod.ScreenOrientation.lock({ orientation: "landscape" })
+        } catch {}
+      }
+    } catch {}
+    try { await (screen.orientation as any)?.lock?.("landscape") } catch {}
   }, [])
 
-  const enterFullscreen = useCallback(() => {
-    const root = rootRef.current, video = videoRef.current
-    if (!root || animatingRef.current) return
-    animatingRef.current = true
-    setIsAnimating(true)
+  const unlockOrientation = useCallback(async () => {
+    try {
+      const isNative = (window as any).Capacitor?.isNativePlatform?.() ? (window as any).Capacitor.isNativePlatform() : false
+      if (isNative) {
+        try {
+          const mod = await import("@capacitor/screen-orientation")
+          await mod.ScreenOrientation.unlock()
+        } catch {}
+      }
+    } catch {}
+    try { (screen.orientation as any)?.unlock?.() } catch {}
+  }, [])
+
+  // --- 3. ENTER: FLIP animate from current rect -> fullscreen, THEN native fullscreen ---
+  const enterFullscreen = useCallback(async () => {
+    const video = videoRef.current as any
+    const root = rootRef.current as any
+    if (!video || !root || isFullscreen) return
+    savedRef.current = { time: video.currentTime || 0, playing: !video.paused }
+
+    // a) Lock orientation FIRST — so the browser rotates before we measure
+    await lockLandscape()
+    await new Promise((r) => setTimeout(r, 60))
+
+    // b) FLIP: capture where we are now
     const rect = root.getBoundingClientRect()
-    portraitRectRef.current = rect
-    const wasPaused = video ? video.paused : true
-
-    // STEP 1 — PIN: fixed at EXACT portrait rect, transform = none. ZERO visual change.
-    root.classList.add("wal-root", "wal-animating")
-    root.style.setProperty("--wal-left", `${rect.left}px`)
-    root.style.setProperty("--wal-top", `${rect.top}px`)
-    root.style.setProperty("--wal-w", `${rect.width}px`)
-    root.style.setProperty("--wal-h", `${rect.height}px`)
-    root.style.setProperty("--wal-dx", "0px"); root.style.setProperty("--wal-dy", "0px")
-    root.style.setProperty("--wal-sx", "1"); root.style.setProperty("--wal-sy", "1")
-    root.style.setProperty("--wal-rot", "0deg")
-    void root.getBoundingClientRect() // force paint at pinned pose — stops the vanish
-
-    // STEP 2 — ANIMATE: grow + rotate to fullscreen. Same video, never paused.
-    requestAnimationFrame(() => requestAnimationFrame(() => {
-      const cx = rect.left + rect.width / 2, cy = rect.top + rect.height / 2
-      const scx = window.innerWidth / 2, scy = window.innerHeight / 2
-      root.classList.add("wal-to-full", "wal-fullscreen", "wal-landscape")
-      root.style.setProperty("--wal-dx", `${scx - cx}px`)
-      root.style.setProperty("--wal-dy", `${scy - cy}px`)
-      root.style.setProperty("--wal-sx", `${window.innerWidth / rect.width}`)
-      root.style.setProperty("--wal-sy", `${window.innerHeight / rect.height}`)
-      root.style.setProperty("--wal-rot", `90deg`)
-      if (video && !wasPaused) video.play().catch(() => {})
-    }))
-
-    // STEP 3 — LAND: only NOW .is-shell-full. Transform end == fullscreen pose, no jump.
-    window.setTimeout(() => {
-      root.classList.add("is-shell-full")
-      root.classList.remove("wal-animating", "wal-to-full")
-      root.classList.add("wal-animating-done")
-      clearVars(root)
-      animatingRef.current = false; setIsAnimating(false)
-      setIsFullscreen(true); onFsChange?.(true)
-      requestAnimationFrame(() => root.classList.remove("wal-animating-done"))
-    }, 540)
-  }, [videoRef, rootRef, clearVars, onFsChange])
-
-  const exitFullscreen = useCallback(() => {
-    const root = rootRef.current, video = videoRef.current
-    if (!root || animatingRef.current) return
-    animatingRef.current = true
+    root.style.setProperty("--wal-from-left", `${rect.left}px`)
+    root.style.setProperty("--wal-from-top", `${rect.top}px`)
+    root.style.setProperty("--wal-from-w", `${rect.width}px`)
+    root.style.setProperty("--wal-from-h", `${rect.height}px`)
+    root.classList.add("wal-animating")
     setIsAnimating(true)
-    const wasPaused = video ? video.paused : true
-    const target = getPortraitRect?.() ?? portraitRectRef.current
-    if (!target) {
-      root.classList.remove("is-shell-full", "wal-fullscreen", "wal-landscape")
-      setIsFullscreen(false); onFsChange?.(false); onExitToPortrait?.()
-      animatingRef.current = false; setIsAnimating(false); return
-    }
-    // STEP 1 — PIN at FULL, transform = none. No vanish. Keep .is-shell-full ON during exit.
-    root.classList.add("wal-root", "wal-animating")
-    root.classList.remove("wal-animating-done")
-    root.style.setProperty("--wal-left", `0px`); root.style.setProperty("--wal-top", `0px`)
-    root.style.setProperty("--wal-w", `${window.innerWidth}px`); root.style.setProperty("--wal-h", `${window.innerHeight}px`)
-    root.style.setProperty("--wal-dx", "0px"); root.style.setProperty("--wal-dy", "0px")
-    root.style.setProperty("--wal-sx", "1"); root.style.setProperty("--wal-sy", "1")
-    root.style.setProperty("--wal-rot", "0deg")
-    void root.getBoundingClientRect()
 
-    // STEP 2 — ANIMATE back: shrink + rotate to portrait rect. Same 520ms, same curve.
-    requestAnimationFrame(() => requestAnimationFrame(() => {
-      const cx = window.innerWidth / 2, cy = window.innerHeight / 2
-      const tcx = target.left + target.width / 2, tcy = target.top + target.height / 2
-      root.classList.add("wal-to-portrait")
-      root.style.setProperty("--wal-dx", `${tcx - cx}px`)
-      root.style.setProperty("--wal-dy", `${tcy - cy}px`)
-      root.style.setProperty("--wal-sx", `${target.width / window.innerWidth}`)
-      root.style.setProperty("--wal-sy", `${target.height / window.innerHeight}`)
-      root.style.setProperty("--wal-rot", `-90deg`)
-      if (video && !wasPaused) video.play().catch(() => {})
-    }))
+    // c) Next frame: apply fullscreen class — CSS transitions left/top/width/height/border-radius
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        root.classList.add("wal-fullscreen")
+        setFs(true)
+      })
+    })
 
-    // STEP 3 — LAND: only NOW drop .is-shell-full.
-    window.setTimeout(() => {
-      root.classList.remove("is-shell-full", "wal-fullscreen", "wal-landscape", "wal-animating", "wal-to-portrait")
-      root.classList.add("wal-animating-done")
-      clearVars(root)
-      animatingRef.current = false; setIsAnimating(false)
-      setIsFullscreen(false); onFsChange?.(false); onExitToPortrait?.()
-      requestAnimationFrame(() => root.classList.remove("wal-animating-done"))
-    }, 540)
-  }, [rootRef, videoRef, getPortraitRect, clearVars, onFsChange, onExitToPortrait])
+    // d) After CSS animation finishes, hand over to native fullscreen (no jump, same rect)
+    clearTimeout(animTimer.current)
+    animTimer.current = setTimeout(async () => {
+      root.classList.remove("wal-animating")
+      setIsAnimating(false)
+      try {
+        const isNative = (window as any).Capacitor?.isNativePlatform?.() ? (window as any).Capacitor.isNativePlatform() : false
+        const isStandalone = window.matchMedia("(display-mode: standalone)").matches || (window.navigator as any).standalone === true
+        const isAndroid = /Android/i.test(navigator.userAgent)
+        const useRoot = isNative || isStandalone || isAndroid
+        if (!useRoot && video.webkitEnterFullscreen) video.webkitEnterFullscreen()
+        else if (root.requestFullscreen) await root.requestFullscreen({ navigationUI: "hide" } as any)
+        else if (video.requestFullscreen) await video.requestFullscreen()
+        else if ((root as any).webkitRequestFullscreen) await (root as any).webkitRequestFullscreen()
+      } catch {}
+      // e) Restore time / playing — fullscreen can reset it
+      try {
+        if (Math.abs(video.currentTime - savedRef.current.time) > 0.5) video.currentTime = savedRef.current.time
+        if (savedRef.current.playing) video.play().catch(() => {})
+      } catch {}
+    }, 520) // = CSS transition time, keep in sync with .css
+  }, [videoRef, rootRef, isFullscreen, lockLandscape, setFs])
+
+  // --- 4. EXIT: reverse — exit native, then FLIP back, then unlock ---
+  const exitFullscreen = useCallback(async () => {
+    const root = rootRef.current as any
+    if (!root) return
+    try { if (document.fullscreenElement) await document.exitFullscreen() } catch {}
+    try { if ((document as any).webkitFullscreenElement) await (document as any).webkitExitFullscreen?.() } catch {}
+    setFs(false)
+    root.classList.remove("wal-fullscreen")
+    // Let CSS animate back, then clean vars
+    setTimeout(() => {
+      root.classList.remove("wal-animating")
+      ;["--wal-from-left", "--wal-from-top", "--wal-from-w", "--wal-from-h"].forEach((k) => root.style.removeProperty(k))
+      setIsAnimating(false)
+    }, 420)
+    await unlockOrientation()
+  }, [rootRef, setFs, unlockOrientation])
 
   const toggleFullscreen = useCallback(() => {
     if (isFullscreen) return exitFullscreen()
     return enterFullscreen()
   }, [isFullscreen, enterFullscreen, exitFullscreen])
 
-  // AUTO-ROTATE: gamma fires WHILE hand is still rotating (early), matchMedia is backup.
+  // --- 5. Browser / OS exited fullscreen (swipe, back gesture) — stay in sync ---
   useEffect(() => {
-    let started = false
-    const onGamma = (e: DeviceOrientationEvent) => {
-      const g = (e as any).gamma ?? 0
-      if (!started && Math.abs(g) > 45 && lastOrientation.current === "portrait" && !isFullscreen) {
-        started = true; lastOrientation.current = "landscape"; enterFullscreen()
+    const onFs = () => {
+      const fs = !!document.fullscreenElement || !!(document as any).webkitFullscreenElement
+      if (!fs && isFullscreen) {
+        setFs(false)
+        rootRef.current?.classList.remove("wal-fullscreen", "wal-animating")
+        setIsAnimating(false)
+        unlockOrientation()
       }
-      if (!started && Math.abs(g) < 20 && lastOrientation.current === "landscape" && isFullscreen) {
-        started = true; lastOrientation.current = "portrait"; exitFullscreen()
-      }
-      if (Math.abs(g) < 10 || Math.abs(g) > 80) started = false
+      if (fs && !isFullscreen) setFs(true)
     }
-    const mq = window.matchMedia("(orientation: landscape)")
-    const onMq = () => {
-      const now = mq.matches ? "landscape" : "portrait"
-      if (now === lastOrientation.current) return
-      lastOrientation.current = now
-      if (now === "landscape" && !isFullscreen) enterFullscreen()
-      if (now === "portrait" && isFullscreen) exitFullscreen()
-    }
-    window.addEventListener("deviceorientation", onGamma as any)
-    mq.addEventListener?.("change", onMq)
+    document.addEventListener("fullscreenchange", onFs)
+    document.addEventListener("webkitfullscreenchange", onFs as any)
     return () => {
-      window.removeEventListener("deviceorientation", onGamma as any)
-      mq.removeEventListener?.("change", onMq)
+      document.removeEventListener("fullscreenchange", onFs)
+      document.removeEventListener("webkitfullscreenchange", onFs as any)
+      clearTimeout(animTimer.current)
     }
-  }, [enterFullscreen, exitFullscreen, isFullscreen])
+  }, [isFullscreen, setFs, unlockOrientation, rootRef])
 
-  // NO fullscreenchange listener in v4 — there is no native fullscreen to listen to.
-  // NO lockLandscape / unlockOrientation / Capacitor / screen.orientation.lock in v4.
-
+  // --- 6. Already fullscreen + portrait -> rotate to landscape ---
+  // No JS animation here. CSS does it: .wal-fullscreen .wal-video-box
+  // transitions width/height when viewport swaps. This hook only exposes
+  // isLandscape so the className flips and CSS animates it.
   const rootClassName = [
     "wal-root",
     isFullscreen ? "wal-fullscreen" : "",
@@ -187,12 +192,7 @@ export function useWatchAnimateToLandscape({ videoRef, rootRef, externalFs, onFs
     isAnimating ? "wal-animating" : "",
   ].filter(Boolean).join(" ")
 
-  return {
-    isFullscreen, isLandscape, isAnimating,
-    toggleFullscreen, enterFullscreen, exitFullscreen,
-    enterLandscape: enterFullscreen, exitLandscape: exitFullscreen,
-    rootClassName,
-  }
+  return { isFullscreen, isLandscape, isAnimating, toggleFullscreen, enterFullscreen, exitFullscreen, rootClassName }
 }
 
 export default useWatchAnimateToLandscape

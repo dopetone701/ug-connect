@@ -1,74 +1,86 @@
-/* wach-animate-to-landscape.css — v4 FIX: VIDEO NEVER DISAPPEARS
-   v3 BUG: start pose was scale = portrait/fullscreen = 0.2 + rotate 90deg.
-   First frame video shrank to 20% + rotated off-screen = looked like it vanished, then grew.
-   v4: FIRST FRAME = IDENTICAL to where video already was. No scale, no rotate, no black.
-   We PIN the wrapper at the portrait rect (left/top/width/height = rect), transform = none.
-   THEN we animate transform to fullscreen. So frame 1 = no change, frame 2+ = smooth grow.
+/* wach-animate-to-landscape.css — ANIMATION ONLY. NO LAYOUT. NO FIGHT.
+   connect-player.css OWNS all layout: .connect-root, .is-shell-full, .film-giant,
+   .film-center, .center-cover, .connect-video, object-fit, widths, heights.
+   This file ONLY adds: transition (for smooth portrait->landscape) + FLIP vars.
+   It NEVER sets: position / inset / width / height / object-fit / display / background.
+   That is why it cannot fight connect-player.css.
 */
 
-/* 1. VIDEO — never hidden, never opacity 0, texture stays alive */
+/* 1. THE ONLY THING WE ADD: smooth width/height transition for rotation.
+   connect-player.css at the bottom sets:
+     .film-root, .film-giant, .center-cover, .connect-video { transition: transform .35s, opacity .25s }
+   That has NO width/height transition, so portrait->landscape would JUMP.
+   We ADD width/height to the transition — same elements, higher specificity via .wal-root,
+   but we do NOT change any width/height VALUE. Values still come from connect-player.css. */
+.connect-root.wal-root .film-giant.inner-body,
+.connect-root.wal-root .film-center,
+.connect-root.wal-root .center-cover,
 .connect-root.wal-root .connect-video {
-  opacity: 1 !important;
-  visibility: visible !important;
-  will-change: transform !important;
-  backface-visibility: hidden !important;
-  transform: translateZ(0) !important;
-}
-.connect-root.wal-root.is-shell-full .connect-video {
-  object-fit: cover !important;
-  object-position: center center !important;
-  width: 100% !important; height: 100% !important;
+  transition: width 520ms cubic-bezier(0.16, 1, 0.3, 1),
+    height 520ms cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.35s ease, opacity 0.25s ease !important;
+  will-change: width, height;
 }
 
-/* 2. ANIMATOR — wrapper is PINNED at current rect first, then transform animates it */
-.connect-root.wal-root.wal-animating {
-  position: fixed !important;
-  /* PINNED at portrait rect — set by hook via --wal-left/top/w/h. NOT 0/100dvw yet. */
-  left: var(--wal-left, 0px) !important;
-  top: var(--wal-top, 0px) !important;
-  width: var(--wal-w, 100dvw) !important;
-  height: var(--wal-h, 100dvh) !important;
-  border-radius: 0 !important;
+/* 2. FLIP start — ONLY during the 520ms mini->fullscreen animation, BEFORE is-shell-full is on.
+   Uses vars from getBoundingClientRect(). Once .is-shell-full lands, connect-player.css
+   takes over (inset:0 / 100vw / 100dvh) and this class is removed by the hook. */
+.connect-root.wal-root.wal-animating:not(.is-shell-full) {
+  position: fixed;
+  left: var(--wal-from-left, 0);
+  top: var(--wal-from-top, 0);
+  width: var(--wal-from-w, 100vw);
+  height: var(--wal-from-h, 100dvh);
+  border-radius: 12px;
   z-index: 9999;
-  /* START: identity. Video looks EXACTLY as before. No shrink, no rotate. */
-  transform: translate(0px, 0px) rotate(0deg) scale(1, 1) !important;
-  transform-origin: center center !important;
-  transition: transform 520ms cubic-bezier(0.32, 0.72, 0, 1) !important;
-  will-change: transform, left, top, width, height !important;
-  /* NEVER black over video — old code set background #000 on wrapper, that covered the video for 1 frame */
-  background: transparent !important;
 }
-/* END pose — hook sets --wal-dx/dy/sx/sy/rot to fullscreen values, CSS animates to them */
-.connect-root.wal-root.wal-animating.wal-to-full {
-  transform:
-    translate(var(--wal-dx, 0px), var(--wal-dy, 0px))
-    rotate(var(--wal-rot, 0deg))
-    scale(var(--wal-sx, 1), var(--wal-sy, 1)) !important;
-}
-/* EXIT: same idea, reversed. Start = full (identity), end = portrait rect */
-.connect-root.wal-root.wal-animating.wal-to-portrait {
-  transform:
-    translate(var(--wal-dx, 0px), var(--wal-dy, 0px))
-    rotate(var(--wal-rot, 0deg))
-    scale(var(--wal-sx, 1), var(--wal-sy, 1)) !important;
-}
-.connect-root.wal-root.wal-animating.wal-animating-done {
-  transform: none !important;
-  transition: none !important;
+/* No !important here on purpose — is-shell-full (with !important) must always win when it lands. */
+
+/* 3. Portrait vs Landscape in fullscreen — NO sizes here.
+   connect-player.css already does:
+     .is-shell-full .film-center/.center-cover/.connect-video { width:100vw; height:100dvh }
+   When device rotates, 100vw/100dvh swap values, and rule (1) above animates that swap.
+   We only expose the state as classes for debugging / future hooks. No layout. */
+.connect-root.wal-root.wal-fullscreen.wal-portrait,
+.connect-root.wal-root.wal-fullscreen.wal-landscape {
+  /* intentionally empty — layout lives in connect-player.css */
 }
 
-/* During animation, children must NOT animate width/height — transform does it */
-.connect-root.wal-root.wal-animating .film-giant.inner-body,
-.connect-root.wal-root.wal-animating .film-center,
-.connect-root.wal-root.wal-animating .center-cover,
-.connect-root.wal-root.wal-animating .connect-video {
-  width: 100% !important; height: 100% !important;
-  transition: none !important;
-  opacity: 1 !important; visibility: visible !important;
-}
+/* 4. NEVER touch these — listed so no one adds them back:
+   object-fit (zoom-to-cover / connect-player.css owns it, with !important contain),
+   display:none for under-section (connect-player.css .is-shell-full already hides it),
+   background, padding, margin, border-radius on .connect-video. */
 
-.connect-root.wal-root.wal-animating.is-closing { position: static; left: auto; top: auto; width: auto; height: auto; transform: none !important; }
 @media (prefers-reduced-motion: reduce) {
-  .connect-root.wal-root.wal-animating { transition: none !important; }
+  .connect-root.wal-root .film-giant.inner-body,
+  .connect-root.wal-root .film-center,
+  .connect-root.wal-root .center-cover,
+  .connect-root.wal-root .connect-video {
+    transition: none !important;
+  }
+}
+
+/* ===== HELPER COMPAT — connect-player-helper.css OWNS THESE, WAL MUST NOT TOUCH =====
+   Helper owns:
+   - .film-root { transition: transform .48s, opacity .48s, filter .48s !important; transform-origin: center top }
+   - .movies-shell:has(.yt-overlay-root) > .film-root { scale(0.96) + blur(8px) — HOME NEVER DIES }
+   - .movies-shell .yt-overlay-root { animation: pageSlideIn .55s / pageZoomOut .38s on mobile }
+   So WAL:
+   - NEVER targets .film-root itself (only .film-giant / .film-center / .center-cover / .connect-video inside it)
+   - NEVER sets transform / opacity / filter on the root
+   - NEVER runs FLIP while overlay is closing (helper's pageZoomOut owns that)
+*/
+.connect-root.wal-root.wal-animating.is-closing {
+  position: static;
+  left: auto;
+  top: auto;
+  width: auto;
+  height: auto;
+}
+.connect-root.wal-root.yt-overlay-root.is-closing .film-giant.inner-body,
+.connect-root.wal-root.yt-overlay-root.is-closing .film-center,
+.connect-root.wal-root.yt-overlay-root.is-closing .center-cover,
+.connect-root.wal-root.yt-overlay-root.is-closing .connect-video {
+  transition: none !important;
 }
 
