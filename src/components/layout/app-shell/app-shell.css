@@ -9,7 +9,7 @@
   overflow: hidden;
   position: fixed;
   inset: 0;
-  padding-top: 0;
+  padding-top: env(safe-area-inset-top);
   box-sizing: border-box;
 }
 
@@ -197,37 +197,4 @@
   .giant-body > .side-bar { display: none !important; }
   .giant-body { padding: 0 !important; }
   .content-panel { border-radius: 0 !important; border: none !important; }
-}
-
-
-
-
-
-
-/* TOP BAR MOTHER HOLDER - INVISIBLE, PILLS FLOAT */
-@media (max-width: 768px),
-       (hover: none) and (pointer: coarse) {
-  
-
-  .giant-panel .top-bar {
-    background: transparent !important;
-    background-color: transparent !important;
-  }
-}
-
-
-
-/* INNER CONTENT - safe-area ONLY on top-bar, not on google-shell */
-.google-shell,
-.giant-panel,
-.giant-body,
-.content-panel,
-.content-scroll {
-  padding-top: 0 !important;
-  margin-top: 0 !important;
-}
-
-/* Only the top bar pills clear the island, not the whole page */
-.top-bar {
-  padding-top: max(8px, env(safe-area-inset-top)) !important;
 }
