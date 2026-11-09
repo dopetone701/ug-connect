@@ -1,0 +1,14 @@
+.mwcp-timelines{display:flex;flex-direction:column;gap:16px;margin-top:16px}
+.mwcp-master{border:2px solid hsl(var(--primary));border-radius:6px;padding:12px;background:hsl(var(--surface))}
+.mwcp-master-badge{background:hsl(var(--primary));color:hsl(var(--primary-text));font-size:11px;font-weight:800;padding:4px 8px;border-radius:999px}
+.mwcp-vj-row{border:1px solid hsl(var(--border));border-radius:6px;padding:12px;background:hsl(var(--surface));display:flex;flex-direction:column;gap:10px}
+.mwcp-vj-head{display:flex;justify-content:space-between;font-size:12px;color:hsl(var(--text-muted))}
+.mwcp-vj-bar{position:relative;height:18px;background:hsl(var(--border));border-radius:999px}
+.mwcp-vj-fill{position:absolute;top:0;height:100%;background:hsl(var(--primary));border-radius:999px}
+.mwcp-offset{display:flex;align-items:center;gap:10px;font-size:12px;color:hsl(var(--text-muted))}
+.mwcp-offset input{flex:1}
+.mwcp-offset button{border:1px solid hsl(var(--border));background:transparent;color:hsl(var(--text));border-radius:999px;padding:4px 10px;cursor:pointer}
+.mwcp-note{font-size:12px;color:hsl(var(--text-muted))}
+.mwcp-clear{border:1px solid #ef4444;background:transparent;color:#ef4444;border-radius:999px;padding:8px 12px;cursor:pointer;align-self:flex-start}
+.mwcp-empty{padding:20px;text-align:center;color:hsl(var(--text-muted));border:1px dashed hsl(var(--border));border-radius:6px}
+

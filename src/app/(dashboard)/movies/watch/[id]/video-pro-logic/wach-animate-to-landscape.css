@@ -1,0 +1,86 @@
+/* wach-animate-to-landscape.css — ANIMATION ONLY. NO LAYOUT. NO FIGHT.
+   connect-player.css OWNS all layout: .connect-root, .is-shell-full, .film-giant,
+   .film-center, .center-cover, .connect-video, object-fit, widths, heights.
+   This file ONLY adds: transition (for smooth portrait->landscape) + FLIP vars.
+   It NEVER sets: position / inset / width / height / object-fit / display / background.
+   That is why it cannot fight connect-player.css.
+*/
+
+/* 1. THE ONLY THING WE ADD: smooth width/height transition for rotation.
+   connect-player.css at the bottom sets:
+     .film-root, .film-giant, .center-cover, .connect-video { transition: transform .35s, opacity .25s }
+   That has NO width/height transition, so portrait->landscape would JUMP.
+   We ADD width/height to the transition — same elements, higher specificity via .wal-root,
+   but we do NOT change any width/height VALUE. Values still come from connect-player.css. */
+.connect-root.wal-root .film-giant.inner-body,
+.connect-root.wal-root .film-center,
+.connect-root.wal-root .center-cover,
+.connect-root.wal-root .connect-video {
+  transition: width 520ms cubic-bezier(0.16, 1, 0.3, 1),
+    height 520ms cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.35s ease, opacity 0.25s ease !important;
+  will-change: width, height;
+}
+
+/* 2. FLIP start — ONLY during the 520ms mini->fullscreen animation, BEFORE is-shell-full is on.
+   Uses vars from getBoundingClientRect(). Once .is-shell-full lands, connect-player.css
+   takes over (inset:0 / 100vw / 100dvh) and this class is removed by the hook. */
+.connect-root.wal-root.wal-animating:not(.is-shell-full) {
+  position: fixed;
+  left: var(--wal-from-left, 0);
+  top: var(--wal-from-top, 0);
+  width: var(--wal-from-w, 100vw);
+  height: var(--wal-from-h, 100dvh);
+  border-radius: 12px;
+  z-index: 9999;
+}
+/* No !important here on purpose — is-shell-full (with !important) must always win when it lands. */
+
+/* 3. Portrait vs Landscape in fullscreen — NO sizes here.
+   connect-player.css already does:
+     .is-shell-full .film-center/.center-cover/.connect-video { width:100vw; height:100dvh }
+   When device rotates, 100vw/100dvh swap values, and rule (1) above animates that swap.
+   We only expose the state as classes for debugging / future hooks. No layout. */
+.connect-root.wal-root.wal-fullscreen.wal-portrait,
+.connect-root.wal-root.wal-fullscreen.wal-landscape {
+  /* intentionally empty — layout lives in connect-player.css */
+}
+
+/* 4. NEVER touch these — listed so no one adds them back:
+   object-fit (zoom-to-cover / connect-player.css owns it, with !important contain),
+   display:none for under-section (connect-player.css .is-shell-full already hides it),
+   background, padding, margin, border-radius on .connect-video. */
+
+@media (prefers-reduced-motion: reduce) {
+  .connect-root.wal-root .film-giant.inner-body,
+  .connect-root.wal-root .film-center,
+  .connect-root.wal-root .center-cover,
+  .connect-root.wal-root .connect-video {
+    transition: none !important;
+  }
+}
+
+/* ===== HELPER COMPAT — connect-player-helper.css OWNS THESE, WAL MUST NOT TOUCH =====
+   Helper owns:
+   - .film-root { transition: transform .48s, opacity .48s, filter .48s !important; transform-origin: center top }
+   - .movies-shell:has(.yt-overlay-root) > .film-root { scale(0.96) + blur(8px) — HOME NEVER DIES }
+   - .movies-shell .yt-overlay-root { animation: pageSlideIn .55s / pageZoomOut .38s on mobile }
+   So WAL:
+   - NEVER targets .film-root itself (only .film-giant / .film-center / .center-cover / .connect-video inside it)
+   - NEVER sets transform / opacity / filter on the root
+   - NEVER runs FLIP while overlay is closing (helper's pageZoomOut owns that)
+*/
+.connect-root.wal-root.wal-animating.is-closing {
+  position: static;
+  left: auto;
+  top: auto;
+  width: auto;
+  height: auto;
+}
+.connect-root.wal-root.yt-overlay-root.is-closing .film-giant.inner-body,
+.connect-root.wal-root.yt-overlay-root.is-closing .film-center,
+.connect-root.wal-root.yt-overlay-root.is-closing .center-cover,
+.connect-root.wal-root.yt-overlay-root.is-closing .connect-video {
+  transition: none !important;
+}
+

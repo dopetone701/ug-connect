@@ -3,10 +3,11 @@ import { useState } from "react";
 import "./control-center.css";
 
 import CreateMovieModal from "./components/create-movie/create-movie-modal";
-
-
 import EditMovieModal from "./components/edit-movie/edit-movie-modal";
 import AppLogoManager from "./components/app-logo-manager";
+
+// --- ONLY INJECTION: Movie Wall Controller Panel ---
+import MovieWallControllerPanel, { WallVjBattleChip } from "./components/movie-wall-controller/movie-wall-controller-panel";
 
 const tabs = ["Overview", "Users", "Orders", "Settings", "Create", "Edit Movie", "Logo"];
 
@@ -38,6 +39,9 @@ export default function Page() {
             {t === "Create" ? "+ Create" : t === "Edit Movie" ? "✏️ Edit Movie" : t === "Logo" ? "🎨 Logo" : t}
           </button>
         ))}
+
+        {/* --- CHIP TOGETHER WITH OTHER CHIPS --- */}
+        <WallVjBattleChip />
       </div>
 
       <div className="cc-grid">
@@ -60,6 +64,10 @@ export default function Page() {
       {/* MODALS */}
       <CreateMovieModal open={showCreate} onClose={() => setShowCreate(false)} />
       <EditMovieModal open={showEdit} onClose={() => setShowEdit(false)} />
+
+      {/* --- ONLY INJECTION: Empty Panel (hidden until chip tapped) --- */}
+      <MovieWallControllerPanel />
     </div>
   );
 }
+
