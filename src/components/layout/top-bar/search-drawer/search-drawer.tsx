@@ -58,30 +58,9 @@ export default function SearchDrawer() {
 
   const isPersonalListView = isMyListView || isContinueView;
 
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    const isMobile = window.innerWidth <= 1024 || navigator.maxTouchPoints > 0;
-    if (!isMobile) return;
-    const openedBySection = !!activeSection || !!filterType || showFilterRow;
-    if (openedBySection) {
-      const t1 = setTimeout(() => {
-        if (document.activeElement instanceof HTMLElement) {
-          document.activeElement.blur();
-        }
-        const inputs = document.querySelectorAll('input[type="text"], input[type="search"], input');
-        inputs.forEach((el) => (el as HTMLElement).blur());
-      }, 50);
-      const t2 = setTimeout(() => {
-        if (document.activeElement instanceof HTMLElement) {
-          document.activeElement.blur();
-        }
-      }, 300);
-      return () => {
-        clearTimeout(t1);
-        clearTimeout(t2);
-      };
-    }
-  }, [activeSection, filterType, showFilterRow, query]);
+  // KEYBOARD FIX: killer useEffect REMOVED — it blurred input on every query change.
+  // Keyboard is now owned only by TopBar (openedFrom === "search-icon" -> focus once).
+  // This file must NEVER blur / focus.
 
   const allGenres = useMemo(() => {
     const s = new Set<string>();
