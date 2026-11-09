@@ -41,29 +41,28 @@ export default function IntroVideo({ onFinished }: { onFinished?: () => void }) 
          position:fixed;
          inset:0;
          width:100vw;
-         height:100vh;
          height:100dvh;
-         height:100svh;
-         min-height:-webkit-fill-available;
+         height:100lvh;
+         min-height:100dvh;
          z-index:2147483647;
          background:#000;
          display:flex;
          align-items:center;
          justify-content:center;
-         padding-top:env(safe-area-inset-top);
-         padding-bottom:env(safe-area-inset-bottom);
-         padding-left:env(safe-area-inset-left);
-         padding-right:env(safe-area-inset-right);
+         /* NO safe-area padding - cover it, don't avoid it */
+         padding:0 !important;
+         margin:0 !important;
+         /* Extend under top + bottom safe-area */
+         top:calc(-1 * env(safe-area-inset-top, 0px)) !important;
+         height:calc(100dvh + env(safe-area-inset-top, 0px) + env(safe-area-inset-bottom, 0px)) !important;
          transition:opacity .6s cubic-bezier(.4,0,.2,1);
        }
        .intro-overlay.out{opacity:0;pointer-events:none}
        .intro-overlay video{
          position:absolute;
          inset:0;
-         width:100%;
-         height:100%;
-         width:100vw;
-         height:100dvh;
+         width:100% !important;
+         height:100% !important;
          object-fit:cover;
          background:#000 url('/intro-video/intro.jpg') center/cover no-repeat;
        }
