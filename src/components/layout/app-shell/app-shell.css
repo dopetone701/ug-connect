@@ -9,7 +9,7 @@
   overflow: hidden;
   position: fixed;
   inset: 0;
-  padding-top: env(safe-area-inset-top);
+  padding-top: 0;
   box-sizing: border-box;
 }
 
@@ -217,7 +217,7 @@
 
 
 
-/* INNER CONTENT - NO MORE PUSH DOWN */
+/* INNER CONTENT - safe-area ONLY on top-bar, not on google-shell */
 .google-shell,
 .giant-panel,
 .giant-body,
