@@ -80,7 +80,7 @@ html, body { overflow-x: hidden; }
   .content-panel {
     border: none !important;
     margin-top: 0 !important;
-    padding-top: 12px !important;
+    padding-top: 0 !important; /* FIXED: was 12px — this was pushing every page down 12px */
     box-shadow: none !important;
   }
 }
@@ -153,7 +153,7 @@ html, body { overflow-x: hidden; }
   .content-panel {
     border: none !important;
     margin-top: 0 !important;
-    padding-top: 12px !important;
+    padding-top: 0 !important; /* FIXED: was 12px */
     box-shadow: none !important;
   }
 }
@@ -180,7 +180,7 @@ html, body { overflow-x: hidden; }
   .content-panel {
     border: none !important;
     margin-top: 0 !important;
-    padding-top: 12px !important;
+    padding-top: 0 !important; /* FIXED: was 12px */
     box-shadow: none !important;
   }
 }
@@ -240,7 +240,6 @@ html.is-fullscreen-active .top-bar {
   display: none !important;
 }
 
-
 /* connect player fullscreen - fixed to viewport, escapes shell */
 .connect-root.is-shell-full {
   position: fixed !important;
@@ -284,12 +283,6 @@ html.is-fullscreen-active .top-bar {
 .connect-root.is-shell-full .connect-video {
   object-fit: contain !important;
 }
-
-
-
-
-
-
 
 /* ===== SURGICAL FIX: RUBBER BAND = THEME BG, ONLY VIDEO = BLACK ===== */
 
@@ -343,10 +336,8 @@ html:has(.is-shell-full) body { background: #000 !important; } <- REMOVE
   background: #000 !important;
 }
 
-
-
 @media (min-width: 769px) {
-  * {
+    * {
     scrollbar-width: none;
     -ms-overflow-style: none;
   }
@@ -356,8 +347,6 @@ html:has(.is-shell-full) body { background: #000 !important; } <- REMOVE
     height: 0;
   }
 }
-
-
 
 /* MAIN CONTENT PANEL - ZERO TOP PADDING ONLY */
 .content-panel {
@@ -370,7 +359,3 @@ html:has(.is-shell-full) body { background: #000 !important; } <- REMOVE
     padding-top: 0 !important;
   }
 }
-
-
-
-
