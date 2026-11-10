@@ -7,6 +7,8 @@ import "../../movies.css"
 import "./connect-player.css"
 import "./mobile-preview.css"
 import { useZoomToCover } from "./zoom-to-cover"
+import { openPreviewForMovie } from "./open-previe-btn/open-preview"
+
 
 
 import SimilarMovies from "./similar-movies"
@@ -206,16 +208,22 @@ const handleBack = useCallback(() => {
           }
         } catch {}
         if (isPreview) {
-          closeDrawer?.()
-          const p = movie?.preview_urls?.[0] || movie?.preview_url || movie?.trailer_url || movie?.video_preview_url || movie?.preview
-          const single = [{...movie, id: String(movie.id), cover: movie.cover || movie.cover_url, cover_url: movie.cover || movie.cover_url, video: movie.video || movie.video_url, video_url: movie.video || movie.video_url, preview_url: p, preview_urls: movie.preview_urls || (p? [p] : []), trailer_url: movie.trailer_url || p, }]
-          openReels(single, 0)
-          router.replace("/movies")
-        } else {
-          closeReels?.()
-          openDrawer(effectiveId, "full")
-          router.replace("/movies")
-        }
+  const p = movie?.preview_urls?.[0] || movie?.preview_url || movie?.trailer_url || movie?.video_preview_url || movie?.preview
+  const single = [{...movie, id: String(movie.id), cover: movie.cover || movie.cover_url, cover_url: movie.cover || movie.cover_url, video: movie.video || movie.video_url, video_url: movie.video || movie.video_url, preview_url: p, preview_urls: movie.preview_urls || (p? [p] : []), trailer_url: movie.trailer_url || p, }]
+  // ✅ Open Reels FIRST — it covers everything instantly, black, no gap
+  openReels(single, 0)
+  // ✅ THEN close Watch underneath, next frame. No router.replace.
+  requestAnimationFrame(() => {
+    closeDrawer?.()
+  })
+} else {
+  // ✅ Same rule: open Drawer first, close Reels second, no navigation
+  openDrawer(effectiveId, "full")
+  requestAnimationFrame(() => {
+    closeReels?.()
+  })
+}
+
       }, 200)
     }
     window.addEventListener("resize", onResize)
@@ -509,13 +517,16 @@ const onPrevEpisode = () => {
     return {...x, id:String(x.id), preview_url:preview, preview_urls:x.preview_urls || (preview?[preview]:[]), trailer_url:x.trailer_url || preview}
   }
 
-  const handlePreviewReels = () => {
-    const rawList = allMovies && allMovies.length? allMovies : [movie]
-    const list = rawList.map(normalize)
-    const idx = rawList.findIndex((m:any)=> String(m.id)===String(effectiveId))
-    if(isOverlay) closeDrawer?.()
-    setTimeout(()=> openReels(list, idx>=0? idx:0), isOverlay?150:0)
-  }
+  
+const handlePreviewReels = () => {
+  openPreviewForMovie({
+    movie,
+    allMovies,
+    openReels,
+    closeDrawer,
+    isOverlay,
+  })
+}
 
   const qualitySources = rawSources.filter((v,i,a)=> a.findIndex(x=>x.url===v.url)===i)
   const currentQualityObj = qualitySources.find(q=>q.value===quality) || qualitySources[0]

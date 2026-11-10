@@ -84,8 +84,15 @@ export function ReelsModal({ current, onWatchFull }: any) {
       return
     }
 
-    closeReels?.()
-    setTimeout(() => openDrawer(id), 120)
+    // ✅ FIX — Reels -> Watch Full, no Home flash
+    // Before: closeReels() + setTimeout(() => openDrawer(id), 120)
+    // -> 120ms gap with nothing on screen -> Home flashes
+    // After: open Watch Drawer FIRST (it covers Reels instantly),
+    // then close Reels underneath, next frame. No timeout, no gap.
+    openDrawer(id, "full")
+    requestAnimationFrame(() => {
+      closeReels?.()
+    })
   }
 
   return (
