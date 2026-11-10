@@ -45,7 +45,7 @@
 
 .loc-dropdown {
   position: fixed;
-  top: 64px;
+  top: calc(64px + env(safe-area-inset-top, 0px));
   left: 50%;
   transform: translateX(-50%);
   background: hsl(var(--surface));
@@ -190,7 +190,7 @@
     background: hsl(var(--bg)) !important;
     border: none !important;
     box-shadow: none !important;
-    padding: 8px 12px 8px 12px;
+    padding: calc(8px + env(safe-area-inset-top, 0px)) 12px 8px 12px;
     gap: 8px;
     overflow: visible;
   }
@@ -269,7 +269,7 @@
   }
 
   .loc-dropdown {
-    top: 54px;
+     top: calc(54px + env(safe-area-inset-top, 0px));
     width: 92vw;
     left: 50%;
     transform: translateX(-50%);
