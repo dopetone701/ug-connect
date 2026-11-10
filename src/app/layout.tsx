@@ -19,7 +19,7 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     title: "UG Connect",
-    statusBarStyle: "default",
+   statusBarStyle: "black-translucent",
   },
 };
 
