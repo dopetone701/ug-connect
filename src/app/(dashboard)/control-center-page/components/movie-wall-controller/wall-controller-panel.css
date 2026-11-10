@@ -56,3 +56,19 @@ body.mwcp-panel-open nav[class*="bottom"]{display:none!important;visibility:hidd
 .mwcp-search-clear{border:0;background:transparent;color:hsl(var(--text-muted));cursor:pointer}
 .mwcp-search-count{font-size:12px;color:hsl(var(--text-muted));white-space:nowrap}
 
+/* =========================================================
+   FINAL — PUT SAFE-AREA BACK IN MWCP PANEL
+   Same as Watch Drawer + Faders + Home TopBar
+   black-translucent = WE handle safe-area, so we add it back ONCE
+   This MUST be at the very bottom — it beats the 64px above
+   ========================================================= */
+/* Backdrop + Panel start BELOW TopBar — TopBar is 56px + safe-area, not 64px */
+.mwcp-backdrop,
+.mwcp-panel {
+  top: calc(56px + env(safe-area-inset-top, 0px)) !important;
+}
+
+/* Body must NOT hide under home indicator */
+.mwcp-body {
+  padding-bottom: calc(120px + env(safe-area-inset-bottom, 0px)) !important;
+}
