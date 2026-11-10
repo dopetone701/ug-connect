@@ -146,3 +146,10 @@ body.reels-kb-open .watch-floating-bar {
   display: none !important;
 }
 
+
+
+/* OPT-OUT: Watch Drawer = SOLID, NOT translucent */
+.watch-drawer-panel {
+  background: hsl(var(--bg)) !important;
+  padding-top: env(safe-area-inset-top, 0px) !important;
+}
