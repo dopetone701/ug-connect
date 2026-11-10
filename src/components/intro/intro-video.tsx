@@ -15,13 +15,28 @@ export default function IntroVideo({ onFinished }: { onFinished?: () => void }) 
   }
 
   useEffect(() => {
-    // SURGICAL FIX: never show on PC
     if (window.innerWidth > 768) {
       setIsPc(true)
       onFinished?.()
       return
     }
+
+    // ✅ THE TRANSLUCENT TRICK: swap meta tags ONLY while intro is playing
+    const themeMeta = document.querySelector('meta[name="theme-color"]')
+    const oldTheme = themeMeta?.getAttribute("content")
+    themeMeta?.setAttribute("content", "#000000")
+
+    const appleMeta = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]')
+    const oldApple = appleMeta?.getAttribute("content")
+    appleMeta?.setAttribute("content", "black-translucent")
+
     ref.current?.play().catch(()=>{})
+
+    return () => {
+      // ✅ Restore to default when intro is gone
+      if (oldTheme) themeMeta?.setAttribute("content", oldTheme)
+      if (oldApple) appleMeta?.setAttribute("content", oldApple)
+    }
   }, [])
 
   if (isPc) return null
@@ -41,28 +56,19 @@ export default function IntroVideo({ onFinished }: { onFinished?: () => void }) 
          position:fixed;
          inset:0;
          width:100vw;
+         /* ✅ Only this. No calc, no negative top, no lvh */
          height:100dvh;
-         height:100lvh;
-         min-height:100dvh;
          z-index:2147483647;
          background:#000;
-         display:flex;
-         align-items:center;
-         justify-content:center;
-         /* NO safe-area padding - cover it, don't avoid it */
-         padding:0 !important;
-         margin:0 !important;
-         /* Extend under top + bottom safe-area */
-         top:calc(-1 * env(safe-area-inset-top, 0px)) !important;
-         height:calc(100dvh + env(safe-area-inset-top, 0px) + env(safe-area-inset-bottom, 0px)) !important;
+         overflow:hidden;
          transition:opacity .6s cubic-bezier(.4,0,.2,1);
        }
        .intro-overlay.out{opacity:0;pointer-events:none}
        .intro-overlay video{
          position:absolute;
          inset:0;
-         width:100% !important;
-         height:100% !important;
+         width:100%;
+         height:100%;
          object-fit:cover;
          background:#000 url('/intro-video/intro.jpg') center/cover no-repeat;
        }
