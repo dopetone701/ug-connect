@@ -82,7 +82,6 @@
   z-index: 10000 !important; /* higher than faders 9999 */
 }
 
-
 /* ===== SECTION TITLES ===== */
 .f-section{
   display:flex;
@@ -248,7 +247,6 @@
   opacity:0.6;
 }
 
-
 .wa-row{
   width:100%;
   display:flex;
@@ -341,7 +339,6 @@
   border-color: hsl(var(--text));
 }
 
-
 .f-circle.has-img {
   position: relative;
   overflow: hidden;
@@ -370,4 +367,25 @@
   background: #2a2a2a;
   color: #fff;
   border-radius: 50%;
+}
+
+/* =========================================================
+   FINAL — PUT SAFE-AREA BACK IN FADERS DRAWER
+   Same as Watch Drawer + Home TopBar
+   black-translucent = WE handle safe-area, so we add it back ONCE
+   This MUST be at the very bottom — it beats everything above
+   ========================================================= */
+/* Root starts BELOW TopBar — TopBar is 56px + safe-area, not 56px */
+.faders-drawer-root {
+  top: calc(56px + env(safe-area-inset-top, 0px)) !important;
+}
+
+/* Sheet must NOT add safe-area again — root already did it */
+.faders-drawer-root .faders-sheet {
+  padding-top: 8px !important;
+}
+
+/* Bottom: keep scroll from hiding under home indicator */
+.faders-drawer-root .faders-scroll {
+  padding-bottom: calc(120px + env(safe-area-inset-bottom, 0px)) !important;
 }
