@@ -420,3 +420,92 @@ body.reels-kb-open .watch-floating-bar.watch-comment-floating {
   display: block !important;
   margin: 0 auto !important;
 }
+
+
+
+
+
+
+/* =========================================================
+   WATCH COMMENTS — 99% TO 100% — FINAL MICRO-FIXES
+   Paste at VERY BOTTOM of this watch-comments file ONLY
+   1. Handle + title on SAME line, one sticky bar
+   2. Zero gap between title bar + buttons bar — no light leak
+   3. Bottom pocket killed — content swallows into edge
+   ========================================================= */
+
+/* 2 — NO SPACE ABOVE TITLE BAR — FLUSH AGAINST BTNS BAR */
+.watch-comments {
+  margin-top: 0 !important;
+  padding-top: 0 !important;
+  margin-bottom: 0 !important;
+  padding-bottom: 0 !important;
+}
+
+/* 1 — TITLE BAR = STICKY BAR HOLDING TITLE + HANDLE ON SAME LINE */
+.watch-comments-title {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 20 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 0 !important;
+  margin: 0 !important;
+  padding: 12px 16px 12px !important;
+  background: hsl(var(--bg)) !important;
+  background-color: hsl(var(--bg)) !important;
+  border: none !important;
+  border-bottom: none !important;
+  box-shadow: none !important;
+}
+
+/* Handle ON the same line as title — centered in the bar */
+.watch-comments-title::before {
+  content: "" !important;
+  position: absolute !important;
+  left: 50% !important;
+  top: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  width: 36px !important;
+  height: 4px !important;
+  border-radius: 999px !important;
+  background: hsl(var(--border)) !important;
+  opacity: 0.8 !important;
+  z-index: 1 !important;
+  pointer-events: none !important;
+}
+
+/* Kill old handle on card — it was creating the gap */
+.watch-comments .watch-comments-card::before {
+  display: none !important;
+  content: none !important;
+}
+.watch-comments .watch-comments-card {
+  padding-top: 0 !important;
+  margin-top: 0 !important;
+  border-top: none !important;
+}
+
+/* 3 — BOTTOM POCKET KILLED — CARD SWALLOWS INTO EDGE */
+.watch-comments .watch-comments-card,
+.watch-comments .watch-comments-card .reels-c-body,
+.watch-comments .watch-comments-card .reels-c-list {
+  margin-bottom: 0 !important;
+  padding-bottom: 0 !important;
+  border-bottom: none !important;
+  border-radius: 0 !important;
+}
+.watch-comments .watch-comments-card {
+  margin-bottom: -1px !important;
+  overflow: hidden !important;
+}
+/* List keeps its scroll room for input, but card itself has no pocket */
+.watch-comments .watch-comments-card .reels-c-list {
+  padding-bottom: calc(90px + env(safe-area-inset-bottom)) !important;
+}
+@media (max-width: 1024px) and (orientation: landscape) {
+  .watch-comments .watch-comments-card .reels-c-list {
+    padding-bottom: calc(120px + env(safe-area-inset-bottom)) !important;
+  }
+}
