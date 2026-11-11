@@ -873,3 +873,51 @@ pointer-events: auto !important;
   padding-top: env(safe-area-inset-top, 0px) !important;
   padding-bottom: env(safe-area-inset-bottom, 0px) !important;
 }
+
+
+
+
+
+
+/* =========================================================
+   DRAWER LANDSCAPE — kill fixed-layout, add L/R safe-area
+   Paste at VERY BOTTOM — must beat is-fixed-layout above
+   ========================================================= */
+@media (max-width: 1024px) and (orientation: landscape) {
+  /* 1. In landscape, whole drawer scrolls — no fixed video layout */
+  .watch-drawer-root.is-fixed-layout:not(.is-mini):not(.is-fullscreen) .watch-drawer-panel {
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    padding-left: env(safe-area-inset-left, 0px) !important;
+    padding-right: env(safe-area-inset-right, 0px) !important;
+  }
+  .watch-drawer-root.is-fixed-layout:not(.is-mini):not(.is-fullscreen) .watch-drawer-content {
+    display: block !important;
+    height: auto !important;
+    min-height: 0 !important;
+    overflow: visible !important;
+  }
+  .watch-drawer-root.is-fixed-layout:not(.is-mini):not(.is-fullscreen) .connect-root:not(.is-shell-full) {
+    display: block !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+  .watch-drawer-root.is-fixed-layout:not(.is-mini):not(.is-fullscreen) .connect-root:not(.is-shell-full) .connect-scroll-area {
+    display: block !important;
+    overflow: visible !important;
+    padding-bottom: 24px !important;
+  }
+
+  /* 2. Left / Right safe-area — this is the left-clip in your screenshot */
+  .watch-drawer-root.open:not(.is-mini) .connect-actions-slot,
+  .watch-drawer-root.open:not(.is-mini) .connect-scroll-area,
+  .watch-drawer-root.open:not(.is-mini) .connect-under-section,
+  .watch-drawer-root.open:not(.is-mini) .film-meta {
+    padding-left: max(16px, env(safe-area-inset-left, 0px)) !important;
+    padding-right: max(16px, env(safe-area-inset-right, 0px)) !important;
+    box-sizing: border-box !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    overflow-x: hidden !important;
+  }
+}
