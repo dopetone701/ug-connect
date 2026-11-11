@@ -961,3 +961,49 @@ pointer-events: auto !important;
   }
 }
 
+
+/* =========================================================
+   LANDSCAPE — REMOVE DOUBLE BLACK PADDING
+   Paste at VERY BOTTOM of watch-drawer.css
+   Panel padding was + Connect padding = double black bars
+   ========================================================= */
+@media (max-width: 1024px) and (orientation: landscape) {
+  /* 1. Panel: NO left/right padding — this was the outer black bar */
+  .watch-drawer-root.open:not(.is-mini):not(.is-fullscreen) .watch-drawer-panel,
+  .watch-drawer-root.is-fixed-layout.open:not(.is-mini):not(.is-fullscreen) .watch-drawer-panel {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+
+  /* 2. Connect-root: NO left/right padding — this was the inner black bar */
+  .watch-drawer-root.open:not(.is-mini):not(.is-fullscreen) .connect-root:not(.is-shell-full) {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+
+  /* 3. Video box: fill the width again, no max-height shrinking it */
+  .watch-drawer-root.open:not(.is-mini):not(.is-fullscreen) .connect-root:not(.is-shell-full) .film-giant.inner-body {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    aspect-ratio: 16 / 9 !important;
+    max-height: none !important;
+    height: auto !important;
+  }
+
+  /* 4. Video itself: fill the box, no pillars */
+  .watch-drawer-root.open:not(.is-mini):not(.is-fullscreen) .connect-root:not(.is-shell-full) .connect-video {
+    object-fit: cover !important;
+  }
+
+  /* 5. Text / buttons: keep ONLY one safe-area — not panel + content */
+  .watch-drawer-root.open:not(.is-mini) .connect-actions-slot,
+  .watch-drawer-root.open:not(.is-mini) .connect-scroll-area,
+  .watch-drawer-root.open:not(.is-mini) .connect-under-section,
+  .watch-drawer-root.open:not(.is-mini) .film-meta {
+    padding-left: max(16px, env(safe-area-inset-left, 0px)) !important;
+    padding-right: max(16px, env(safe-area-inset-right, 0px)) !important;
+  }
+}
+
+
