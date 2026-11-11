@@ -1309,3 +1309,17 @@ html, body {
 
 
 
+/* =========================================================
+   CONNECT-PLAYER ONLY — FULLSCREEN: VJ + LOGO BELOW ISLAND
+   Paste at VERY BOTTOM of connect-player.css ONLY
+   Helper @import is mid-file so helper never loads.
+   center-top holds BOTH VJ pill + logo.
+   ========================================================= */
+.is-shell-full .center-top,
+.film-root.is-shell-full .center-top,
+.connect-root.is-shell-full .center-top,
+.movies-shell:has(.is-shell-full) .center-top {
+  top: calc(env(safe-area-inset-top, 0px) + 12px) !important;
+  left: 12px !important;
+  right: 12px !important;
+}
