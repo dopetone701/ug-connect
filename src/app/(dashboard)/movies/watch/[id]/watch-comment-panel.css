@@ -331,3 +331,92 @@ body.reels-kb-open .watch-floating-bar.watch-comment-floating {
 .watch-comments .watch-comments-card {
   padding-top: 20px !important; /* space for handle */
 }
+
+
+
+
+
+
+
+
+/* =========================================================
+   WATCH COMMENTS — FINAL BAKE-IN
+   Paste at VERY BOTTOM of this watch-comments file ONLY
+   1. Floating input not too wide in landscape
+   2. Panel border baked into theme — invisible seam
+   3. Last comment visible above input in landscape
+   4. Title + handle sticky — never scrolls under video
+   ========================================================= */
+
+/* 1 + 2 — PANEL BAKED IN, BOTH PORTRAIT + LANDSCAPE */
+.watch-comments,
+.watch-comments .watch-comments-card {
+  background: hsl(var(--bg)) !important;
+  background-color: hsl(var(--bg)) !important;
+  border-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  outline: none !important;
+}
+.watch-comments .watch-comments-card .reels-c-body,
+.watch-comments .watch-comments-card .reels-c-list {
+  background: hsl(var(--bg)) !important;
+  background-color: hsl(var(--bg)) !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+/* Kill the seam line where card meets page */
+.watch-comments .watch-comments-card {
+  border-radius: 0 !important;
+  border-top: none !important;
+}
+
+/* 1 — FLOATING INPUT: DON'T EXPAND TOO MUCH IN LANDSCAPE */
+@media (max-width: 1024px) and (orientation: landscape) {
+  .watch-floating-bar.watch-comment-floating {
+    left: 50% !important;
+    right: auto !important;
+    width: min(560px, calc(100% - 48px)) !important;
+    max-width: 560px !important;
+    transform: translateX(-50%) translateY(110%) !important;
+    padding: 0 0 calc(10px + env(safe-area-inset-bottom)) !important;
+  }
+  .watch-floating-bar.watch-comment-floating.is-visible {
+    transform: translateX(-50%) translateY(0) !important;
+  }
+  .watch-floating-bar.watch-comment-floating.is-hidden {
+    transform: translateX(-50%) translateY(110%) !important;
+  }
+  .watch-floating-bar-inner.watch-floating-host {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  /* 3 — LAST COMMENT CAN GO ABOVE INPUT IN LANDSCAPE */
+  .watch-comments .watch-comments-card .reels-c-list {
+    padding-bottom: calc(120px + env(safe-area-inset-bottom)) !important;
+  }
+}
+
+/* 4 — TITLE + HANDLE STICKY, NEVER SCROLLS UNDER VIDEO / BTNS */
+.watch-comments-title {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 10 !important;
+  background: hsl(var(--bg)) !important;
+  background-color: hsl(var(--bg)) !important;
+  padding: 12px 16px 12px !important;
+  margin: 0 !important;
+}
+
+/* Handle stays at top of card so user can always pull down.
+   Card itself doesn't scroll away — list inside does. */
+.watch-comments .watch-comments-card {
+  position: relative !important;
+}
+.watch-comments .watch-comments-card::before {
+  position: sticky !important;
+  top: 8px !important;
+  display: block !important;
+  margin: 0 auto !important;
+}
