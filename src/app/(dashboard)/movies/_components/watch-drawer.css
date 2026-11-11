@@ -942,3 +942,43 @@ pointer-events: auto !important;
     overflow-x: hidden !important;
   }
 }
+
+
+
+
+
+
+
+
+/* =========================================================
+   DRAWER ONLY — PIN THE MOTHER, NOT THE VIDEO
+   Video is already right. Its mother .film-giant was
+   escaping into the safe-area and showing black pillars.
+   Paste at VERY BOTTOM of watch-drawer.css only.
+   ========================================================= */
+@media (max-width: 1024px) and (orientation: landscape) {
+  /* Mother: shrink by BOTH safe-areas, centered — no escape */
+  .watch-drawer-root.open:not(.is-mini):not(.is-fullscreen) .connect-root:not(.is-shell-full) .film-giant.inner-body {
+    width: calc(100% - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px)) !important;
+    max-width: calc(100% - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px)) !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
+  }
+
+  /* Mother's inner wrappers: same width, no extra black */
+  .watch-drawer-root.open:not(.is-mini):not(.is-fullscreen) .connect-root:not(.is-shell-full) .film-center,
+  .watch-drawer-root.open:not(.is-mini):not(.is-fullscreen) .connect-root:not(.is-shell-full) .center-cover {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    overflow: hidden !important;
+  }
+
+  /* Connect-root itself: NO padding — mother does the inset now */
+  .watch-drawer-root.open:not(.is-mini):not(.is-fullscreen) .connect-root:not(.is-shell-full) {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+}
