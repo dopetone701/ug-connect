@@ -1355,3 +1355,23 @@ html, body {
     margin: 0 !important;
   }
 }
+
+
+
+
+
+
+
+/* =========================================================
+   CONNECT-PLAYER ONLY — FULLSCREEN LANDSCAPE: VJ NUDGE DOWN
+   Paste at VERY BOTTOM of connect-player.css ONLY
+   Only VJ pill gets lil top padding to align with logo.
+   ========================================================= */
+@media (max-width: 1024px) and (orientation: landscape) {
+  .is-shell-full .center-top .top-left,
+  .film-root.is-shell-full .center-top .top-left,
+  .connect-root.is-shell-full .center-top .top-left {
+    padding-top: 3px !important;
+  }
+}
+
