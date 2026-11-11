@@ -1310,4 +1310,27 @@ html, body {
 
 
 
-
+/* =========================================================
+   HELPER ONLY — LANDSCAPE VIDEO FITS VIEWPORT
+   Paste at VERY BOTTOM of connect-player-helper.css ONLY
+   Mother was width:100% + 16/9, so height > screen.
+   Cap it by viewport height so it never overflows bottom.
+   ========================================================= */
+@media (max-width: 1024px) and (orientation: landscape) {
+  .watch-drawer-root.open:not(.is-mini) .connect-root:not(.is-shell-full) .film-giant.inner-body,
+  .movies-shell .yt-overlay-root .connect-root:not(.is-shell-full) .film-giant.inner-body {
+    /* Width is either full inset width, OR whatever fits the height — whichever is smaller */
+    width: min(
+      100%,
+      calc((100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)) * 16 / 9)
+    ) !important;
+    max-width: 100% !important;
+    /* Height can never pass the viewport */
+    max-height: calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)) !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    aspect-ratio: 16 / 9 !important;
+    box-sizing: border-box !important;
+    overflow: hidden !important;
+  }
+}
