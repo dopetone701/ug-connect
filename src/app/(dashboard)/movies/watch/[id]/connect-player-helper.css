@@ -261,3 +261,39 @@
     object-fit: contain !important;
   }
 }
+
+
+
+
+
+
+
+
+/* =========================================================
+   HELPER ONLY — MOTHER = DNA COLOR, DYNAMIC
+   Paste at VERY BOTTOM of connect-player-helper.css ONLY
+   Mother was #000 black, so it showed as pillars.
+   Make mother DNA so it bakes into theme, pillars vanish.
+   ========================================================= */
+@media (max-width: 1024px) and (orientation: landscape) {
+  /* Mother + its wrappers + video stage = DNA, not black */
+  .watch-drawer-root.open:not(.is-mini) .connect-root:not(.is-shell-full) .film-giant.inner-body,
+  .watch-drawer-root.open:not(.is-mini) .connect-root:not(.is-shell-full) .film-center,
+  .watch-drawer-root.open:not(.is-mini) .connect-root:not(.is-shell-full) .center-cover,
+  .watch-drawer-root.open:not(.is-mini) .connect-root:not(.is-shell-full) .connect-video,
+  .movies-shell .yt-overlay-root .connect-root:not(.is-shell-full) .film-giant.inner-body,
+  .movies-shell .yt-overlay-root .connect-root:not(.is-shell-full) .film-center,
+  .movies-shell .yt-overlay-root .connect-root:not(.is-shell-full) .center-cover,
+  .movies-shell .yt-overlay-root .connect-root:not(.is-shell-full) .connect-video {
+    background: hsl(var(--bg)) !important;
+    background-color: hsl(var(--bg)) !important;
+    border-color: transparent !important;
+  }
+
+  /* Connect-root behind it = DNA too, so no seam */
+  .watch-drawer-root.open:not(.is-mini) .connect-root:not(.is-shell-full),
+  .movies-shell .yt-overlay-root .connect-root:not(.is-shell-full) {
+    background: hsl(var(--bg)) !important;
+    background-color: hsl(var(--bg)) !important;
+  }
+}
