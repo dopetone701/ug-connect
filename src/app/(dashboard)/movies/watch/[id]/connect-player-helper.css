@@ -302,5 +302,14 @@
 
 
 
-
+/* =========================================================
+   HELPER ONLY — FULLSCREEN PORTRAIT: VJ + LOGO BELOW ISLAND
+   Paste at VERY BOTTOM of connect-player-helper.css ONLY
+   center-top holds BOTH VJ pill + logo, so move the row once.
+   ========================================================= */
+.connect-root.is-shell-full .center-top {
+  top: calc(env(safe-area-inset-top, 0px) + 12px) !important;
+  left: 12px !important;
+  right: 12px !important;
+}
 
