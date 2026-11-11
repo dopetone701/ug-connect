@@ -921,3 +921,43 @@ pointer-events: auto !important;
     overflow-x: hidden !important;
   }
 }
+
+
+
+
+
+
+
+
+
+/* =========================================================
+   WATCH DRAWER LANDSCAPE — VIDEO BOX INSIDE NOTCH
+   Paste at VERY BOTTOM of watch-drawer.css
+   Beats the block above — video was missing L/R safe-area
+   ========================================================= */
+@media (max-width: 1024px) and (orientation: landscape) {
+  /* Panel gets L/R safe-area even when NOT fixed-layout */
+  .watch-drawer-root.open:not(.is-mini):not(.is-fullscreen) .watch-drawer-panel {
+    padding-left: env(safe-area-inset-left, 0px) !important;
+    padding-right: env(safe-area-inset-right, 0px) !important;
+    box-sizing: border-box !important;
+    overflow-x: hidden !important;
+  }
+
+  /* Video box — inset from notch, centered, not edge-to-edge */
+  .watch-drawer-root.open:not(.is-mini):not(.is-fullscreen) .connect-root:not(.is-shell-full) {
+    padding-left: env(safe-area-inset-left, 0px) !important;
+    padding-right: env(safe-area-inset-right, 0px) !important;
+    box-sizing: border-box !important;
+  }
+  .watch-drawer-root.open:not(.is-mini):not(.is-fullscreen) .connect-root:not(.is-shell-full) .film-giant.inner-body {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 auto !important;
+    aspect-ratio: 16 / 9 !important;
+    max-height: calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 16px) !important;
+    overflow: hidden !important;
+    box-sizing: border-box !important;
+  }
+}
+
