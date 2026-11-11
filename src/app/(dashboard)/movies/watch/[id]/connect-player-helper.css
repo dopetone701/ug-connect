@@ -208,11 +208,10 @@
 
 
 
-
 /* =========================================================
-   VIDEO BOX LANDSCAPE — CLEAN
+   VIDEO BOX LANDSCAPE — MOTHER PINNED
    Paste at VERY BOTTOM of connect-player-helper.css ONLY
-   Fixes overflow into safe-area, NO extra Dynamic Island padding
+   Video stays where it is. Mother is pinned, not video.
    ========================================================= */
 @media (max-width: 1024px) and (orientation: landscape) {
   /* 1. ONE safe-area inset only — on connect-root, nowhere else */
@@ -227,12 +226,15 @@
     overflow-x: hidden !important;
   }
 
-  /* 2. Video box — fills the inset area exactly, no shrinking */
+  /* 2. MOTHER — pin it INSIDE the safe-area, centered.
+     This is the fix: mother was width:100% of the
+     full viewport, so its black bg showed as pillars. */
   .watch-drawer-root.open:not(.is-mini) .connect-root:not(.is-shell-full) .film-giant.inner-body,
   .movies-shell .yt-overlay-root .connect-root:not(.is-shell-full) .film-giant.inner-body {
     width: 100% !important;
     max-width: 100% !important;
-    margin: 0 !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
     aspect-ratio: 16 / 9 !important;
     height: auto !important;
     max-height: none !important;
@@ -240,7 +242,7 @@
     box-sizing: border-box !important;
   }
 
-  /* 3. Video fills its box */
+  /* 3. Video fills its mother — DO NOT touch its position */
   .watch-drawer-root.open:not(.is-mini) .connect-root:not(.is-shell-full) .film-center,
   .watch-drawer-root.open:not(.is-mini) .connect-root:not(.is-shell-full) .center-cover,
   .watch-drawer-root.open:not(.is-mini) .connect-root:not(.is-shell-full) .connect-video,
