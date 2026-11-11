@@ -1323,3 +1323,35 @@ html, body {
   left: 12px !important;
   right: 12px !important;
 }
+
+
+
+
+/* =========================================================
+   CONNECT-PLAYER ONLY — FULLSCREEN LANDSCAPE: VJ = LOGO LINE
+   Paste at VERY BOTTOM of connect-player.css ONLY
+   Portrait untouched. Landscape only: VJ was in safe-area.
+   Push VJ in + align both vertically.
+   ========================================================= */
+@media (max-width: 1024px) and (orientation: landscape) {
+  .is-shell-full .center-top,
+  .film-root.is-shell-full .center-top,
+  .connect-root.is-shell-full .center-top,
+  .movies-shell:has(.is-shell-full) .center-top {
+    top: calc(env(safe-area-inset-top, 0px) + 12px) !important;
+    /* Push VJ in from left safe-area, logo in from right safe-area */
+    left: calc(env(safe-area-inset-left, 0px) + 16px) !important;
+    right: calc(env(safe-area-inset-right, 0px) + 12px) !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+  }
+
+  /* VJ pill + logo both vertically centered on same line */
+  .is-shell-full .center-top .top-left,
+  .is-shell-full .center-top .fullscreen-logo.top-right {
+    display: flex !important;
+    align-items: center !important;
+    margin: 0 !important;
+  }
+}
