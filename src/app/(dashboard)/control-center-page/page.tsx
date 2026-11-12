@@ -9,6 +9,9 @@ import AppLogoManager from "./components/app-logo-manager";
 // --- ONLY INJECTION: Movie Wall Controller Panel ---
 import MovieWallControllerPanel, { WallVjBattleChip } from "./components/movie-wall-controller/movie-wall-controller-panel";
 
+// --- ONLY INJECTION: Cover Matrix Panel ---
+import CoverMatrixPanel, { CoverMatrixChip } from "./components/cover-matrix/cover-matrix-panel";
+
 const tabs = ["Overview", "Users", "Orders", "Settings", "Create", "Edit Movie", "Logo"];
 
 export default function Page() {
@@ -42,6 +45,7 @@ export default function Page() {
 
         {/* --- CHIP TOGETHER WITH OTHER CHIPS --- */}
         <WallVjBattleChip />
+        <CoverMatrixChip />
       </div>
 
       <div className="cc-grid">
@@ -67,6 +71,9 @@ export default function Page() {
 
       {/* --- ONLY INJECTION: Empty Panel (hidden until chip tapped) --- */}
       <MovieWallControllerPanel />
+
+      {/* --- ONLY INJECTION: Cover Matrix Panel (hidden until chip tapped) --- */}
+      <CoverMatrixPanel />
     </div>
   );
 }

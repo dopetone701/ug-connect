@@ -1,0 +1,14 @@
+.m-body{padding:16px;overflow-y:auto;flex:1;background:hsl(var(--bg));color:hsl(var(--text))}
+.m-body-head{display:flex;gap:16px;align-items:center;flex-wrap:wrap;margin-bottom:16px}
+.m-body-title{font-weight:800;font-size:18px;color:hsl(var(--text))}
+.m-body-sub{color:hsl(var(--text-muted));font-size:13px}
+.m-body-back{background:hsl(var(--surface));color:hsl(var(--text));border:1px solid hsl(var(--border));padding:8px 12px;border-radius:999px;cursor:pointer}
+.m-body-schedule{display:flex;gap:6px;align-items:center;margin-left:auto;flex-wrap:wrap;color:hsl(var(--text-muted))}
+.m-body-schedule button{background:hsl(var(--surface));color:hsl(var(--text));border:1px solid hsl(var(--border));padding:6px 10px;border-radius:999px;cursor:pointer}
+.m-body-schedule button.active{background:hsl(var(--primary));color:hsl(var(--primary-text));border-color:hsl(var(--primary))}
+.m-body-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px}
+.m-body-empty{padding:40px;text-align:center;color:hsl(var(--text-muted))}
+.m-body-search{width:100%;background:hsl(var(--surface));color:hsl(var(--text));border:1px solid hsl(var(--border));border-radius:999px;padding:10px 14px;margin-bottom:8px;outline:none}
+.m-body-search::placeholder{color:hsl(var(--text-muted))}
+.m-body-count{color:hsl(var(--text-muted));font-size:12px;margin-bottom:12px}
+

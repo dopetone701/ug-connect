@@ -1,0 +1,22 @@
+.m-panel-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:9999;display:flex;justify-content:flex-end}
+.m-panel{width:min(920px,100%);height:100%;background:#0f0f12;color:#fff;display:flex;flex-direction:column;overflow:hidden}
+.m-panel-topbar{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid #26262c}
+.m-panel-title{font-weight:800;font-size:18px}
+.m-panel-actions{display:flex;gap:8px}
+.m-panel-btn{background:#22222a;color:#fff;border:1px solid #333;padding:8px 12px;border-radius:999px;cursor:pointer;font-weight:600}
+.m-panel-btn.close{background:hsl(var(--primary));color:hsl(var(--primary-text));border-color:hsl(var(--primary))}
+.m-panel-btn:disabled{opacity:.5}
+
+
+/* =========================================================
+   FINAL — PUT SAFE-AREA BACK IN MATRIX PANEL
+   Same as Watch Drawer + Faders + Home TopBar + MWCP Panel
+   black-translucent = WE handle safe-area, so we add it back ONCE
+   This MUST be at the very bottom — it beats the rules above
+   ========================================================= */
+/* Backdrop + Panel start BELOW TopBar — TopBar is 56px + safe-area, not 64px */
+.m-panel-overlay,
+.m-panel {
+  top: calc(56px + env(safe-area-inset-top, 0px)) !important;
+}
+
