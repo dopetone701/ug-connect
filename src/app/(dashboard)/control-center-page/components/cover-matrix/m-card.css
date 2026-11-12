@@ -19,3 +19,11 @@
 .m-card-timer-label{font-size:10px;letter-spacing:3px;font-weight:800;color:rgba(255,255,255,.85);text-shadow:0 1px 8px rgba(0,0,0,.6)}
 .m-card-timer-big{font-size:38px;line-height:1;font-weight:800;letter-spacing:-1px;color:#fff;text-shadow:0 2px 16px rgba(0,0,0,.7);font-variant-numeric:tabular-nums;background:rgba(255,255,255,.14);-webkit-backdrop-filter:blur(14px) saturate(1.4);backdrop-filter:blur(14px) saturate(1.4);border:1px solid rgba(255,255,255,.22);padding:10px 16px;border-radius:20px}
 
+/* MOBILE FIX — appended only, your colors untouched */
+/* Do NOT use hidden/display:none on file inputs — iOS blocks .click() on them */
+.m-file-input{position:absolute;width:1px;height:1px;opacity:0;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;padding:0;margin:-1px}
+.m-card{position:relative;touch-action:manipulation;-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none;user-select:none;-webkit-user-select:none}
+.m-card-media img{-webkit-touch-callout:none;-webkit-user-drag:none;user-select:none;-webkit-user-select:none;pointer-events:none}
+.m-card-media{pointer-events:none}
+.m-card-body,.m-card-actions,.m-card-btn{pointer-events:auto}
+
