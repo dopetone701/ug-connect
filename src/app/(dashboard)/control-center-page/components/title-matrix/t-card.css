@@ -1,0 +1,16 @@
+.t-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:14px 10px;pointer-events:none;background:radial-gradient(ellipse at center, rgba(0,0,0,.55) 0%, rgba(0,0,0,.25) 45%, transparent 70%);z-index:3}
+/* SAME SIZE — font scales with CARD width (cqi), not viewport */
+.t-cover-row, .l-card-cover{container-type:inline-size}
+.t-overlay span{color:#fff;text-align:center;font-size:13cqi;line-height:.95;text-transform:uppercase;word-break:break-word;overflow-wrap:break-word;max-width:92%;text-wrap:balance;-webkit-text-stroke:0.55cqi #fff;paint-order:stroke fill;text-shadow:0 0 18px rgba(255,255,255,.65), 0 3px 20px rgba(0,0,0,.9)}
+.t-cover-row{position:relative;border-radius:6px;overflow:hidden;background:#000;aspect-ratio:2/3}
+.t-cover-row img{width:100%;height:100%;object-fit:cover;display:block}
+.t-cover-row.small{aspect-ratio:2/3}
+.t-font-row{display:flex;gap:6px;flex-wrap:wrap;margin:12px 0 6px}
+.t-font-chip{width:44px;height:44px;border-radius:12px;border:1px solid hsl(var(--border));background:hsl(var(--surface));color:hsl(var(--text));font-size:20px;cursor:pointer}
+.t-font-chip.active{border-color:hsl(var(--primary));box-shadow:0 0 0 2px hsl(var(--primary))}
+.t-font-label{color:hsl(var(--text-muted));font-size:12px;margin-bottom:12px}
+.t-add-btn.big{width:100%;background:hsl(var(--primary));color:hsl(var(--primary-text));border:0;padding:14px;border-radius:999px;cursor:pointer;font-weight:800;font-size:15px}
+.t-toggle-btn{width:100%;margin-top:8px;background:hsl(var(--surface));color:hsl(var(--text));border:1px solid hsl(var(--border));padding:12px;border-radius:999px;cursor:pointer;font-weight:700}
+.t-add-btn.big.added{background:#22c55e !important;color:#fff !important;animation:tAddPop .3s ease}
+@keyframes tAddPop{0%{transform:scale(1)}50%{transform:scale(1.04)}100%{transform:scale(1)}}
+

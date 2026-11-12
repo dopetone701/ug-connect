@@ -1,5 +1,6 @@
 "use client"
 
+
 import { useRef, useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Movie } from "../_lib/types"
@@ -15,6 +16,10 @@ import {
 } from "@/app/auth-system/movie-locker-if-guest"
 import "./movie-card-continue-watching.css"
 
+// --- ONLY INJECTION: Title Matrix Overlay (frontend only, no backend) ---
+import TitleOverlay from "../../control-center-page/components/title-matrix/title-overlay"
+
+
 export default function MovieCard({
   m,
   allMovies,
@@ -29,12 +34,15 @@ export default function MovieCard({
   const { openDrawer } = useWatchDrawer() as any
   const { openReels } = useReelsDrawer() as any
 
+
   // GUEST GATE: reactive for UI (small padlock next to PLAY if guest)
   const isGuest = useIsGuest()
+
 
   const movedRef = useRef(false)
   const startXRef = useRef(0)
   const startYRef = useRef(0)
+
 
   // FIXED: read from getState not hook closure, so works before/after hydrate
   const [progressState, setProgressState] = useState(() => {
@@ -47,6 +55,7 @@ export default function MovieCard({
     if (!isContinueRow) return { percent: 0, time: 0, duration: 0 }
     return { percent: 8, time: 0, duration: 0 }
   })
+
 
   // ONLY Continue Watching row shows progress
   useEffect(() => {
@@ -63,6 +72,7 @@ export default function MovieCard({
       } catch {}
     }
 
+
     syncProgress()
    
     let unsub: any = null
@@ -78,6 +88,7 @@ export default function MovieCard({
     // custom event when WatchPage saves progress
     window.addEventListener("ug-progress-updated", syncProgress as any)
 
+
     return () => {
       try { unsub?.() } catch {}
       window.removeEventListener("focus", syncProgress)
@@ -86,15 +97,18 @@ export default function MovieCard({
     }
   }, [isContinueRow, (m as any).id])
 
+
   const progress = progressState.percent
   const isFullyWatched = progress >= 95
   const showAsContinue = isContinueRow
+
 
   const handlePointerDown = (e: React.PointerEvent) => {
     movedRef.current = false
     startXRef.current = e.clientX
     startYRef.current = e.clientY
   }
+
 
   const handlePointerMove = (e: React.PointerEvent) => {
     const dx = Math.abs(e.clientX - startXRef.current)
@@ -104,11 +118,13 @@ export default function MovieCard({
     }
   }
 
+
   const handlePointerUp = () => {
     setTimeout(() => {
       movedRef.current = false
     }, 80)
   }
+
 
   const normalize = (x: any) => {
     const preview =
@@ -117,6 +133,7 @@ export default function MovieCard({
       x.trailer_url ||
       x.video_preview_url ||
       x.preview
+
 
     return {
       ...x,
@@ -131,8 +148,10 @@ export default function MovieCard({
     }
   }
 
+
   const openMovie = (type: "full" | "preview" = "full") => {
     if (movedRef.current) return
+
 
     // GUEST GATE: guests can PREVIEW, but cannot watch FULL movie.
     // Only gate "full". "preview" / PRE always passes through.
@@ -142,10 +161,13 @@ export default function MovieCard({
       return
     }
 
+
     const id = String(m.id)
     addRecent(id)
 
+
     const nm = normalize(m)
+
 
     if (isContinueRow && isFullyWatched && type === "full") {
       try {
@@ -160,11 +182,13 @@ export default function MovieCard({
       } catch {}
     }
 
+
     try {
       sessionStorage.setItem(
         "movies_home_scroll_v1",
         String(window.scrollY)
       )
+
 
       sessionStorage.setItem(
         `movie_preload_${id}`,
@@ -182,6 +206,7 @@ export default function MovieCard({
       )
     } catch {}
 
+
     const isDesktop = (() => {
       if (typeof window === "undefined") return false
       const ua = navigator.userAgent
@@ -195,10 +220,12 @@ export default function MovieCard({
       return true
     })()
 
+
     if (isDesktop) {
       router.push(`/movies/watch/${id}?t=${type}`)
       return
     }
+
 
     if (type === "preview") {
       const rawList =
@@ -206,22 +233,28 @@ export default function MovieCard({
           ? allMovies
           : [m]
 
+
       const list = rawList.map(normalize)
+
 
       const idx = rawList.findIndex(
         (x) => String(x.id) === id
       )
+
 
       openReels(
         list,
         idx >= 0 ? idx : 0
       )
 
+
       return
     }
 
+
     openDrawer(id)
   }
+
 
   const openYT = (e?: React.MouseEvent) => {
     e?.preventDefault()
@@ -229,11 +262,13 @@ export default function MovieCard({
     openMovie("full")
   }
 
+
   const openPreview = (e?: React.MouseEvent) => {
     e?.preventDefault()
     e?.stopPropagation()
     openMovie("preview")
   }
+
 
   return (
     <div
@@ -251,7 +286,11 @@ export default function MovieCard({
           draggable={false}
         />
 
+        {/* --- ONLY INJECTION: Title Matrix Overlay — sits on cover, pointer-events:none so PLAY/PRE/drag still work --- */}
+        <TitleOverlay movieId={String(m.id)} fallbackTitle={m.title} cover={m.cover} />
+
         <div className="l-card-fade" />
+
 
         {/* FIXED: Only show for Continue row */}
         {showAsContinue && (
@@ -263,9 +302,11 @@ export default function MovieCard({
           </div>
         )}
 
+
         <div className="l-card-vj-on">
           {m.vj}
         </div>
+
 
         <div className="l-card-actions">
           <button
@@ -294,6 +335,7 @@ export default function MovieCard({
             )}
           </button>
 
+
           <button
             type="button"
             className="l-a-btn prev on"
@@ -306,3 +348,4 @@ export default function MovieCard({
     </div>
   )
 }
+

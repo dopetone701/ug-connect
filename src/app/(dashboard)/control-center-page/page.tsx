@@ -12,6 +12,9 @@ import MovieWallControllerPanel, { WallVjBattleChip } from "./components/movie-w
 // --- ONLY INJECTION: Cover Matrix Panel ---
 import CoverMatrixPanel, { CoverMatrixChip } from "./components/cover-matrix/cover-matrix-panel";
 
+// --- ONLY INJECTION: Title Matrix Panel ---
+import TitleMatrixPanel, { TitleMatrixChip } from "./components/title-matrix/title-matrix-panel";
+
 const tabs = ["Overview", "Users", "Orders", "Settings", "Create", "Edit Movie", "Logo"];
 
 export default function Page() {
@@ -46,6 +49,7 @@ export default function Page() {
         {/* --- CHIP TOGETHER WITH OTHER CHIPS --- */}
         <WallVjBattleChip />
         <CoverMatrixChip />
+        <TitleMatrixChip />
       </div>
 
       <div className="cc-grid">
@@ -74,6 +78,9 @@ export default function Page() {
 
       {/* --- ONLY INJECTION: Cover Matrix Panel (hidden until chip tapped) --- */}
       <CoverMatrixPanel />
+
+      {/* --- ONLY INJECTION: Title Matrix Panel (hidden until chip tapped) --- */}
+<TitleMatrixPanel />
     </div>
   );
 }
