@@ -1,48 +1,193 @@
+
 "use client";
-import { useEffect, useState } from "react";
+
+import { useEffect, useState, useRef } from "react";
 import DeleteNotice from "./delete-notice";
 
-function useCountdown(target: number | null | undefined) {
-  const [now, setNow] = useState(Date.now());
-  useEffect(() => { if (!target) return; const id = setInterval(() => setNow(Date.now()), 1000); return () => clearInterval(id); }, [target]);
-  if (!target) return null;
-  const diff = Math.max(0, target - now);
-  const h = Math.floor(diff / 3600000);
-  const m = Math.floor((diff % 3600000) / 60000);
-  const s = Math.floor((diff % 60000) / 1000);
-  if (h > 0) return `${h}h ${String(m).padStart(2, "0")}m`;
-  if (m > 0) return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
-  return `00:${String(s).padStart(2, "0")}`;
-}
 import type { MatrixMovie } from "./cover-matrix-controller";
 import { useCoverMatrix } from "./cover-matrix-controller";
 import { useCoverMatrixPanel } from "./cover-matrix-store";
+
 import "./m-card.css";
 
-export function CoverMatrixMovieCard({ movie }: { movie: MatrixMovie }) {
-  const selectMovie = useCoverMatrixPanel((s) => s.selectMovie);
-  const shuffleOne = useCoverMatrix((s) => s.shuffleOne);
-  const addCover = useCoverMatrix((s) => s.addCover);
-  const busyId = useCoverMatrix((s) => s.busyId);
-  const busy = busyId === movie.id;
-  const single = movie.covers.length <= 1;
-  const countdown = useCountdown(!single ? movie.cover_schedule?.nextRotateAt : null);
+function useCountdown(target: number | null | undefined) {
+  const [now, setNow] = useState(Date.now());
+
+  useEffect(() => {
+    if (!target) return;
+
+    const id = setInterval(() => {
+      setNow(Date.now());
+    }, 1000);
+
+    return () => clearInterval(id);
+  }, [target]);
+
+  if (!target) return null;
+
+  const diff = Math.max(0, target - now);
+
+  const h = Math.floor(diff / 3600000);
+  const m = Math.floor((diff % 3600000) / 60000);
+  const s = Math.floor((diff % 60000) / 1000);
+
+  if (h > 0) return `${h}h ${String(m).padStart(2, "0")}m`;
+
+  if (m > 0) {
+    return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+  }
+
+  return `00:${String(s).padStart(2, "0")}`;
+}
+
+/* =========================================================
+   MOBILE IMAGE PICKER
+
+   Uses a real button and a permanently mounted file input.
+   This avoids relying on label-based picker activation.
+========================================================= */
+
+function MobileImagePicker({
+  onPick,
+  disabled = false,
+  children,
+  className = "m-card-btn",
+}: {
+  onPick: (file: File) => void;
+  disabled?: boolean;
+  children: React.ReactNode;
+  className?: string;
+}) {
+  const inputRef = useRef<HTMLInputElement>(null);
+
   return (
-    <div className="m-card" onClick={() => selectMovie(movie.id)}>
-      <div className="m-card-media"><img src={movie.cover_url} alt={movie.title} loading="lazy" draggable={false} />
-        {!single && countdown && <div className="m-card-timer-overlay"><span className="m-card-timer-label">NEXT COVER IN</span><span className="m-card-timer-big">{countdown}</span></div>}
+    <>
+      <button
+        type="button"
+        className={className}
+        disabled={disabled}
+        onClick={(e) => {
+          e.stopPropagation();
+
+          inputRef.current?.click();
+        }}
+      >
+        {children}
+      </button>
+
+      <input
+        ref={inputRef}
+        type="file"
+        accept="image/*"
+        className="m-file-input"
+        disabled={disabled}
+        onChange={(e) => {
+          const file = e.currentTarget.files?.[0];
+
+          if (file) {
+            onPick(file);
+          }
+
+          // Allows selecting the same image again.
+          e.currentTarget.value = "";
+        }}
+      />
+    </>
+  );
+}
+
+/* =========================================================
+   MOVIE CARD
+========================================================= */
+
+export function CoverMatrixMovieCard({
+  movie,
+}: {
+  movie: MatrixMovie;
+}) {
+  const selectMovie = useCoverMatrixPanel(
+    (s) => s.selectMovie
+  );
+
+  const shuffleOne = useCoverMatrix(
+    (s) => s.shuffleOne
+  );
+
+  const addCover = useCoverMatrix(
+    (s) => s.addCover
+  );
+
+  const busyId = useCoverMatrix(
+    (s) => s.busyId
+  );
+
+  const busy = busyId === movie.id;
+
+  const single = movie.covers.length <= 1;
+
+  const countdown = useCountdown(
+    !single
+      ? movie.cover_schedule?.nextRotateAt
+      : null
+  );
+
+  return (
+    <div
+      className="m-card"
+      onClick={() => selectMovie(movie.id)}
+    >
+      <div className="m-card-media">
+        <img
+          src={movie.cover_url}
+          alt={movie.title}
+          loading="lazy"
+          draggable={false}
+        />
+
+        {!single && countdown && (
+          <div className="m-card-timer-overlay">
+            <span className="m-card-timer-label">
+              NEXT COVER IN
+            </span>
+
+            <span className="m-card-timer-big">
+              {countdown}
+            </span>
+          </div>
+        )}
       </div>
+
       <div className="m-card-body">
-        <div className="m-card-title">{movie.title}</div>
-        <div className="m-card-meta">{movie.vj ? `VJ ${movie.vj} • ` : ""}{movie.covers.length} cover{movie.covers.length === 1 ? "" : "s"}{single ? " • add 1 more to unlock shuffle" : ""}</div>
+        <div className="m-card-title">
+          {movie.title}
+        </div>
+
+        <div className="m-card-meta">
+          {movie.vj ? `VJ ${movie.vj} • ` : ""}
+          {movie.covers.length} cover
+          {movie.covers.length === 1 ? "" : "s"}
+          {single
+            ? " • add 1 more to unlock shuffle"
+            : ""}
+        </div>
+
         {single ? (
-          // LABEL METHOD — tapping the label natively opens the picker on iOS. NO JS click().
-          <label className="m-card-btn" onClick={(e) => e.stopPropagation()}>
+          <MobileImagePicker
+            disabled={busy}
+            onPick={(file) => addCover(movie, file)}
+          >
             {busy ? "Uploading…" : "+ Add Cover"}
-            <input type="file" accept="image/*" className="m-file-input" disabled={busy} onChange={(e) => { const f = e.target.files?.[0]; if (f) addCover(movie, f); e.target.value = ""; }} />
-          </label>
+          </MobileImagePicker>
         ) : (
-          <button className="m-card-btn" disabled={busy} onClick={(e) => { e.stopPropagation(); shuffleOne(movie); }}>
+          <button
+            type="button"
+            className="m-card-btn"
+            disabled={busy}
+            onClick={(e) => {
+              e.stopPropagation();
+              shuffleOne(movie);
+            }}
+          >
             {busy ? "…" : "🔀 Shuffle"}
           </button>
         )}
@@ -51,49 +196,188 @@ export function CoverMatrixMovieCard({ movie }: { movie: MatrixMovie }) {
   );
 }
 
-export function CoverMatrixCoverCard({ movie, cover, index }: { movie: MatrixMovie; cover: string; index: number }) {
-  const setActiveCover = useCoverMatrix((s) => s.setActiveCover);
-  const deleteCover = useCoverMatrix((s) => s.deleteCover);
-  const replaceCover = useCoverMatrix((s) => s.replaceCover);
-  const busyId = useCoverMatrix((s) => s.busyId);
+/* =========================================================
+   COVER CARD
+========================================================= */
+
+export function CoverMatrixCoverCard({
+  movie,
+  cover,
+  index,
+}: {
+  movie: MatrixMovie;
+  cover: string;
+  index: number;
+}) {
+  const setActiveCover = useCoverMatrix(
+    (s) => s.setActiveCover
+  );
+
+  const deleteCover = useCoverMatrix(
+    (s) => s.deleteCover
+  );
+
+  const replaceCover = useCoverMatrix(
+    (s) => s.replaceCover
+  );
+
+  const busyId = useCoverMatrix(
+    (s) => s.busyId
+  );
+
   const [showDelete, setShowDelete] = useState(false);
+
   const busy = busyId === movie.id;
+
   const raw = movie.covers_raw?.[index] || cover;
-  const isActive = movie.cover_url === cover || movie.cover_url_raw === raw || movie.cover_schedule?.activeIndex === index;
-  const countdown = useCountdown(isActive && movie.covers.length > 1 ? movie.cover_schedule?.nextRotateAt : null);
+
+  const isActive =
+    movie.cover_url === cover ||
+    movie.cover_url_raw === raw ||
+    movie.cover_schedule?.activeIndex === index;
+
+  const countdown = useCountdown(
+    isActive && movie.covers.length > 1
+      ? movie.cover_schedule?.nextRotateAt
+      : null
+  );
+
   return (
-    <div className={`m-card ${isActive ? "is-active" : ""}`} role="button" tabIndex={0} onClick={() => { if (!busy) setActiveCover(movie, cover); }} onKeyDown={(e) => { if ((e.key === "Enter" || e.key === " ") && !busy) { e.preventDefault(); setActiveCover(movie, cover); } }}>
+    <div
+      className={`m-card ${isActive ? "is-active" : ""}`}
+      role="button"
+      tabIndex={0}
+      onClick={() => {
+        if (!busy) {
+          setActiveCover(movie, cover);
+        }
+      }}
+      onKeyDown={(e) => {
+        if (
+          (e.key === "Enter" || e.key === " ") &&
+          !busy
+        ) {
+          e.preventDefault();
+          setActiveCover(movie, cover);
+        }
+      }}
+    >
       <div className="m-card-media">
-        <img src={cover} alt={`${movie.title} cover ${index + 1}`} loading="lazy" draggable={false} />
-        {isActive && <span className="m-card-active">ACTIVE</span>}
-        {isActive && movie.covers.length > 1 && countdown && <div className="m-card-timer-overlay"><span className="m-card-timer-label">NEXT COVER IN</span><span className="m-card-timer-big">{countdown}</span></div>}
+        <img
+          src={cover}
+          alt={`${movie.title} cover ${index + 1}`}
+          loading="lazy"
+          draggable={false}
+        />
+
+        {isActive && (
+          <span className="m-card-active">
+            ACTIVE
+          </span>
+        )}
+
+        {isActive &&
+          movie.covers.length > 1 &&
+          countdown && (
+            <div className="m-card-timer-overlay">
+              <span className="m-card-timer-label">
+                NEXT COVER IN
+              </span>
+
+              <span className="m-card-timer-big">
+                {countdown}
+              </span>
+            </div>
+          )}
       </div>
+
       <div className="m-card-body">
-        <div className="m-card-meta">Cover {index + 1}{isActive ? " • live now" : ""}</div>
+        <div className="m-card-meta">
+          Cover {index + 1}
+          {isActive ? " • live now" : ""}
+        </div>
+
         <div className="m-card-actions">
-          {/* LABEL METHOD — same fix */}
-          <label className="m-card-btn" onClick={(e) => e.stopPropagation()}>
+          <MobileImagePicker
+            disabled={busy}
+            onPick={(file) =>
+              replaceCover(movie, cover, file)
+            }
+          >
             Replace
-            <input type="file" accept="image/*" className="m-file-input" disabled={busy} onChange={(e) => { const f = e.target.files?.[0]; if (f) replaceCover(movie, cover, f); e.target.value = ""; }} />
-          </label>
-          <button className="m-card-btn danger" disabled={busy} onClick={(e) => { e.stopPropagation(); setShowDelete(true); }}>Delete</button>
+          </MobileImagePicker>
+
+          <button
+            type="button"
+            className="m-card-btn danger"
+            disabled={busy}
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowDelete(true);
+            }}
+          >
+            Delete
+          </button>
         </div>
       </div>
-      <DeleteNotice open={showDelete} cover={cover} movieTitle={movie.title} isActive={isActive} busy={busy} onCancel={() => setShowDelete(false)} onConfirm={() => { setShowDelete(false); deleteCover(movie, cover); }} />
+
+      <DeleteNotice
+        open={showDelete}
+        cover={cover}
+        movieTitle={movie.title}
+        isActive={isActive}
+        busy={busy}
+        onCancel={() => setShowDelete(false)}
+        onConfirm={() => {
+          setShowDelete(false);
+          deleteCover(movie, cover);
+        }}
+      />
     </div>
   );
 }
 
-export function CoverMatrixAddCard({ movie }: { movie: MatrixMovie }) {
-  const addCover = useCoverMatrix((s) => s.addCover);
-  const busyId = useCoverMatrix((s) => s.busyId);
+/* =========================================================
+   ADD COVER CARD
+========================================================= */
+
+export function CoverMatrixAddCard({
+  movie,
+}: {
+  movie: MatrixMovie;
+}) {
+  const addCover = useCoverMatrix(
+    (s) => s.addCover
+  );
+
+  const busyId = useCoverMatrix(
+    (s) => s.busyId
+  );
+
+  const busy = busyId === movie.id;
+
   return (
-    // LABEL METHOD — whole Add card is a label
-    <label className="m-card m-card-add" onClick={(e) => e.stopPropagation()}>
-      <div className="m-card-add-plus">+</div>
-      <div className="m-card-meta">Add cover</div>
-      <input type="file" accept="image/*" className="m-file-input" onChange={(e) => { const f = e.target.files?.[0]; if (f) addCover(movie, f); e.target.value = ""; }} />
-      {busyId === movie.id && <div className="m-card-meta">Uploading…</div>}
-    </label>
+    <div className="m-card m-card-add">
+      <MobileImagePicker
+        disabled={busy}
+        className="m-card-add-picker"
+        onPick={(file) => addCover(movie, file)}
+      >
+        <span className="m-card-add-plus">
+          +
+        </span>
+
+        <span className="m-card-meta">
+          {busy ? "Uploading…" : "Add cover"}
+        </span>
+      </MobileImagePicker>
+
+      {busy && (
+        <div className="m-card-meta">
+          Uploading…
+        </div>
+      )}
+    </div>
   );
 }
+
