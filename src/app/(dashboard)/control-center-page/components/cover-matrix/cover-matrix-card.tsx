@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import DeleteNotice from "./delete-notice";
 
 function useCountdown(target: number | null | undefined) {
@@ -24,7 +24,6 @@ export function CoverMatrixMovieCard({ movie }: { movie: MatrixMovie }) {
   const shuffleOne = useCoverMatrix((s) => s.shuffleOne);
   const addCover = useCoverMatrix((s) => s.addCover);
   const busyId = useCoverMatrix((s) => s.busyId);
-  const fileRef = useRef<HTMLInputElement>(null);
   const busy = busyId === movie.id;
   const single = movie.covers.length <= 1;
   const countdown = useCountdown(!single ? movie.cover_schedule?.nextRotateAt : null);
@@ -37,12 +36,11 @@ export function CoverMatrixMovieCard({ movie }: { movie: MatrixMovie }) {
         <div className="m-card-title">{movie.title}</div>
         <div className="m-card-meta">{movie.vj ? `VJ ${movie.vj} • ` : ""}{movie.covers.length} cover{movie.covers.length === 1 ? "" : "s"}{single ? " • add 1 more to unlock shuffle" : ""}</div>
         {single ? (
-          <>
-            <button className="m-card-btn" disabled={busy} onClick={(e) => { e.stopPropagation(); fileRef.current?.click(); }}>
-              {busy ? "Uploading…" : "+ Add Cover"}
-            </button>
-            <input ref={fileRef} type="file" accept="image/*" className="m-file-input" onChange={(e) => { const f = e.target.files?.[0]; if (f) addCover(movie, f); e.target.value = ""; }} />
-          </>
+          // LABEL METHOD — tapping the label natively opens the picker on iOS. NO JS click().
+          <label className="m-card-btn" onClick={(e) => e.stopPropagation()}>
+            {busy ? "Uploading…" : "+ Add Cover"}
+            <input type="file" accept="image/*" className="m-file-input" disabled={busy} onChange={(e) => { const f = e.target.files?.[0]; if (f) addCover(movie, f); e.target.value = ""; }} />
+          </label>
         ) : (
           <button className="m-card-btn" disabled={busy} onClick={(e) => { e.stopPropagation(); shuffleOne(movie); }}>
             {busy ? "…" : "🔀 Shuffle"}
@@ -58,7 +56,6 @@ export function CoverMatrixCoverCard({ movie, cover, index }: { movie: MatrixMov
   const deleteCover = useCoverMatrix((s) => s.deleteCover);
   const replaceCover = useCoverMatrix((s) => s.replaceCover);
   const busyId = useCoverMatrix((s) => s.busyId);
-  const fileRef = useRef<HTMLInputElement>(null);
   const [showDelete, setShowDelete] = useState(false);
   const busy = busyId === movie.id;
   const raw = movie.covers_raw?.[index] || cover;
@@ -74,10 +71,13 @@ export function CoverMatrixCoverCard({ movie, cover, index }: { movie: MatrixMov
       <div className="m-card-body">
         <div className="m-card-meta">Cover {index + 1}{isActive ? " • live now" : ""}</div>
         <div className="m-card-actions">
-          <button className="m-card-btn" disabled={busy} onClick={(e) => { e.stopPropagation(); fileRef.current?.click(); }}>Replace</button>
+          {/* LABEL METHOD — same fix */}
+          <label className="m-card-btn" onClick={(e) => e.stopPropagation()}>
+            Replace
+            <input type="file" accept="image/*" className="m-file-input" disabled={busy} onChange={(e) => { const f = e.target.files?.[0]; if (f) replaceCover(movie, cover, f); e.target.value = ""; }} />
+          </label>
           <button className="m-card-btn danger" disabled={busy} onClick={(e) => { e.stopPropagation(); setShowDelete(true); }}>Delete</button>
         </div>
-        <input ref={fileRef} type="file" accept="image/*" className="m-file-input" onChange={(e) => { const f = e.target.files?.[0]; if (f) replaceCover(movie, cover, f); e.target.value = ""; }} />
       </div>
       <DeleteNotice open={showDelete} cover={cover} movieTitle={movie.title} isActive={isActive} busy={busy} onCancel={() => setShowDelete(false)} onConfirm={() => { setShowDelete(false); deleteCover(movie, cover); }} />
     </div>
@@ -87,14 +87,13 @@ export function CoverMatrixCoverCard({ movie, cover, index }: { movie: MatrixMov
 export function CoverMatrixAddCard({ movie }: { movie: MatrixMovie }) {
   const addCover = useCoverMatrix((s) => s.addCover);
   const busyId = useCoverMatrix((s) => s.busyId);
-  const fileRef = useRef<HTMLInputElement>(null);
   return (
-    <div className="m-card m-card-add" role="button" tabIndex={0} onClick={() => fileRef.current?.click()} onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); fileRef.current?.click(); } }}>
+    // LABEL METHOD — whole Add card is a label
+    <label className="m-card m-card-add" onClick={(e) => e.stopPropagation()}>
       <div className="m-card-add-plus">+</div>
       <div className="m-card-meta">Add cover</div>
-      <input ref={fileRef} type="file" accept="image/*" className="m-file-input" onChange={(e) => { const f = e.target.files?.[0]; if (f) addCover(movie, f); e.target.value = ""; }} />
+      <input type="file" accept="image/*" className="m-file-input" onChange={(e) => { const f = e.target.files?.[0]; if (f) addCover(movie, f); e.target.value = ""; }} />
       {busyId === movie.id && <div className="m-card-meta">Uploading…</div>}
-    </div>
+    </label>
   );
 }
-
