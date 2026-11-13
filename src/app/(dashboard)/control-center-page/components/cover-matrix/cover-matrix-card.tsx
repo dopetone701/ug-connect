@@ -54,41 +54,102 @@ function MobileImagePicker({
   children,
   className = "m-card-btn",
 }: {
-  onPick: (file: File) => void | Promise<void>;
+  onPick: (file: File) => Promise<void>;
   disabled?: boolean;
   children: React.ReactNode;
   className?: string;
 }) {
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const input = e.currentTarget;
-    const file = input.files?.[0];
+  const [isMobile, setIsMobile] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState("");
 
-    if (!file) return;
+  useEffect(() => {
+    const media = window.matchMedia("(max-width: 768px)");
+    const update = () => setIsMobile(media.matches);
 
-    // Start the existing automatic upload.
-    void onPick(file);
+    update();
+    media.addEventListener("change", update);
 
-    // Allow the same image to be selected again.
-    input.value = "";
+    return () => media.removeEventListener("change", update);
+  }, []);
+
+  const confirmUpload = async () => {
+    if (!selectedFile || uploading || disabled) return;
+
+    setUploading(true);
+    setError("");
+
+    try {
+      await onPick(selectedFile);
+      setSelectedFile(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Upload failed");
+    } finally {
+      setUploading(false);
+    }
   };
 
   return (
-    <label
-      className={className}
-      aria-disabled={disabled}
-      onClick={(e) => e.stopPropagation()}
-    >
-      {children}
+    <div className="m-picker">
+      {!selectedFile ? (
+        <label className={className}>
+          {children}
+          <input
+            type="file"
+            accept="image/*"
+            className="m-file-input"
+            disabled={disabled}
+            onChange={(e) => {
+              const file = e.currentTarget.files?.[0];
+              e.currentTarget.value = "";
 
-      <input
-        type="file"
-        accept="image/*"
-        className="m-file-input"
-        disabled={disabled}
-        onClick={(e) => e.stopPropagation()}
-        onChange={handleChange}
-      />
-    </label>
+              if (!file) return;
+
+              if (isMobile) {
+                setSelectedFile(file);
+                setError("");
+              } else {
+                void onPick(file);
+              }
+            }}
+          />
+        </label>
+      ) : (
+        <div className="m-picker-confirm">
+          <div className="m-card-meta">
+            Selected: {selectedFile.name}
+          </div>
+
+          <button
+            type="button"
+            className="m-card-btn"
+            disabled={uploading || disabled}
+            onClick={confirmUpload}
+          >
+            {uploading ? "Uploading…" : "Confirm Upload"}
+          </button>
+
+          <button
+            type="button"
+            className="m-card-btn danger"
+            disabled={uploading}
+            onClick={() => {
+              setSelectedFile(null);
+              setError("");
+            }}
+          >
+            Cancel
+          </button>
+
+          {error && (
+            <div className="m-card-meta" style={{ color: "#e11d48" }}>
+              {error}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
   );
 }
 
