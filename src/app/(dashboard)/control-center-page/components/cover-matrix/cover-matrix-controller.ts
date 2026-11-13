@@ -30,12 +30,39 @@ type State = {
   rotateIfDue: () => Promise<void>;
 };
 
+
 async function uploadToR2(file: File, key: string) {
-  const res = await fetch(`${COVER_WORKER}/upload-single?key=${encodeURIComponent(key)}`, { method: "PUT", headers: { "Content-Type": file.type || "image/jpeg" }, body: file });
-  if (!res.ok) throw new Error(await res.text());
+  if (!file || file.size === 0) {
+    throw new Error("Selected photo is empty.");
+  }
+
+  // Read the photo into a stable binary buffer.
+  const buffer = await file.arrayBuffer();
+
+  if (buffer.byteLength === 0) {
+    throw new Error("Photo could not be read from your device.");
+  }
+
+  const res = await fetch(
+    `${COVER_WORKER}/upload-single?key=${encodeURIComponent(key)}`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": file.type || "application/octet-stream",
+      },
+      body: buffer,
+    }
+  );
+
+  if (!res.ok) {
+    throw new Error(await res.text());
+  }
+
   const j = await res.json().catch(() => ({}));
   return j.key || key;
 }
+
+
 async function api(path: string, method = "GET", body?: any) {
   const res = await fetch(`${COVER_WORKER}${path}`, { method, headers: { "Content-Type": "application/json" }, body: body ? JSON.stringify(body) : undefined });
   if (!res.ok) throw new Error(await res.text());
