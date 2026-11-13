@@ -339,3 +339,14 @@
 
 
 
+body.m-panel-open [class*="bottom-bar"],
+body.m-panel-open [class*="bottomBar"],
+body.m-panel-open [class*="bottom-nav"],
+body.m-panel-open [class*="bottomNav"],
+body.m-panel-open [class*="mobile-bottom"],
+body.m-panel-open [class*="app-bottom"],
+body.m-panel-open [class*="shell-bottom"],
+body.m-panel-open footer,
+body.m-panel-open nav[class*="bottom"] {
+  display: none !important;
+}
