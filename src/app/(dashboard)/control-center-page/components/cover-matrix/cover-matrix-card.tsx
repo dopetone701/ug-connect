@@ -47,112 +47,54 @@ function useCountdown(target: number | null | undefined) {
    This avoids relying on label-based picker activation.
 ========================================================= */
 
-
 function MobileImagePicker({
   onPick,
   disabled = false,
   children,
   className = "m-card-btn",
 }: {
-  onPick: (file: File) => Promise<void>;
+  onPick: (file: File) => void;
   disabled?: boolean;
   children: React.ReactNode;
   className?: string;
 }) {
-  const [isMobile, setIsMobile] = useState(false);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [uploading, setUploading] = useState(false);
-  const [error, setError] = useState("");
-
-  useEffect(() => {
-    const media = window.matchMedia("(max-width: 768px)");
-    const update = () => setIsMobile(media.matches);
-
-    update();
-    media.addEventListener("change", update);
-
-    return () => media.removeEventListener("change", update);
-  }, []);
-
-  const confirmUpload = async () => {
-    if (!selectedFile || uploading || disabled) return;
-
-    setUploading(true);
-    setError("");
-
-    try {
-      await onPick(selectedFile);
-      setSelectedFile(null);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Upload failed");
-    } finally {
-      setUploading(false);
-    }
-  };
+  const inputRef = useRef<HTMLInputElement>(null);
 
   return (
-    <div className="m-picker">
-      {!selectedFile ? (
-        <label className={className}>
-          {children}
-          <input
-            type="file"
-            accept="image/*"
-            className="m-file-input"
-            disabled={disabled}
-            onChange={(e) => {
-              const file = e.currentTarget.files?.[0];
-              e.currentTarget.value = "";
+    <>
+      <button
+        type="button"
+        className={className}
+        disabled={disabled}
+        onClick={(e) => {
+          e.stopPropagation();
 
-              if (!file) return;
+          inputRef.current?.click();
+        }}
+      >
+        {children}
+      </button>
 
-              if (isMobile) {
-                setSelectedFile(file);
-                setError("");
-              } else {
-                void onPick(file);
-              }
-            }}
-          />
-        </label>
-      ) : (
-        <div className="m-picker-confirm">
-          <div className="m-card-meta">
-            Selected: {selectedFile.name}
-          </div>
+      <input
+        ref={inputRef}
+        type="file"
+        accept="image/*"
+        className="m-file-input"
+        disabled={disabled}
+        onChange={(e) => {
+          const file = e.currentTarget.files?.[0];
 
-          <button
-            type="button"
-            className="m-card-btn"
-            disabled={uploading || disabled}
-            onClick={confirmUpload}
-          >
-            {uploading ? "Uploading…" : "Confirm Upload"}
-          </button>
+          if (file) {
+            onPick(file);
+          }
 
-          <button
-            type="button"
-            className="m-card-btn danger"
-            disabled={uploading}
-            onClick={() => {
-              setSelectedFile(null);
-              setError("");
-            }}
-          >
-            Cancel
-          </button>
-
-          {error && (
-            <div className="m-card-meta" style={{ color: "#e11d48" }}>
-              {error}
-            </div>
-          )}
-        </div>
-      )}
-    </div>
+          // Allows selecting the same image again.
+          e.currentTarget.value = "";
+        }}
+      />
+    </>
   );
 }
-
 
 /* =========================================================
    MOVIE CARD
