@@ -47,54 +47,51 @@ function useCountdown(target: number | null | undefined) {
    This avoids relying on label-based picker activation.
 ========================================================= */
 
+
 function MobileImagePicker({
   onPick,
   disabled = false,
   children,
   className = "m-card-btn",
 }: {
-  onPick: (file: File) => void;
+  onPick: (file: File) => void | Promise<void>;
   disabled?: boolean;
   children: React.ReactNode;
   className?: string;
 }) {
-  const inputRef = useRef<HTMLInputElement>(null);
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const input = e.currentTarget;
+    const file = input.files?.[0];
+
+    if (!file) return;
+
+    // Start the existing automatic upload.
+    void onPick(file);
+
+    // Allow the same image to be selected again.
+    input.value = "";
+  };
 
   return (
-    <>
-      <button
-        type="button"
-        className={className}
-        disabled={disabled}
-        onClick={(e) => {
-          e.stopPropagation();
-
-          inputRef.current?.click();
-        }}
-      >
-        {children}
-      </button>
+    <label
+      className={className}
+      aria-disabled={disabled}
+      onClick={(e) => e.stopPropagation()}
+    >
+      {children}
 
       <input
-        ref={inputRef}
         type="file"
         accept="image/*"
         className="m-file-input"
         disabled={disabled}
-        onChange={(e) => {
-          const file = e.currentTarget.files?.[0];
-
-          if (file) {
-            onPick(file);
-          }
-
-          // Allows selecting the same image again.
-          e.currentTarget.value = "";
-        }}
+        onClick={(e) => e.stopPropagation()}
+        onChange={handleChange}
       />
-    </>
+    </label>
   );
 }
+
 
 /* =========================================================
    MOVIE CARD
