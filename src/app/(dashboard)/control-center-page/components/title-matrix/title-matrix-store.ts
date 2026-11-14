@@ -8,15 +8,17 @@ export type TitleOverlayData = { text: string; font: string; on: boolean; style?
 const WRITE_API = "https://movie-creation-portal-api.connectu89.workers.dev"
 const READ_API = "https://movie-server-api.connectu89.workers.dev"
 
-// ONLY true/false goes to D1. Never text/font/style.
-async function saveToD1(movieId: string, on: boolean) {
+// FIX: D1 carries ON + TEXT + FONT + STYLE — tiny carrier, so faders reach users.
+// D1 never carries whole system, just this one small object per movie.
+async function saveToD1(movieId: string, data: TitleOverlayData) {
   try {
     await fetch(`${WRITE_API}/movies/${movieId}/title`, {
       method: "POST",
       headers: { "Content-Type": "application/json", "Cache-Control": "no-store" },
       cache: "no-store",
-      body: JSON.stringify({ on }),
+      body: JSON.stringify({ on: data.on, text: data.text || "", font: data.font || "cinzel", style: data.style || null }),
     })
+    if (typeof window !== "undefined") window.dispatchEvent(new CustomEvent("ug-title-saved"))
   } catch {}
 }
 
@@ -52,8 +54,10 @@ export const useTitleMatrixStore = create<PanelState>()((set, get) => ({
   backToAll: () => set({ view: "all", selectedId: null }),
   overlays: typeof window === "undefined" ? {} : load(),
 
-  // TRIGGER: pulls D1 true/false for all movies, applies to local overlays.
-  // If D1 says false -> hide. If D1 says true but no local -> hide (no fallback).
+  // FIX: pulls D1 on + text + font + style for all movies, merges into local.
+  // This is how admin faders reach users: D1 carries style, store seeds local.
+  // If D1 says false -> hide, but KEEP text/style so turning ON again keeps it.
+  // If D1 says true + has text/style -> create local entry even if local was empty. No inventing.
   loadOverlays: async () => {
     try {
       const res = await fetch(`${READ_API}/title-overlays?t=${Date.now()}`, { cache: "no-store" })
@@ -61,12 +65,22 @@ export const useTitleMatrixStore = create<PanelState>()((set, get) => ({
       if (!data.overlays) return
       const cur = { ...get().overlays }
       for (const id of Object.keys(data.overlays)) {
-        const on = data.overlays[id] === true
+        const raw = data.overlays[id]
+        // Backwards compat: old D1 returns true/false only
+        const on = raw === true ? true : raw === false ? false : !!raw?.on
+        const d1Text = typeof raw === "object" ? (raw.text || "") : ""
+        const d1Font = typeof raw === "object" ? (raw.font || "cinzel") : "cinzel"
+        const d1Style = typeof raw === "object" ? (raw.style || null) : null
         if (!on) {
-          if (cur[id]) cur[id] = { ...cur[id], on: false }
+          if (cur[id]) cur[id] = { ...cur[id], on: false, text: d1Text || cur[id].text, font: d1Font || cur[id].font, style: d1Style || cur[id].style }
         } else {
-          if (cur[id]) cur[id] = { ...cur[id], on: true }
-          // No local entry = don't invent one. Overlay stays hidden until admin sets it locally.
+          // D1 ON + D1 has text -> seed local, even on a new device. This is the fix.
+          if (d1Text.trim()) {
+            cur[id] = { text: d1Text, font: d1Font, on: true, style: d1Style || cur[id]?.style }
+          } else if (cur[id]) {
+            cur[id] = { ...cur[id], on: true }
+          }
+          // D1 ON but no text anywhere -> hide, don't invent movie title
         }
       }
       save(cur); set({ overlays: cur })
@@ -77,24 +91,28 @@ export const useTitleMatrixStore = create<PanelState>()((set, get) => ({
     const cur = get().overlays[movieId];
     // No overlay yet? Create a draft (on:false) so faders still preview + persist.
     // Add button later flips on:true and keeps this style.
-    // LOCAL ONLY — no D1 call here, style never leaves browser.
-    const overlays = { ...get().overlays, [movieId]: { text: cur?.text || "", font: cur?.font || "cinzel", on: cur?.on || false, style } };
+    // FIX: style DOES go to D1 now — or user never sees fader move.
+    const next: TitleOverlayData = { text: cur?.text || "", font: cur?.font || "cinzel", on: cur?.on || false, style };
+    const overlays = { ...get().overlays, [movieId]: next };
     save(overlays); set({ overlays });
+    saveToD1(movieId, next)
   },
   setOverlay: (movieId, text, font) => {
     const prev = get().overlays[movieId];
-    const overlays = { ...get().overlays, [movieId]: { text, font, on: true, style: prev?.style } }
+    const next: TitleOverlayData = { text, font, on: true, style: prev?.style }
+    const overlays = { ...get().overlays, [movieId]: next }
     save(overlays); set({ overlays })
-    saveToD1(movieId, true) // <-- ONLY true goes to D1
+    saveToD1(movieId, next)
   },
   toggle: (movieId) => {
     const cur = get().overlays[movieId]
     if (!cur) return
-    const next = !cur.on
+    const nextOn = !cur.on
     // No fallback: can't turn ON without actual text
-    if (next && !cur.text?.trim()) return
-    const overlays = { ...get().overlays, [movieId]: { ...cur, on: next } }
+    if (nextOn && !cur.text?.trim()) return
+    const next: TitleOverlayData = { ...cur, on: nextOn }
+    const overlays = { ...get().overlays, [movieId]: next }
     save(overlays); set({ overlays })
-    saveToD1(movieId, next) // <-- ONLY true/false goes to D1
+    saveToD1(movieId, next)
   },
 }))
