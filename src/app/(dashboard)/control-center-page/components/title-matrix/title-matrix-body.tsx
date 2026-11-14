@@ -9,7 +9,7 @@ import ColorFaders from "./color-faders-system";
 import { useCoverMatrix } from "../cover-matrix/cover-matrix-controller";
 
 export default function TitleMatrixBody() {
-  const { selectedId, select, overlays, setOverlay, toggle } = useTitleMatrixStore();
+  const { selectedId, select, overlays, setOverlay, toggle, loadOverlays } = useTitleMatrixStore();
   const movies = useCoverMatrix((s: any) => s.movies);
   const loading = useCoverMatrix((s: any) => s.loading);
   const loadMovies = useCoverMatrix((s: any) => s.loadMovies);
@@ -23,6 +23,8 @@ export default function TitleMatrixBody() {
   useEffect(() => { const l = document.createElement("link"); l.rel = "stylesheet"; l.href = fontLink(); document.head.appendChild(l); }, []);
   useEffect(() => { if (!movies.length) loadMovies?.(); }, []);
   useEffect(() => { setAdded(false); }, [selectedId]); // new movie = button back to normal
+  // FIX: pull D1 on mount, so admin sees true ON/OFF + style from D1
+  useEffect(() => { loadOverlays?.(); }, []);
 
   const filtered = useMemo(() => {
     const query = q.trim().toLowerCase();
@@ -33,6 +35,15 @@ export default function TitleMatrixBody() {
   const selected = useMemo(() => movies.find((m: any) => m.id === selectedId), [movies, selectedId]);
   const previewFont = fontById(font);
   const coverOf = (m: any) => m.cover_url || m.covers?.[m.cover_schedule?.activeIndex || 0] || m.covers?.[0] || "";
+
+  // FIX: when you open a movie, load its real saved font/text — don't keep last movie's font
+  useEffect(() => {
+    if (!selected) return;
+    const cur = overlays[selected.id];
+    setFont(cur?.font || "cinzel");
+    setText(cur?.text || "");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedId]);
 
   // Sync-cover preview colour
   useEffect(() => {
@@ -52,10 +63,22 @@ export default function TitleMatrixBody() {
 
   function handleAdd() {
     if (!selected) return;
-    setOverlay(selected.id, text.trim() || overlays[selected.id]?.text || selected.title, font);
+    // FIX: no fallback to movie title. Empty = don't save.
+    const actual = text.trim() || overlays[selected.id]?.text?.trim() || "";
+    if (!actual) return;
+    setOverlay(selected.id, actual, font);
     setText("");
     setAdded(true);
     setTimeout(() => setAdded(false), 1800);
+  }
+
+  // FIX: font chip must persist, or user never gets font change.
+  // If movie already has text, save font to Store -> Store posts full object to D1.
+  function handleFontChange(newFont: string) {
+    setFont(newFont);
+    if (!selected) return;
+    const cur = overlays[selected.id];
+    if (cur?.text?.trim()) setOverlay(selected.id, cur.text, newFont);
   }
 
   if (loading && !movies.length) return <div className="t-body"><div className="t-empty">Loading movies…</div></div>;
@@ -63,6 +86,8 @@ export default function TitleMatrixBody() {
   if (selected) {
     const cur = overlays[selected.id];
     const cover = coverOf(selected);
+    // FIX: no fallback to selected.title in preview. No text = no overlay.
+    const showPreview = !!(text.trim() || cur?.text?.trim());
     return (
       <div className="t-body">
         <button className="t-body-back" onClick={() => select(null)}>← All Movies</button>
@@ -70,11 +95,11 @@ export default function TitleMatrixBody() {
         <div className="t-body-sub">{cur?.on ? "Overlay is ON — showing on the card" : "Cover has no visible title — add our generated overlay"}</div>
         <div className="t-cover-row">
           {cover ? <img src={cover} alt="" /> : null}
-          <div className="t-overlay"><span style={previewStyle}>{text.trim() || cur?.text || selected.title}</span></div>
+          {showPreview && <div className="t-overlay"><span style={previewStyle}>{text.trim() || cur?.text}</span></div>}
         </div>
-        <input className="t-input" value={text} onChange={(e) => setText(e.target.value)} placeholder={`Title — leave empty to use "${selected.title}"`} />
+        <input className="t-input" value={text} onChange={(e) => setText(e.target.value)} placeholder="Type actual title — empty will not save" />
         <div className="t-font-row">{TITLE_FONTS.map(f => (
-          <button key={f.id} className={`t-font-chip ${font === f.id ? "active" : ""}`} onClick={() => setFont(f.id)} style={{ fontFamily: f.family }}>Ag</button>
+          <button key={f.id} className={`t-font-chip ${font === f.id ? "active" : ""}`} onClick={() => handleFontChange(f.id)} style={{ fontFamily: f.family }}>Ag</button>
         ))}</div>
         <div className="t-font-label">{previewFont.label}</div>
         {/* FADERS — mounted here, live. Color / Gradient / Border / Shadow / Exposure */}
@@ -87,7 +112,7 @@ export default function TitleMatrixBody() {
 
   return (
     <div className="t-body">
-      <div className="t-body-head"><div><div className="t-body-title">All Movies</div><div className="t-body-sub">Tap a movie with no visible title to add our generated overlay</div></div></div>
+      <div className="t-body-head"><div><div><div className="t-body-title">All Movies</div><div className="t-body-sub">Tap a movie with no visible title to add our generated overlay</div></div></div></div>
       <input className="t-search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="🔍 Search movies, VJ, genre…" />
       <div className="t-count">Showing {filtered.length} of {movies.length} movies</div>
       {filtered.length === 0 ? <div className="t-empty">{movies.length === 0 ? "No movies yet." : "No matches — try another search."}</div> : (
@@ -96,7 +121,7 @@ export default function TitleMatrixBody() {
           const cover = coverOf(m);
           return (
             <div key={m.id} className="t-movie-card" onClick={() => select(m.id)}>
-              <div className="t-cover-row small">{cover ? <img src={cover} alt="" /> : null}{cur?.on && <div className="t-overlay"><span style={{ fontFamily: fontById(cur.font).family, letterSpacing: fontById(cur.font).spacing, fontWeight: fontById(cur.font).weight }}>{cur.text}</span></div>}</div>
+              <div className="t-cover-row small">{cover ? <img src={cover} alt="" /> : null}{cur?.on && cur?.text && <div className="t-overlay"><span style={{ fontFamily: fontById(cur.font).family, letterSpacing: fontById(cur.font).spacing, fontWeight: fontById(cur.font).weight }}>{cur.text}</span></div>}</div>
               <div className="t-movie-title">{m.title}</div>
               <div className="t-movie-meta">{cur?.on ? "Overlay ON" : "No title — tap to add"}</div>
             </div>
@@ -106,4 +131,3 @@ export default function TitleMatrixBody() {
     </div>
   );
 }
-
