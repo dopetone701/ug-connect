@@ -1,14 +1,14 @@
 "use client"
 import { create } from "zustand"
 
-export type TitleStyle = { color: string; gradientOn: boolean; gradientFrom: string; gradientTo: string; border: number; shadow: number; exposure: number }
+export type TitleStyle = { color: string; gradientOn: boolean; gradientFrom: string; gradientTo: string; border: number; shadow: number; exposure: number; size: number; tracking: number }
 export type TitleOverlayData = { text: string; font: string; on: boolean; style?: TitleStyle }
 
 const WRITE_API = "https://movie-creation-portal-api.connectu89.workers.dev"
 const READ_API = "https://movie-server-api.connectu89.workers.dev"
 const SAVE_DELAY = 400
 
-export const DEFAULT_STYLE: TitleStyle = { color: "#ffffff", gradientOn: false, gradientFrom: "#ffffff", gradientTo: "#ff0080", border: 2, shadow: 18, exposure: 100 }
+export const DEFAULT_STYLE: TitleStyle = { color: "#ffffff", gradientOn: false, gradientFrom: "#ffffff", gradientTo: "#ff0080", border: 2, shadow: 18, exposure: 100, size: 100, tracking: 0 }
 
 // ---- D1 IS THE ONLY SOURCE. No localStorage at all. ----
 // Titles live on the movie's own D1 row, so they are locked to the movie id.
@@ -51,6 +51,8 @@ type PanelState = {
   setOverlay: (movieId: string, patch: Partial<Pick<TitleOverlayData, "text" | "font" | "on">>) => void
   setStyle: (movieId: string, patch: Partial<TitleStyle>) => void
   toggle: (movieId: string) => void
+  resetStyle: (movieId: string) => void
+  closeAll: () => Promise<number>
 }
 
 export const useTitleMatrixStore = create<PanelState>()((set, get) => {
@@ -151,6 +153,24 @@ export const useTitleMatrixStore = create<PanelState>()((set, get) => {
         if (nextOn && !cur.text?.trim()) return null
         return { ...cur, on: nextOn }
       }, true),
+
+    // Put every fader back to its default for ONE movie (text, font and ON/OFF are untouched).
+    resetStyle: (movieId) =>
+      apply(movieId, (cur) => (cur ? { ...cur, style: { ...DEFAULT_STYLE } } : null)),
+
+    // Turn OFF every overlay at once. Each one saves to D1 immediately and can only be turned back ON
+    // one by one from its own Title Matrix page. Returns how many were turned off.
+    closeAll: async () => {
+      await get().loadOverlays(true) // make sure we know about every overlay that is ON in D1
+      const all = get().overlays
+      const ids = Object.keys(all).filter((id) => all[id].on)
+      if (!ids.length) return 0
+      const next = { ...all }
+      for (const id of ids) next[id] = { ...all[id], on: false }
+      set({ overlays: next })
+      for (const id of ids) queueSave(id, 0)
+      return ids.length
+    },
   }
 })
 

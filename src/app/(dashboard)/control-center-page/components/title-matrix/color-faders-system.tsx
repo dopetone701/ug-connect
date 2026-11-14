@@ -6,6 +6,7 @@ import { useTitleMatrixStore, DEFAULT_STYLE } from "./title-matrix-store";
 export default function ColorFaders({ movieId }: { movieId: string }) {
   const cur = useTitleMatrixStore((s) => s.overlays[movieId]);
   const setStyle = useTitleMatrixStore((s) => s.setStyle);
+  const resetStyle = useTitleMatrixStore((s) => s.resetStyle);
   const style = { ...DEFAULT_STYLE, ...(cur?.style || {}) };
 
   // Pass ONLY the changed field. The store merges it onto the latest style.
@@ -49,6 +50,22 @@ export default function ColorFaders({ movieId }: { movieId: string }) {
         <label>Exposure {style.exposure}%</label>
         <input type="range" min="50" max="200" step="5" value={style.exposure} onChange={(e) => set({ exposure: Number(e.target.value) })} className="fader-slider" />
       </div>
+
+      <div className="fader-row">
+        <label>Height {style.size}%</label>
+        <input type="range" min="50" max="250" step="5" value={style.size} onChange={(e) => set({ size: Number(e.target.value) })} className="fader-slider" />
+      </div>
+
+      <div className="fader-row">
+        <label>Spacing {style.tracking}</label>
+        <input type="range" min="-10" max="60" step="1" value={style.tracking} onChange={(e) => set({ tracking: Number(e.target.value) })} className="fader-slider" />
+      </div>
+
+      <div className="fader-row">
+        <button className="fader-toggle" onClick={() => resetStyle(movieId)}>↺ Reset faders</button>
+      </div>
     </div>
   );
 }
+
+

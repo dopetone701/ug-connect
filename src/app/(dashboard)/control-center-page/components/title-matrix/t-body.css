@@ -18,3 +18,16 @@
 .t-movie-preview{font-size:22px;text-transform:uppercase;line-height:1.2;margin:10px 0;word-break:break-word}
 .t-movie-meta{color:hsl(var(--text-muted));font-size:12px}
 
+
+/* gap between "Close all overlays" and the search bar */
+.t-toggle-btn + .t-search {
+  margin-top: 16px;
+}
+
+/* a little room above the close-all button too */
+.t-body-head + .t-toggle-btn,
+.t-empty + .t-toggle-btn {
+  margin-top: 14px;
+}
+
+

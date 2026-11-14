@@ -24,11 +24,16 @@ export default function TitleOverlay({ movieId, fallbackTitle, cover = "" }: { m
   const baseColor = f.syncCover ? sync : st.color;
   const isGradient = st.gradientOn;
   const style: any = {
-    fontFamily: f.family, letterSpacing: f.spacing, fontWeight: f.weight,
+    fontFamily: f.family, letterSpacing: `calc(${f.spacing} + ${(st.tracking ?? 0) / 100}em)`, fontWeight: f.weight,
     WebkitTextStroke: `${st.border}px ${isGradient ? st.gradientFrom : baseColor}`,
     textShadow: `0 0 ${st.shadow}px ${isGradient ? st.gradientFrom : baseColor}88, 0 3px 20px rgba(0,0,0,.9)`,
     filter: `brightness(${st.exposure ?? 100}%)`,
   };
+  if ((st.size ?? 100) !== 100) {
+    style.display = "inline-block";
+    style.transform = `scale(${(st.size ?? 100) / 100})`;
+    style.transformOrigin = "center";
+  }
   if (isGradient) {
     style.background = `linear-gradient(180deg, ${st.gradientFrom}, ${st.gradientTo})`;
     style.WebkitBackgroundClip = "text";
@@ -39,3 +44,5 @@ export default function TitleOverlay({ movieId, fallbackTitle, cover = "" }: { m
   }
   return <div className="t-overlay"><span style={style}>{displayText}</span></div>;
 }
+
+

@@ -9,7 +9,7 @@ import ColorFaders from "./color-faders-system";
 import { useCoverMatrix } from "../cover-matrix/cover-matrix-controller";
 
 export default function TitleMatrixBody() {
-  const { selectedId, select, overlays, setOverlay, toggle, saveError, ready } = useTitleMatrixStore();
+  const { selectedId, select, overlays, setOverlay, toggle, closeAll, saveError, ready } = useTitleMatrixStore();
   const movies = useCoverMatrix((s: any) => s.movies);
   const loading = useCoverMatrix((s: any) => s.loading);
   const loadMovies = useCoverMatrix((s: any) => s.loadMovies);
@@ -19,6 +19,16 @@ export default function TitleMatrixBody() {
   const [text, setText] = useState("");
   const [syncColor, setSyncColor] = useState("#fff");
   const [added, setAdded] = useState(false); // Add button reaction
+  const [closing, setClosing] = useState(false);
+  const onCount = Object.values(overlays).filter((o) => o.on).length;
+
+  async function handleCloseAll() {
+    if (!onCount || closing) return;
+    if (!window.confirm(`Turn OFF all ${onCount} overlays? You can only turn them back on one by one.`)) return;
+    setClosing(true);
+    await closeAll();
+    setClosing(false);
+  }
 
   // Fonts are loaded globally in the root layout, so no <link> injection here.
   useEffect(() => { if (!movies.length) loadMovies?.(); }, []);
@@ -53,10 +63,11 @@ export default function TitleMatrixBody() {
   // Style for the LIVE preview — from the store (faders) so preview = real card
   const draftStyle = selected ? { ...DEFAULT_STYLE, ...(overlays[selected.id]?.style || {}) } : null;
   const previewStyle: any = draftStyle ? {
-    fontFamily: previewFont.family, letterSpacing: previewFont.spacing, fontWeight: previewFont.weight,
+    fontFamily: previewFont.family, letterSpacing: `calc(${previewFont.spacing} + ${(draftStyle.tracking ?? 0) / 100}em)`, fontWeight: previewFont.weight,
     WebkitTextStroke: `${draftStyle.border}px ${draftStyle.gradientOn ? draftStyle.gradientFrom : (previewFont.syncCover ? syncColor : draftStyle.color)}`,
     textShadow: `0 0 ${draftStyle.shadow}px ${(previewFont.syncCover ? syncColor : draftStyle.color)}88, 0 3px 20px rgba(0,0,0,.9)`,
     filter: `brightness(${draftStyle.exposure ?? 100}%)`,
+    ...((draftStyle.size ?? 100) !== 100 ? { display: "inline-block", transform: `scale(${(draftStyle.size ?? 100) / 100})`, transformOrigin: "center" } : {}),
     ...(draftStyle.gradientOn ? { background: `linear-gradient(180deg, ${draftStyle.gradientFrom}, ${draftStyle.gradientTo})`, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", color: "transparent" } : { color: previewFont.syncCover ? syncColor : draftStyle.color }),
   } : {};
 
@@ -108,7 +119,7 @@ export default function TitleMatrixBody() {
           <button key={f.id} className={`t-font-chip ${font === f.id ? "active" : ""}`} onClick={() => handleFontChange(f.id)} style={{ fontFamily: f.family }}>Ag</button>
         ))}</div>
         <div className="t-font-label">{previewFont.label}</div>
-        {/* FADERS — mounted here, live. Color / Gradient / Border / Shadow / Exposure */}
+        {/* FADERS — mounted here, live. Color / Gradient / Border / Shadow / Exposure / Height / Spacing / Reset */}
         <ColorFaders movieId={selected.id} />
         <button className={`t-add-btn big ${added ? "added" : ""}`} disabled={added} onClick={handleAdd}>{added ? "✓ Added! Showing on card" : "+ Add Title Overlay"}</button>
         {cur && <button className="t-toggle-btn" onClick={() => toggle(selected.id)}>{cur.on ? "Turn Overlay OFF" : "Turn Overlay ON"}</button>}
@@ -120,6 +131,7 @@ export default function TitleMatrixBody() {
     <div className="t-body">
       <div className="t-body-head"><div><div className="t-body-title">All Movies</div><div className="t-body-sub">Tap a movie with no visible title to add our generated overlay</div></div></div>
       {errorBanner}
+      <button className="t-toggle-btn" disabled={!onCount || closing} onClick={handleCloseAll}>{closing ? "Closing…" : onCount ? `⏻ Close all overlays (${onCount} ON)` : "No overlays are ON"}</button>
       <input className="t-search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="🔍 Search movies, VJ, genre…" />
       <div className="t-count">Showing {filtered.length} of {movies.length} movies</div>
       {filtered.length === 0 ? <div className="t-empty">{movies.length === 0 ? "No movies yet." : "No matches — try another search."}</div> : (
