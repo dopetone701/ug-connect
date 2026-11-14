@@ -5,10 +5,11 @@ import "./t-card.css";
 import { TITLE_FONTS, fontById, coverColor } from "./title-fonts";
 import { useTitleMatrixStore, startTitleSync, DEFAULT_STYLE } from "./title-matrix-store";
 import ColorFaders from "./color-faders-system";
+// SAME MOVIES AS COVER MATRIX — do NOT fetch /api/movies
 import { useCoverMatrix } from "../cover-matrix/cover-matrix-controller";
 
 export default function TitleMatrixBody() {
-  const { selectedId, select, overlays, setOverlay, toggle, saveError } = useTitleMatrixStore();
+  const { selectedId, select, overlays, setOverlay, toggle, saveError, ready } = useTitleMatrixStore();
   const movies = useCoverMatrix((s: any) => s.movies);
   const loading = useCoverMatrix((s: any) => s.loading);
   const loadMovies = useCoverMatrix((s: any) => s.loadMovies);
@@ -17,12 +18,12 @@ export default function TitleMatrixBody() {
   const [font, setFont] = useState("cinzel");
   const [text, setText] = useState("");
   const [syncColor, setSyncColor] = useState("#fff");
-  const [added, setAdded] = useState(false);
+  const [added, setAdded] = useState(false); // Add button reaction
 
-  // Fonts are already loaded globally in the root layout, so no <link> injection here anymore.
+  // Fonts are loaded globally in the root layout, so no <link> injection here.
   useEffect(() => { if (!movies.length) loadMovies?.(); }, []);
-  useEffect(() => { setAdded(false); }, [selectedId]);
-  useEffect(() => { startTitleSync(); }, []);
+  useEffect(() => { startTitleSync(); }, []); // loads titles from D1
+  useEffect(() => { setAdded(false); }, [selectedId]); // new movie = button back to normal
 
   const filtered = useMemo(() => {
     const query = q.trim().toLowerCase();
@@ -34,19 +35,22 @@ export default function TitleMatrixBody() {
   const previewFont = fontById(font);
   const coverOf = (m: any) => m.cover_url || m.covers?.[m.cover_schedule?.activeIndex || 0] || m.covers?.[0] || "";
 
+  // Fill the box + font from D1 when a movie is picked, and again once D1 has answered (fixes empty box on a fresh device)
   useEffect(() => {
     if (!selected) return;
     const cur = overlays[selected.id];
     setFont(cur?.font || "cinzel");
     setText(cur?.text || "");
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedId]);
+  }, [selectedId, ready]);
 
+  // Sync-cover preview colour
   useEffect(() => {
     if (previewFont.syncCover && selected) coverColor(coverOf(selected)).then(setSyncColor);
     else setSyncColor("#fff");
   }, [font, selected]);
 
+  // Style for the LIVE preview — from the store (faders) so preview = real card
   const draftStyle = selected ? { ...DEFAULT_STYLE, ...(overlays[selected.id]?.style || {}) } : null;
   const previewStyle: any = draftStyle ? {
     fontFamily: previewFont.family, letterSpacing: previewFont.spacing, fontWeight: previewFont.weight,
@@ -56,7 +60,7 @@ export default function TitleMatrixBody() {
     ...(draftStyle.gradientOn ? { background: `linear-gradient(180deg, ${draftStyle.gradientFrom}, ${draftStyle.gradientTo})`, WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", color: "transparent" } : { color: previewFont.syncCover ? syncColor : draftStyle.color }),
   } : {};
 
-  // Typing saves the text (debounced by the store). It does NOT flip the overlay ON — only "Add" / the toggle do that.
+  // Typing saves the text (debounced by the store). It does NOT turn the overlay ON — only Add / the toggle do.
   function handleTextChange(v: string) {
     setText(v);
     if (!selected) return;
@@ -66,9 +70,10 @@ export default function TitleMatrixBody() {
 
   function handleAdd() {
     if (!selected) return;
-    const actual = text.trim() || overlays[selected.id]?.text?.trim() || "";
+    const actual = text.trim() || overlays[selected.id]?.text?.trim() || selected.title;
     if (!actual) return;
     setOverlay(selected.id, { on: true, text: actual, font });
+    setText(actual);
     setAdded(true);
     setTimeout(() => setAdded(false), 1800);
   }
@@ -88,7 +93,6 @@ export default function TitleMatrixBody() {
   if (selected) {
     const cur = overlays[selected.id];
     const cover = coverOf(selected);
-    const showPreview = !!(text.trim() || cur?.text?.trim());
     return (
       <div className="t-body">
         <button className="t-body-back" onClick={() => select(null)}>← All Movies</button>
@@ -97,13 +101,14 @@ export default function TitleMatrixBody() {
         {errorBanner}
         <div className="t-cover-row">
           {cover ? <img src={cover} alt="" /> : null}
-          {showPreview && <div className="t-overlay"><span style={previewStyle}>{text.trim() || cur?.text}</span></div>}
+          <div className="t-overlay"><span style={previewStyle}>{text.trim() || cur?.text || selected.title}</span></div>
         </div>
-        <input className="t-input" value={text} onChange={(e) => handleTextChange(e.target.value)} placeholder="Type actual title — empty will not save" />
+        <input className="t-input" value={text} onChange={(e) => handleTextChange(e.target.value)} placeholder={`Title — leave empty to use "${selected.title}"`} />
         <div className="t-font-row">{TITLE_FONTS.map(f => (
           <button key={f.id} className={`t-font-chip ${font === f.id ? "active" : ""}`} onClick={() => handleFontChange(f.id)} style={{ fontFamily: f.family }}>Ag</button>
         ))}</div>
         <div className="t-font-label">{previewFont.label}</div>
+        {/* FADERS — mounted here, live. Color / Gradient / Border / Shadow / Exposure */}
         <ColorFaders movieId={selected.id} />
         <button className={`t-add-btn big ${added ? "added" : ""}`} disabled={added} onClick={handleAdd}>{added ? "✓ Added! Showing on card" : "+ Add Title Overlay"}</button>
         {cur && <button className="t-toggle-btn" onClick={() => toggle(selected.id)}>{cur.on ? "Turn Overlay OFF" : "Turn Overlay ON"}</button>}
@@ -113,7 +118,7 @@ export default function TitleMatrixBody() {
 
   return (
     <div className="t-body">
-      <div className="t-body-head"><div><div><div className="t-body-title">All Movies</div><div className="t-body-sub">Tap a movie with no visible title to add our generated overlay</div></div></div></div>
+      <div className="t-body-head"><div><div className="t-body-title">All Movies</div><div className="t-body-sub">Tap a movie with no visible title to add our generated overlay</div></div></div>
       {errorBanner}
       <input className="t-search" value={q} onChange={(e) => setQ(e.target.value)} placeholder="🔍 Search movies, VJ, genre…" />
       <div className="t-count">Showing {filtered.length} of {movies.length} movies</div>
@@ -123,7 +128,7 @@ export default function TitleMatrixBody() {
           const cover = coverOf(m);
           return (
             <div key={m.id} className="t-movie-card" onClick={() => select(m.id)}>
-              <div className="t-cover-row small">{cover ? <img src={cover} alt="" /> : null}{cur?.on && cur?.text && <div className="t-overlay"><span style={{ fontFamily: fontById(cur.font).family, letterSpacing: fontById(cur.font).spacing, fontWeight: fontById(cur.font).weight }}>{cur.text}</span></div>}</div>
+              <div className="t-cover-row small">{cover ? <img src={cover} alt="" /> : null}{cur?.on && <div className="t-overlay"><span style={{ fontFamily: fontById(cur.font).family, letterSpacing: fontById(cur.font).spacing, fontWeight: fontById(cur.font).weight }}>{cur.text}</span></div>}</div>
               <div className="t-movie-title">{m.title}</div>
               <div className="t-movie-meta">{cur?.on ? "Overlay ON" : "No title — tap to add"}</div>
             </div>
@@ -133,3 +138,5 @@ export default function TitleMatrixBody() {
     </div>
   );
 }
+
+

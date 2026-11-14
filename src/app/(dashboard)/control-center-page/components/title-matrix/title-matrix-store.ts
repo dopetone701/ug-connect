@@ -6,35 +6,30 @@ export type TitleOverlayData = { text: string; font: string; on: boolean; style?
 
 const WRITE_API = "https://movie-creation-portal-api.connectu89.workers.dev"
 const READ_API = "https://movie-server-api.connectu89.workers.dev"
-const CACHE_KEY = "title-matrix-overlays"
 const SAVE_DELAY = 400
 
 export const DEFAULT_STYLE: TitleStyle = { color: "#ffffff", gradientOn: false, gradientFrom: "#ffffff", gradientTo: "#ff0080", border: 2, shadow: 18, exposure: 100 }
 
-// ---- module-level bookkeeping (shared by every card, so there is only ONE sync) ----
+// ---- D1 IS THE ONLY SOURCE. No localStorage at all. ----
+// Titles live on the movie's own D1 row, so they are locked to the movie id.
 const timers = new Map<string, ReturnType<typeof setTimeout>>() // debounced saves waiting
-const dirty = new Set<string>() // movies with unsaved/in-flight edits: refresh must not overwrite these
+const dirty = new Set<string>() // movies with unsaved/in-flight edits: a refresh must not overwrite these
 let loadingPromise: Promise<void> | null = null
 let lastLoad = 0
 let started = false
-
-function readCache(): Record<string, TitleOverlayData> {
-  try { return JSON.parse(localStorage.getItem(CACHE_KEY) || "{}") } catch { return {} }
-}
-function writeCache(o: Record<string, TitleOverlayData>) {
-  try { localStorage.setItem(CACHE_KEY, JSON.stringify(o)) } catch {}
-}
 
 async function postToD1(movieId: string, d: TitleOverlayData): Promise<boolean> {
   try {
     const res = await fetch(`${WRITE_API}/movies/${encodeURIComponent(movieId)}/title`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" }, // no Cache-Control header: it breaks CORS preflight
+      headers: { "Content-Type": "application/json" },
       cache: "no-store",
-      body: JSON.stringify({ on: d.on, text: d.text, font: d.font, style: d.style }), // undefined style is omitted -> server keeps old
+      body: JSON.stringify({ on: d.on, text: d.text, font: d.font, style: d.style }),
     })
+    if (!res.ok) console.warn("[title-matrix] save failed", res.status, await res.text().catch(() => ""))
     return res.ok
-  } catch {
+  } catch (e) {
+    console.warn("[title-matrix] save error", e)
     return false
   }
 }
@@ -50,6 +45,7 @@ type PanelState = {
   backToAll: () => void
 
   overlays: Record<string, TitleOverlayData>
+  ready: boolean // true once D1 has answered at least once
   saveError: string | null
   loadOverlays: (force?: boolean) => Promise<void>
   setOverlay: (movieId: string, patch: Partial<Pick<TitleOverlayData, "text" | "font" | "on">>) => void
@@ -58,13 +54,10 @@ type PanelState = {
 }
 
 export const useTitleMatrixStore = create<PanelState>()((set, get) => {
-  // Update one movie locally (instant UI), then queue ONE debounced save to D1.
   function apply(movieId: string, build: (cur: TitleOverlayData | undefined) => TitleOverlayData | null, immediate = false) {
     const next = build(get().overlays[movieId])
     if (!next) return
-    const overlays = { ...get().overlays, [movieId]: next }
-    writeCache(overlays)
-    set({ overlays })
+    set({ overlays: { ...get().overlays, [movieId]: next } })
     queueSave(movieId, immediate ? 0 : SAVE_DELAY)
   }
 
@@ -82,7 +75,6 @@ export const useTitleMatrixStore = create<PanelState>()((set, get) => {
       if (ok) {
         if (get().saveError) set({ saveError: null })
       } else {
-        // Roll back to what D1 really has, and tell the admin
         set({ saveError: "Save failed — change was not applied for users. Rolled back." })
         void get().loadOverlays(true)
       }
@@ -99,19 +91,19 @@ export const useTitleMatrixStore = create<PanelState>()((set, get) => {
     select: (id) => set({ selectedId: id, view: id ? "movie" : "all" }),
     backToAll: () => set({ view: "all", selectedId: null }),
 
-    overlays: {}, // filled from cache on the client by startTitleSync (avoids hydration mismatch)
+    overlays: {},
+    ready: false,
     saveError: null,
 
-    // D1 is the source of truth. Local only holds unsaved edits in progress.
     loadOverlays: async (force = false) => {
       if (loadingPromise) return loadingPromise
       if (!force && Date.now() - lastLoad < 2000) return
       loadingPromise = (async () => {
         try {
           const res = await fetch(`${READ_API}/title-overlays?t=${Date.now()}`, { cache: "no-store" })
-          if (!res.ok) return
+          if (!res.ok) { console.warn("[title-matrix] load failed", res.status); return }
           const data: any = await res.json()
-          if (!data?.overlays) return
+          if (!data?.overlays) { console.warn("[title-matrix] no overlays in response", data); return }
           const cur = get().overlays
           const next: Record<string, TitleOverlayData> = {}
           for (const id of Object.keys(data.overlays)) {
@@ -121,14 +113,13 @@ export const useTitleMatrixStore = create<PanelState>()((set, get) => {
             const text = typeof raw?.text === "string" ? raw.text : ""
             const font = (typeof raw?.font === "string" && raw.font) || "cinzel"
             const style = raw?.style && typeof raw.style === "object" ? { ...DEFAULT_STYLE, ...raw.style } : undefined
-            if (!on && !text.trim() && !style) continue // nothing worth keeping
+            if (!on && !text.trim() && !style) continue
             next[id] = { on, text, font, style }
           }
           for (const id of dirty) if (cur[id] && !next[id]) next[id] = cur[id]
-          writeCache(next)
-          set({ overlays: next })
-        } catch {
-          // offline / worker down: keep what we have (cache)
+          set({ overlays: next, ready: true })
+        } catch (e) {
+          console.warn("[title-matrix] load error", e)
         } finally {
           loadingPromise = null
           lastLoad = Date.now()
@@ -141,15 +132,15 @@ export const useTitleMatrixStore = create<PanelState>()((set, get) => {
       apply(movieId, (cur) => ({
         text: cur?.text || "",
         font: cur?.font || "cinzel",
-        on: cur?.on || false, // style alone never turns a title ON
-        style: { ...DEFAULT_STYLE, ...(cur?.style || {}), ...patch }, // merged from the LATEST state, no stale spread
+        on: cur?.on || false,
+        style: { ...DEFAULT_STYLE, ...(cur?.style || {}), ...patch },
       })),
 
     setOverlay: (movieId, patch) =>
       apply(movieId, (cur) => ({
         text: patch.text !== undefined ? patch.text : cur?.text || "",
         font: patch.font !== undefined ? patch.font : cur?.font || "cinzel",
-        on: patch.on !== undefined ? patch.on : cur?.on || false, // font/text edits never flip ON by themselves
+        on: patch.on !== undefined ? patch.on : cur?.on || false,
         style: cur?.style,
       }), patch.on !== undefined),
 
@@ -157,20 +148,20 @@ export const useTitleMatrixStore = create<PanelState>()((set, get) => {
       apply(movieId, (cur) => {
         if (!cur) return null
         const nextOn = !cur.on
-        if (nextOn && !cur.text?.trim()) return null // can't turn ON without real text
+        if (nextOn && !cur.text?.trim()) return null
         return { ...cur, on: nextOn }
       }, true),
   }
 })
 
-// Call from anywhere (idempotent). Runs ONE load on app open, then again whenever the app returns to the foreground.
+// Idempotent. Loads from D1 on app open, and again when the app returns to the foreground.
 export function startTitleSync() {
   if (started || typeof window === "undefined") return
   started = true
-  const cached = readCache()
-  if (Object.keys(cached).length) useTitleMatrixStore.setState({ overlays: cached }) // instant paint
-  void useTitleMatrixStore.getState().loadOverlays(true) // then D1 wins
+  try { localStorage.removeItem("title-matrix-overlays") } catch {} // purge the old cache for good
+  void useTitleMatrixStore.getState().loadOverlays(true)
   const refresh = () => { if (document.visibilityState === "visible") void useTitleMatrixStore.getState().loadOverlays() }
   document.addEventListener("visibilitychange", refresh)
   window.addEventListener("focus", refresh)
 }
+
