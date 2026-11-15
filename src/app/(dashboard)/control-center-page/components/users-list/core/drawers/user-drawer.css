@@ -32,10 +32,11 @@
   display: flex;
   flex-direction: column;
   background: hsl(var(--bg));
-  border: 1px solid hsl(var(--border));
+    border: 1px solid hsl(var(--border));
   border-bottom: none;
-  border-top-left-radius: 20px;
-  border-top-right-radius: 20px;
+  border-top: none; /* joins flush to the top bar */
+  border-radius: 0;
+
   padding: 20px 20px 0;
   overflow: hidden;
 }
