@@ -38,6 +38,21 @@ export default function UserDrawerHost() {
     };
   }, [isOpen, back]);
 
+  // HIDE BOTTOM BAR while any drawer is open (same method as Title Matrix panel).
+  // Drawer open -> hide bar. Fully closed -> bar comes back.
+  useEffect(() => {
+    if (!isOpen) return;
+    const bar =
+      (document.querySelector(".bottom-bar") as HTMLElement | null) ||
+      (document.querySelector('nav[class*="bottom"]') as HTMLElement | null);
+    if (!bar) return;
+    const prevDisplay = bar.style.display;
+    bar.style.display = "none";
+    return () => {
+      bar.style.display = prevDisplay;
+    };
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   return (
@@ -74,5 +89,3 @@ export default function UserDrawerHost() {
     </>
   );
 }
-
-
