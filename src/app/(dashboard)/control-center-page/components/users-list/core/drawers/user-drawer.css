@@ -1,0 +1,291 @@
+/* Admin user drawers. Prefixed "ud-" so it never collides with your global .flow-* classes. */
+
+.ud-overlay {
+  position: fixed;
+  inset: var(--ud-top-offset, 64px) 0 0 0; /* top bar stays clear and untouched */
+  z-index: 9998;
+  background: hsl(var(--bg) / 0.6);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  animation: udFadeIn 0.25s ease;
+}
+
+.ud-overlay.is-closing {
+  animation: udFadeOut 0.3s ease forwards;
+}
+
+.ud-sheet {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  /* Fills the screen up to just under the top bar. Fixed height so stacked layers fully cover each other. */
+  height: calc(100dvh - var(--ud-top-offset, 64px));
+  max-width: 640px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  background: hsl(var(--bg));
+  border: 1px solid hsl(var(--border));
+  border-bottom: none;
+  border-top-left-radius: 20px;
+  border-top-right-radius: 20px;
+  padding: 20px 20px 0;
+  overflow: hidden;
+}
+
+.ud-sheet.is-under {
+  pointer-events: none;
+}
+
+/* Enter */
+.ud-sheet.is-base {
+  animation: udUp 0.35s ease;
+}
+.ud-sheet.is-next {
+  animation: udNext 0.3s ease;
+}
+
+/* Exit */
+.ud-sheet.is-leaving {
+  animation: udBack 0.3s ease forwards;
+}
+.ud-sheet.is-closing {
+  animation: udDown 0.3s ease forwards;
+}
+
+@keyframes udUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+@keyframes udDown {
+  from { transform: translateY(0); }
+  to { transform: translateY(100%); }
+}
+@keyframes udNext {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+@keyframes udBack {
+  from { transform: translateX(0); opacity: 1; }
+  to { transform: translateX(100%); opacity: 0; }
+}
+@keyframes udFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes udFadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ud-overlay,
+  .ud-sheet {
+    animation: none !important;
+  }
+}
+
+/* Header */
+.ud-header {
+  display: grid;
+  grid-template-columns: 90px 1fr 90px;
+  align-items: center;
+  margin-bottom: 12px;
+  flex-shrink: 0;
+}
+
+.ud-back {
+  justify-self: start;
+  background: hsl(var(--surface));
+  border: 1px solid hsl(var(--border));
+  color: hsl(var(--text));
+  padding: 6px 12px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.ud-title {
+  margin: 0;
+  text-align: center;
+  font-size: 17px;
+  font-weight: 800;
+  color: hsl(var(--text));
+}
+
+.ud-subtitle {
+  margin: 0 0 12px;
+  font-size: 13px;
+  color: hsl(var(--text) / 0.6);
+  flex-shrink: 0;
+}
+
+/* Scrollable body */
+.ud-body {
+  flex: 1;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-bottom: calc(24px + env(safe-area-inset-bottom));
+}
+
+/* Hub: user header */
+.ud-user {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 4px 0 16px;
+}
+
+.ud-avatar {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: hsl(var(--surface));
+  border: 1px solid hsl(var(--border));
+  font-weight: 800;
+  color: hsl(var(--text));
+}
+
+.ud-user-name {
+  font-size: 16px;
+  font-weight: 700;
+  color: hsl(var(--text));
+}
+
+.ud-user-meta {
+  font-size: 12px;
+  color: hsl(var(--text) / 0.6);
+  margin-top: 2px;
+}
+
+.ud-badges {
+  display: flex;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.ud-badge {
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: hsl(var(--surface));
+  border: 1px solid hsl(var(--border));
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  color: hsl(var(--text) / 0.7);
+}
+
+/* Rows */
+.ud-list {
+  display: grid;
+  gap: 10px;
+}
+
+.ud-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  background: hsl(var(--surface));
+  border: 1px solid hsl(var(--border));
+  border-radius: 12px;
+  cursor: pointer;
+  color: hsl(var(--text));
+  text-align: left;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.ud-row:hover {
+  border-color: hsl(var(--text));
+  background: hsl(var(--surface-hover));
+}
+
+.ud-row-label {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.ud-row-hint {
+  font-size: 12px;
+  color: hsl(var(--text) / 0.6);
+  margin-top: 2px;
+}
+
+.ud-chevron {
+  opacity: 0.5;
+}
+
+.ud-section-label {
+  margin: 20px 0 10px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  color: hsl(var(--text) / 0.5);
+}
+
+/* Placeholder + confirm */
+.ud-card {
+  padding: 20px;
+  background: hsl(var(--surface));
+  border: 1px solid hsl(var(--border));
+  border-radius: 16px;
+  color: hsl(var(--text) / 0.7);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.ud-input {
+  width: 100%;
+  box-sizing: border-box;
+  margin-top: 12px;
+  padding: 12px;
+  border-radius: 12px;
+  background: hsl(var(--bg));
+  border: 1px solid hsl(var(--border));
+  color: hsl(var(--text));
+  font-size: 14px;
+}
+
+.ud-actions {
+  display: grid;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.ud-btn {
+  width: 100%;
+  padding: 14px;
+  border-radius: 12px;
+  background: hsl(var(--text));
+  color: hsl(var(--bg));
+  border: none;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.1s;
+}
+
+.ud-btn:active {
+  transform: scale(0.98);
+}
+
+.ud-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.ud-btn.is-ghost {
+  background: hsl(var(--surface));
+  color: hsl(var(--text));
+  border: 1px solid hsl(var(--border));
+}
+
+.ud-btn.is-danger {
+  background: hsl(0 70% 50%);
+  color: #fff;
+}
+
+

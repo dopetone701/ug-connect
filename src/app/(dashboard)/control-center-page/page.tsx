@@ -2,30 +2,44 @@
 import { useState } from "react";
 import "./control-center.css";
 
+
 import CreateMovieModal from "./components/create-movie/create-movie-modal";
 import EditMovieModal from "./components/edit-movie/edit-movie-modal";
 import AppLogoManager from "./components/app-logo-manager";
 
+
 // --- ONLY INJECTION: Movie Wall Controller Panel ---
 import MovieWallControllerPanel, { WallVjBattleChip } from "./components/movie-wall-controller/movie-wall-controller-panel";
+
 
 // --- ONLY INJECTION: Cover Matrix Panel ---
 import CoverMatrixPanel, { CoverMatrixChip } from "./components/cover-matrix/cover-matrix-panel";
 
+
 // --- ONLY INJECTION: Title Matrix Panel ---
 import TitleMatrixPanel, { TitleMatrixChip } from "./components/title-matrix/title-matrix-panel";
 
+
+// --- ONLY INJECTION: User Drawer System ---
+import UserDrawerHost from "./components/users-list/core/drawers/user-drawer-host";
+import { useUserDrawer } from "./components/users-list/core/store/use-user-drawer";
+
+
 const tabs = ["Overview", "Users", "Orders", "Settings", "Create", "Edit Movie", "Logo"];
+
 
 export default function Page() {
   const [active, setActive] = useState("Overview");
   const [showCreate, setShowCreate] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
+  const openDrawer = useUserDrawer((s) => s.open);
+
 
   return (
     <div className="cc-wrap">
       <h1 className="cc-title">Control Center</h1>
       <p className="cc-sub">Admin only - sidebar stays, no reload.</p>
+
 
       <div className="cc-tabs">
         {tabs.map(t => (
@@ -46,11 +60,13 @@ export default function Page() {
           </button>
         ))}
 
+
         {/* --- CHIP TOGETHER WITH OTHER CHIPS --- */}
         <WallVjBattleChip />
         <CoverMatrixChip />
         <TitleMatrixChip />
       </div>
+
 
       <div className="cc-grid">
         <div className="cc-card"><div className="cc-card-label">TOTAL USERS</div><div className="cc-card-value">12,420</div></div>
@@ -58,9 +74,18 @@ export default function Page() {
         <div className="cc-card"><div className="cc-card-label">STATUS</div><div className="cc-card-value" style={{color:'#22c55e'}}>Online</div></div>
       </div>
 
+
       <div className="cc-panel">
         {active === "Logo" ? (
           <AppLogoManager />
+        ) : active === "Users" ? (
+          // TEMP: test button until the users list is built
+          <button
+            className="cc-tab"
+            onClick={() => openDrawer("hub", { userId: "demo" })}
+          >
+            Open test user drawer
+          </button>
         ) : (
           <>
             <h3 style={{fontWeight:700, marginBottom:12}}>{active} Content</h3>
@@ -69,19 +94,28 @@ export default function Page() {
         )}
       </div>
 
+
       {/* MODALS */}
       <CreateMovieModal open={showCreate} onClose={() => setShowCreate(false)} />
       <EditMovieModal open={showEdit} onClose={() => setShowEdit(false)} />
 
+
       {/* --- ONLY INJECTION: Empty Panel (hidden until chip tapped) --- */}
       <MovieWallControllerPanel />
+
 
       {/* --- ONLY INJECTION: Cover Matrix Panel (hidden until chip tapped) --- */}
       <CoverMatrixPanel />
 
+
       {/* --- ONLY INJECTION: Title Matrix Panel (hidden until chip tapped) --- */}
-<TitleMatrixPanel />
+      <TitleMatrixPanel />
+
+
+      {/* --- ONLY INJECTION: User Drawer System (hidden until a drawer opens) --- */}
+      <UserDrawerHost />
     </div>
   );
 }
+
 
