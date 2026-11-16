@@ -33,4 +33,4 @@ export async function fetchUsersPage(
   sp.set("limit", String(params.limit));
 
   return adminFetch<UsersPage>(`/admin/users?${sp.toString()}`, { signal });
-}
+} 
