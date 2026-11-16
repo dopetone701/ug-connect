@@ -1,29 +1,32 @@
 "use client";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import "./control-center.css";
 
 import CreateMovieModal from "./components/create-movie/create-movie-modal";
 import EditMovieModal from "./components/edit-movie/edit-movie-modal";
 import AppLogoManager from "./components/app-logo-manager";
-
-// --- ONLY INJECTION: Movie Wall Controller Panel ---
 import MovieWallControllerPanel, { WallVjBattleChip } from "./components/movie-wall-controller/movie-wall-controller-panel";
-
-// --- ONLY INJECTION: Cover Matrix Panel ---
 import CoverMatrixPanel, { CoverMatrixChip } from "./components/cover-matrix/cover-matrix-panel";
-
-// --- ONLY INJECTION: Title Matrix Panel ---
 import TitleMatrixPanel, { TitleMatrixChip } from "./components/title-matrix/title-matrix-panel";
-
-// --- ONLY INJECTION: User Drawer System ---
 import UserDrawerHost from "./components/users-list/core/drawers/user-drawer-host";
 import { useUserDrawer } from "./components/users-list/core/store/use-user-drawer";
-
-// --- USERS LIST ---
 import { useUsersPage } from "./components/users-list/core/hooks/use-users-page";
 import { UserRow } from "./components/users-list/lists/user-row";
 
-const tabs = ["Overview", "Users", "Orders", "Settings", "Create", "Edit Movie", "Logo"];
+const tabs = ["Overview", "Users", "Admins", "Orders", "Settings", "Create", "Edit Movie", "Logo"];
+
+// 👇 Who am I? Decode ug_token to get my own id — that account is admin
+function myIdFromToken(): string | null {
+  try {
+    if (typeof window === "undefined") return null;
+    const token = localStorage.getItem("ug_token");
+    if (!token) return null;
+    const payload = JSON.parse(atob(token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/")));
+    return payload.sub || payload.userId || payload.id || null;
+  } catch {
+    return null;
+  }
+}
 
 type UsersListProps = {
   items: ReturnType<typeof useUsersPage>["items"];
@@ -32,39 +35,40 @@ type UsersListProps = {
   loadMore: () => void;
   hasMore: boolean;
   retry: () => void;
+  onlyAdmins: boolean;
+  myId: string | null;
 };
 
-function UsersList({ items, loading, error, loadMore, hasMore, retry }: UsersListProps) {
+function UsersList({ items, loading, error, loadMore, hasMore, retry, onlyAdmins, myId }: UsersListProps) {
   const openDrawer = useUserDrawer((s) => s.open);
+
+  // 👇 Admin = Worker says isAdmin OR it's me (from my token)
+  const shown = useMemo(() => {
+    if (!onlyAdmins) return items;
+    return items.filter((u: any) => u.isAdmin === true || (myId && u.id === myId));
+  }, [items, onlyAdmins, myId]);
 
   if (loading && items.length === 0) return <p>Syncing users...</p>;
   if (error) {
     return (
       <div>
         <p>{error}</p>
-        <button className="cc-tab" onClick={retry}>
-          Try again
-        </button>
+        <button className="cc-tab" onClick={retry}>Try again</button>
       </div>
     );
   }
-  if (items.length === 0) return <p>No users found.</p>;
+  if (shown.length === 0) return <p>{onlyAdmins ? "No admin accounts found." : "No users found."}</p>;
 
   return (
     <div>
-      {items.map((user) => (
-        <div
-          key={user.id}
-          onClick={() => openDrawer("hub", { userId: user.id })}
-          style={{ cursor: "pointer" }}
-        >
-          <UserRow user={user} />
+      {onlyAdmins ? <p style={{ color: "#f59e0b", fontWeight: 700, marginBottom: 8 }}>👑 Admin accounts</p> : null}
+      {shown.map((user) => (
+        <div key={user.id} onClick={() => openDrawer("hub", { userId: user.id })} style={{ cursor: "pointer" }}>
+          <UserRow user={user} isMe={myId ? user.id === myId : false} />
         </div>
       ))}
-      {hasMore && (
-        <button className="cc-tab" onClick={loadMore} style={{ marginTop: 12 }}>
-          Load more
-        </button>
+      {!onlyAdmins && hasMore && (
+        <button className="cc-tab" onClick={loadMore} style={{ marginTop: 12 }}>Load more</button>
       )}
     </div>
   );
@@ -75,11 +79,10 @@ export default function Page() {
   const [showCreate, setShowCreate] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
 
-  // 👇 REAL count — from /admin/stats, not hardcoded
   const users = useUsersPage();
   const totalUsers = users.counts?.all ?? users.resultCount ?? users.items.length;
+  const myId = useMemo(() => myIdFromToken(), []);
 
-  // 👇 REAL status — from the actual /admin/stats fetch, not hardcoded "Online"
   const status = users.error
     ? { text: "Offline", color: "#ef4444" }
     : users.counts
@@ -96,21 +99,15 @@ export default function Page() {
           <button
             key={t}
             onClick={() => {
-              if (t === "Create") {
-                setShowCreate(true);
-              } else if (t === "Edit Movie") {
-                setShowEdit(true);
-              } else {
-                setActive(t);
-              }
+              if (t === "Create") setShowCreate(true);
+              else if (t === "Edit Movie") setShowEdit(true);
+              else setActive(t);
             }}
             className={`cc-tab ${active === t ? "active" : ""} ${t === "Create" ? "cc-tab-create" : ""} ${t === "Edit Movie" ? "cc-tab-edit" : ""} ${t === "Logo" ? "cc-tab-logo" : ""}`}
           >
             {t === "Create" ? "+ Create" : t === "Edit Movie" ? "✏️ Edit Movie" : t === "Logo" ? "🎨 Logo" : t}
           </button>
         ))}
-
-        {/* --- CHIP TOGETHER WITH OTHER CHIPS --- */}
         <WallVjBattleChip />
         <CoverMatrixChip />
         <TitleMatrixChip />
@@ -119,22 +116,18 @@ export default function Page() {
       <div className="cc-grid">
         <div className="cc-card">
           <div className="cc-card-label">TOTAL USERS</div>
-          <div className="cc-card-value">
-            {users.counts ? totalUsers.toLocaleString() : "—"}
-          </div>
+          <div className="cc-card-value">{users.counts ? totalUsers.toLocaleString() : "—"}</div>
         </div>
         <div className="cc-card">
           <div className="cc-card-label">STATUS</div>
-          <div className="cc-card-value" style={{ color: status.color }}>
-            {status.text}
-          </div>
+          <div className="cc-card-value" style={{ color: status.color }}>{status.text}</div>
         </div>
       </div>
 
       <div className="cc-panel">
         {active === "Logo" ? (
           <AppLogoManager />
-        ) : active === "Users" ? (
+        ) : active === "Users" || active === "Admins" ? (
           <UsersList
             items={users.items}
             loading={users.loading}
@@ -142,6 +135,8 @@ export default function Page() {
             loadMore={users.loadMore}
             hasMore={users.hasMore}
             retry={users.retry}
+            onlyAdmins={active === "Admins"}
+            myId={myId}
           />
         ) : (
           <>
@@ -151,20 +146,11 @@ export default function Page() {
         )}
       </div>
 
-      {/* MODALS */}
       <CreateMovieModal open={showCreate} onClose={() => setShowCreate(false)} />
       <EditMovieModal open={showEdit} onClose={() => setShowEdit(false)} />
-
-      {/* --- ONLY INJECTION: Empty Panel (hidden until chip tapped) --- */}
       <MovieWallControllerPanel />
-
-      {/* --- ONLY INJECTION: Cover Matrix Panel (hidden until chip tapped) --- */}
       <CoverMatrixPanel />
-
-      {/* --- ONLY INJECTION: Title Matrix Panel (hidden until chip tapped) --- */}
       <TitleMatrixPanel />
-
-      {/* --- ONLY INJECTION: User Drawer System (hidden until a drawer opens) --- */}
       <UserDrawerHost />
     </div>
   );
