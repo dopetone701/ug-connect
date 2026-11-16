@@ -129,6 +129,54 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     document.body.style.background = "#0f1f16";
   }, []);
 
+  // ── SAFELY INSERTED: LIVE HEARTBEAT ─────────────────────────────
+  // Runs only in browser, only if ug_token + ug_user exist (not guest).
+  // Reads token FRESH on every beat, so logout/login never uses a stale token.
+  // Never throws, never blocks UI — .catch(() => {}) swallows network errors.
+  // Does not touch theme, intro, auth, drawers, or any other effect.
+  useEffect(() => {
+    let stopped = false;
+    let timer: ReturnType<typeof setInterval> | null = null;
+
+    const beat = () => {
+      if (stopped) return;
+      try {
+        const token = localStorage.getItem("ug_token");
+        const user = localStorage.getItem("ug_user");
+        if (!token || !user) return;
+        fetch("https://user-account-server-api.connectu89.workers.dev/user/heartbeat", {
+          method: "POST",
+          headers: { Authorization: `Bearer ${token}` },
+        }).catch(() => {});
+      } catch {
+        // never crash AppShell if storage is blocked
+      }
+    };
+
+    // Only start if we have a session right now
+    if (typeof window !== "undefined" && localStorage.getItem("ug_token") && localStorage.getItem("ug_user")) {
+      beat();
+      timer = setInterval(beat, 30000);
+    }
+
+    // If user logs in after AppShell mounted, start then
+    const onAuthChanged = () => {
+      if (timer) return;
+      if (localStorage.getItem("ug_token") && localStorage.getItem("ug_user")) {
+        beat();
+        timer = setInterval(beat, 30000);
+      }
+    };
+    window.addEventListener("ug-auth-changed", onAuthChanged);
+
+    return () => {
+      stopped = true;
+      if (timer) clearInterval(timer);
+      window.removeEventListener("ug-auth-changed", onAuthChanged);
+    };
+  }, []);
+  // ── END HEARTBEAT ───────────────────────────────────────────────
+
   useEffect(() => {
     const updateDeviceMode = () => {
       const phone = isPhoneDevice();
@@ -226,4 +274,3 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     </>
   );
 }
-
