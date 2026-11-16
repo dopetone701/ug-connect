@@ -19,9 +19,9 @@ import TitleMatrixPanel, { TitleMatrixChip } from "./components/title-matrix/tit
 import UserDrawerHost from "./components/users-list/core/drawers/user-drawer-host";
 import { useUserDrawer } from "./components/users-list/core/store/use-user-drawer";
 
-// --- USERS LIST: sync all + select one ---
+// --- USERS LIST ---
 import { useUsersPage } from "./components/users-list/core/hooks/use-users-page";
-import { UserRow } from "./components/users-list/core/lists/user-row";
+import { UserRow } from "./components/users-list/lists/user-row";
 
 const tabs = ["Overview", "Users", "Orders", "Settings", "Create", "Edit Movie", "Logo"];
 
@@ -45,11 +45,13 @@ function UsersList() {
   return (
     <div>
       {items.map((user) => (
-        <UserRow
+        <div
           key={user.id}
-          user={user}
           onClick={() => openDrawer("hub", { userId: user.id })}
-        />
+          style={{ cursor: "pointer" }}
+        >
+          <UserRow user={user} />
+        </div>
       ))}
       {hasMore && (
         <button className="cc-tab" onClick={loadMore} style={{ marginTop: 12 }}>
