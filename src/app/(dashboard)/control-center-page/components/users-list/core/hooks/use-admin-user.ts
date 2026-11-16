@@ -1,0 +1,32 @@
+"use client";
+import { useCallback, useEffect, useState } from "react";
+import type { AdminUserDetail } from "../types/admin-user";
+import { adminFetch } from "../api/admin-http";
+
+// 👇 NAMED export — hub does: import { useAdminUser } from "../hooks/use-admin-user"
+export function useAdminUser(userId: string | null) {
+  const [data, setData] = useState<AdminUserDetail | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const load = useCallback(async () => {
+    if (!userId) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const body = await adminFetch<AdminUserDetail>(`/admin/users/${userId}`);
+      setData(body);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Failed to load user");
+      setData(null);
+    } finally {
+      setLoading(false);
+    }
+  }, [userId]);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  return { data, loading, error, retry: load };
+}

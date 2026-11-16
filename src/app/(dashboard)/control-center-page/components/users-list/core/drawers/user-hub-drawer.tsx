@@ -2,6 +2,8 @@
 import type { DrawerId, DrawerProps } from "./drawer.types";
 import UserDrawerShell from "./user-drawer-shell";
 import { useUserDrawer } from "../store/use-user-drawer";
+import { useAdminUser } from "../hooks/use-admin-user";
+import { initialOf, monthYear, timeAgo } from "../utils/format";
 
 const ITEMS: { id: DrawerId; label: string; hint: string }[] = [
   { id: "profile", label: "Profile", hint: "Details and country" },
@@ -14,31 +16,74 @@ const ITEMS: { id: DrawerId; label: string; hint: string }[] = [
   { id: "reports", label: "Reports", hint: "Reports about this user" },
 ];
 
-// Mock data until use-admin-user.ts is wired to the real API.
-const MOCK_USER = {
-  name: "Mock User",
-  email: "mock.user@example.com",
-  badges: ["VERIFIED", "PREMIUM"],
-  joined: "Jan 2026",
-  lastActive: "2 hours ago",
-  visits: 128,
-};
-
 export default function UserHubDrawer({ userId }: DrawerProps) {
   const open = useUserDrawer((s) => s.open);
+  const { data, loading, error, retry } = useAdminUser(userId);
+
+  if (loading) {
+    return (
+      <UserDrawerShell title="User">
+        <div className="ud-card">Loading user...</div>
+      </UserDrawerShell>
+    );
+  }
+
+  if (error || !data) {
+    return (
+      <UserDrawerShell title="User">
+        <div className="ud-card">{error ?? "Could not load this user."}</div>
+        <div className="ud-actions">
+          <button type="button" className="ud-btn is-ghost" onClick={retry}>
+            Try again
+          </button>
+        </div>
+      </UserDrawerShell>
+    );
+  }
+
+  const { user, subscription, counts } = data;
+  const label = user.name || user.email || "Unnamed user";
+  const inBin = user.status === "pending_deletion";
+  const badges = [
+    user.verified ? "VERIFIED" : "UNVERIFIED",
+    user.premium ? "PREMIUM" : null,
+    user.abandoned ? "ABANDONED" : null,
+    user.status === "terminated" ? "TERMINATED" : null,
+    inBin ? "IN BIN" : null,
+  ].filter(Boolean) as string[];
 
   return (
     <UserDrawerShell title="User">
       <div className="ud-user">
-        <div className="ud-avatar">{MOCK_USER.name.slice(0, 1)}</div>
+        {user.avatarUrl ? (
+          <img
+            className="ud-avatar"
+            src={user.avatarUrl}
+            alt=""
+            referrerPolicy="no-referrer"
+            style={{ objectFit: "cover" }}
+          />
+        ) : (
+          <div className="ud-avatar">{initialOf(label)}</div>
+        )}
         <div>
-          <div className="ud-user-name">{MOCK_USER.name}</div>
+          <div className="ud-user-name">{label}</div>
+          <div className="ud-user-meta">{user.email}</div>
           <div className="ud-user-meta">
-            Joined {MOCK_USER.joined} · Active {MOCK_USER.lastActive} · {MOCK_USER.visits} visits
+            {user.country ?? "--"}
+            {user.city ? ` · ${user.city}` : ""} · Joined {monthYear(user.joinedAt)}{" "}
+            · Active {timeAgo(user.lastActiveAt)}
+          </div>
+          <div className="ud-user-meta">
+            Plan: {subscription?.plan ?? "none"}
+            {subscription?.status ? ` (${subscription.status})` : ""} ·{" "}
+            {counts.favorites ?? "-"} favorites · {counts.lists ?? "-"} lists
           </div>
           <div className="ud-badges">
-            {MOCK_USER.badges.map((b) => (
-              <span key={b} className="ud-badge">{b}</span>
+            {badges.map((b) => (
+              <span key={b} className="ud-badge">
+                {b}
+              </span>
             ))}
           </div>
         </div>
@@ -62,30 +107,36 @@ export default function UserHubDrawer({ userId }: DrawerProps) {
       </div>
 
       <div className="ud-section-label">DANGER ZONE</div>
-      <div className="ud-list">
-        <button
-          type="button"
-          className="ud-row"
-          onClick={() => open("confirm", { userId, action: "terminate" })}
-        >
-          <span>
-            <div className="ud-row-label">Terminate account</div>
-            <div className="ud-row-hint">Blocks login, keeps data</div>
-          </span>
-          <span className="ud-chevron">{"\u203A"}</span>
-        </button>
-        <button
-          type="button"
-          className="ud-row"
-          onClick={() => open("confirm", { userId, action: "delete" })}
-        >
-          <span>
-            <div className="ud-row-label">Delete account</div>
-            <div className="ud-row-hint">Moves to the bin</div>
-          </span>
-          <span className="ud-chevron">{"\u203A"}</span>
-        </button>
-      </div>
+      {inBin ? (
+        <div className="ud-card">
+          This account is in the bin. Restore comes with the actions batch.
+        </div>
+      ) : (
+        <div className="ud-list">
+          <button
+            type="button"
+            className="ud-row"
+            onClick={() => open("confirm", { userId, action: "terminate" })}
+          >
+            <span>
+              <div className="ud-row-label">Terminate account</div>
+              <div className="ud-row-hint">Blocks login, keeps data</div>
+            </span>
+            <span className="ud-chevron">{"\u203A"}</span>
+          </button>
+          <button
+            type="button"
+            className="ud-row"
+            onClick={() => open("confirm", { userId, action: "delete" })}
+          >
+            <span>
+              <div className="ud-row-label">Delete account</div>
+              <div className="ud-row-hint">Moves to the bin</div>
+            </span>
+            <span className="ud-chevron">{"\u203A"}</span>
+          </button>
+        </div>
+      )}
     </UserDrawerShell>
   );
 }
