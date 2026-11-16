@@ -76,9 +76,15 @@ export default function Page() {
   const [showEdit, setShowEdit] = useState(false);
 
   // 👇 REAL count — from /admin/stats, not hardcoded
-  // useUsersPage is called ONCE here, passed down to UsersList so we don't fetch twice
   const users = useUsersPage();
   const totalUsers = users.counts?.all ?? users.resultCount ?? users.items.length;
+
+  // 👇 REAL status — from the actual /admin/stats fetch, not hardcoded "Online"
+  const status = users.error
+    ? { text: "Offline", color: "#ef4444" }
+    : users.counts
+      ? { text: "Online", color: "#22c55e" }
+      : { text: "Checking...", color: "#f59e0b" };
 
   return (
     <div className="cc-wrap">
@@ -118,13 +124,9 @@ export default function Page() {
           </div>
         </div>
         <div className="cc-card">
-          <div className="cc-card-label">ACTIVE TAB</div>
-          <div className="cc-card-value">{active}</div>
-        </div>
-        <div className="cc-card">
           <div className="cc-card-label">STATUS</div>
-          <div className="cc-card-value" style={{ color: "#22c55e" }}>
-            Online
+          <div className="cc-card-value" style={{ color: status.color }}>
+            {status.text}
           </div>
         </div>
       </div>
