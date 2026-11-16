@@ -18,8 +18,8 @@ export type AdminUser = {
   verified: boolean;
   premium: boolean;
   abandoned: boolean;
-  joinedAt: number; // ms timestamp
-  lastActiveAt: number; // ms timestamp
+  joinedAt: number | string; // ms timestamp — Worker sends number OR numeric string OR date string
+  lastActiveAt: number | string; // same — Worker sends mixed formats
 };
 
 export type UsersPage = {
@@ -48,5 +48,3 @@ export type AdminUserDetail = {
   } | null;
   counts: { favorites: number | null; lists: number | null };
 };
-
-
