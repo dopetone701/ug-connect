@@ -41,7 +41,11 @@ export default function UserHubDrawer({ userId }: DrawerProps) {
     );
   }
 
-  const { user, subscription, counts } = data;
+  // FIX: use-admin-user returns FLAT detail { id, name, email, subscription, counts }
+  // NOT nested { user }. Handle both so it never crashes on data.user = undefined.
+  const user = (data as any).user ?? data;
+  const subscription = (data as any).subscription;
+  const counts = (data as any).counts ?? { favorites: 0, lists: 0 };
   const label = user.name || user.email || "Unnamed user";
   const inBin = user.status === "pending_deletion";
   const badges = [
@@ -77,7 +81,7 @@ export default function UserHubDrawer({ userId }: DrawerProps) {
           <div className="ud-user-meta">
             Plan: {subscription?.plan ?? "none"}
             {subscription?.status ? ` (${subscription.status})` : ""} ·{" "}
-            {counts.favorites ?? "-"} favorites · {counts.lists ?? "-"} lists
+            {counts?.favorites ?? "-"} favorites · {counts?.lists ?? "-"} lists
           </div>
           <div className="ud-badges">
             {badges.map((b) => (
@@ -140,5 +144,3 @@ export default function UserHubDrawer({ userId }: DrawerProps) {
     </UserDrawerShell>
   );
 }
-
-
