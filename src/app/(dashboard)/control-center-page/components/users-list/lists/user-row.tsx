@@ -4,8 +4,9 @@ import type { AdminUser } from "../core/types/admin-user";
 import { initialOf, isActiveToday, timeAgo } from "../core/utils/format";
 
 type Props = {
-  user: AdminUser;
+  user: AdminUser & { isAdmin?: boolean };
   onOpen?: (id: string) => void;
+  isMe?: boolean;
 };
 
 function shortId(id: string) {
@@ -21,9 +22,10 @@ function handleOf(u: AdminUser) {
   return `@${base || "user"}`;
 }
 
-function UserRow({ user, onOpen }: Props) {
+function UserRow({ user, onOpen, isMe }: Props) {
   const label = user.name || user.email || "Unnamed user";
   const online = isActiveToday(user.lastActiveAt);
+  const isAdmin = Boolean(user.isAdmin) || Boolean(isMe);
 
   return (
     <button
@@ -34,15 +36,15 @@ function UserRow({ user, onOpen }: Props) {
         alignItems: "center",
         gap: 12,
         width: "100%",
-        padding: "12px 4px",
-        background: "transparent",
-        border: "none",
+        padding: "12px 8px",
+        background: isAdmin ? "rgba(245,158,11,0.12)" : "transparent",
+        border: isAdmin ? "1px solid rgba(245,158,11,0.6)" : "1px solid transparent",
         borderBottom: "1px solid rgba(255,255,255,0.08)",
+        borderRadius: 12,
         cursor: "pointer",
         textAlign: "left",
       }}
     >
-      {/* AVATAR — image or initial */}
       <span style={{ position: "relative", flexShrink: 0 }}>
         {user.avatarUrl ? (
           <img
@@ -50,13 +52,7 @@ function UserRow({ user, onOpen }: Props) {
             alt=""
             loading="lazy"
             referrerPolicy="no-referrer"
-            style={{
-              width: 48,
-              height: 48,
-              borderRadius: "50%",
-              objectFit: "cover",
-              display: "block",
-            }}
+            style={{ width: 48, height: 48, borderRadius: "50%", objectFit: "cover", display: "block" }}
           />
         ) : (
           <span
@@ -64,8 +60,8 @@ function UserRow({ user, onOpen }: Props) {
               width: 48,
               height: 48,
               borderRadius: "50%",
-              background: "#3b3b3b",
-              color: "#fff",
+              background: isAdmin ? "#f59e0b" : "#3b3b3b",
+              color: isAdmin ? "#000" : "#fff",
               fontSize: 20,
               fontWeight: 700,
               display: "flex",
@@ -76,7 +72,6 @@ function UserRow({ user, onOpen }: Props) {
             {initialOf(label)}
           </span>
         )}
-        {/* online dot */}
         <span
           style={{
             position: "absolute",
@@ -91,7 +86,6 @@ function UserRow({ user, onOpen }: Props) {
         />
       </span>
 
-      {/* NAME + ID — TikTok style */}
       <span style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 2 }}>
         <span
           style={{
@@ -108,17 +102,18 @@ function UserRow({ user, onOpen }: Props) {
         >
           {label}
           {user.verified ? <span style={{ color: "#20d5ec", fontSize: 14 }}>✓</span> : null}
-          {user.premium ? (
-            <span
-              style={{
-                fontSize: 10,
-                fontWeight: 800,
-                background: "#f59e0b",
-                color: "#000",
-                padding: "2px 6px",
-                borderRadius: 999,
-              }}
-            >
+          {isAdmin ? (
+            <span style={{ fontSize: 10, fontWeight: 800, background: "#f59e0b", color: "#000", padding: "2px 6px", borderRadius: 999 }}>
+              👑 ADMIN
+            </span>
+          ) : null}
+          {isMe ? (
+            <span style={{ fontSize: 10, fontWeight: 800, background: "#fff", color: "#000", padding: "2px 6px", borderRadius: 999 }}>
+              YOU
+            </span>
+          ) : null}
+          {user.premium && !isAdmin ? (
+            <span style={{ fontSize: 10, fontWeight: 800, background: "#f59e0b", color: "#000", padding: "2px 6px", borderRadius: 999 }}>
               PREMIUM
             </span>
           ) : null}
@@ -128,7 +123,6 @@ function UserRow({ user, onOpen }: Props) {
         </span>
       </span>
 
-      {/* TIME + CHEVRON */}
       <span style={{ flexShrink: 0, display: "flex", alignItems: "center", gap: 8 }}>
         <span style={{ color: "#999", fontSize: 13 }}>{timeAgo(user.lastActiveAt)}</span>
         <span style={{ color: "#666", fontSize: 20 }}>›</span>
