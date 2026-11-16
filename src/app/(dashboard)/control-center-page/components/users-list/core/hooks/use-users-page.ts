@@ -14,6 +14,10 @@ export function useUsersPage() {
   const [filter, setFilter] = useState<UserFilter>("all");
   const [counts, setCounts] = useState<UserCounts | null>(null);
 
+  // 👇 LIVE USERS — from /admin/stats top-level, not from counts
+  const [liveUsers, setLiveUsers] = useState<number | null>(null);
+  const [liveUsersAvailable, setLiveUsersAvailable] = useState(false);
+
   const [items, setItems] = useState<AdminUser[]>([]);
   const [cursor, setCursor] = useState<string | null>(null);
   const [hasMore, setHasMore] = useState(true);
@@ -26,13 +30,29 @@ export function useUsersPage() {
     return () => clearTimeout(t);
   }, [q]);
 
+  // 👇 Single place that fetches counts + liveUsers
+  const refreshCounts = useCallback(async (signal?: AbortSignal) => {
+    try {
+      const s: any = await fetchCounts(signal);
+      // Worker returns: { counts: {...}, liveUsers: 2, liveUsersAvailable: true }
+      // Support both top-level and inside counts, just in case
+      const rawLive = s?.liveUsers ?? s?.counts?.liveUsers ?? null;
+      const available =
+        s?.liveUsersAvailable ?? s?.counts?.liveUsersAvailable ?? (typeof rawLive === "number");
+
+      setCounts(s?.counts ?? s ?? null);
+      setLiveUsers(typeof rawLive === "number" ? rawLive : null);
+      setLiveUsersAvailable(Boolean(available));
+    } catch {
+      // keep previous counts/live on failure — do not show fake 0
+    }
+  }, []);
+
   useEffect(() => {
     const ac = new AbortController();
-    fetchCounts(ac.signal)
-      .then((s) => setCounts(s.counts))
-      .catch(() => {});
+    refreshCounts(ac.signal);
     return () => ac.abort();
-  }, []);
+  }, [refreshCounts]);
 
   const effectiveQ = debouncedQ.length >= MIN_QUERY ? debouncedQ : "";
 
@@ -70,14 +90,15 @@ export function useUsersPage() {
     return () => abortRef.current?.abort();
   }, [load]);
 
-  // 👇 LIVE POLLING — refetch first page every 15s, only when not searching
+  // 👇 LIVE POLLING — refetch list AND counts every 15s, only when not searching
   useEffect(() => {
     if (effectiveQ) return;
     const t = setInterval(() => {
       load(true, null);
+      refreshCounts();
     }, POLL_MS);
     return () => clearInterval(t);
-  }, [load, effectiveQ]);
+  }, [load, effectiveQ, refreshCounts]);
 
   const loadMore = useCallback(() => {
     if (loading || !hasMore || error) return;
@@ -87,7 +108,14 @@ export function useUsersPage() {
   const retry = useCallback(() => {
     if (items.length === 0) load(true, null);
     else load(false, cursor);
-  }, [items.length, cursor, load]);
+    refreshCounts();
+  }, [items.length, cursor, load, refreshCounts]);
+
+  // 👇 Control Center calls this every 15s
+  const refetch = useCallback(() => {
+    refreshCounts();
+    if (!effectiveQ) load(true, null);
+  }, [refreshCounts, load, effectiveQ]);
 
   const resultCount = effectiveQ ? null : counts?.[filter] ?? null;
 
@@ -97,6 +125,8 @@ export function useUsersPage() {
     filter,
     setFilter,
     counts,
+    liveUsers,
+    liveUsersAvailable,
     resultCount,
     items,
     loading,
@@ -104,5 +134,6 @@ export function useUsersPage() {
     error,
     loadMore,
     retry,
+    refetch,
   };
 }

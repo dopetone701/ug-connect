@@ -1,6 +1,7 @@
-"use client";
-import { useMemo, useState } from "react";
+﻿"use client";
+import { useMemo, useState, useEffect } from "react";
 import "./control-center.css";
+import { useBriefNumbers } from "@/stores/use-brief-numbers";
 
 import CreateMovieModal from "./components/create-movie/create-movie-modal";
 import EditMovieModal from "./components/edit-movie/edit-movie-modal";
@@ -15,7 +16,6 @@ import { UserRow } from "./components/users-list/lists/user-row";
 
 const tabs = ["Overview", "Users", "Admins", "Orders", "Settings", "Create", "Edit Movie", "Logo"];
 
-// 👇 Who am I? Decode ug_token to get my own id — that account is admin
 function myIdFromToken(): string | null {
   try {
     if (typeof window === "undefined") return null;
@@ -41,13 +41,10 @@ type UsersListProps = {
 
 function UsersList({ items, loading, error, loadMore, hasMore, retry, onlyAdmins, myId }: UsersListProps) {
   const openDrawer = useUserDrawer((s) => s.open);
-
-  // 👇 Admin = Worker says isAdmin OR it's me (from my token)
   const shown = useMemo(() => {
   const base = onlyAdmins
     ? items.filter((u: any) => u.isAdmin === true || (myId && u.id === myId))
     : items;
-  // 👇 YOU first, always — never second
   if (!myId) return base;
   return [...base].sort((a, b) => (a.id === myId ? -1 : b.id === myId ? 1 : 0));
 }, [items, onlyAdmins, myId]);
@@ -84,6 +81,7 @@ export default function Page() {
   const [showEdit, setShowEdit] = useState(false);
 
   const users = useUsersPage();
+  const { briefNumber } = useBriefNumbers();
   const totalUsers = users.counts?.all ?? users.resultCount ?? users.items.length;
   const myId = useMemo(() => myIdFromToken(), []);
 
@@ -92,6 +90,39 @@ export default function Page() {
     : users.counts
       ? { text: "Online", color: "#22c55e" }
       : { text: "Checking...", color: "#f59e0b" };
+
+  const liveFromList = useMemo(() => {
+    const now = Date.now();
+    return (users.items || []).filter((u: any) => {
+      const t = u?.lastActiveAt ?? u?.last_active ?? u?.lastActive ?? null;
+      if (!t) return false;
+      const ms = typeof t === "number" ? t : Date.parse(t);
+      return !Number.isNaN(ms) && ms >= now - 90000;
+    }).length;
+  }, [users.items]);
+
+  const liveUsers: number | null =
+    (users as any).liveUsers ?? (users.counts as any)?.liveUsers ?? null;
+  const displayLive = typeof liveUsers === "number" ? liveUsers : liveFromList;
+
+  useEffect(() => {
+    const refresh = () => {
+      const u: any = users as any;
+      if (typeof u.refetch === "function") u.refetch();
+      else if (typeof u.retry === "function") u.retry();
+    };
+    const id = setInterval(refresh, 5000);
+    const onFocus = () => refresh();
+    const onVisible = () => { if (!document.hidden) refresh(); };
+    window.addEventListener("focus", onFocus);
+    document.addEventListener("visibilitychange", onVisible);
+    return () => {
+      clearInterval(id);
+      window.removeEventListener("focus", onFocus);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div className="cc-wrap">
@@ -120,11 +151,14 @@ export default function Page() {
       <div className="cc-grid">
         <div className="cc-card">
           <div className="cc-card-label">TOTAL USERS</div>
-          <div className="cc-card-value">{users.counts ? totalUsers.toLocaleString() : "—"}</div>
+          <div className="cc-card-value">{users.counts ? briefNumber(totalUsers) : "—"}</div>
         </div>
         <div className="cc-card">
           <div className="cc-card-label">STATUS</div>
-          <div className="cc-card-value" style={{ color: status.color }}>{status.text}</div>
+          <div className="cc-card-value" style={{ display: "flex", alignItems: "center", gap: 8, color: status.color }}>
+            <span style={{ width: 10, height: 10, borderRadius: "50%", background: status.color, flexShrink: 0 }} />
+            {status.text} • {briefNumber(displayLive)}
+          </div>
         </div>
       </div>
 
