@@ -7,6 +7,18 @@ import HeartIcon from "@/modal-generator/svg-icons/heart-icon";
 import ShareAtomIcon from "@/modal-generator/svg-icons/share-atom-icon";
 
 const WORKER_URL = "https://movie-actions-server-api.connectu89.workers.dev/heart";
+const SHARE_URL = "https://movie-actions-server-api.connectu89.workers.dev/share";
+
+function getUserId() {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = localStorage.getItem("ug_user") || localStorage.getItem("ugc_user") || localStorage.getItem("user") || "";
+    if (!raw) return null;
+    const u = JSON.parse(raw);
+    return u?.id || u?.userId || u?.user?.id || null;
+  } catch { return null; }
+}
+
 
 function getDeviceId() {
   if (typeof window === "undefined") return "server";
@@ -78,11 +90,12 @@ export default function UnderVideoStaBtns({
       window.dispatchEvent(new CustomEvent("ugc_heart_updated"));
     } catch {}
     try {
-      await fetch(WORKER_URL, {
+           await fetch(WORKER_URL, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ movieId: targetId, deviceId, action: newLiked ? "like" : "unlike" }),
+        body: JSON.stringify({ movieId: targetId, deviceId, action: newLiked ? "like" : "unlike", userId: getUserId() }),
       });
+
     } catch {}
     setTimeout(() => setBusy(false), 300);
   }, [liked, targetId, busy]);
@@ -117,9 +130,17 @@ export default function UnderVideoStaBtns({
       url: shareUrl,
     };
 
-    if (navigator.share) {
+       if (navigator.share) {
       try {
         await navigator.share(shareData);
+        // ✅ share succeeded — save it for Engagement
+        try {
+          await fetch(SHARE_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ movieId, userId: getUserId(), deviceId: getDeviceId(), channel: "share-sheet", target: "movie" }),
+          });
+        } catch {}
         return;
       } catch (err: any) {
         if (err?.name === "AbortError") return;
@@ -127,10 +148,20 @@ export default function UnderVideoStaBtns({
       }
     }
 
-    try {
+
+       try {
       await navigator.clipboard.writeText(shareUrl);
+      // ✅ copy = share too — save it
+      try {
+        await fetch(SHARE_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ movieId, userId: getUserId(), deviceId: getDeviceId(), channel: "copy", target: "movie" }),
+        });
+      } catch {}
       alert("Link copied! Share it to open this exact movie.");
     } catch {
+
       const ta = document.createElement("textarea");
       ta.value = shareUrl;
       ta.style.position = "fixed";

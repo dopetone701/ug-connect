@@ -154,12 +154,14 @@ export default function Page() {
           <div className="cc-card-value">{users.counts ? briefNumber(totalUsers) : "—"}</div>
         </div>
         <div className="cc-card">
-          <div className="cc-card-label">STATUS</div>
-          <div className="cc-card-value" style={{ display: "flex", alignItems: "center", gap: 8, color: status.color }}>
-            <span style={{ width: 10, height: 10, borderRadius: "50%", background: status.color, flexShrink: 0 }} />
-            {status.text} • {briefNumber(displayLive)}
-          </div>
-        </div>
+  <div className="cc-card-label">STATUS</div>
+  <div className="cc-card-value" style={{ display: "flex", alignItems: "center", gap: 8, color: status.color }}>
+    <style>{`@keyframes ug-status-pulse { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.5); opacity: 0.6; } 100% { transform: scale(1); opacity: 1; } }`}</style>
+    <span style={{ width: 10, height: 10, borderRadius: "50%", background: status.color, flexShrink: 0, animation: "ug-status-pulse 2s infinite" }} />
+    {status.text} • {briefNumber(displayLive)}
+  </div>
+</div>
+
       </div>
 
       <div className="cc-panel">

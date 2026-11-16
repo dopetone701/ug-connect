@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
 import { useMovieStore } from "@/stores/use-movie-store";
 import "./favorites-sheet.css";
 import MovieRow from "@/app/(dashboard)/movies/_components/movie-row";
@@ -8,6 +8,7 @@ import { useGlobalSearch } from "@/stores/use-global-search";
 import { useRouter } from "next/navigation";
 
 const MOVIE_API = "https://movie-server-api.connectu89.workers.dev/api/movies";
+const USER_API = "https://user-account-server-api.connectu89.workers.dev";
 
 const normalize = (x: any) => {
   const preview = x.preview_urls?.[0] || x.preview_url || x.trailer_url || x.video_preview_url || x.preview;
@@ -33,6 +34,7 @@ export default function FavoritesSheet() {
   const { favIds = [], recentIds = [], lists = [], watchLaterIds = [], hydrated, _hydrate } = useMovieStore() as any;
   const [allMovies, setAllMovies] = useState<any[]>([]);
   const router = useRouter();
+  const lastSentRef = useRef("");
 
   useEffect(() => { if (!hydrated) _hydrate?.(); }, [hydrated, _hydrate]);
   useEffect(() => {
@@ -46,6 +48,33 @@ export default function FavoritesSheet() {
     }).catch(() => {});
   }, []);
 
+  // --- NEW: dispatch real IDs to D1 ---
+  // Runs only when IDs actually change, not on every render
+  useEffect(() => {
+    if (!hydrated) return;
+    const myList = lists?.find((l: any) => l.id === "my-list");
+    const payload = {
+      favIds: (favIds || []).map(String),
+      recentIds: (recentIds || []).map(String).slice(0, 20),
+      myListIds: (myList?.movieIds || []).map(String),
+      watchLaterIds: (watchLaterIds || []).map(String),
+    };
+    const key = JSON.stringify(payload);
+    if (key === lastSentRef.current) return;
+    lastSentRef.current = key;
+
+    const token = typeof window !== "undefined" ? localStorage.getItem("ug_token") : null;
+    if (!token) return; // guest — nothing to save
+
+    // Fire-and-forget, don't block Library UI
+    fetch(`${USER_API}/api/user/activity`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      body: JSON.stringify(payload),
+      keepalive: true,
+    }).catch(() => {});
+  }, [hydrated, favIds, recentIds, lists, watchLaterIds]);
+
   useEffect(() => {
     const handleSeeAll = (e: MouseEvent) => {
       const btn = (e.target as HTMLElement).closest(".latest-see");
@@ -57,12 +86,10 @@ export default function FavoritesSheet() {
       e.preventDefault();
       e.stopPropagation();
 
-      // 1. SET query FIRST - before closing
       const gs = useGlobalSearch.getState() as any;
       gs.setQuery(title);
       gs.setSection?.(title);
 
-      // 2. CLOSE account page instantly
       window.dispatchEvent(new CustomEvent("ug-close-account-sheet" as any));
       window.dispatchEvent(new CustomEvent("ug-close-sheet" as any));
       window.dispatchEvent(new CustomEvent("ug-close-menu-panel" as any));
@@ -70,21 +97,18 @@ export default function FavoritesSheet() {
       document.body.style.overflow = "";
       try { (require("@/stores/use-side-sheet") as any).useSideSheet.getState().open(null); } catch {}
 
-      // 3. WAIT for close animation (300ms) then open search drawer
-      // This fixes broken drawer - 2 drawers can't be open same time
       setTimeout(() => {
         gs.openSearch?.();
         gs.setOpen?.(true);
         gs.setIsOpen?.(true);
 
         if (isMobile()) {
-          // Mobile: open filter drawer with my list / selected section chamber
           window.dispatchEvent(new CustomEvent("ug-open-search-panel" as any, { detail: { query: title } }));
         } else {
           const param = encodeURIComponent(title);
           router.push(`/search?q=${param}&filter=${param}&section=${param}`);
         }
-      }, 320); // <-- FIX: was 25ms, now 320ms to let account sheet close
+      }, 320);
     };
 
     document.addEventListener("click", handleSeeAll, true);

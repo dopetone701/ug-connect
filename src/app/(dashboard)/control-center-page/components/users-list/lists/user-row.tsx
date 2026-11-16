@@ -1,7 +1,7 @@
 "use client";
-import { memo } from "react";
+import { memo, useState } from "react";
 import type { AdminUser } from "../core/types/admin-user";
-import { initialOf, isActiveToday, timeAgo } from "../core/utils/format";
+import { initialOf, timeAgo } from "../core/utils/format";
 
 type Props = {
   user: AdminUser & { isAdmin?: boolean };
@@ -22,14 +22,41 @@ function handleOf(u: AdminUser) {
   return `@${base || "user"}`;
 }
 
+function resolveAvatarUrl(u: any): string | null {
+  const candidates = [
+    u?.avatarUrl,
+    u?.avatar_url,
+    u?.avatar,
+    u?.photoUrl,
+    u?.photoURL,
+    u?.photo_url,
+    u?.picture,
+    u?.profilePic,
+    u?.profile_pic,
+    u?.profilePicture,
+    u?.profile_picture,
+    u?.image,
+    u?.imageUrl,
+  ];
+  for (const c of candidates) {
+    if (typeof c === "string" && c.trim().length > 0) return c.trim();
+  }
+  return null;
+}
+
 function UserRow({ user, onOpen, isMe }: Props) {
   const label = user.name || user.email || "Unnamed user";
-  const online = isActiveToday(user.lastActiveAt);
+  // 👇 3-STATE DOT
+  const lastMs = typeof user.lastActiveAt === "number" ? user.lastActiveAt : Date.parse(String(user.lastActiveAt || ""));
+  const ageMs = Number.isNaN(lastMs) ? Infinity : Date.now() - lastMs;
+  const dotColor = ageMs < 60000 ? "#22c55e" : ageMs < 3600000 ? "#facc15" : "#666";
   const isAdmin = Boolean(user.isAdmin) || Boolean(isMe);
+  const avatarUrl = resolveAvatarUrl(user);
+  const [imgFailed, setImgFailed] = useState(false);
+  const showPhoto = Boolean(avatarUrl) && !imgFailed;
 
   return (
     <>
-      {/* breathing dot animation — DNA green only */}
       <style>{`@keyframes ug-breathe { 0% { box-shadow: 0 0 0 0 rgba(34,197,94,0.55); } 70% { box-shadow: 0 0 0 7px rgba(34,197,94,0); } 100% { box-shadow: 0 0 0 0 rgba(34,197,94,0); } }`}</style>
       <button
         type="button"
@@ -47,14 +74,14 @@ function UserRow({ user, onOpen, isMe }: Props) {
           textAlign: "left",
         }}
       >
-        {/* AVATAR — same as everyone, no gold */}
         <span style={{ position: "relative", flexShrink: 0 }}>
-          {user.avatarUrl ? (
+          {showPhoto ? (
             <img
-              src={user.avatarUrl}
+              src={avatarUrl!}
               alt=""
               loading="lazy"
               referrerPolicy="no-referrer"
+              onError={() => setImgFailed(true)}
               style={{ width: 48, height: 48, borderRadius: "50%", objectFit: "cover", display: "block" }}
             />
           ) : (
@@ -83,13 +110,12 @@ function UserRow({ user, onOpen, isMe }: Props) {
               width: 12,
               height: 12,
               borderRadius: "50%",
-              background: online ? "#22c55e" : "#666",
+              background: dotColor,
               border: "2px solid #1a1a1a",
             }}
           />
         </span>
 
-        {/* NAME + ID */}
         <span style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 2 }}>
           <span
             style={{
@@ -121,7 +147,6 @@ function UserRow({ user, onOpen, isMe }: Props) {
                 >
                   ADMIN
                 </span>
-                {/* breathing signal dot — right next to ADMIN chip, nothing else */}
                 <span
                   style={{
                     width: 8,
