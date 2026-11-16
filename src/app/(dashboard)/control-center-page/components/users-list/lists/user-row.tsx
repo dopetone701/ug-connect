@@ -8,60 +8,130 @@ type Props = {
   onOpen?: (id: string) => void;
 };
 
-function stateTag(u: AdminUser): { text: string; danger: boolean } | null {
-  if (u.status === "pending_deletion") return { text: "IN BIN", danger: true };
-  if (u.status === "terminated") return { text: "TERMINATED", danger: true };
-  if (u.abandoned) return { text: "ABANDONED", danger: false };
-  if (!u.verified) return { text: "UNVERIFIED", danger: false };
-  return null;
+function shortId(id: string) {
+  return id ? id.slice(0, 8) : "--";
+}
+
+function handleOf(u: AdminUser) {
+  const base = (u.name || u.email || "user")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "")
+    .slice(0, 20);
+  return `@${base || "user"}`;
 }
 
 function UserRow({ user, onOpen }: Props) {
-  const tag = stateTag(user);
   const label = user.name || user.email || "Unnamed user";
+  const online = isActiveToday(user.lastActiveAt);
 
   return (
-    <button type="button" className="ul-row" onClick={() => onOpen?.(user.id)}>
-      <span className="ul-avatar">
+    <button
+      type="button"
+      onClick={() => onOpen?.(user.id)}
+      style={{
+        display: "flex",
+        alignItems: "center",
+        gap: 12,
+        width: "100%",
+        padding: "12px 4px",
+        background: "transparent",
+        border: "none",
+        borderBottom: "1px solid rgba(255,255,255,0.08)",
+        cursor: "pointer",
+        textAlign: "left",
+      }}
+    >
+      {/* AVATAR — image or initial */}
+      <span style={{ position: "relative", flexShrink: 0 }}>
         {user.avatarUrl ? (
           <img
-            className="ul-avatar-img"
             src={user.avatarUrl}
             alt=""
             loading="lazy"
             referrerPolicy="no-referrer"
+            style={{
+              width: 48,
+              height: 48,
+              borderRadius: "50%",
+              objectFit: "cover",
+              display: "block",
+            }}
           />
         ) : (
-          <span className="ul-avatar-img ul-avatar-fallback">
+          <span
+            style={{
+              width: 48,
+              height: 48,
+              borderRadius: "50%",
+              background: "#3b3b3b",
+              color: "#fff",
+              fontSize: 20,
+              fontWeight: 700,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
             {initialOf(label)}
           </span>
         )}
+        {/* online dot */}
         <span
-          className={`ul-dot${isActiveToday(user.lastActiveAt) ? " online" : ""}`}
+          style={{
+            position: "absolute",
+            right: 0,
+            bottom: 0,
+            width: 12,
+            height: 12,
+            borderRadius: "50%",
+            background: online ? "#22c55e" : "#666",
+            border: "2px solid #1a1a1a",
+          }}
         />
       </span>
 
-      <span className="ul-main">
-        <span className="ul-name">
-          <span className="ul-name-text">{label}</span>
-          {user.verified ? (
-            <span className="ul-check" title="Verified">
-              {"\u2713"}
+      {/* NAME + ID — TikTok style */}
+      <span style={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column", gap: 2 }}>
+        <span
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 4,
+            color: "#fff",
+            fontSize: 16,
+            fontWeight: 700,
+            whiteSpace: "nowrap",
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+          }}
+        >
+          {label}
+          {user.verified ? <span style={{ color: "#20d5ec", fontSize: 14 }}>✓</span> : null}
+          {user.premium ? (
+            <span
+              style={{
+                fontSize: 10,
+                fontWeight: 800,
+                background: "#f59e0b",
+                color: "#000",
+                padding: "2px 6px",
+                borderRadius: 999,
+              }}
+            >
+              PREMIUM
             </span>
           ) : null}
         </span>
-        <span className="ul-sub">
-          {user.country ?? "--"} · {timeAgo(user.lastActiveAt)}
+        <span style={{ color: "#999", fontSize: 13 }}>
+          {handleOf(user)} · ID {shortId(user.id)}
         </span>
       </span>
 
-      <span className="ul-tags">
-        {user.premium ? <span className="ul-tag">PREMIUM</span> : null}
-        {tag ? (
-          <span className={`ul-tag${tag.danger ? " danger" : ""}`}>
-            {tag.text}
-          </span>
-        ) : null}
+      {/* TIME + CHEVRON */}
+      <span style={{ flexShrink: 0, display: "flex", alignItems: "center", gap: 8 }}>
+        <span style={{ color: "#999", fontSize: 13 }}>{timeAgo(user.lastActiveAt)}</span>
+        <span style={{ color: "#666", fontSize: 20 }}>›</span>
       </span>
     </button>
   );
