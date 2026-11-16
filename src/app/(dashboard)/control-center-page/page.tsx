@@ -44,9 +44,13 @@ function UsersList({ items, loading, error, loadMore, hasMore, retry, onlyAdmins
 
   // 👇 Admin = Worker says isAdmin OR it's me (from my token)
   const shown = useMemo(() => {
-    if (!onlyAdmins) return items;
-    return items.filter((u: any) => u.isAdmin === true || (myId && u.id === myId));
-  }, [items, onlyAdmins, myId]);
+  const base = onlyAdmins
+    ? items.filter((u: any) => u.isAdmin === true || (myId && u.id === myId))
+    : items;
+  // 👇 YOU first, always — never second
+  if (!myId) return base;
+  return [...base].sort((a, b) => (a.id === myId ? -1 : b.id === myId ? 1 : 0));
+}, [items, onlyAdmins, myId]);
 
   if (loading && items.length === 0) return <p>Syncing users...</p>;
   if (error) {
