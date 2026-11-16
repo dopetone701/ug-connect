@@ -67,4 +67,5 @@ function UserRow({ user, onOpen }: Props) {
   );
 }
 
+export { UserRow };
 export default memo(UserRow);
