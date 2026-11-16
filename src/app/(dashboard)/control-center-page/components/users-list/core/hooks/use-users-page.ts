@@ -5,7 +5,8 @@ import { fetchCounts, fetchUsersPage } from "../api/admin-user-api";
 import { errorMessage } from "../api/admin-http";
 
 const PAGE_SIZE = 30;
-const MIN_QUERY = 2; // the server needs at least 2 characters to search
+const MIN_QUERY = 2;
+const POLL_MS = 15000; // 👇 re-check every 15s for live status
 
 export function useUsersPage() {
   const [q, setQ] = useState("");
@@ -20,7 +21,6 @@ export function useUsersPage() {
   const [error, setError] = useState<string | null>(null);
   const abortRef = useRef<AbortController | null>(null);
 
-  // Wait 300ms after typing stops before asking the server.
   useEffect(() => {
     const t = setTimeout(() => setDebouncedQ(q.trim()), 300);
     return () => clearTimeout(t);
@@ -45,12 +45,7 @@ export function useUsersPage() {
       setError(null);
       try {
         const page = await fetchUsersPage(
-          {
-            cursor: reset ? null : from,
-            q: effectiveQ,
-            filter,
-            limit: PAGE_SIZE,
-          },
+          { cursor: reset ? null : from, q: effectiveQ, filter, limit: PAGE_SIZE },
           ac.signal
         );
         if (ac.signal.aborted) return;
@@ -59,7 +54,7 @@ export function useUsersPage() {
         setHasMore(page.nextCursor !== null);
         setLoading(false);
       } catch (e) {
-        if (ac.signal.aborted) return; // replaced by a newer request
+        if (ac.signal.aborted) return;
         setError(errorMessage(e));
         setLoading(false);
       }
@@ -67,7 +62,6 @@ export function useUsersPage() {
     [effectiveQ, filter]
   );
 
-  // Search or filter changed: start again from page 1.
   useEffect(() => {
     setItems([]);
     setCursor(null);
@@ -75,6 +69,15 @@ export function useUsersPage() {
     load(true, null);
     return () => abortRef.current?.abort();
   }, [load]);
+
+  // 👇 LIVE POLLING — refetch first page every 15s, only when not searching
+  useEffect(() => {
+    if (effectiveQ) return;
+    const t = setInterval(() => {
+      load(true, null);
+    }, POLL_MS);
+    return () => clearInterval(t);
+  }, [load, effectiveQ]);
 
   const loadMore = useCallback(() => {
     if (loading || !hasMore || error) return;
@@ -86,7 +89,6 @@ export function useUsersPage() {
     else load(false, cursor);
   }, [items.length, cursor, load]);
 
-  // Exact total is known only when no search text is applied.
   const resultCount = effectiveQ ? null : counts?.[filter] ?? null;
 
   return {
@@ -104,5 +106,3 @@ export function useUsersPage() {
     retry,
   };
 }
-
-
