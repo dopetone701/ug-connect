@@ -25,8 +25,16 @@ import { UserRow } from "./components/users-list/lists/user-row";
 
 const tabs = ["Overview", "Users", "Orders", "Settings", "Create", "Edit Movie", "Logo"];
 
-function UsersList() {
-  const { items, loading, error, loadMore, hasMore, retry } = useUsersPage();
+type UsersListProps = {
+  items: ReturnType<typeof useUsersPage>["items"];
+  loading: boolean;
+  error: string | null;
+  loadMore: () => void;
+  hasMore: boolean;
+  retry: () => void;
+};
+
+function UsersList({ items, loading, error, loadMore, hasMore, retry }: UsersListProps) {
   const openDrawer = useUserDrawer((s) => s.open);
 
   if (loading && items.length === 0) return <p>Syncing users...</p>;
@@ -67,6 +75,11 @@ export default function Page() {
   const [showCreate, setShowCreate] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
 
+  // 👇 REAL count — from /admin/stats, not hardcoded
+  // useUsersPage is called ONCE here, passed down to UsersList so we don't fetch twice
+  const users = useUsersPage();
+  const totalUsers = users.counts?.all ?? users.resultCount ?? users.items.length;
+
   return (
     <div className="cc-wrap">
       <h1 className="cc-title">Control Center</h1>
@@ -100,7 +113,9 @@ export default function Page() {
       <div className="cc-grid">
         <div className="cc-card">
           <div className="cc-card-label">TOTAL USERS</div>
-          <div className="cc-card-value">12,420</div>
+          <div className="cc-card-value">
+            {users.counts ? totalUsers.toLocaleString() : "—"}
+          </div>
         </div>
         <div className="cc-card">
           <div className="cc-card-label">ACTIVE TAB</div>
@@ -118,7 +133,14 @@ export default function Page() {
         {active === "Logo" ? (
           <AppLogoManager />
         ) : active === "Users" ? (
-          <UsersList />
+          <UsersList
+            items={users.items}
+            loading={users.loading}
+            error={users.error}
+            loadMore={users.loadMore}
+            hasMore={users.hasMore}
+            retry={users.retry}
+          />
         ) : (
           <>
             <h3 style={{ fontWeight: 700, marginBottom: 12 }}>{active} Content</h3>
