@@ -14,8 +14,12 @@ export function useAdminUser(userId: string | null) {
     setLoading(true);
     setError(null);
     try {
-      const body = await adminFetch<AdminUserDetail>(`/admin/users/${userId}`);
-      setData(body);
+      const body = await adminFetch<any>(`/admin/users/${userId}`);
+      // Worker returns { user, subscription, counts } — unwrap it
+      const detail = body?.user
+        ? { ...body.user, subscription: body.subscription, counts: body.counts }
+        : body;
+      setData(detail as AdminUserDetail);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Failed to load user");
       setData(null);
