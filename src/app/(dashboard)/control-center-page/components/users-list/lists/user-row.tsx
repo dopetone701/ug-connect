@@ -5,7 +5,7 @@ import { initialOf, isActiveToday, timeAgo } from "../core/utils/format";
 
 type Props = {
   user: AdminUser;
-  onOpen: (id: string) => void;
+  onOpen?: (id: string) => void;
 };
 
 function stateTag(u: AdminUser): { text: string; danger: boolean } | null {
@@ -21,7 +21,7 @@ function UserRow({ user, onOpen }: Props) {
   const label = user.name || user.email || "Unnamed user";
 
   return (
-    <button type="button" className="ul-row" onClick={() => onOpen(user.id)}>
+    <button type="button" className="ul-row" onClick={() => onOpen?.(user.id)}>
       <span className="ul-avatar">
         {user.avatarUrl ? (
           <img
@@ -68,5 +68,3 @@ function UserRow({ user, onOpen }: Props) {
 }
 
 export default memo(UserRow);
-
-
