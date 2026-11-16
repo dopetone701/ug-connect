@@ -20,7 +20,7 @@ export async function fetchCounts(
   const data = await adminFetch<StatsResponse>("/admin/stats", { signal });
   return { counts: data.counts };
 }
-
+ 
 // GET /admin/users?cursor=&q=&filter=&limit=
 export async function fetchUsersPage(
   params: FetchUsersParams,
