@@ -1,13 +1,28 @@
 // 👇 ALL NAMED exports — hub does: import { initialOf, monthYear, timeAgo } from "../utils/format"
+
+// Worker sends mixed formats: 1794659133153 (number),
+// "1790841983413.0" (numeric string), "2026-10-01 08:06:23" (date string)
+function toMs(ts: number | string | null | undefined): number {
+  if (ts == null || ts === "") return 0;
+  if (typeof ts === "number") return ts;
+  const trimmed = ts.trim();
+  // Numeric string -> parse as ms
+  if (/^-?\d+(\.\d+)?$/.test(trimmed)) return parseFloat(trimmed);
+  // Date string -> parse as date
+  const parsed = Date.parse(trimmed);
+  return Number.isNaN(parsed) ? 0 : parsed;
+}
+
 export function initialOf(label: string): string {
   const clean = label.trim();
   if (!clean) return "?";
   return clean[0].toUpperCase();
 }
 
-export function isActiveToday(ts: number): boolean {
-  if (!ts) return false;
-  const d = new Date(ts);
+export function isActiveToday(ts: number | string | null | undefined): boolean {
+  const ms = toMs(ts);
+  if (!ms) return false;
+  const d = new Date(ms);
   const now = new Date();
   return (
     d.getFullYear() === now.getFullYear() &&
@@ -16,9 +31,10 @@ export function isActiveToday(ts: number): boolean {
   );
 }
 
-export function timeAgo(ts: number): string {
-  if (!ts) return "never";
-  const diff = Date.now() - ts;
+export function timeAgo(ts: number | string | null | undefined): string {
+  const ms = toMs(ts);
+  if (!ms) return "never";
+  const diff = Date.now() - ms;
   if (diff < 0) return "just now";
   const mins = Math.floor(diff / 60000);
   if (mins < 1) return "just now";
@@ -33,9 +49,10 @@ export function timeAgo(ts: number): string {
 }
 
 // 👇 THIS ONE WAS MISSING — hub needs it for "Joined Jan 2026"
-export function monthYear(ts: number): string {
-  if (!ts) return "--";
-  return new Date(ts).toLocaleDateString("en-US", {
+export function monthYear(ts: number | string | null | undefined): string {
+  const ms = toMs(ts);
+  if (!ms) return "--";
+  return new Date(ms).toLocaleDateString("en-US", {
     month: "short",
     year: "numeric",
   });
