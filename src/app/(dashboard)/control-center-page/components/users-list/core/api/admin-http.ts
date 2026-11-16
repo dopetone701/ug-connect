@@ -16,8 +16,6 @@ export async function adminFetch<T>(
   path: string,
   init: { signal?: AbortSignal } = {}
 ): Promise<T> {
-  if (!BASE) throw new AdminApiError(0, "NEXT_PUBLIC_ADMIN_API_URL is not set");
-
   const token =
     typeof window !== "undefined" ? localStorage.getItem("ug_token") : null;
   if (!token) throw new AdminApiError(401, "Not signed in");
@@ -46,6 +44,14 @@ export async function adminFetch<T>(
 
 export function errorMessage(e: unknown): string {
   if (e instanceof AdminApiError) {
+    // Don't hide real session errors behind a generic message
+    if (
+      e.message === "Session expired" ||
+      e.message === "Invalid token" ||
+      e.message === "Session revoked"
+    ) {
+      return e.message;
+    }
     if (e.status === 401 || e.status === 403) {
       return "Admin access required. Sign in with an admin account.";
     }
@@ -53,5 +59,3 @@ export function errorMessage(e: unknown): string {
   }
   return "Something went wrong.";
 }
-
-
