@@ -8,59 +8,30 @@ type ArrowListIconProps = {
 };
 
 export default function ArrowListIcon({
-  size = 260,
+  size = 32,
   color = "#444444",
-  strokeWidth = 11,
-  className,
+  strokeWidth = 16,
+  className = "",
 }: ArrowListIconProps) {
   return (
     <svg
-      xmlns="http://www.w3.org/2000/svg"
       width={size}
       height={size}
       viewBox="0 0 260 260"
       fill="none"
+      xmlns="http://www.w3.org/2000/svg"
       className={className}
-      aria-hidden="true"
+      style={{ display: "block", flexShrink: 0, overflow: "visible" }}
     >
-      {/* Outer Circle */}
-      <circle
-        cx="130"
-        cy="130"
-        r="84"
-        stroke={color}
-        strokeWidth={strokeWidth}
-      />
-
-      {/* Arrow Shaft */}
-      <path
-        d="M78 130 H130"
-        stroke={color}
-        strokeWidth={strokeWidth}
-        strokeLinecap="round"
-      />
-
-      {/* Arrow Head */}
-      <path
-        d="M110 109 L131 130 L110 151"
-        stroke={color}
-        strokeWidth={strokeWidth}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-
-      {/* Four Horizontal Bars */}
-      <path
-        d="
-          M138 95 H173
-          M151 118 H173
-          M151 141 H173
-          M138 164 H173
-        "
-        stroke={color}
-        strokeWidth={strokeWidth}
-        strokeLinecap="round"
-      />
+      <g stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="52" cy="46" r="65" />
+        <path d="M 40 140 H 118 M 40 140 H 118" />
+        <path d="M 118 140 L 100 122 M 118 140 L 100 158" />
+        <path d="M 128 32 H 218 M 128 32 H 218" />
+        <path d="M 128 90 H 218 M 128 90 H 218" />
+        <path d="M 128 148 H 218 M 128 148 H 218" />
+        <path d="M 128 198 H 218 M 128 198 H 218" />
+      </g>
     </svg>
   );
 }
