@@ -359,3 +359,11 @@ html:has(.is-shell-full) body { background: #000 !important; } <- REMOVE
     padding-top: 0 !important;
   }
 }
+
+
+
+
+.fullscreen-list-drawer-close {
+  top: calc(12px + env(safe-area-inset-top, 0px)) !important;
+  right: calc(12px + env(safe-area-inset-right, 0px)) !important;
+}
