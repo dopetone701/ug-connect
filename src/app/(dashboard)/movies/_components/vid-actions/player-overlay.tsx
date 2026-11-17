@@ -7,12 +7,10 @@ import BackBtn from "../back-btn";
 import PlayBtnIcon from "./../../../../../modal-generator/svg-icons/play-btn-icon";
 import Reverse10Icon from "./../../../../../modal-generator/svg-icons/minus-10-revolve-icon";
 import Replay10Icon from "./../../../../../modal-generator/svg-icons/plus-10-revolve-icon";
-import ViewMoreIcon from "./../../../../../modal-generator/svg-icons/view-more-icon";
+import ArrowListIcon from "./../../../../../modal-generator/svg-icons/arrow-list-icon";
 import QualitySettings from "./quality-settings";
 import NextMovie from "./next-movie";
 import VideoCastBtn from "./vide-cast";
-import FullscreenListDrawer from "./fullscreen-list-drawer";
-import { useFullscreenListDrawer } from "@/stores/use-fullscreen-list-drawer";
 
 export default function PlayerOverlay({
   movie,
@@ -47,7 +45,6 @@ export default function PlayerOverlay({
   setAutoPlayOn,
 }: any) {
   const { pcPanelOpen } = useGlobalCast();
-  const { toggle: toggleListDrawer, close: closeListDrawer } = useFullscreenListDrawer();
   const keepControlsVisible = () => onShowControls?.();
 
   const startInteraction = () => {
@@ -95,11 +92,6 @@ export default function PlayerOverlay({
   const isDesktopCast = !isMobile || isLandscape || (typeof window !== "undefined" && window.innerWidth >= 1024);
 
   const showArrowList = isFullScreen && isLandscape;
-
-  // Close list drawer when leaving fullscreen / landscape — slide-back plays inside drawer.
-  useEffect(() => {
-    if (!isFullScreen || !isLandscape) closeListDrawer();
-  }, [isFullScreen, isLandscape, closeListDrawer]);
 
   useEffect(() => {
     if (!isMini) {
@@ -491,10 +483,10 @@ export default function PlayerOverlay({
             {showArrowList && (
               <button
                 type="button"
+                className="cc-icon"
                 aria-label="Show list"
                 onClick={(e) => {
                   e.stopPropagation();
-                  toggleListDrawer();
                 }}
                 onPointerDown={(e) => e.stopPropagation()}
                 style={{
@@ -505,14 +497,14 @@ export default function PlayerOverlay({
                   background: "transparent",
                   border: "none",
                   padding: 0,
-                  width: 36,
-                  height: 36,
-                  minWidth: 36,
+                  width: 32,
+                  height: 32,
+                  minWidth: 32,
                   flexShrink: 0,
                   overflow: "visible",
                 }}
               >
-                <ViewMoreIcon size={32} color="#ffffff" strokeWidth={16} />
+                <ArrowListIcon size={28} color="#ffffff" />
               </button>
             )}
 
@@ -554,9 +546,6 @@ export default function PlayerOverlay({
           </div>
         </div>
       </div>
-
-      {/* Fullscreen list drawer — sibling, not inside connect-controls, so it survives controls auto-hide */}
-      <FullscreenListDrawer />
     </>
   );
 }
