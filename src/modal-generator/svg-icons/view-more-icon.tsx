@@ -1,18 +1,13 @@
-import React from "react";
 
-type ArrowListIconProps = {
+export default function ViewMoreIcon({
+  size = 260,
+  color = "#444444",
+  strokeWidth = 11,
+}: {
   size?: number;
   color?: string;
   strokeWidth?: number;
-  className?: string;
-};
-
-export default function ArrowListIcon({
-  size = 32,
-  color = "#444444",
-  strokeWidth = 16,
-  className = "",
-}: ArrowListIconProps) {
+}) {
   return (
     <svg
       width={size}
@@ -20,18 +15,58 @@ export default function ArrowListIcon({
       viewBox="0 0 260 260"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
-      className={className}
-      style={{ display: "block", flexShrink: 0, overflow: "visible" }}
+      aria-hidden="true"
     >
-      <g stroke={color} strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round">
-        <circle cx="52" cy="46" r="65" />
-        <path d="M 40 140 H 118 M 40 140 H 118" />
-        <path d="M 118 140 L 100 122 M 118 140 L 100 158" />
-        <path d="M 128 32 H 218 M 128 32 H 218" />
-        <path d="M 128 90 H 218 M 128 90 H 218" />
-        <path d="M 128 148 H 218 M 128 148 H 218" />
-        <path d="M 128 198 H 218 M 128 198 H 218" />
-      </g>
+      {/* Circle */}
+      <circle
+        cx="90"
+        cy="130"
+        r="70"
+        stroke={color}
+        strokeWidth={strokeWidth}
+      />
+
+      {/* First Chevron */}
+      <path
+        d="M100 100 L120 130 L100 160"
+        stroke={color}
+        strokeWidth={strokeWidth}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+
+      {/* Second Chevron */}
+      <path
+        d="M70 100 L90 130 L70 160"
+        stroke={color}
+        strokeWidth={strokeWidth}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+
+      {/* Top Bar */}
+      <path
+        d="M170 60 H230"
+        stroke={color}
+        strokeWidth={strokeWidth}
+        strokeLinecap="round"
+      />
+
+      {/* Middle Bar */}
+      <path
+        d="M170 130 H230"
+        stroke={color}
+        strokeWidth={strokeWidth}
+        strokeLinecap="round"
+      />
+
+      {/* Bottom Bar */}
+      <path
+        d="M170 200 H230"
+        stroke={color}
+        strokeWidth={strokeWidth}
+        strokeLinecap="round"
+      />
     </svg>
   );
 }
