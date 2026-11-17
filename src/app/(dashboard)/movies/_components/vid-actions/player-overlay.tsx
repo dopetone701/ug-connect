@@ -7,6 +7,7 @@ import BackBtn from "../back-btn";
 import PlayBtnIcon from "./../../../../../modal-generator/svg-icons/play-btn-icon";
 import Reverse10Icon from "./../../../../../modal-generator/svg-icons/minus-10-revolve-icon";
 import Replay10Icon from "./../../../../../modal-generator/svg-icons/plus-10-revolve-icon";
+import ArrowListIcon from "./../../../../../modal-generator/svg-icons/arrow-list-icon";
 import QualitySettings from "./quality-settings";
 import NextMovie from "./next-movie";
 import VideoCastBtn from "./vide-cast";
@@ -90,6 +91,9 @@ export default function PlayerOverlay({
   }, []);
 
   const isDesktopCast = !isMobile || isLandscape || (typeof window !== "undefined" && window.innerWidth >= 1024);
+
+  // ArrowListIcon: only fullscreen + landscape + PC mode
+  const showArrowList = isFullScreen && isLandscape && !isMobile;
 
   useEffect(() => {
     if (!isMini) {
@@ -486,7 +490,30 @@ export default function PlayerOverlay({
               />
             </div>
 
-               <VideoCastBtn />
+            {showArrowList && (
+              <button
+                type="button"
+                className="cc-icon"
+                aria-label="Show list"
+                onClick={(e) => {
+                  e.stopPropagation();
+                }}
+                onPointerDown={(e) => e.stopPropagation()}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  cursor: "pointer",
+                  background: "transparent",
+                  border: "none",
+                  padding: 0,
+                }}
+              >
+                <ArrowListIcon size={24} color="#ffffff" />
+              </button>
+            )}
+
+            <VideoCastBtn />
 
             <div
               onClick={(e) => e.stopPropagation()}
@@ -529,4 +556,3 @@ export default function PlayerOverlay({
     </>
   );
 }
-
