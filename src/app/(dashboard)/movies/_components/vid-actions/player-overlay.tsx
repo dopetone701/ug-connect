@@ -7,7 +7,7 @@ import BackBtn from "../back-btn";
 import PlayBtnIcon from "./../../../../../modal-generator/svg-icons/play-btn-icon";
 import Reverse10Icon from "./../../../../../modal-generator/svg-icons/minus-10-revolve-icon";
 import Replay10Icon from "./../../../../../modal-generator/svg-icons/plus-10-revolve-icon";
-import ArrowListIcon from "./../../../../../modal-generator/svg-icons/arrow-list-icon";
+import ViewMoreIcon from "./../../../../../modal-generator/svg-icons/view-more-icon";
 import QualitySettings from "./quality-settings";
 import NextMovie from "./next-movie";
 import VideoCastBtn from "./vide-cast";
@@ -91,7 +91,7 @@ export default function PlayerOverlay({
 
   const isDesktopCast = !isMobile || isLandscape || (typeof window !== "undefined" && window.innerWidth >= 1024);
 
-  const showArrowList = isFullScreen && isLandscape;
+  const showViewMore = isFullScreen && isLandscape;
 
   useEffect(() => {
     if (!isMini) {
@@ -480,7 +480,7 @@ export default function PlayerOverlay({
               />
             </div>
 
-            {showArrowList && (
+            {showViewMore && (
               <button
                 type="button"
                 className="cc-icon"
@@ -504,7 +504,7 @@ export default function PlayerOverlay({
                   overflow: "visible",
                 }}
               >
-                <ArrowListIcon size={28} color="#ffffff" />
+                <ViewMoreIcon size={28} color="#ffffff" />
               </button>
             )}
 
@@ -548,4 +548,4 @@ export default function PlayerOverlay({
       </div>
     </>
   );
-} 
+}
