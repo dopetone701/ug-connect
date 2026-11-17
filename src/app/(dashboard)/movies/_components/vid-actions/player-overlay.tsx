@@ -91,7 +91,7 @@ export default function PlayerOverlay({
 
   const isDesktopCast = !isMobile || isLandscape || (typeof window !== "undefined" && window.innerWidth >= 1024);
 
-  const showArrowList = isFullScreen && isLandscape && !isMobile;
+  const showArrowList = isFullScreen && isLandscape;
 
   useEffect(() => {
     if (!isMini) {
