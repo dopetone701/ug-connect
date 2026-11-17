@@ -69,6 +69,12 @@ export default function FullscreenListDrawer() {
         bottom: 0,
         width: "58%",
         zIndex: 10000,
+        // SAME AS WATCH-DRAWER: panel padding pushes content in, black translucent still goes to edge
+        // X stays at 12px INSIDE this padding - no env() on the button itself, so rotation (notch left/right) just works
+        paddingTop: "env(safe-area-inset-top, 0px)",
+        paddingRight: "env(safe-area-inset-right, 0px)",
+        paddingBottom: "env(safe-area-inset-bottom, 0px)",
+        boxSizing: "border-box",
         display: "flex",
         flexDirection: "column",
         overflow: "hidden",
