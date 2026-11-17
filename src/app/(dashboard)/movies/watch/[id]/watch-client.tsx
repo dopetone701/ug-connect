@@ -681,6 +681,7 @@ key={`${movie.id}-${quality}-${activeEp?.id || 'default'}`}
               autoPlayOn={autoPlayOn}
               onNextEpisode={onNextEpisode}
               onPrevEpisode={onPrevEpisode}
+              onSelectEpisode={goToEp}
               setAutoPlayOn={setAutoPlayOn}
               videoFit={videoFit}
               setVideoFit={setVideoFit}

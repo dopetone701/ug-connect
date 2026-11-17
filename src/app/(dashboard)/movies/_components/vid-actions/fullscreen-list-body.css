@@ -1,0 +1,126 @@
+/* =========================================================
+   FULLSCREEN LIST BODY — YouTube vertical list
+   Reuses real MovieCard classes: .latest-card / .l-card-cover
+   ONLY change here: PLAY + PRE display:none in this list.
+   Rest kept as-is. No DNA row. No three dots.
+   Black-translucent drawer pattern: panel padding pushes
+   content into safe-area, no env() on buttons.
+   NOTE: Must beat latest-movies.css (loads after) -> use !important
+   on row / thumb / info, otherwise .latest-card 184px wins.
+   ========================================================= */
+
+.fullscreen-list-body {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  height: 100% !important;
+  max-height: 100% !important;
+  width: 100% !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  overscroll-behavior-y: contain !important;
+  -webkit-overflow-scrolling: touch !important;
+  touch-action: pan-y !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 14px !important;
+  padding: 16px 16px 24px 16px !important;
+  box-sizing: border-box !important;
+}
+
+/* ROW — thumb left, YouTube info right — MUST be flex, beats block default */
+.fullscreen-list-row {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: flex-start !important;
+  gap: 12px !important;
+  width: 100% !important;
+  flex-shrink: 0 !important;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  background: transparent;
+  border: none;
+  padding: 0;
+  text-align: left;
+}
+.fullscreen-list-row:active { opacity: 0.82; }
+
+/* Thumb — REUSE REAL CARD EXACTLY: .latest-card / .l-card-cover 2/3 / radius 6
+   Only size overridden for list row. Aspect, radius, border, fade, VJ pill
+   all come from latest-movies.css — NOT overridden here. */
+.fullscreen-list-row .fullscreen-list-thumb-card,
+.fullscreen-list-thumb-card {
+  width: 118px !important;
+  min-width: 118px !important;
+  max-width: 118px !important;
+  flex: 0 0 118px !important;
+  flex-shrink: 0 !important;
+}
+/* Do NOT set aspect-ratio / border-radius here — real card is 2/3 / 6px */
+
+/* PLAY + PRE — display none in THIS list version only.
+   MovieCard elsewhere still shows them. */
+.fullscreen-list-row .l-card-actions,
+.fullscreen-list-row .l-a-btn.play,
+.fullscreen-list-row .l-a-btn.prev {
+  display: none !important;
+}
+
+/* RIGHT — YouTube: title + VJ + watching time, NO three dots */
+.fullscreen-list-info {
+  flex: 1 1 auto !important;
+  min-width: 0 !important;
+  width: 0 !important;
+  padding-top: 2px !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+.fullscreen-list-title {
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.35;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  word-break: break-word;
+}
+.fullscreen-list-vj {
+  color: rgba(255, 255, 255, 0.62);
+  font-size: 12px;
+  line-height: 1.4;
+  margin-top: 4px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.fullscreen-list-time {
+  color: rgba(255, 255, 255, 0.62);
+  font-size: 12px;
+  line-height: 1.4;
+  margin-top: 1px;
+}
+
+/* MOBILE PORTRAIT — small like portrait */
+@media (max-width: 768px) {
+  .fullscreen-list-body { gap: 12px !important; padding: 12px 12px 20px 12px !important; }
+  .fullscreen-list-row .fullscreen-list-thumb-card,
+  .fullscreen-list-thumb-card {
+    width: 104px !important; min-width: 104px !important; max-width: 104px !important; flex: 0 0 104px !important;
+  }
+}
+
+/* MOBILE LANDSCAPE — phone rotated is 844px wide, so max-width:768px NEVER hits.
+   Must use orientation + max-height, otherwise latest-movies.css PC rule (184px) wins.
+   Small as mobile portrait, NOT PC size. */
+@media (max-width: 1024px) and (orientation: landscape) {
+  .fullscreen-list-body { gap: 10px !important; padding: 10px 12px 20px 12px !important; }
+  .fullscreen-list-row { gap: 10px !important; }
+  .fullscreen-list-row .fullscreen-list-thumb-card,
+  .fullscreen-list-thumb-card {
+    width: 92px !important; min-width: 92px !important; max-width: 92px !important; flex: 0 0 92px !important;
+  }
+  .fullscreen-list-title { font-size: 12px !important; line-height: 1.3 !important; }
+  .fullscreen-list-vj, .fullscreen-list-time { font-size: 11px !important; }
+}
+
