@@ -11,6 +11,8 @@ import ViewMoreIcon from "./../../../../../modal-generator/svg-icons/view-more-i
 import QualitySettings from "./quality-settings";
 import NextMovie from "./next-movie";
 import VideoCastBtn from "./vide-cast";
+import FullscreenListDrawer from "./fullscreen-list-drawer";
+import { useFullscreenListDrawer } from "@/stores/use-fullscreen-list-drawer";
 
 export default function PlayerOverlay({
   movie,
@@ -45,6 +47,7 @@ export default function PlayerOverlay({
   setAutoPlayOn,
 }: any) {
   const { pcPanelOpen } = useGlobalCast();
+  const { toggle: toggleListDrawer, close: closeListDrawer } = useFullscreenListDrawer();
   const keepControlsVisible = () => onShowControls?.();
 
   const startInteraction = () => {
@@ -92,6 +95,11 @@ export default function PlayerOverlay({
   const isDesktopCast = !isMobile || isLandscape || (typeof window !== "undefined" && window.innerWidth >= 1024);
 
   const showArrowList = isFullScreen && isLandscape;
+
+  // Close list drawer when leaving fullscreen / landscape — slide-back plays inside drawer.
+  useEffect(() => {
+    if (!isFullScreen || !isLandscape) closeListDrawer();
+  }, [isFullScreen, isLandscape, closeListDrawer]);
 
   useEffect(() => {
     if (!isMini) {
@@ -486,6 +494,7 @@ export default function PlayerOverlay({
                 aria-label="Show list"
                 onClick={(e) => {
                   e.stopPropagation();
+                  toggleListDrawer();
                 }}
                 onPointerDown={(e) => e.stopPropagation()}
                 style={{
@@ -545,6 +554,9 @@ export default function PlayerOverlay({
           </div>
         </div>
       </div>
+
+      {/* Fullscreen list drawer — sibling, not inside connect-controls, so it survives controls auto-hide */}
+      <FullscreenListDrawer />
     </>
   );
 }
