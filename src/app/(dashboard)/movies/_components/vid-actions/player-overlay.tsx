@@ -7,7 +7,7 @@ import BackBtn from "../back-btn";
 import PlayBtnIcon from "./../../../../../modal-generator/svg-icons/play-btn-icon";
 import Reverse10Icon from "./../../../../../modal-generator/svg-icons/minus-10-revolve-icon";
 import Replay10Icon from "./../../../../../modal-generator/svg-icons/plus-10-revolve-icon";
-import ViewMoreIcon from "./../../../../../modal-generator/svg-icons/view-more-icon";
+import ArrowListIcon from "./../../../../../modal-generator/svg-icons/arrow-list-icon";
 import QualitySettings from "./quality-settings";
 import NextMovie from "./next-movie";
 import VideoCastBtn from "./vide-cast";
@@ -497,9 +497,14 @@ export default function PlayerOverlay({
                   background: "transparent",
                   border: "none",
                   padding: 0,
+                  width: 32,
+                  height: 32,
+                  minWidth: 32,
+                  flexShrink: 0,
+                  overflow: "visible",
                 }}
               >
-                <ViewMoreIcon size={24} color="#ffffff" />
+                <ArrowListIcon size={28} color="#ffffff" />
               </button>
             )}
 
