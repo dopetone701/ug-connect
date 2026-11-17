@@ -491,7 +491,6 @@ export default function PlayerOverlay({
             {showArrowList && (
               <button
                 type="button"
-                className="cc-icon"
                 aria-label="Show list"
                 onClick={(e) => {
                   e.stopPropagation();
@@ -506,14 +505,14 @@ export default function PlayerOverlay({
                   background: "transparent",
                   border: "none",
                   padding: 0,
-                  width: 32,
-                  height: 32,
-                  minWidth: 32,
+                  width: 36,
+                  height: 36,
+                  minWidth: 36,
                   flexShrink: 0,
                   overflow: "visible",
                 }}
               >
-                <ViewMoreIcon size={28} color="#ffffff" />
+                <ViewMoreIcon size={32} color="#ffffff" strokeWidth={16} />
               </button>
             )}
 
