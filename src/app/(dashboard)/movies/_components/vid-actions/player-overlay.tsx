@@ -7,7 +7,7 @@ import BackBtn from "../back-btn";
 import PlayBtnIcon from "./../../../../../modal-generator/svg-icons/play-btn-icon";
 import Reverse10Icon from "./../../../../../modal-generator/svg-icons/minus-10-revolve-icon";
 import Replay10Icon from "./../../../../../modal-generator/svg-icons/plus-10-revolve-icon";
-import ArrowListIcon from "./../../../../../modal-generator/svg-icons/arrow-list-icon";
+import ViewMoreIcon from "./../../../../../modal-generator/svg-icons/view-more-icon";
 import QualitySettings from "./quality-settings";
 import NextMovie from "./next-movie";
 import VideoCastBtn from "./vide-cast";
@@ -44,7 +44,7 @@ export default function PlayerOverlay({
   onPrevEpisode,
   setAutoPlayOn,
 }: any) {
- const { pcPanelOpen } = useGlobalCast();
+  const { pcPanelOpen } = useGlobalCast();
   const keepControlsVisible = () => onShowControls?.();
 
   const startInteraction = () => {
@@ -56,8 +56,7 @@ export default function PlayerOverlay({
 
   const [miniActionsVisible, setMiniActionsVisible] = useState(true);
 
-  const miniActionsTimerRef =
-    useRef<ReturnType<typeof setTimeout> | null>(null);
+  const miniActionsTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const clearMiniActionsTimer = useCallback(() => {
     if (miniActionsTimerRef.current !== null) {
@@ -92,7 +91,6 @@ export default function PlayerOverlay({
 
   const isDesktopCast = !isMobile || isLandscape || (typeof window !== "undefined" && window.innerWidth >= 1024);
 
-  // ArrowListIcon: only fullscreen + landscape + PC mode
   const showArrowList = isFullScreen && isLandscape && !isMobile;
 
   useEffect(() => {
@@ -109,7 +107,7 @@ export default function PlayerOverlay({
     };
   }, [isMini, showMiniActions, clearMiniActionsTimer]);
 
-    if (isMini) {
+  if (isMini) {
     return (
       <div
         style={{
@@ -132,7 +130,6 @@ export default function PlayerOverlay({
           }
         }}
       >
-        {/* Expand */}
         <button
           type="button"
           data-no-drag
@@ -165,7 +162,6 @@ export default function PlayerOverlay({
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5"><path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" /></svg>
         </button>
 
-        {/* Close */}
         <button
           type="button"
           data-no-drag
@@ -198,7 +194,6 @@ export default function PlayerOverlay({
           <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="white" strokeWidth="1.8" strokeLinecap="round"><path d="M1 1L11 11M11 1L1 11" /></svg>
         </button>
 
-               {/* Play - fades too */}
         <button
           type="button"
           data-no-drag
@@ -233,7 +228,6 @@ export default function PlayerOverlay({
         >
           <PlayBtnIcon playing={playing} size={30} />
         </button>
-
       </div>
     );
   }
@@ -307,7 +301,6 @@ export default function PlayerOverlay({
         <div
           className="top-left"
           style={{
-            // FIX: PC + landscape - extend to right so not overlayed by back btn
             marginLeft: !isFullScreen ? (isMobile ? "52px" : isLandscape || isDesktopCast ? "56px" : "48px") : "0",
             transition: "margin-left 0.2s ease",
           }}
@@ -328,10 +321,9 @@ export default function PlayerOverlay({
         </div>
       )}
 
-           {showControls && !isLoading && !pcPanelOpen && (
+      {showControls && !isLoading && !pcPanelOpen && (
         <div
           className="center-controls-layer"
-
           style={{
             position: "absolute",
             inset: 0,
@@ -398,12 +390,11 @@ export default function PlayerOverlay({
         </div>
       )}
 
-           <div
+      <div
         className={`connect-controls ${showControls ? "show" : ""}`}
         style={{ pointerEvents: showControls ? "auto" : "none", display: "flex", flexDirection: "column" }}
         onPointerMove={keepControlsVisible}
       >
-        {/* PROGRESS ON TOP */}
         <div className="cc-progress-bottom" style={{ order: 1, marginBottom: "8px" }}>
           <div
             className="starz-progress"
@@ -462,7 +453,6 @@ export default function PlayerOverlay({
         </div>
 
         <div className="cc-above-progress" style={{ order: 2 }}>
-
           <span className="cc-left-time">
             {formatTime(currentTime)} / {formatTime(duration)}
           </span>
@@ -509,7 +499,7 @@ export default function PlayerOverlay({
                   padding: 0,
                 }}
               >
-                <ArrowListIcon size={24} color="#ffffff" />
+                <ViewMoreIcon size={24} color="#ffffff" />
               </button>
             )}
 
@@ -550,8 +540,6 @@ export default function PlayerOverlay({
             </button>
           </div>
         </div>
-
-        
       </div>
     </>
   );
