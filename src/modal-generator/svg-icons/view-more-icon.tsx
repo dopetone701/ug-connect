@@ -17,52 +17,59 @@ export default function ViewMoreIcon({
       xmlns="http://www.w3.org/2000/svg"
       aria-hidden="true"
     >
-      {/* Circle */}
+      {/* Outer Circle */}
       <circle
-        cx="90"
+        cx="130"
         cy="130"
-        r="70"
+        r="84"
         stroke={color}
         strokeWidth={strokeWidth}
       />
 
-      {/* First Chevron */}
+      {/* Arrow Shaft */}
       <path
-        d="M100 100 L120 130 L100 160"
+        d="M78 130 H130"
+        stroke={color}
+        strokeWidth={strokeWidth}
+        strokeLinecap="round"
+      />
+
+      {/* Arrow Head */}
+      <path
+        d="M110 109 L131 130 L110 151"
         stroke={color}
         strokeWidth={strokeWidth}
         strokeLinecap="round"
         strokeLinejoin="round"
       />
 
-      {/* Second Chevron */}
+      {/* Bar 1 */}
       <path
-        d="M70 100 L90 130 L70 160"
-        stroke={color}
-        strokeWidth={strokeWidth}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-
-      {/* Top Bar */}
-      <path
-        d="M170 60 H230"
+        d="M138 95 H173"
         stroke={color}
         strokeWidth={strokeWidth}
         strokeLinecap="round"
       />
 
-      {/* Middle Bar */}
+      {/* Bar 2 */}
       <path
-        d="M170 130 H230"
+        d="M151 118 H173"
         stroke={color}
         strokeWidth={strokeWidth}
         strokeLinecap="round"
       />
 
-      {/* Bottom Bar */}
+      {/* Bar 3 */}
       <path
-        d="M170 200 H230"
+        d="M151 141 H173"
+        stroke={color}
+        strokeWidth={strokeWidth}
+        strokeLinecap="round"
+      />
+
+      {/* Bar 4 */}
+      <path
+        d="M138 164 H173"
         stroke={color}
         strokeWidth={strokeWidth}
         strokeLinecap="round"
