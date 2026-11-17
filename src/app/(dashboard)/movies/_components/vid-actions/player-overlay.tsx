@@ -144,8 +144,8 @@ export default function PlayerOverlay({
           aria-label="Expand"
           style={{
             position: "absolute",
-            top: 8,
-            left: 8,
+            top: "calc(8px + env(safe-area-inset-top, 0px))",
+            left: "calc(8px + env(safe-area-inset-left, 0px))",
             width: 32,
             height: 32,
             borderRadius: "50%",
@@ -176,8 +176,8 @@ export default function PlayerOverlay({
           aria-label="Close"
           style={{
             position: "absolute",
-            top: 8,
-            right: 8,
+            top: "calc(8px + env(safe-area-inset-top, 0px))",
+            right: "calc(8px + env(safe-area-inset-right, 0px))",
             width: 32,
             height: 32,
             borderRadius: "50%",
@@ -263,8 +263,8 @@ export default function PlayerOverlay({
         <div
           style={{
             position: "absolute",
-            top: "12px",
-            left: "12px",
+            top: "calc(12px + env(safe-area-inset-top, 0px))",
+            left: "calc(12px + env(safe-area-inset-left, 0px))",
             zIndex: 10000,
             pointerEvents: showControls ? "auto" : "none",
             opacity: showControls ? 1 : 0,
