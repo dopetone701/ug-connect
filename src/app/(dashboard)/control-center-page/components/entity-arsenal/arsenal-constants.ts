@@ -66,3 +66,6 @@ export const arsenalDaysLeft = (autoClearAt?: number | null) => {
   return Math.max(0, Math.ceil((autoClearAt - Date.now()) / (24 * 60 * 60 * 1000)));
 };
 
+// Activity = items endpoint (Worker has no separate /activity - Admin monitor reads /items)
+export const ARSENAL_ACTIVITY_ENDPOINT = ARSENAL_ENDPOINTS.items;
+
