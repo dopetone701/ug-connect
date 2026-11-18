@@ -7,7 +7,10 @@
    content into safe-area, no env() on buttons.
    NOTE: Must beat latest-movies.css (loads after) -> use !important
    on row / thumb / info, otherwise .latest-card 184px wins.
+   DNA COLOR: title = hsl(var(--text)), VJ + time = hsl(var(--text-muted)).
+   No hardcoded #fff / rgba(255,255,255). Follows Dark / Light / Green / Red.
    ========================================================= */
+
 
 .fullscreen-list-body {
   flex: 1 1 auto !important;
@@ -27,6 +30,7 @@
   box-sizing: border-box !important;
 }
 
+
 /* ROW — thumb left, YouTube info right — MUST be flex, beats block default */
 .fullscreen-list-row {
   display: flex !important;
@@ -44,6 +48,7 @@
 }
 .fullscreen-list-row:active { opacity: 0.82; }
 
+
 /* Thumb — REUSE REAL CARD EXACTLY: .latest-card / .l-card-cover 2/3 / radius 6
    Only size overridden for list row. Aspect, radius, border, fade, VJ pill
    all come from latest-movies.css — NOT overridden here. */
@@ -57,6 +62,7 @@
 }
 /* Do NOT set aspect-ratio / border-radius here — real card is 2/3 / 6px */
 
+
 /* PLAY + PRE — display none in THIS list version only.
    MovieCard elsewhere still shows them. */
 .fullscreen-list-row .l-card-actions,
@@ -64,6 +70,7 @@
 .fullscreen-list-row .l-a-btn.prev {
   display: none !important;
 }
+
 
 /* RIGHT — YouTube: title + VJ + watching time, NO three dots */
 .fullscreen-list-info {
@@ -75,7 +82,7 @@
   flex-direction: column !important;
 }
 .fullscreen-list-title {
-  color: #fff;
+  color: hsl(var(--text));
   font-size: 14px;
   font-weight: 600;
   line-height: 1.35;
@@ -86,7 +93,7 @@
   word-break: break-word;
 }
 .fullscreen-list-vj {
-  color: rgba(255, 255, 255, 0.62);
+  color: hsl(var(--text-muted));
   font-size: 12px;
   line-height: 1.4;
   margin-top: 4px;
@@ -95,11 +102,12 @@
   white-space: nowrap;
 }
 .fullscreen-list-time {
-  color: rgba(255, 255, 255, 0.62);
+  color: hsl(var(--text-muted));
   font-size: 12px;
   line-height: 1.4;
   margin-top: 1px;
 }
+
 
 /* MOBILE PORTRAIT — small like portrait */
 @media (max-width: 768px) {
@@ -109,6 +117,7 @@
     width: 104px !important; min-width: 104px !important; max-width: 104px !important; flex: 0 0 104px !important;
   }
 }
+
 
 /* MOBILE LANDSCAPE — phone rotated is 844px wide, so max-width:768px NEVER hits.
    Must use orientation + max-height, otherwise latest-movies.css PC rule (184px) wins.
